@@ -1,0 +1,27 @@
+# Temp files
+*~
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+*.exe
+
+# Compiled Dynamic libraries
+*.so
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# IDE
+\!Out
+ipch
+*.log
+*.tlog
+*.sdf
+*.suo
+*Debug/

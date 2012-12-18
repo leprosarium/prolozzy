@@ -160,11 +160,14 @@ loadOk :-
 
 loadFail :-
 	def:color(red, Color),
-	update:register(ui, file:loadFailExit),
+	update:register(ui, game:command(exit)),
 	update:push(no),
 	dialog:openMessage('FILE ERROR!', Color).
-loadFailExit :-
-	game:command(exit).
+
+
+
+
+
 
 
 

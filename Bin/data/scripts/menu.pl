@@ -364,18 +364,17 @@ openDialogGameMenuFinish(3) :-
 	menu:openDialogOptions, !.
 
 openDialogGameMenuFinish(4) :-
-	update:register(ui, menu:openDialogGameMenuFinishCmd(game:restart)),
+	update:register(ui, pop(Ret, menu:openDialogGameMenuFinishCmd(Ret, game:restart))),
 	dialog:openQuestion('RESTART GAME ?', no), !.
 
 openDialogGameMenuFinish(5) :-
-	update:register(ui, menu:openDialogGameMenuFinishCmd(game:command(exit))),
+	update:register(ui, pop(Ret, menu:openDialogGameMenuFinishCmd(Ret, game:command(exit)))),
 	dialog:openQuestion('EXIT GAME ?', no), !.
 
 openDialogGameMenuFinish(_).
 
-openDialogGameMenuFinishCmd(Cmd) :-
-	update:pop(Ret),
-	(  Ret = yes -> call(Cmd); true), !.
+openDialogGameMenuFinishCmd(yes, Cmd) :- !, call(Cmd).
+openDialogGameMenuFinishCmd(_, _).
 
 
 % IN: int; select; default selection

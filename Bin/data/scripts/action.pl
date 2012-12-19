@@ -14,7 +14,7 @@ action :-
 	->  pickupObject(Idx)
 	;   (   findActionObject(Idx2)
 	    ->  actionObject(Idx2)
-	    ;   (update:register(ui, pop(InvIdx, action:useObject(InvIdx))),
+	    ;   (update:regPop(ui, action:useObject),
 		menu:openDialogInventory)).
 
 
@@ -75,7 +75,7 @@ doPickupObject(Idx, item) :- % items are to be picked up in the inventory
 	->  dialog:openMessage('YOUR HANDS\nARE FULL!')
 	;   core:samplePlay(beep1),
 	    obj:disable(Idx, 1),
-	    update:register(ui, pop(InvIdx, action:useObject(InvIdx))),
+	    update:regPop(ui, action:useObject),
 	    menu:openDialogInventory(exit)).
 
 doPickupObject(Idx, coin) :- % coins are to be collected
@@ -181,7 +181,7 @@ doDropObject(Idx) :-
 actionObject( Idx ) :-
 	obj:id(Idx, Id),
 	catch(game:actionObject(Id), _, false);
-	update:register(ui, pop(InvIdx,action:useObject(InvIdx))),
+	update:regPop(ui, action:useObject),
 	menu:openDialogInventory.
 
 

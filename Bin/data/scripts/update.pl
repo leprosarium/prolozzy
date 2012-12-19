@@ -1,4 +1,5 @@
 :- module(update, [register/2,
+		   regPop/2,
 		   next/1,
 		   push/1,
 		   pop/1,
@@ -42,15 +43,19 @@ register(Key, [Goal|Goals]) :-
 register(Key, Goal) :-
 	recorda(Key, Goal).
 
+
+regPop(Key, Module:Goal) :-
+	Goal =.. [Functor|Args],
+	PopGoal =.. [Functor, Var|Args],
+	recorda(Key, (pop(Var), !, Module:PopGoal)).
+
 next(Key) :-
 	recorded(Key, Goal, Ref),
 	erase(Ref),
 	callTop(Goal), !.
 next(_) :- !.
 
-callTop(pop(Var,Goal)) :- !,
-	pop(Var),
-	catch(Goal, E, core:dl('---exception'(E))).
+
 callTop(Goal) :-
 	catch(Goal, E, core:dl('---exception'(E))).
 callTop(Goal) :-

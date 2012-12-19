@@ -46,7 +46,7 @@ cover(Frame) :-
 	(   util:getKeyHit(action)
 	->  menu:mainMenuClose(start)
 	;   (   util:getKeyHit(menu)
-	    ->	(update:register(ui, pop(Ret, menu:mainMenuClose(Ret))), openDialogMainMenu)
+	    ->	openDialogMainMenu
 	    ;   coverLoop(NewFrame))).
 cover(_) :-
 	gamedef:mainMenuAttract(1) -> attract ; coverLoop.
@@ -125,8 +125,8 @@ mainMenuClose(start) :-
 
 openDialogMainMenu :-
 	game:pause,
-	update:register(ui, pop(Res, menu:mainMenuClose(Res))),
-	update:register(ui, pop(Select, menu:openDialogMainMenuFinish(Select))),
+	update:regPop(ui, menu:mainMenuClose),
+	update:regPop(ui, menu:openDialogMainMenuFinish),
 	dialog:runSelect2(menu:dialogMainMenum, start).
 openDialogMainMenuReturn(Ret) :-
 	game:unpause,
@@ -135,7 +135,7 @@ openDialogMainMenuReturn(Ret) :-
 openDialogMainMenuFinish(start) :- !,
 	openDialogMainMenuReturn(start).
 openDialogMainMenuFinish(load) :- !,
-	update:register(ui, pop(Ret, menu:openDialogMainMenuFinish1(Ret))),
+	update:regPop(ui, menu:openDialogMainMenuFinish1),
 	openDialogFiles(load).
 
 openDialogMainMenuFinish(options) :- !,
@@ -147,7 +147,7 @@ openDialogMainMenuFinish(credits) :- !,
 	openDialogCredits.
 
 openDialogMainMenuFinish(exit) :- !,
-	update:register(ui, pop(Ret, menu:openDialogMainMenuFinish4(Ret))),
+	update:regPop(ui, menu:openDialogMainMenuFinish4),
 	dialog:openQuestion('EXIT GAME ?', no).
 
 openDialogMainMenuFinish(_) :- !,
@@ -238,7 +238,7 @@ openDialogOptions :-
 	update:register(ui, game:unpause),
 	openDialogOptionsLoop(fx).
 openDialogOptionsLoop(State) :-
-	update:register(ui, pop(Select, menu:openDialogOptionsSelect0(Select))),
+	update:regPop(ui, menu:openDialogOptionsSelect0),
 	dialog:runSelect2(menu:dialogOption, State).
 
 openDialogOptionsSelect0(Select) :-
@@ -331,7 +331,7 @@ openDialogControls :-
 openDialogGameMenu :-
 	game:pause,
 	update:register(ui, game:unpause),
-	update:register(ui, pop(Select, menu:openDialogGameMenuFinish(Select))),
+	update:regPop(ui, menu:openDialogGameMenuFinish),
 	dialog:runSelect(menu:dialogGameMenu, 6, 0).
 
 
@@ -346,11 +346,11 @@ openDialogGameMenuFinish(3) :-
 	menu:openDialogOptions, !.
 
 openDialogGameMenuFinish(4) :-
-	update:register(ui, pop(Ret, menu:openDialogGameMenuFinishCmd(Ret, game:restart))),
+	update:regPop(ui, menu:openDialogGameMenuFinishCmd(game:restart)),
 	dialog:openQuestion('RESTART GAME ?', no), !.
 
 openDialogGameMenuFinish(5) :-
-	update:register(ui, pop(Ret, menu:openDialogGameMenuFinishCmd(Ret, game:command(exit)))),
+	update:regPop(ui, menu:openDialogGameMenuFinishCmd(game:command(exit))),
 	dialog:openQuestion('EXIT GAME ?', no), !.
 
 openDialogGameMenuFinish(_).
@@ -380,7 +380,7 @@ openDialogInventory :-
 	openDialogInventory(0).
 openDialogInventory(Def) :-
 	game:pause,
-	update:register(ui, pop(Select, menu:openDialogInventoryFinish(Select))),
+	update:regPop(ui, menu:openDialogInventoryFinish),
 	(   Def = exit
 	->  dialog:runSelect2(menu:dialogInventory, exit)
 	;   (   inventory:find(Idx, _)
@@ -482,15 +482,15 @@ dialogTooltip(Y2) :-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%/
 openDialogFiles(Mode) :-
 	openDialogFilesTitle(Mode, Title),
-	update:register(ui, pop(Select, menu:openDialogFilesSelect(Mode, Select))),
+	update:regPop(ui, menu:openDialogFilesSelect(Mode)),
 	dialog:runSelect2(menu:dialogFiles(Title), 0).
 
 openDialogFilesTitle(load, 'LOAD GAME').
 openDialogFilesTitle(save, 'SAVE GAME').
 
-openDialogFilesSelect(_Mode, exit) :- !, update:push(no).
+openDialogFilesSelect(exit, _Mode) :- !, update:push(no).
 
-openDialogFilesSelect(Mode, Select) :- !,
+openDialogFilesSelect(Select, Mode) :- !,
 	Num is Select + 1,
 	format(atom(File), 'save~a.gam', Num),
 	openDialogFilesSelectFile(Mode, File).
@@ -502,7 +502,7 @@ openDialogFilesSelectFile(load, File) :-
 
 openDialogFilesSelectFile(save, File) :-
 	exists_file(File)
-	-> update:register(ui, pop(Res, menu:openDialogFilesSelectSave(Res, File))), dialog:openQuestion('OVERWRITE FILE ?',no)
+	-> update:regPop(ui, menu:openDialogFilesSelectSave(File)), dialog:openQuestion('OVERWRITE FILE ?',no)
 	; file:saveGame(File).
 openDialogFilesSelectSave(yes, File) :- !, file:saveGame(File).
 openDialogFilesSelectSave(_, _) :- !, update:push(no).

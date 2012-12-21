@@ -115,7 +115,6 @@ mainMenuClose(nothing) :-
 mainMenuClose(start) :-
 	util:clearKeys,
 	player:setDisable(false),
-	game:unpause,
 	player:enterIdle,
 	game:beginNewGame.
 
@@ -559,6 +558,18 @@ dialogFilesList(I, CurList, List) :-
 	;  Text = ' EMPTY  SLOT        '),
 	NI is I - 1,
 	dialogFilesList(NI, [NI/Text|CurList], List).
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

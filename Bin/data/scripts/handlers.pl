@@ -30,9 +30,8 @@ event(restart, gameStart) :-
 	start:restart.
 
 gameSupportJump :-
-	supportJumpUp,
-	useUpForJump.
-gameSupportJump.
+	gamedef:supportJumpUp -> util:useUpForJump ; true.
+
 
 updateRoom :-
 	game:roomPos(X, Y),
@@ -48,7 +47,7 @@ event(cover, gameUpdate) :-
 event(_, gameUpdate) :-
 	( update:registered(ui) -> update:next(ui); update:next(player)),
 	gameSupportJump,
-	updateShakeAndRumble,
+	util:updateShakeAndRumble,
 	\+ game:paused,
 	player:safe(1),
 	updateRoom,

@@ -25,3 +25,4 @@ ipch
 *.sdf
 *.suo
 *Debug/
+!Engine/Debug

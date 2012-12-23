@@ -14,7 +14,10 @@ cDizDebug g_dizdebug;
 
 BOOL cDizDebug::m_developer = false;
 
-#define IS_WORD_CHAR( c )	( ('0'<=c && c<='9') ||	('A'<=c && c<='Z') || ('a'<=c && c<='z') ||	c=='_' ) 
+bool IS_WORD_CHAR(char c)
+{
+	return ('0'<=c && c<='9') || ('A'<=c && c<='Z') || ('a'<=c && c<='z') || c=='_';
+}
 #define COLOR_INFO		0xff408040
 #define COLOR_SLOTS		0xff004080
 #define COLOR_INPUT		0xff808080
@@ -746,66 +749,102 @@ void cDizDebug::InputSkipWord( int dir )
 	unguard();
 }
 
+int common(const char *s1, const char *s2, int insensitive)
+{ int n = 0;
+
+  if ( !insensitive )
+  { while(*s1 && *s1 == *s2)
+    { s1++, s2++;
+      n++;
+    }
+    return n;
+  } else
+  { while(*s1)
+    { if ( tolower(*s1) == tolower(*s2) )
+      { s1++, s2++;
+	n++;
+      } else
+	break;
+    }
+    return n;
+  }
+}
+
 void cDizDebug::InputAutoComplete()
 {
 	guard(cDizDebug::InputAutoComplete);
 	int i;
-//	if(g_script.m_env==NULL) return; // no script
 
 	// find word begining and ending
 	int start = m_input_crt;
 	while(start>0 && IS_WORD_CHAR(m_input_cmd[start-1])) start--;
+	if(m_input_crt-start<=0) return; // nothing to start with
 	int end = m_input_crt;
 	while(IS_WORD_CHAR(m_input_cmd[end])) end++;
-	if(m_input_crt-start<=0) return; // nothing to start with
+
 	
-	int complete = 0; // counter
-	char* name = NULL;
 
-	// enum functions
-	//for(i=0;i<g_script.m_env->GetFnSize();i++)
-	//{
-	//	if(!g_script.m_env->GetFn(i)) continue;
-	//	name = g_script.m_env->GetFn(i)->m_name;
-	//	if(!name) continue;
-	//	if(_memicmp(name,m_input_cmd+start,m_input_crt-start)==0) // match
-	//		if(complete==m_input_complete) 
-	//			goto found; 
-	//		else 
-	//			complete++;
-	//}
+	if ( islower(m_input_cmd[start]) )
+	{
+		char buf_handle[INPUT_SIZE];
+		size_t patlen = m_input_crt - start;
 
-	// enum variables
-	//for(i=0;i<g_script.m_env->GetVarSize();i++)
-	//{
-	//	if(!g_script.m_env->GetVar(i)) continue;
-	//	name = g_script.m_env->GetVar(i)->m_name;
-	//	if(!name) continue;
-	//	if(_memicmp(name,m_input_cmd+start,m_input_crt-start)==0) // match
-	//		if(complete==m_input_complete) 
-	//			goto found;
-	//		else 
-	//			complete++;
-	//}
+		strncpy(buf_handle, m_input_cmd + start, patlen);
+		buf_handle[patlen] = 0;
+		if(char * name = PL_atom_generator(buf_handle, 0))
+		{
+			char match[INPUT_SIZE];
+			int nmatches = 1;
+			size_t replace_from = start;
+			size_t ncommon = strlen(name);
+			size_t patlen = m_input_crt - replace_from;
+			strcpy(match, name); 
 
-	// not found
+			while(name = PL_atom_generator(buf_handle, 1) )
+			{ 
+				ncommon = common(match, name, 1);//data->case_insensitive);
+				match[ncommon] = 0;
+				nmatches++;
+			}
+			// insert found
+			int len=(int)strlen(m_input_cmd);
+			if(start+ncommon+(len-end)>=INPUT_SIZE) return; // no room
+	
+			// remove old word and insert new one
+			if(len-end)	memmove(m_input_cmd+start+ncommon,m_input_cmd+end,len-end);
+			memcpy(m_input_cmd+start,match,ncommon);
+			m_input_cmd[start+ncommon+len-end]=0;
+			m_input_crt = end = start+ncommon;
+			int complete = 0; // counter
+			if(nmatches > 1 && (name = PL_atom_generator(match, 0))) {
+				if(complete == m_input_complete) 
+					goto found; 
+				else 
+					complete++;
+
+				while(name = PL_atom_generator(match, 1))
+					if(complete == m_input_complete) 
+						goto found; 
+					else 
+						complete++;
+			}
+			m_input_complete = 0;
+			return;
+found:
+			m_input_complete++;
+			if(!name) return; // safe
+			int nlen = (int)strlen(name);
+			len=(int)strlen(m_input_cmd);
+			if(start+nlen+(len-end)>=INPUT_SIZE) return; // no room
+	
+			// remove old word and insert new one
+			if(len-end)	memmove(m_input_cmd+start+nlen,m_input_cmd+end,len-end);
+			memcpy(m_input_cmd+start,name,nlen);
+			m_input_cmd[start+nlen+len-end]=0;
+			return;
+		}
+	}
 	m_input_complete = 0;
-	return;
-
-	// insert found
-	found:
-	m_input_complete++;
-	if(!name) return; // safe
-	int nlen = (int)strlen(name);
-	int len=(int)strlen(m_input_cmd);
-	if(start+nlen+(len-end)>=INPUT_SIZE) return; // no room
-	
-	// remove old word and insert new one
-	if(len-end)	memmove(m_input_cmd+start+nlen,m_input_cmd+end,len-end);
-	memcpy(m_input_cmd+start,name,nlen);
-	m_input_cmd[start+nlen+len-end]=0;
-//	m_input_crt = start+nlen;
-
 	unguard();
 }
 

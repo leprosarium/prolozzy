@@ -69,6 +69,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
                      LPSTR     lpCmdLine,
                      int       nCmdShow)
 {
+    PL_action(PL_ACTION_GUIAPP, TRUE);
 	char *av[] = { __argv[0], "-x", "boot32.prc", 0};
 	PlEngine e(sizeof(av) / sizeof(*av) - 1, av);
 	

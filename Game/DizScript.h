@@ -13,8 +13,6 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 class cDizScript
 {
-		bool			Consult();
-
 		module_t		module;
 		predicate_t		_event;
 		functor_t _gameInit;
@@ -43,8 +41,6 @@ public:
 		bool			Init				();					// init
 		void			Start				();					// call this to start a new game
 		void			Update				();					// update and run current code
-		bool			Reload				();					// for debug purposes
-
 
 		void gameInit() { CallHandler(_gameInit); }
 		void gameStart() { CallHandler(_gameStart); }
@@ -63,7 +59,6 @@ public:
 		void musicLoop() { CallHandler(_musicLoop); }
 		void debug() { CallHandler(_debug); }		
 		void reloadMap() { CallHandler(_reloadMap); }
-		void reloadScript() { CallHandler(_reloadScript); }
 
 		// register
 //		void			ScriptRegister		( gsVM* vm );		// register script functions and constants

@@ -111,9 +111,6 @@ doPickupObject(Idx, life) :- % gives one credit
 	% users can also create other classes ...
 
 
-useObject(-1). % Do nothing.
-
-
 playEat(Count, Life) :-
 	Life >= 100,
 	Count >= 10,
@@ -136,6 +133,7 @@ playEat(Count, Life) :-
 % If not, the item is simply dropped down.
 % Called by Action() and ActionObject(), see DropObject().
 
+useObject(-1). % Do nothing.
 useObject(Idx) :-
 	findActionObject(Idx2) % find action object with UseObject_ID function
 	-> (obj:id(Idx2, Id),

@@ -313,15 +313,15 @@ dialogOption(draw, State) :-
 
 % Opens the Controls dialog.
 openDialogControls :-
-	Text = '{a:center}\
-{c:0xffff00}GAME CONTROLS\n\n{a:left}\
- {c:0xffffff}Z{c:0xffff00} OR {c:0xffffff}LEFT{c:0xffff00}   - MOVE LEFT\n\
- {c:0xffffff}X{c:0xffff00} OR {c:0xffffff}RIGHT{c:0xffff00}  - MOVE RIGHT\n\
- {c:0xffffff}SPACE{c:0xffff00} OR {c:0xffffff}UP{c:0xffff00} - JUMP\n\
- {c:0xffffff}ENTER{c:0xffff00}       - ACTION\n\
- {c:0xffffff}ESCAPE{c:0xffff00} OR {c:0xffffff}Q{c:0xffff00} - MENU\n\n\
- {c:0xffffff}F9{c:0xffff00}  - MUTE ALL SOUND\n\
- {c:0xffffff}F10{c:0xffff00} - TOGGLE SCREEN\n',
+	Text = '{a:center}\c
+{c:0xffff00}GAME CONTROLS\n\n{a:left}\c
+{c:0xffffff}Z{c:0xffff00} OR {c:0xffffff}LEFT{c:0xffff00}   - MOVE LEFT\n\c
+{c:0xffffff}X{c:0xffff00} OR {c:0xffffff}RIGHT{c:0xffff00}  - MOVE RIGHT\n\c
+{c:0xffffff}SPACE{c:0xffff00} OR {c:0xffffff}UP{c:0xffff00} - JUMP\n\c
+{c:0xffffff}ENTER{c:0xffff00}       - ACTION\n\c
+{c:0xffffff}ESCAPE{c:0xffff00} OR {c:0xffffff}Q{c:0xffff00} - MENU\n\n\c
+{c:0xffffff}F9{c:0xffff00}  - MUTE ALL SOUND\n\c
+{c:0xffffff}F10{c:0xffff00} - TOGGLE SCREEN\n',
 	dialog:openMessage(Text).
 
 

@@ -12,29 +12,10 @@
 		 objIsPickup/1,
 		 objIsAction/1,
 		 isUpdate/1,
-		 member/2,
-		 nth0/3,
-		 append/3,
 		 musicStore/0,
 		 musicRestore/0]).
 
 :-use_module(def).
-
-member(El, [H|T]) :-
-    member_(T, El, H).
-
-member_(_, El, El).
-member_([H|T], El, _) :-
-    member_(T, El, H).
-
-
-%%	append(?List1, ?List2, ?List1AndList2)
-%
-%	List1AndList2 is the concatination of List1 and List2
-
-append([], L, L).
-append([H|T], L, [H|R]) :-
-	append(T, L, R).
 
 % IN: int; delay; number of frames
 % OUT: int; 0/1
@@ -182,41 +163,6 @@ objIsPickup(Idx) :-
 objIsAction(Idx) :-
 	obj:class(Idx, Class),
 	def:class(action, Class).
-
-
-
-
-
-%%	nth0(?Index, ?List, ?Elem)
-%
-%	True if Elem is the Index'th element of List. Counting starts at
-%	0.  This  is  a  faster  version   of  the  original  SWI-Prolog
-%	predicate.
-
-nth0(Index, List, Elem) :-
-        integer(Index), !,
-        Index >= 0,
-        nth0_det(Index, List, Elem).    % take nth deterministically
-nth0(Index, List, Elem) :-
-        var(Index), !,
-        nth_gen(List, Elem, 0, Index).  % match
-
-nth0_det(0, [Elem|_], Elem) :- !.
-nth0_det(1, [_,Elem|_], Elem) :- !.
-nth0_det(2, [_,_,Elem|_], Elem) :- !.
-nth0_det(3, [_,_,_,Elem|_], Elem) :- !.
-nth0_det(4, [_,_,_,_,Elem|_], Elem) :- !.
-nth0_det(5, [_,_,_,_,_,Elem|_], Elem) :- !.
-nth0_det(N, [_,_,_,_,_,_   |Tail], Elem) :-
-        M is N - 6,
-	M >= 0,
-        nth0_det(M, Tail, Elem).
-
-nth_gen([Elem|_], Elem, Base, Base).
-nth_gen([_|Tail], Elem, N, Base) :-
-        succ(N, M),
-        nth_gen(Tail, Elem, M, Base).
-
 
 % Stores music id and music position to use when player dies and gets respawned
 musicStore :-

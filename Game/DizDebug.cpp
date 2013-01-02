@@ -213,19 +213,12 @@ bool cDizDebug::Update()
 		dlog( LOGAPP, "draw mode %i\n", g_game.m_drawmode );
 	}
 
-	// script reload
-	if(I9_GetKeyDown(I9K_F5))
-	{
-		if( g_script.Reload() ) // even if it fails we have the old one !
-			g_script.reloadScript();
-	}
-
 	// map reload full WARNING: all items are reloaded too, so your inventory...
 	if(I9_GetKeyDown(I9K_F6))
 	{
 		g_map.Reload();
 	}
-		
+	
 	// resize
 	bool ctrl  = I9_GetKeyValue(I9K_LCONTROL) || I9_GetKeyValue(I9K_RCONTROL);
 	bool shift = I9_GetKeyValue(I9K_LSHIFT) || I9_GetKeyValue(I9K_RSHIFT);

@@ -43,6 +43,10 @@
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\!Out\Release\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\!Out\Release\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <CustomBuildAfterTargets Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    </CustomBuildAfterTargets>
+    <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    </CustomBuildBeforeTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -67,8 +71,29 @@
       <AdditionalLibraryDirectories>C:\Program Files (x86)\pl\lib;$(DXSDK_DIR)Lib\x86;</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(OutDir)$(ProjectName).exe ..\Bin\dizzy_d.exe</Command>
+      <Command>copy /B $(OutDir)$(ProjectName).exe+$(OutDir)$(ProjectName).prc ..\Bin\dizzy_d.exe</Command>
     </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
+      <Outputs>
+      </Outputs>
+      <Inputs>
+      </Inputs>
+    </CustomBuildStep>
+    <CustomBuildStep />
+    <CustomBuild>
+      <Command>"c:\Program Files (x86)\pl\bin\swipl.exe" -q --stand_alone=true  -o $(OutDir)$(ProjectName).prc -c %(FullPath)</Command>
+    </CustomBuild>
+    <CustomBuild>
+      <Outputs>$(OutDir)$(ProjectName).prc</Outputs>
+    </CustomBuild>
+    <CustomBuild>
+      <AdditionalInputs>scripts\action.pl;scripts\ai.pl;scripts\brush.pl;scripts\def.pl;scripts\dialog.pl;scripts\file.pl;scripts\game.pl;scripts\gamedef.pl;scripts\handlers.pl;scripts\inventory.pl;scripts\menu.pl;scripts\message.pl;scripts\movement.pl;scripts\obj.pl;scripts\player.pl;scripts\roomprops.pl;scripts\sound.pl;scripts\start.pl;scripts\update.pl;scripts\util.pl</AdditionalInputs>
+      <Message>Build Prolog State</Message>
+    </CustomBuild>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -92,8 +117,14 @@
       <AdditionalDependencies>dinput8.lib;dsound.lib;dxguid.lib;%(AdditionalDependencies);libswipl.dll.a</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(OutDir)$(ProjectName).exe ..\Bin\dizzy.exe</Command>
+      <Command>copy /B $(OutDir)$(ProjectName).exe+$(OutDir)$(ProjectName).prc ..\Bin\dizzy.exe</Command>
     </PostBuildEvent>
+    <CustomBuild>
+      <Message>Build Prolog State</Message>
+      <Outputs>$(OutDir)$(ProjectName).prc</Outputs>
+      <AdditionalInputs>scripts\action.pl;scripts\ai.pl;scripts\brush.pl;scripts\def.pl;scripts\dialog.pl;scripts\file.pl;scripts\game.pl;scripts\gamedef.pl;scripts\handlers.pl;scripts\inventory.pl;scripts\menu.pl;scripts\message.pl;scripts\movement.pl;scripts\obj.pl;scripts\player.pl;scripts\roomprops.pl;scripts\sound.pl;scripts\start.pl;scripts\update.pl;scripts\util.pl</AdditionalInputs>
+      <Command>"c:\Program Files (x86)\pl\bin\swipl.exe" -q --stand_alone=true  -o $(OutDir)$(ProjectName).prc -c %(FullPath)</Command>
+    </CustomBuild>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DizApp.cpp" />
@@ -128,6 +159,30 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Game.ico" />
+    <None Include="scripts\action.pl" />
+    <None Include="scripts\ai.pl" />
+    <None Include="scripts\brush.pl" />
+    <None Include="scripts\def.pl" />
+    <None Include="scripts\dialog.pl" />
+    <CustomBuild Include="scripts\dizzy.pl">
+      <FileType>Document</FileType>
+    </CustomBuild>
+    <None Include="scripts\file.pl" />
+    <None Include="scripts\game.pl" />
+    <None Include="scripts\gamedef.pl" />
+    <None Include="scripts\handlers.pl" />
+    <None Include="scripts\inventory.pl" />
+    <None Include="scripts\menu.pl" />
+    <None Include="scripts\message.pl" />
+    <None Include="scripts\movement.pl" />
+    <None Include="scripts\obj.pl" />
+    <None Include="scripts\player.pl" />
+    <None Include="scripts\roomprops.pl" />
+    <None Include="scripts\sound.pl" />
+    <None Include="scripts\start.pl" />
+    <None Include="scripts\test.pl" />
+    <None Include="scripts\update.pl" />
+    <None Include="scripts\util.pl" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Game.rc" />

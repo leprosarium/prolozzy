@@ -1,10 +1,5 @@
 :-module(inventory, [inv/1, reset/1, count/1, add/1, sub/1, clear/0, find/2, hasItem/1]).
 
-
-append_d(A-[Al|B]+Al, B-C+Bl, A-C+Bl).
-
-last_d(L, _-_+L).
-
 inv(List) :-
 	findall(I, recorded(inventory, I), List).
 

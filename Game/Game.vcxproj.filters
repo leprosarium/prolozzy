@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="DizApp.cpp" />
+    <ClCompile Include="DizCfg.cpp" />
+    <ClCompile Include="DizDebug.cpp" />
+    <ClCompile Include="DizGame.cpp" />
+    <ClCompile Include="DizMap.cpp" />
+    <ClCompile Include="DizPaint.cpp" />
+    <ClCompile Include="DizPlayer.cpp" />
+    <ClCompile Include="DizScript.cpp" />
+    <ClCompile Include="DizSound.cpp" />
+    <ClCompile Include="Game.cpp" />
+    <ClCompile Include="StdAfx.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DizApp.h" />
+    <ClInclude Include="DizCfg.h" />
+    <ClInclude Include="DizDebug.h" />
+    <ClInclude Include="DizDef.h" />
+    <ClInclude Include="DizGame.h" />
+    <ClInclude Include="DizMap.h" />
+    <ClInclude Include="DizPaint.h" />
+    <ClInclude Include="DizPlayer.h" />
+    <ClInclude Include="DizScript.h" />
+    <ClInclude Include="DizSound.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="SWI-cpp-m.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Game.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Game.ico" />
+    <None Include="scripts\action.pl">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\dialog.pl">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\ai.pl">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\brush.pl">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\def.pl">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\file.pl">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\game.pl">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\gamedef.pl">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\player.pl">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\handlers.pl">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\inventory.pl">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\menu.pl">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\message.pl">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\movement.pl">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\obj.pl">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\roomprops.pl">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\start.pl">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\sound.pl">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\test.pl">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\update.pl">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\util.pl">
+      <Filter>scripts</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="scripts">
+      <UniqueIdentifier>{bd7be407-41c2-4a72-8604-dc5d8d5a5daa}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="scripts\dizzy.pl">
+      <Filter>scripts</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

@@ -55,8 +55,6 @@ bool cDizScript::Init()
 {
 	guard(cDizScript::Init)
 
-	bool ok = Consult();
-
 	module = PL_new_module(PL_new_atom("user"));
 	_event= PL_pred(PL_new_functor(PL_new_atom("event"), 1), PL_new_module(PL_new_atom("handlers")));
 
@@ -96,35 +94,6 @@ void cDizScript::Start()
 void cDizScript::Update()
 {
 	guard(cDizScript::Update)
-	unguard()
-}
-
-bool cDizScript::Consult()
-{
-	PlFrame fr;
-	bool ok = true;
-	D9_LogStore(true);
-	try
-	{
-		ok = PlCall("consult", PlTerm("Data/Scripts/dizzy")) == TRUE;
-	}
-	catch(const PlException & e)
-	{
-		dlog("Consult exception: %s", static_cast<LPCSTR>(e));
-		ok = false;
-	}
-	if(!ok)
-		sys_msgbox( E9_GetHWND(), D9_LogGetBuffer(), "DizzyAGE Consult Error", MB_OK );
-	D9_LogStore(false);
-	return ok;
-}
-
-bool cDizScript::Reload()
-{
-	guard(cDizScript::Reload)
-	Consult();
-	dlog(LOGAPP,"Script reloaded.\n");
-	return true;
 	unguard()
 }
 

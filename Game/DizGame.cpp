@@ -442,7 +442,7 @@ bool cDizGame::CheckVersion()
 	guard(CheckVersion)
 	// requested version must be in the folowing formats: 2.0, 2.01, 2.01b, etc
 	// the match is done on first 2 digits (2.0)
-	char* reqv = g_cfg.GetInfoValue("dizzyage_version");
+	const char* reqv = g_cfg.GetInfoValue("dizzyage_version");
 	char* engv = GAME_VERSION;
 	if(strlen(reqv)>=3) // enough digits
 	{

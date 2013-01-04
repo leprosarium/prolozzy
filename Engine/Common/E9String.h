@@ -342,17 +342,17 @@ inline void cStr::Realloc(int nSize)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Parsing utils
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-char*	parser_skipchar( char* buffer, char* charlist, int& parsedsize );		// skip any of those chars
-char*	parser_skiptochar( char* buffer, char* charlist, int& parsedsize );		// skip until one of those chars
-char*	parser_skipline( char* buffer, int& parsedsize );
-char*	parser_skipspace( char* buffer, int& parsedsize );
-char*	parser_skiptotoken( char* buffer, char* token, int& parsedsize );		// skip all until token find
-BOOL	parser_readtoken( char* buffer, char* token, int& parsedsize );
-BOOL	parser_readword( char* buffer, char* value, int valuesize, int& parsedsize );
-BOOL	parser_readline( char* buffer, char* value, int valuesize, int& parsedsize );
-BOOL	parser_readvarstr( char* buffer, char* name, char* value, int valuesize, int& parsedsize );
-BOOL	parser_readvarint( char* buffer, char* name, int* value, int& parsedsize );
-BOOL	parser_readvarfloat( char* buffer, char* name, float* value, int& parsedsize );
+const char*	parser_skipchar( const char* buffer, const char* charlist, int& parsedsize );		// skip any of those chars
+const char*	parser_skiptochar( const char* buffer, const char* charlist, int& parsedsize );		// skip until one of those chars
+const char*	parser_skipline( const char* buffer, int& parsedsize );
+const char*	parser_skipspace( const char* buffer, int& parsedsize );
+const char*	parser_skiptotoken( const char* buffer, const char* token, int& parsedsize );		// skip all until token find
+BOOL	parser_readtoken( const char* buffer, const char* token, int& parsedsize );
+BOOL	parser_readword( const char* buffer, char* value, int valuesize, int& parsedsize );
+BOOL	parser_readline( const char* buffer, char* value, int valuesize, int& parsedsize );
+BOOL	parser_readvarstr( const char* buffer, const char* name, char* value, int valuesize, int& parsedsize );
+BOOL	parser_readvarint( const char* buffer, const char* name, int* value, int& parsedsize );
+BOOL	parser_readvarfloat( const char* buffer, const char* name, float* value, int& parsedsize );
 void	parser_trimbackspace( char* buffer, int& pos );							// cuts end spaces, and updates pos (pos=strlen(buffer))
 
 #endif

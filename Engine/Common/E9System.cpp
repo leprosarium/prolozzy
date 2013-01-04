@@ -59,7 +59,7 @@ BOOL ini_getchr( char* file, char* group, char* key, char* value )
 	unguard()
 }
 
-BOOL ini_getint( char* file, char* group, char* key, int* value )
+BOOL ini_getint( const char* file, char* group, char* key, int* value )
 {
 	guard(ini_getint)
 	_GETPRIVATEPROFILEINT( int, "%i" );
@@ -126,7 +126,7 @@ void ini_setbin( char* file, char* group, char* key, void* value, int size )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Files
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-char* file_getfullpath( char* file )
+const char* file_getfullpath( const char* file )
 {
 	guard(file_getfullpath)
 	static char path[256];

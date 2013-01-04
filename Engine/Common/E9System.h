@@ -88,7 +88,7 @@ inline	void		sys_releasesemaphore( HSEMAPHORE semaphore )					{ ReleaseSemaphore
 //	 ret = ini_getint( file_getfullpath("test.ini"), "TEST", "MY_INT", &my_int );
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL	ini_getchr	( char* file, char* group, char* key, char* value );
-BOOL	ini_getint	( char* file, char* group, char* key, int* value );
+BOOL	ini_getint	( const char* file, char* group, char* key, int* value );
 BOOL	ini_getflt	( char* file, char* group, char* key, float* value );
 BOOL	ini_getstr	( char* file, char* group, char* key, char* value, int size );	// size include space for eos
 BOOL	ini_getbin	( char* file, char* group, char* key, void* value, int size );
@@ -107,7 +107,7 @@ void	ini_setbin	( char* file, char* group, char* key, void* value, int size );
 #define	FILE_FINDREC		(1<<1)								// request to go recursive on found directories
 typedef void (*file_ffcallback) ( char* filepath, BOOL dir );	// filepath=found file including requested path, dir=1 if filepath is a directory
 
-char*	file_getfullpath	( char* file );
+const char*	file_getfullpath	( const char* file );
 char*	file_path2file		( char* path );
 int		file_path2dir		( char* path );
 char*	file_path2ext		( char* path );

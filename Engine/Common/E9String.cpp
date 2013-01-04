@@ -136,7 +136,7 @@ void cStr::Del(int nIndex)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Parsing utils
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-char* parser_skipchar( char* buffer, char* charlist, int& parsedsize )
+const char* parser_skipchar( const char* buffer, const char* charlist, int& parsedsize )
 {
 	guard(parser_skipchar);
 	parsedsize = 0;
@@ -158,7 +158,7 @@ char* parser_skipchar( char* buffer, char* charlist, int& parsedsize )
 	unguard();
 }
 
-char* parser_skiptochar( char* buffer, char* charlist, int& parsedsize )
+const char* parser_skiptochar( const char* buffer, const char* charlist, int& parsedsize )
 {
 	guard(parser_skiptochar);
 	parsedsize = 0;
@@ -180,10 +180,10 @@ char* parser_skiptochar( char* buffer, char* charlist, int& parsedsize )
 	unguard();
 }
 
-char* parser_skipline( char* buffer, int& parsedsize )
+const char* parser_skipline( const char* buffer, int& parsedsize )
 {
 	guard(parser_skipline);
-	char* bufferstart = buffer;
+	const char* bufferstart = buffer;
 	buffer = parser_skiptochar(buffer,"\n\r", parsedsize);
 	buffer = parser_skipchar(buffer,"\n\r", parsedsize);
 	parsedsize = (int)(intptr)(buffer-bufferstart);
@@ -192,14 +192,14 @@ char* parser_skipline( char* buffer, int& parsedsize )
 }
 
 
-char* parser_skipspace( char* buffer, int& parsedsize )
+const char* parser_skipspace( const char* buffer, int& parsedsize )
 {
 	guard(parser_skipspace);
 	return parser_skipchar(buffer," \t\r\n",parsedsize);
 	unguard();
 }
 
-char* parser_skiptotoken( char* buffer, char* token, int& parsedsize )
+const char* parser_skiptotoken( const char* buffer, const char* token, int& parsedsize )
 {
 	guard(parser_skiptotoken);
 	parsedsize=0;
@@ -216,7 +216,7 @@ char* parser_skiptotoken( char* buffer, char* token, int& parsedsize )
 	unguard();
 }
 
-BOOL parser_readtoken( char* buffer, char* token, int& parsedsize )
+BOOL parser_readtoken( const char* buffer, const char* token, int& parsedsize )
 {
 	guard(parser_readtoken);
 	parsedsize=0;
@@ -230,7 +230,7 @@ BOOL parser_readtoken( char* buffer, char* token, int& parsedsize )
 	unguard();
 }
 
-BOOL parser_readword( char* buffer, char* value, int valuesize, int& parsedsize )
+BOOL parser_readword( const char* buffer, char* value, int valuesize, int& parsedsize )
 {
 	guard(parser_readword);
 	parsedsize=0;
@@ -246,7 +246,7 @@ BOOL parser_readword( char* buffer, char* value, int valuesize, int& parsedsize 
 	unguard();
 }
 
-BOOL parser_readline( char* buffer, char* value, int valuesize, int& parsedsize )
+BOOL parser_readline( const char* buffer, char* value, int valuesize, int& parsedsize )
 {
 	guard(parser_readline);
 	int read=0;
@@ -274,10 +274,10 @@ BOOL parser_readline( char* buffer, char* value, int valuesize, int& parsedsize 
 	unguard();
 }
 
-BOOL parser_readvarstr( char* buffer, char* name, char* value, int valuesize, int& parsedsize )
+BOOL parser_readvarstr( const char* buffer, const char* name, char* value, int valuesize, int& parsedsize )
 {
 	guard(parser_readvarstr);
-	char* bufferstart = buffer;
+	const char* bufferstart = buffer;
 	
 	buffer=parser_skipspace(buffer,parsedsize);
 
@@ -299,10 +299,10 @@ BOOL parser_readvarstr( char* buffer, char* name, char* value, int valuesize, in
 	unguard();
 }
 
-BOOL parser_readvarint( char* buffer, char* name, int* value, int& parsedsize )
+BOOL parser_readvarint( const char* buffer, const char* name, int* value, int& parsedsize )
 {
 	guard(parser_readvarint);
-		char* bufferstart = buffer;
+	const char* bufferstart = buffer;
 	
 	buffer=parser_skipspace(buffer,parsedsize);
 
@@ -329,10 +329,10 @@ BOOL parser_readvarint( char* buffer, char* name, int* value, int& parsedsize )
 	unguard();
 }
 
-BOOL parser_readvarfloat( char* buffer, char* name, float* value, int& parsedsize )
+BOOL parser_readvarfloat( const char* buffer, const char* name, float* value, int& parsedsize )
 {
 	guard(parser_readvarfloat);
-		char* bufferstart = buffer;
+	const char* bufferstart = buffer;
 	
 	buffer=parser_skipspace(buffer,parsedsize);
 

@@ -7,7 +7,7 @@
 
 cDizCfg g_cfg;
 
-char* GetIniFile()
+const char* GetIniFile()
 {
 	static char name[64] = "dizzy.ini";
 	char apppath[MAX_PATH];
@@ -27,7 +27,7 @@ char* GetPakFile()
 	return name;
 }
 
-char* GetLogFile()
+const char* GetLogFile()
 {
 	static char name[64] = "dizzy.log";
 	char apppath[MAX_PATH];
@@ -222,11 +222,11 @@ void cDizCfg::LoadRenderCfg( r9Cfg& cfg, int& api )
 	unguard();
 }
 
-char* cDizCfg::GetInfoValue( char* name )
+const char* cDizCfg::GetInfoValue( const char* name )
 {
 	guard(cDizCfg::GetInfoValue);
 	int p;
-	char* sz;
+	const char* sz;
 	static char szret[128];
 	szret[0]=0;
 	if(m_info==NULL) return szret;

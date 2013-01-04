@@ -15,9 +15,9 @@
 
 struct r9Cfg;
 
-char*	GetIniFile();		// gets .ini file name, based on the executable's name
+const char*	GetIniFile();		// gets .ini file name, based on the executable's name
 char*	GetPakFile();		// gets .pak file name, based on the executable's name
-char*	GetLogFile();		// gets .log file name, based on the executable's name
+const char*	GetLogFile();		// gets .log file name, based on the executable's name
 
 class cDizCfg
 {
@@ -29,7 +29,7 @@ public:
 	bool	Save			();
 
 	void	LoadRenderCfg	( r9Cfg& cfg, int& api );
-	char*	GetInfoValue	( char* name );	// returns static info from the info file; line format: "name = value"
+	const char*	GetInfoValue	( const char* name );	// returns static info from the info file; line format: "name = value"
 
 	int		m_scale;						// scale (0=full)
 	int		m_volfx;						// percent

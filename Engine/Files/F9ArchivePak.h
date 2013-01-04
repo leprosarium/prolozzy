@@ -42,13 +42,13 @@ public:
 						f9ArchivePak	();
 virtual					~f9ArchivePak	();
 						
-virtual	int				Open			( char *name, int mode = F9_READ, char* password=NULL );
+virtual	int				Open			( const char *name, int mode = F9_READ, char* password=NULL );
 virtual	int				Close			();
 						
-virtual	f9File*	 		FileOpen		( char* name, int mode = F9_READ );
+virtual	f9File*	 		FileOpen		( const char* name, int mode = F9_READ );
 virtual	int				FileClose		( f9File* file );
 virtual	int				FileCount		()									{ return m_fat.Size(); }
-virtual	int				FileFind		( char* name );
+virtual	int				FileFind		( const char* name );
 virtual	char*			FileGetName		( int idx );
 virtual	dword			FileGetSize		( int idx );
 inline	f9PakFileInfo*	FileGetInfo		( int idx )							{ return m_fat.Get(idx); }

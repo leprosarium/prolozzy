@@ -29,7 +29,7 @@ class a9Codec
 public:
 					a9Codec();
 virtual				~a9Codec()								{};
-virtual	int			Open( char* name )						{ return A9_FAIL; }
+virtual	int			Open( const char* name )				{ return A9_FAIL; }
 virtual	int			BeginRender( int pos, int loop )		{ return A9_FAIL; }
 virtual int			Render( byte* buffer, int size )		{ return 0; }
 virtual	int			EndRender()								{ return A9_FAIL; }
@@ -66,14 +66,14 @@ struct a9WavHeader
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // INTERFACE
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-		int			A9_CodecFind( char* filename );								// find a codec that can play this file
+		int			A9_CodecFind( const char* filename );						// find a codec that can play this file
 		int			A9_CodecInit( int type );									// initialize a codec library
 		int			A9_CodecDone( int type );									// deinitialize a codec library
 		void		A9_CodecInitAll();											// initialize all codec libraries
 		void		A9_CodecDoneAll();											// deinitialize all codec libraries
 		A9CODEC		A9_CodecCreate( int type );									// creates a codec by type
 		void		A9_CodecDestroy( A9CODEC codec );							// destroys a codec
-inline	int			A9_CodecOpen( A9CODEC codec, char* name )					{ guardfast(A9_CodecOpen);			sassert(codec); return codec->Open(name); unguardfast(); }
+inline	int			A9_CodecOpen( A9CODEC codec, const char* name )				{ guardfast(A9_CodecOpen);			sassert(codec); return codec->Open(name); unguardfast(); }
 inline	int			A9_CodecBeginRender( A9CODEC codec, int pos, int loop )		{ guardfast(A9_CodecBeginRender);	sassert(codec); return codec->BeginRender(pos,loop); unguardfast(); }
 inline	int			A9_CodecRender( A9CODEC codec, byte* buffer, int size )		{ guardfast(A9_CodecRender); 		sassert(codec); return codec->Render(buffer,size); unguardfast(); }
 inline	int			A9_CodecEndRender( A9CODEC codec )							{ guardfast(A9_CodecEndRender); 	sassert(codec); return codec->EndRender(); unguardfast(); }

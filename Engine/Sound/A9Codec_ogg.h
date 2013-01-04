@@ -31,7 +31,7 @@ virtual				~a9Codec_ogg();
 static	int			Init();
 static	int			Done();	
 
-virtual	int			Open( char* name );
+virtual	int			Open( const char* name );
 virtual	int			BeginRender( int pos, int loop );
 virtual int			Render( byte* buffer, int size );
 virtual	int			EndRender();

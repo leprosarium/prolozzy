@@ -105,16 +105,16 @@ void	ini_setbin	( const char* file, const char* group, const char* key, void* va
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #define	FILE_FINDDIR		(1<<0)								// request directories list
 #define	FILE_FINDREC		(1<<1)								// request to go recursive on found directories
-typedef void (*file_ffcallback) ( char* filepath, BOOL dir );	// filepath=found file including requested path, dir=1 if filepath is a directory
+typedef void (*file_ffcallback) ( const char* filepath, BOOL dir );	// filepath=found file including requested path, dir=1 if filepath is a directory
 
 const char*	file_getfullpath	( const char* file );
-char*	file_path2file		( char* path );
-int		file_path2dir		( char* path );
-char*	file_path2ext		( char* path );
-char	file_path2drive		( char* path );
-void	file_pathsplit		( char* path, char* drive, char* dir, char* fname, char* ext );	// bufers must have enought space _MAX_DRIVE, _MAX_DIR, _MAX_FNAME, _MAX_EXT
-void	file_findfiles		( char* path, file_ffcallback ffcallback, dword flags );		// path must include terminal '\'; use FINDFILE flags
-void	file_delete			( char* path );
+const char*	file_path2file		( const char* path );
+int		file_path2dir		( const char* path );
+const char*	file_path2ext		( const char* path );
+char	file_path2drive		( const char* path );
+void	file_pathsplit		( const char* path, char* drive, char* dir, char* fname, char* ext );	// bufers must have enought space _MAX_DRIVE, _MAX_DIR, _MAX_FNAME, _MAX_EXT
+void	file_findfiles		( const char* path, file_ffcallback ffcallback, dword flags );		// path must include terminal '\'; use FINDFILE flags
+void	file_delete			( const char* path );
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

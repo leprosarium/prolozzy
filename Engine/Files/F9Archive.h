@@ -16,15 +16,15 @@ public:
 						f9Archive		();
 virtual					~f9Archive		();
 						
-virtual	int				Open			( char *name, int mode = F9_READ, char* password=NULL );
+virtual	int				Open			( const char *name, int mode = F9_READ, char* password=NULL );
 virtual	int				Close			();
 inline	BOOL			IsOpen			()									{ return m_open; }
 						
 // file serve			
-virtual	f9File*			FileOpen		( char* name, int mode = F9_READ )	{ return NULL; }
+virtual	f9File*			FileOpen		( const char* name, int mode = F9_READ )	{ return NULL; }
 virtual	int				FileClose		( f9File* file )					{ return F9_FAIL; }
 virtual	int				FileCount		()									{ return 0; }
-virtual	int				FileFind		( char* name )						{ return -1; }		// get arc file's index in the archive
+virtual	int				FileFind		( const char* name )				{ return -1; }		// get arc file's index in the archive
 virtual	char*			FileGetName		( int idx )							{ return NULL; }	// get arc file's name
 virtual	dword			FileGetSize		( int idx )							{ return 0; }		// get arc file's size
 

@@ -13,17 +13,17 @@ const char* GetIniFile()
 	char apppath[MAX_PATH];
 	if(!GetModuleFileName( NULL, apppath, MAX_PATH )) return name;
 	strcpy(name,file_path2file(apppath));
-	strcpy(file_path2ext(name),"ini");
+	strcpy(const_cast<char *>(file_path2ext(name)),"ini");
 	return name;
 }
 
-char* GetPakFile()
+const char* GetPakFile()
 {
 	static char name[64] = "dizzy.pak";
 	char apppath[MAX_PATH];
 	if(!GetModuleFileName( NULL, apppath, MAX_PATH )) return name;
 	strcpy(name,file_path2file(apppath));
-	strcpy(file_path2ext(name),"pak");
+	strcpy(const_cast<char *>(file_path2ext(name)),"pak");
 	return name;
 }
 
@@ -33,7 +33,7 @@ const char* GetLogFile()
 	char apppath[MAX_PATH];
 	if(!GetModuleFileName( NULL, apppath, MAX_PATH )) return name;
 	strcpy(name,file_path2file(apppath));
-	strcpy(file_path2ext(name),"log");
+	strcpy(const_cast<char *>(file_path2ext(name)),"log");
 	return name;
 }
 

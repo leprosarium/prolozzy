@@ -18,7 +18,7 @@ f9FileRes::~f9FileRes()
 	unguard();
 }
 
-int f9FileRes::Open( char* name, int mode )
+int f9FileRes::Open( const char* name, int mode )
 {
 	guard(f9FileRes::Open);
 	if(IsOpen()) Close();

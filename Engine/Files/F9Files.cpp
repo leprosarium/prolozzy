@@ -37,7 +37,7 @@ void f9Files::Done()
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-int f9Files::ArchiveOpen( char* name, int mode, char* password )
+int f9Files::ArchiveOpen( const char* name, int mode, char* password )
 {
 	guard(f9Files::ArchiveOpen);
 
@@ -83,7 +83,7 @@ f9Archive* f9Files::ArchiveGet( int idx )
 	unguard();
 }
 
-int f9Files::ArchiveFind( char* name )
+int f9Files::ArchiveFind( const char* name )
 {
 	guard(f9Files::ArchiveFind);
 	for(int i=0; i<m_archives.Size(); i++)
@@ -93,7 +93,7 @@ int f9Files::ArchiveFind( char* name )
 	unguard();
 }
 
-int f9Files::ArchiveFindContaining( char* filename )
+int f9Files::ArchiveFindContaining( const char* filename )
 {
 	guard(f9Files::GetArchiveContaining);
 	if(m_archives.Size()==0) return -1;
@@ -104,7 +104,7 @@ int f9Files::ArchiveFindContaining( char* filename )
 	unguard();
 }
 
-int f9Files::ArchiveFindContainingEx( char* path )
+int f9Files::ArchiveFindContainingEx( const char* path )
 {
 	guard(f9Files::ArchiveFindContainingEx);
 	if(m_archives.Size()==0) return -1;
@@ -115,7 +115,7 @@ int f9Files::ArchiveFindContainingEx( char* path )
 	{
 		if(m_archives.Get(i)==NULL) continue;
 		char* arcname = m_archives.Get(i)->m_name;	sassert(arcname);
-		char* sz = file_path2file( arcname );		sassert(sz);
+		const char* sz = file_path2file( arcname );		sassert(sz);
 		int ap =(int)(sz - arcname);
 		if( ap >= k ) continue; // file path is smaller than archive dir !
 		
@@ -152,7 +152,7 @@ char* f9Files::ArchiveGetFileName( int idx, int fileidx )
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-f9File* f9Files::FileOpen( char* name, int mode )
+f9File* f9Files::FileOpen( const char* name, int mode )
 {
 	guard(f9Files::FileOpen);
 	if( name==NULL ) return NULL;
@@ -166,7 +166,7 @@ f9File* f9Files::FileOpen( char* name, int mode )
 		{
 			f9Archive* arc;
 			arc = ArchiveGet(idx); sassert(arc);
-			char* sz = file_path2file(arc->m_name); sassert(sz);
+			const char* sz = file_path2file(arc->m_name); sassert(sz);
 			int ap = (int)( sz - arc->m_name );
 			return arc->FileOpen( name+ap, mode ); // we open the path from inside the archive
 		}

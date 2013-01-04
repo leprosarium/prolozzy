@@ -61,7 +61,7 @@ int a9Codec_dumb::Done()
 	unguard();
 }
 
-int	a9Codec_dumb::Open( char* name )
+int	a9Codec_dumb::Open( const char* name )
 {
 	guard(a9Codec_dumb::Open);
 	if(m_status!=A9_CODEC_CLOSED) return A9_FAIL;

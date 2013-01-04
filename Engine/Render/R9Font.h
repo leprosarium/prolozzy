@@ -48,7 +48,7 @@ virtual				~r9Font();
 
 // load
 virtual	BOOL		Create( int chrw, int chrh, int cols=16, int start=32, int count=96 ); // create from a table with given cel size and columns (fixed char size)
-virtual	BOOL		Create( char* fontfile );							// create from a .fnt file
+virtual	BOOL		Create( const char* fontfile );						// create from a .fnt file
 virtual void		Destroy();											// destroy font (not the texture!)
 
 // config

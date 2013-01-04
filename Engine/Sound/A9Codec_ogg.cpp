@@ -55,7 +55,7 @@ int a9Codec_ogg::Done()
 	unguard();
 }
 
-int	a9Codec_ogg::Open( char* name )
+int	a9Codec_ogg::Open( const char* name )
 {
 	guard(a9Codec_ogg::Open);
 	if(m_status!=A9_CODEC_CLOSED) return A9_FAIL;

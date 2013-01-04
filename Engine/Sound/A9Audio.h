@@ -84,7 +84,7 @@ virtual	int				Get( int prop );											// get driver prop
 virtual	void			Set( int prop, int val );									// set driver prop
 virtual	void			Update();													// update driver
 
-virtual A9BUFFERPROTO	BufferPrecache( char* filename );							// create a buffer proto, for faster creation of the buffer at runtime (file decompressed in memory)
+virtual A9BUFFERPROTO	BufferPrecache( const char* filename );							// create a buffer proto, for faster creation of the buffer at runtime (file decompressed in memory)
 virtual void			BufferDeprecache( A9BUFFERPROTO proto );					// destroy a buffer proto
 virtual	A9BUFFER		BufferCreate( char* filename, int flags = A9_FLAG_VOLUME );	// create buffer
 virtual	A9BUFFER		BufferCreateFromProto( A9BUFFERPROTO proto, int flags = A9_FLAG_VOLUME );			// create buffer from proto
@@ -98,7 +98,7 @@ virtual	int				BufferGetPosition( A9BUFFER buffer );						// get Buffer position
 virtual	void			BufferSetPosition( A9BUFFER buffer, int pos );				// set Buffer position
 inline	BOOL			BufferIsPlaying( A9BUFFER buffer )							{ return BufferGet(buffer,A9_STATUS); }
 
-virtual	A9STREAM		StreamCreate( char* filename, int flags = A9_FLAG_VOLUME ); // create stream
+virtual	A9STREAM		StreamCreate( const char* filename, int flags = A9_FLAG_VOLUME ); // create stream
 virtual	void			StreamDestroy( A9STREAM stream );							// destroy stream
 virtual int				StreamPlay( A9STREAM stream, BOOL loop=FALSE );				// play stream
 virtual int				StreamStop( A9STREAM stream );								// stop stream
@@ -129,7 +129,7 @@ inline	int				A9_Get( int prop )												{ guardfast(A9_AudioGet);			sassert(
 inline	void			A9_Set( int prop, int val )										{ guardfast(A9_AudioSet);			sassert(a9_audio); a9_audio->Set(prop,val); unguardfast(); }
 inline	void			A9_Update()														{ guardfast(A9_AudioSet);			sassert(a9_audio); a9_audio->Update(); unguardfast(); }
 
-inline	A9BUFFERPROTO	A9_BufferPrecache( char* filename )								{ guardfast(A9_BufferCreate);		sassert(a9_audio); return a9_audio->BufferPrecache(filename); unguardfast(); }
+inline	A9BUFFERPROTO	A9_BufferPrecache( const char* filename )								{ guardfast(A9_BufferCreate);		sassert(a9_audio); return a9_audio->BufferPrecache(filename); unguardfast(); }
 inline	void			A9_BufferDeprecache( A9BUFFERPROTO proto )						{ guardfast(A9_BufferCreate);		sassert(a9_audio); a9_audio->BufferDeprecache(proto); unguardfast(); }
 inline	A9BUFFER		A9_BufferCreate( char* filename, int flags=A9_FLAG_VOLUME )		{ guardfast(A9_BufferCreate);		sassert(a9_audio); return a9_audio->BufferCreate(filename,flags); unguardfast(); }
 inline	A9BUFFER		A9_BufferCreateFromProto( A9BUFFERPROTO proto, int flags = A9_FLAG_VOLUME )					{ guardfast(A9_BufferCreate);		sassert(a9_audio); return a9_audio->BufferCreateFromProto(proto,flags); unguardfast(); }
@@ -143,7 +143,7 @@ inline	int				A9_BufferGetPosition( A9BUFFER buffer )							{ guardfast(A9_Buffe
 inline	void			A9_BufferSetPosition( A9BUFFER buffer, int pos )				{ guardfast(A9_BufferSetPosition);	sassert(a9_audio); a9_audio->BufferSetPosition(buffer,pos); unguardfast(); }
 inline	BOOL			A9_BufferIsPlaying( A9BUFFER buffer )							{ guardfast(A9_BufferIsPlaying);	sassert(a9_audio); return a9_audio->BufferIsPlaying(buffer); unguardfast(); }
 
-inline	A9STREAM		A9_StreamCreate( char* filename, int flags=A9_FLAG_VOLUME )		{ guardfast(A9_StreamCreate);		sassert(a9_audio); return a9_audio->StreamCreate(filename,flags); unguardfast(); }
+inline	A9STREAM		A9_StreamCreate( const char* filename, int flags=A9_FLAG_VOLUME )		{ guardfast(A9_StreamCreate);		sassert(a9_audio); return a9_audio->StreamCreate(filename,flags); unguardfast(); }
 inline	void			A9_StreamDestroy( A9STREAM stream )								{ guardfast(A9_StreamDestroy);		sassert(a9_audio); a9_audio->StreamDestroy(stream); unguardfast(); }
 inline	int				A9_StreamPlay( A9STREAM stream, BOOL loop )						{ guardfast(A9_StreamPlay);			sassert(a9_audio); return a9_audio->StreamPlay(stream,loop); unguardfast(); }
 inline	int				A9_StreamStop( A9STREAM stream )								{ guardfast(A9_StreamStop);			sassert(a9_audio); return a9_audio->StreamStop(stream); unguardfast(); }

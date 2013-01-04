@@ -17,7 +17,7 @@ public:
 				f9FilePakZ	();
 virtual			~f9FilePakZ	();
 
-virtual	int		Open		( char* name, int mode );
+virtual	int		Open		( const char* name, int mode );
 virtual	int		Close		();
 virtual	int64	Read		( void* data, int64 size );
 virtual	int		Seek		( int64 offset, int origin = F9_SEEK_SET );

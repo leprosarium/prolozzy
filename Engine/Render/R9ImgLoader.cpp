@@ -34,7 +34,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // LOADER
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL R9_ImgLoadFile( char* name, r9Img* img )
+BOOL R9_ImgLoadFile( const char* name, r9Img* img )
 {
 	guard(R9_ImgLoadFile);
 	if(!name || !img || R9_ImgIsValid(img) ) return FALSE;
@@ -42,7 +42,7 @@ BOOL R9_ImgLoadFile( char* name, r9Img* img )
 
 	// type
 	int type = R9_IMG_UNKNOWN;
-	char* ext = file_path2ext(name);
+	const char* ext = file_path2ext(name);
 	if( stricmp(ext,"tga")==0 ) type = R9_IMG_TGA; else
 	if( stricmp(ext,"jpg")==0 ) type = R9_IMG_JPG; else
 	if( stricmp(ext,"png")==0 ) type = R9_IMG_PNG; // else...
@@ -71,7 +71,7 @@ BOOL R9_ImgSaveFile( char* name, r9Img* img )
 
 	// type
 	int type = R9_IMG_UNKNOWN;
-	char* ext = file_path2ext(name);
+	const char* ext = file_path2ext(name);
 	if( stricmp(ext,"png")==0 )	type = R9_IMG_PNG; else
 	if( stricmp(ext,"jpg")==0 ) type = R9_IMG_JPG; else
 	if( stricmp(ext,"tga")==0 )	type = R9_IMG_TGA; // else...
@@ -101,7 +101,7 @@ BOOL R9_ImgLoadHeader( char* name, r9Img* img )
 
 	// type
 	int type = R9_IMG_UNKNOWN;
-	char* ext = file_path2ext(name);
+	const char* ext = file_path2ext(name);
 	if( stricmp(ext,"tga")==0 ) type = R9_IMG_TGA; else
 	if( stricmp(ext,"jpg")==0 ) type = R9_IMG_JPG; else
 	if( stricmp(ext,"png")==0 ) type = R9_IMG_PNG; // else...

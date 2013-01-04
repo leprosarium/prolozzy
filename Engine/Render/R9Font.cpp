@@ -66,7 +66,7 @@ BOOL r9Font::Create( int chrw, int chrh, int cols, int start, int count )
 	unguard();
 }
 
-BOOL r9Font::Create( char* filename )
+BOOL r9Font::Create( const char* filename )
 {
 	guard(r9Font::Create);
 	

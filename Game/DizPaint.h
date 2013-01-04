@@ -156,7 +156,7 @@ public:
 	void Del(int idx);								// delete tile by index
 	int Find(int id) { IntIndex::iterator i = Index.find(id); return i != Index.end() ? i->second : -1; }
 	bool Load(char* path, int group = 0);			// load tiles from a path, and set the specified group
-	bool LoadFile(char* filepath, int group = 0);	// load a tile file
+	bool LoadFile(const char* filepath, int group = 0);	// load a tile file
 	void Unload(int group=0 );						// unload load tiles (destroy) from a specified group
 };
 
@@ -208,7 +208,7 @@ public:
 		cFont*			FontGet			( int idx )						{ if(0<=idx && idx<m_font.Size()) return m_font.Get(idx); else return NULL; }
 		void			FontDel			( int idx );
 		bool			FontLoad		( char* path, int group=0 );	// load fonts from a path and set the specified group
-		bool			FontLoadFile	( char* filepath, int group=0 );// load a font file
+		bool			FontLoadFile	( const char* filepath, int group=0 );// load a font file
 		void			FontUnload		( int group=0 );				// unload fonts (destroy) from the specified group
 		int				FontFind		( int id )						{ for(int i=0;i<m_font.Size();i++) if(m_font[i]->m_id==id) return i; return -1; }
 

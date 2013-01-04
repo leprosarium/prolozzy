@@ -18,7 +18,7 @@ f9FileDisk::~f9FileDisk()
 	unguard();
 }
 
-int f9FileDisk::Open( char* name, int mode )
+int f9FileDisk::Open( const char* name, int mode )
 {
 	guard(f9FileDisk::Open);
 	if(IsOpen()) Close();

@@ -46,7 +46,7 @@ public:
 				f9File		();
 virtual			~f9File		();
 								
-virtual	int		Open		( char* name, int mode )					{ return F9_FAIL; }
+virtual	int		Open		( const char* name, int mode )				{ return F9_FAIL; }
 virtual	int		Close		()											{ return F9_FAIL; }
 inline	BOOL	IsOpen		()											{ return m_open; }
 virtual	int64	Read		( void* data, int64 size )					{ return 0; }

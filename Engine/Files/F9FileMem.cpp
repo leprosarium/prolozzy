@@ -18,7 +18,7 @@ f9FileMem::~f9FileMem()
 	unguard();
 }
 
-int f9FileMem::Open( char* name, int mode )
+int f9FileMem::Open( const char* name, int mode )
 {
 	guard(f9FileMem::Open);
 	if(IsOpen()) Close();

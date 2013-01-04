@@ -33,7 +33,7 @@ int a9Codec_wav::Done()
 	unguard();
 }
 
-int	a9Codec_wav::Open( char* name )
+int	a9Codec_wav::Open( const char* name )
 {
 	guard(a9Codec_wav::Open);
 	if(m_status!=A9_CODEC_CLOSED) return A9_FAIL;

@@ -22,7 +22,7 @@ f9FilePakZ::~f9FilePakZ()
 	unguard();
 }
 
-int f9FilePakZ::Open( char* name, int mode )
+int f9FilePakZ::Open( const char* name, int mode )
 {
 	guard(f9FilePakZ::Open);
 	if(IsOpen()) Close();

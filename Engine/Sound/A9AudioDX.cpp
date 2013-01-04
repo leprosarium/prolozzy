@@ -482,7 +482,7 @@ void a9AudioDX::BufferSetPosition( A9BUFFER _buffer, int pos )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // STREAMS
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-int a9AudioDX::StreamPrecache( char* filename, A9STREAM _stream )
+int a9AudioDX::StreamPrecache( const char* filename, A9STREAM _stream )
 {
 	guard(a9AudioDX::StreamPrecache);
 	a9StreamDX* stream = (a9StreamDX*)_stream;
@@ -513,7 +513,7 @@ int a9AudioDX::StreamPrecache( char* filename, A9STREAM _stream )
 	unguard();
 }
 
-A9STREAM a9AudioDX::StreamCreate( char* filename, int flags )
+A9STREAM a9AudioDX::StreamCreate( const char* filename, int flags )
 {
 	guard(a9AudioDX::StreamCreate);
 	sassert(filename!=NULL);
@@ -529,7 +529,7 @@ A9STREAM a9AudioDX::StreamCreate( char* filename, int flags )
 	if(ret==A9_OK && stream->m_filemem)
 	{
 		// change the filename to point to the memory buffer
-		char* name = file_path2file(filename); sassert(name);
+		const char* name = file_path2file(filename); sassert(name);
 		filename = F9_MakeFileName(name, stream->m_filemem, stream->m_filesize );
 		if(filename==NULL) goto error; // fail
 	}

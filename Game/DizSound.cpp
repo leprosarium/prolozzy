@@ -109,7 +109,7 @@ bool cDizSound::isSupportedExt(const char * ext)
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // SAMPLES
 //////////////////////////////////////////////////////////////////////////////////////////////////
-bool cDizSound::SampleLoadFile( char* filepath, int group )
+bool cDizSound::SampleLoadFile( const char* filepath, int group )
 {
 	guard(cDizSound::SampleLoadFile)
 
@@ -165,7 +165,7 @@ bool cDizSound::SampleLoadFile( char* filepath, int group )
 	unguard()
 }
 
-void FFCallback_Sample( char* filepath, BOOL dir )
+void FFCallback_Sample( const char* filepath, BOOL dir )
 {
 	guard(FFCallback_Sample)
 	if(dir) return;
@@ -323,7 +323,7 @@ void cDizSound::SampleVolume( int volume )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // MUSIC
 //////////////////////////////////////////////////////////////////////////////////////////////////
-bool cDizSound::MusicLoadFile( char* filepath, int group )
+bool cDizSound::MusicLoadFile( const char* filepath, int group )
 {
 	guard(cDizSound::MusicLoadFile)
 	// check name and extension
@@ -366,7 +366,7 @@ bool cDizSound::MusicLoadFile( char* filepath, int group )
 	unguard()
 }
 
-void FFCallback_Music( char* filepath, BOOL dir )
+void FFCallback_Music( const char* filepath, BOOL dir )
 {
 	guard(FFCallback_Music)
 	if(dir) return;

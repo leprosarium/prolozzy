@@ -24,7 +24,7 @@ f9ArchivePak::~f9ArchivePak()
 	unguard();
 }
 
-int f9ArchivePak::Open( char *name, int mode, char* password )
+int f9ArchivePak::Open( const char *name, int mode, char* password )
 {
 	guard(f9ArchivePak::Open);
 	if(IsOpen()) Close();
@@ -56,7 +56,7 @@ int f9ArchivePak::Close()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // files serve
 //////////////////////////////////////////////////////////////////////////////////////////////////
-f9File* f9ArchivePak::FileOpen( char* name, int mode )
+f9File* f9ArchivePak::FileOpen( const char* name, int mode )
 {
 	guard(f9ArchivePak::FileOpen);
 	if(!IsOpen()) return NULL;
@@ -102,7 +102,7 @@ int f9ArchivePak::FileClose(f9File* file)
 	unguard();
 }
 
-int f9ArchivePak::FileFind( char* name )
+int f9ArchivePak::FileFind( const char* name )
 {
 	guard(f9ArchivePak::FileFind);
 	if(name==NULL) return -1;

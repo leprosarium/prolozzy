@@ -201,14 +201,14 @@ void Tiles::Done()
 	clear();
 }
 
-bool Tiles::LoadFile( char* filepath, int group )
+bool Tiles::LoadFile( const char* filepath, int group )
 {
 	guard(cDizPaint::TileLoadFile)
 	
 	// check file type (not counted if unaccepted); only TGA and PNG files accepted
-	char* ext = file_path2ext(filepath); if(!ext) return false;
+	const char* ext = file_path2ext(filepath); if(!ext) return false;
 	if( 0!=stricmp(ext,"tga") && 0!=strcmp(ext,"png") ) return false;
-	char* name = file_path2file(filepath); if(!name) return false;
+	const char* name = file_path2file(filepath); if(!name) return false;
 	
 	gstile_total++;
 
@@ -294,7 +294,7 @@ bool Tiles::LoadFile( char* filepath, int group )
 	unguard()
 }
 
-void FFCallback_Tile( char* filepath, BOOL dir )
+void FFCallback_Tile( const char* filepath, BOOL dir )
 {
 	guard(FFCallback_Tile)
 	if(dir) return;
@@ -987,13 +987,13 @@ int		gsfont_fail;			// status report on fonts failed to load
 int		gsfont_duplicates;		// status report on id duplicates
 int		gsfont_group;			// current font group
 
-bool cDizPaint::FontLoadFile( char* filepath, int group )
+bool cDizPaint::FontLoadFile( const char* filepath, int group )
 {
 	guard(cDizPaint::FontLoadFile)
 
 	// check file type (not counted if unaccepted);
-	char* name = file_path2file(filepath); if(!name) return false;
-	char* ext = file_path2ext(filepath); if(!ext) return false;
+	const char* name = file_path2file(filepath); if(!name) return false;
+	const char* ext = file_path2ext(filepath); if(!ext) return false;
 	if(0!=stricmp(ext,"fnt")) return false;
 	
 	gsfont_total++;
@@ -1041,7 +1041,7 @@ bool cDizPaint::FontLoadFile( char* filepath, int group )
 	unguard()
 }
 
-void FFCallback_Font( char* filepath, BOOL dir )
+void FFCallback_Font( const char* filepath, BOOL dir )
 {
 	guard(FFCallback_Font)
 	if(dir) return;

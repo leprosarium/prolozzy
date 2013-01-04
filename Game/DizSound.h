@@ -55,7 +55,7 @@ public:
 						
 		// samples		
 		bool				SampleLoad			( char* path, int group=0 );	// load samples from a path (protos)
-		bool				SampleLoadFile		( char* filepath, int group=0 );// load a sample file (proto)
+		bool				SampleLoadFile		( const char* filepath, int group=0 );// load a sample file (proto)
 		void				SampleUnload		( int group=0 );				// destroy all samples (proto)
 		int					SamplePlay			( PlAtom id, int loop=0 );		// play a proto sample; return voiceidx or -1 if failed
 		int					SamplePlaying		( int voiceidx );				// return sample id if playing or -1 if not playing
@@ -75,7 +75,7 @@ inline	int					SampleFind			( PlAtom id )						{ for(int i=0;i<m_sampleproto.Siz
 
 		// music
 		bool				MusicLoad			( char* path, int group=0 );	// load all musics from a path (protos)
-		bool				MusicLoadFile		( char* filename, int group=0 );// load a music file (proto)
+		bool				MusicLoadFile		( const char* filename, int group=0 );// load a music file (proto)
 		void				MusicUnload			( int group=0 );				// destroy all musics (proto)
 		void				MusicFade			( int out, int in );			// set fade values
 		int					MusicPlay			( PlAtom id, int start=0 );		// set a music to play next from a specified position; returns -1 if failed; don't necessarily plays at once

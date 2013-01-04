@@ -31,12 +31,12 @@ virtual				~f9Files		();
 		void		Done			();
 
 // archives serve
-		int			ArchiveOpen				( char* name, int mode = F9_READ, char* password=NULL );	// returning archive index
+		int			ArchiveOpen				( const char* name, int mode = F9_READ, char* password=NULL );	// returning archive index
 		void		ArchiveClose			( int idx );												// close an archive
 		f9Archive*	ArchiveGet				( int idx );												// get archive pointer
-		int			ArchiveFind				( char* name );												// return archive index or -1 if not found
-		int			ArchiveFindContaining	( char* filename );											// strictly look for the file name
-		int			ArchiveFindContainingEx	( char* path );												// try to fit path with the archive path and look for the rest
+		int			ArchiveFind				( const char* name );												// return archive index or -1 if not found
+		int			ArchiveFindContaining	( const char* filename );											// strictly look for the file name
+		int			ArchiveFindContainingEx	( const char* path );												// try to fit path with the archive path and look for the rest
 		int			ArchiveGetFileCount		( int idx );												// return number of files in an archive
 		char*		ArchiveGetFileName		( int idx, int fileidx );									// return a file's name in an archive
 
@@ -45,7 +45,7 @@ inline	void		ResourcesOpen			()										{ m_resources=1; } // open resources (f
 inline	void		ResourcesClose			()										{ m_resources=0; } // close resources (files will not be searched in resources)
 
 // files serve
-		f9File*		FileOpen		( char* name, int mode = F9_READ );				// open a file; with search in archives and other tricks
+		f9File*		FileOpen		( const char* name, int mode = F9_READ );		// open a file; with search in archives and other tricks
 		int			FileClose		( f9File* file );								// closes a file
 	
 public:
@@ -61,13 +61,13 @@ extern	f9Files*	f9_files;			// global instance
 		BOOL	F9_Init();
 		void	F9_Done();
 inline	BOOL	F9_IsReady()																	{ return f9_files!=NULL; }
-inline	int		F9_ArchiveOpen			( char* name, int mode=F9_READ, char* password=NULL )	{ guardfast(F9_ArchiveOpen);	sassert(f9_files); return f9_files->ArchiveOpen(name,mode,password); unguardfast(); }
+inline	int		F9_ArchiveOpen			( const char* name, int mode=F9_READ, char* password=NULL )	{ guardfast(F9_ArchiveOpen);	sassert(f9_files); return f9_files->ArchiveOpen(name,mode,password); unguardfast(); }
 inline	void	F9_ArchiveClose			( int idx )												{ guardfast(F9_ArchiveClose);	sassert(f9_files); f9_files->ArchiveClose(idx); unguardfast(); }
 inline	int		F9_ArchiveGetFileCount	( int idx )												{ guardfast(F9_ArchiveClose);	sassert(f9_files); return f9_files->ArchiveGetFileCount(idx); unguardfast(); }
 inline	char*	F9_ArchiveGetFileName	( int idx, int fileidx )								{ guardfast(F9_ArchiveClose);	sassert(f9_files); return f9_files->ArchiveGetFileName(idx,fileidx); unguardfast(); }
 inline	void	F9_ResourcesOpen		()														{ guardfast(F9_ResourcesOpen);	sassert(f9_files); f9_files->ResourcesOpen(); unguardfast(); }
 inline	void	F9_ResourcesClose		()														{ guardfast(F9_ResourcesClose);	sassert(f9_files); f9_files->ResourcesClose(); unguardfast(); }
-inline	F9FILE	F9_FileOpen				( char* name, int mode=F9_READ )						{ guardfast(F9_FileOpen);		sassert(f9_files); return f9_files->FileOpen(name, mode); unguardfast(); }
+inline	F9FILE	F9_FileOpen				( const char* name, int mode=F9_READ )					{ guardfast(F9_FileOpen);		sassert(f9_files); return f9_files->FileOpen(name, mode); unguardfast(); }
 inline	int		F9_FileClose			( F9FILE file )											{ guardfast(F9_FileClose);		sassert(f9_files); return f9_files->FileClose(file); unguardfast(); }
 inline	int		F9_FileRead				( void* buffer, int size, F9FILE file )					{ guardfast(F9_FileRead);		sassert(file); return (int)file->Read( buffer, size ); unguardfast(); }
 inline	int		F9_FileWrite			( void* buffer, int size, F9FILE file )					{ guardfast(F9_FileWrite);		sassert(file); return (int)file->Write( buffer, size ); unguardfast(); }
@@ -77,7 +77,7 @@ inline	int		F9_FileEof				( F9FILE file )											{ guardfast(F9_FileEof);		sa
 inline	int		F9_FileSize				( F9FILE file )											{ guardfast(F9_FileSize);		sassert(file); return (int)file->Size(); unguardfast(); }
 
 // helper for memory files ext must not exceed 5 characters but may be NULL - uses sprint!
-inline	char*	F9_MakeFileName		( char* name, void* addr, int size )						{ return sprint("#%x#%x#%s",(dwordptr)addr,size,name?name:""); }
+inline	char*	F9_MakeFileName		( const char* name, void* addr, int size )						{ return sprint("#%x#%x#%s",(dwordptr)addr,size,name?name:""); }
 
 /*
 ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -135,10 +135,10 @@ const char* file_getfullpath( const char* file )
 	unguard()
 }
 
-char* file_path2file(char* path)
+const char* file_path2file(const char* path)
 {
 	guard(file_path2file)
-	char* p = NULL;
+	const char* p = NULL;
 	if(!path) return NULL;
 	if(!(p = strrchr(path, '\\')))	return path;
 	if(strlen((p + 1)) > 0)			return (p + 1);
@@ -146,19 +146,19 @@ char* file_path2file(char* path)
 	unguard()
 }
 
-int	file_path2dir(char* path)
+int	file_path2dir(const char* path)
 {
 	guard(file_path2dir)
-	char *p = NULL;
+	const char *p = NULL;
 	if(!path || !(p = file_path2file(path))) return 0;
 	return (int)(p - path);
 	unguard()
 }
 
-char* file_path2ext(char* path)
+const char* file_path2ext(const char* path)
 {
 	guard(file_path2ext)
-	char *p = NULL;
+	const char *p = NULL;
 	if(!path) return NULL;
 	if(!(p = strrchr(path, '.')))	return NULL;
 	if(strlen((p + 1)) > 0)			return  (p + 1);
@@ -166,7 +166,7 @@ char* file_path2ext(char* path)
 	unguard()
 }
 
-char file_path2drive(char* path)
+char file_path2drive(const char* path)
 {
 	guard(file_path2drive);
 	if( !path || path[0]==0 || path[1] != ':') return 0;
@@ -174,14 +174,14 @@ char file_path2drive(char* path)
 	unguard();
 }
 
-void file_pathsplit( char* path, char* drive, char* dir, char* fname, char* ext )
+void file_pathsplit( const char* path, char* drive, char* dir, char* fname, char* ext )
 {
 	guard(file_pathsplit)
 	_splitpath( path, drive, dir, fname, ext );
 	unguard()
 }
 
-void file_findfiles( char* path, file_ffcallback ffcallback, dword flags )
+void file_findfiles( const char* path, file_ffcallback ffcallback, dword flags )
 {
 	char fpath[256];
 	char spath[256];
@@ -221,7 +221,7 @@ void file_findfiles( char* path, file_ffcallback ffcallback, dword flags )
 	FindClose(h);
 }
 
-void file_delete( char* path )
+void file_delete( const char* path )
 {
 	DeleteFile(path);
 }

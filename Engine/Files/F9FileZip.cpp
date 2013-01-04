@@ -28,7 +28,7 @@ f9FileZip::~f9FileZip()
 // m_arcname = name of the zip archive
 // m_offset	= offset of the filelocalheader in the zip archive
 //////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL f9FileZip::Open( char* name, int mode )
+BOOL f9FileZip::Open( const char* name, int mode )
 {
 	guard(f9FileZip::Open);
 	if(IsOpen()) Close();

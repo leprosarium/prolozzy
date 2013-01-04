@@ -19,7 +19,7 @@ f9ArchiveZip::~f9ArchiveZip()
 	unguard();
 }
 
-int f9ArchiveZip::Open( char *name, int mode, char* password )
+int f9ArchiveZip::Open( const char *name, int mode, char* password )
 {
 	guard(f9ArchiveZip::Open);
 	if( IsOpen() ) Close();
@@ -49,7 +49,7 @@ int f9ArchiveZip::Close()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // files serve
 //////////////////////////////////////////////////////////////////////////////////////////////////
-f9File* f9ArchiveZip::FileOpen( char* name, int mode )
+f9File* f9ArchiveZip::FileOpen( const char* name, int mode )
 {
 	guard(f9ArchiveZip::FileOpen);
 	if( !IsOpen() ) return NULL;
@@ -84,7 +84,7 @@ int f9ArchiveZip::FileClose(f9File* file)
 	unguard();
 }
 
-int f9ArchiveZip::FileFind( char* name )
+int f9ArchiveZip::FileFind( const char* name )
 {
 	guard(f9ArchiveZip::FileFind);
 	if(name==NULL) return -1;

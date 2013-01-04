@@ -13,7 +13,7 @@ public:
 				f9FileDisk	();
 virtual			~f9FileDisk	();
 
-virtual	int		Open		( char* name, int mode );
+virtual	int		Open		( const char* name, int mode );
 virtual	int		Close		();
 virtual	int64	Read		( void* data, int64 size );
 virtual	int64	Write		( void* data, int64 size );

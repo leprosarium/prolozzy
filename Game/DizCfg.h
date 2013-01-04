@@ -16,7 +16,7 @@
 struct r9Cfg;
 
 const char*	GetIniFile();		// gets .ini file name, based on the executable's name
-char*	GetPakFile();		// gets .pak file name, based on the executable's name
+const char*	GetPakFile();		// gets .pak file name, based on the executable's name
 const char*	GetLogFile();		// gets .log file name, based on the executable's name
 
 class cDizCfg

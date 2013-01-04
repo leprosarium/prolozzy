@@ -55,7 +55,7 @@ int a9Codec_ym::Done()
 	unguard();
 }
 
-int	a9Codec_ym::Open( char* name )
+int	a9Codec_ym::Open( const char* name )
 {
 	guard(a9Codec_ym::Open);
 	if(m_status!=A9_CODEC_CLOSED) return A9_FAIL;

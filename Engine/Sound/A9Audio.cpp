@@ -68,7 +68,7 @@ void a9Audio::Update()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // BUFFERS
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-A9BUFFERPROTO a9Audio::BufferPrecache( char* filename ) 
+A9BUFFERPROTO a9Audio::BufferPrecache( const char* filename ) 
 { 
 	guard(a9Audio::BufferPrecache);
 	int ret;
@@ -139,7 +139,7 @@ void a9Audio::BufferSetPosition( A9BUFFER buffer, int pos ) {}
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // STREAMS
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-A9STREAM a9Audio::StreamCreate( char* filename, int flags ) { return NULL; }
+A9STREAM a9Audio::StreamCreate( const char* filename, int flags ) { return NULL; }
 void a9Audio::StreamDestroy( A9STREAM stream ) {}
 int a9Audio::StreamPlay( A9STREAM stream, BOOL loop ) { return A9_FAIL; }
 int a9Audio::StreamStop( A9STREAM stream ) { return A9_FAIL; }

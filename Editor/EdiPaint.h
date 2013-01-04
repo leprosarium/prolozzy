@@ -91,8 +91,8 @@ inline	cTile*			TileGet			( int idx )			{ if(0<=idx && idx<m_tile.Size()) return
 		int				TileAdd			( int id );			// add a new empty tile; id must be unique
 		void			TileDel			( int idx );		// delete tile by index
 inline	int				TileFind		( int id )			{ int data; if( m_hash.Find(id, data) ) return data; else return -1; }
-		BOOL			TileLoad		( char* path );		// load tiles from a path
-		BOOL			TileLoadFile	( char* filepath );	// load a tile file
+		BOOL			TileLoad		( const char* path );		// load tiles from a path
+		BOOL			TileLoadFile	( const char* filepath );	// load a tile file
 		void			TileUnload		();					// unload load tiles (destroy)
 
 		// Draw scaled

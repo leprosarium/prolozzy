@@ -33,7 +33,7 @@ public:
 static	void	Init();
 static	void	Done();
 static	void	MyTranslator(unsigned int nCode, EXCEPTION_POINTERS *pExp);
-static	void	Assert( const char* desc, const char* func, int line, char* file );
+static	void	Assert( const char* desc, const char* func, int line, const char* file );
 static	void	ErrorExit( char* desc=NULL );
 static	void	Report();
 static	void	LogException( LPEXCEPTION_POINTERS e );

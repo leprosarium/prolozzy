@@ -119,7 +119,7 @@ inline	int			GetApi()										{ return m_api; }
 
 // texture
 virtual	R9TEXTURE	TextureCreate( r9Img* img );					// create texture from image
-virtual	R9TEXTURE	TextureLoad( char* filename );					// load a texture from file
+virtual	R9TEXTURE	TextureLoad( const char* filename );			// load a texture from file
 virtual	R9TEXTURE	TextureCreateTarget( int width, int height );	// create a texture with render target support
 virtual	void		TextureDestroy( R9TEXTURE tex );				// destroy texture
 
@@ -400,7 +400,7 @@ inline	int			R9_GetApi()												{ guardfast(R9_GetApi);				sassert(r9_render
 inline	void		R9_SetHandleReset( r9HandleReset callback )				{ guardfast(R9_OnReset);			sassert(r9_render); r9_render->m_handlereset = callback; unguardfast(); }
 
 inline	R9TEXTURE	R9_TextureCreate( r9Img* img )							{ guardfast(R9_TextureCreate);		sassert(r9_render); return r9_render->TextureCreate(img); unguardfast(); }
-inline	R9TEXTURE	R9_TextureLoad( char* filename )						{ guardfast(R9_TextureLoad);		sassert(r9_render); return r9_render->TextureLoad(filename); unguardfast(); }
+inline	R9TEXTURE	R9_TextureLoad( const char* filename )					{ guardfast(R9_TextureLoad);		sassert(r9_render); return r9_render->TextureLoad(filename); unguardfast(); }
 inline	R9TEXTURE	R9_TextureCreateTarget( int width, int height )			{ guardfast(R9_TextureCreateTarget);sassert(r9_render); return r9_render->TextureCreateTarget(width,height); unguardfast(); }
 inline	void		R9_TextureDestroy( R9TEXTURE tex )						{ guardfast(R9_TextureDestroy); 	sassert(r9_render); r9_render->TextureDestroy(tex); unguardfast(); }
 inline	BOOL		R9_TextureIsValid( R9TEXTURE tex )						{ return tex->m_handler!=NULL; }

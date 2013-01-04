@@ -37,7 +37,7 @@ void f9Files::Done()
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-int f9Files::ArchiveOpen( const char* name, int mode, char* password )
+int f9Files::ArchiveOpen( const char* name, int mode, const char* password )
 {
 	guard(f9Files::ArchiveOpen);
 

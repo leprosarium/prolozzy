@@ -126,7 +126,7 @@ A9BUFFER a9Audio::BufferCreateFromProto( A9BUFFERPROTO proto, int flags )
 	unguard();
 }
 
-A9BUFFER a9Audio::BufferCreate( char* filename, int flags ) { return NULL; }
+A9BUFFER a9Audio::BufferCreate( const char* filename, int flags ) { return NULL; }
 A9BUFFER a9Audio::BufferCreateFromMemory( a9Info* info, void* audiodata, int flags ) { return NULL; }
 void a9Audio::BufferDestroy( A9BUFFER buffer ) {}
 int a9Audio::BufferPlay( A9BUFFER buffer, BOOL loop ) { return A9_FAIL; }

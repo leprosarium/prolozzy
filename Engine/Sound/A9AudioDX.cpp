@@ -320,7 +320,7 @@ void a9AudioDX::BufferUnlock( A9BUFFER _buffer )
 	unguard();
 }
 
-A9BUFFER a9AudioDX::BufferCreate( char* filename, int flags )
+A9BUFFER a9AudioDX::BufferCreate( const char* filename, int flags )
 {
 	guard(a9AudioDX::BufferCreate);
 	sassert(filename!=NULL);	

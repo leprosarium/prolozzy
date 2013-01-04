@@ -55,7 +55,7 @@ BOOL		r9Render::IsReady()												{ return TRUE; }
 R9TEXTURE	r9Render::TextureCreate( r9Img* img )							{ return NULL; }
 R9TEXTURE	r9Render::TextureCreateTarget( int width, int height )			{ return NULL; }
 
-R9TEXTURE r9Render::TextureLoad( char* filename )
+R9TEXTURE r9Render::TextureLoad( const char* filename )
 {
 	guard(r9Render::TextureLoad);
 	r9Img img;

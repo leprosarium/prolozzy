@@ -167,7 +167,7 @@ int i9Input::FindKeyByAscii( char ascii )
 	unguard();
 }
 
-int	i9Input::FindKeyByName( char* name )
+int	i9Input::FindKeyByName( const char* name )
 {
 	guard(i9Input::FindKeyByName);
 	if(name==NULL) return 0;

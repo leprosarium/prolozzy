@@ -42,7 +42,7 @@ extern r9PFInfo r9_pfinfo[R9_PF_COUNT];
 
 inline	int		R9_PFBpp( int pf )											{ return r9_pfinfo[pf].m_bpp; }
 inline	int		R9_PFSpp( int pf )											{ return r9_pfinfo[pf].m_spp; }
-inline	char*	R9_PFName( int pf )											{ return r9_pfinfo[pf].m_name; }
+inline	const char*	R9_PFName( int pf )										{ return r9_pfinfo[pf].m_name; }
 inline	dword	R9_PFGetDWORD( void* src, int spp );						// gets a dword packed color from a pixel address with given pixel size; obs: the dword is not necessarily 0xaarrggbb
 inline	void	R9_PFSetDWORD( void* src, int spp, dword color );			// sets a dword packed color in a pixel address with given pixel size; obs: the dword is not necessarily 0xaarrggbb
 inline	void	R9_PFGetARGB( void* src, r9PFInfo* pfinfo, float* argb );	// reads a pixel in float argb values [0,1]

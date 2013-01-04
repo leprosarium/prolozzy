@@ -82,7 +82,7 @@ inline	int			A9_CodecGetStatus( A9CODEC codec )							{ guardfast(A9_CodecGetSta
 inline	a9Info*		A9_CodecGetInfo( A9CODEC codec )							{ guardfast(A9_CodecGetInfo); 		sassert(codec); return &(codec->m_info); unguardfast(); }
 
 		int			A9_CodecDecodeToWave( A9CODEC codec, byte* buffer );				// decode into a wave file buffer; buffer must be big enought = sizeof(a9WavHeader)+m_info.DataSize(); codec must be opened
-		int			A9_CodecDecodeToWave( char* filename, byte* &buffer, int& size );	// decode into a wave file buffer; user must free the buffer when done; needed codec library must be initialized; returns a9 error
+		int			A9_CodecDecodeToWave( const char* filename, byte* &buffer, int& size );	// decode into a wave file buffer; user must free the buffer when done; needed codec library must be initialized; returns a9 error
 
 #endif
 ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -32,7 +32,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // d9Log class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-typedef void (*d9LogCallback)( int ch, char* msg );
+typedef void (*d9LogCallback)( int ch, const char* msg );
 
 struct d9LogChannel
 {
@@ -70,13 +70,13 @@ static	d9LogCallback	m_callback;						// log user callback
 
 #define	dlog	D9_LogPrintF
 
-inline	void	D9_LogBuf( int ch, char *buffer, size_t size) { d9Log::PrintBuf(ch, buffer, size); }
+inline	void	D9_LogBuf( int ch, const char *buffer, size_t size) { d9Log::PrintBuf(ch, buffer, size); }
 inline	void	D9_LogInit( const char* logfile, d9LogCallback callback=NULL  )											{ d9Log::Init( logfile, callback ); }
 inline	void	D9_LogPrintV( int ch, const char* fmt, va_list args )													{ d9Log::PrintV( ch, fmt, args ); }
 inline	void	D9_LogPrintF( int ch, const char* fmt, ... )															{ va_list args;	va_start(args, fmt); D9_LogPrintV(ch, fmt, args); va_end(args); }
 inline	void	D9_LogPrintF( const char* fmt, ... )																	{ va_list args; va_start(args, fmt); D9_LogPrintV(0, fmt, args); va_end(args); }
 inline	void	D9_LogSetCallback( d9LogCallback callback )																{ d9Log::m_callback = callback; }
-inline	void	D9_LogSetChannel( int ch, char* name, dword flags=D9_LOGFLAG_DEFAULT, dword color=0xffffffff )			{ d9Log::SetChannel( ch, name, flags, color ); }
+inline	void	D9_LogSetChannel( int ch, const char* name, dword flags=D9_LOGFLAG_DEFAULT, dword color=0xffffffff )	{ d9Log::SetChannel( ch, name, flags, color ); }
 inline	void	D9_LogSetChannelFlag( int ch, dword flag, BOOL on )														{ if(on) d9Log::m_logc[ch].m_flags |= flag; else d9Log::m_logc[ch].m_flags &= ~flag; }
 inline	dword	D9_LogGetChannelColor( int ch )																			{ return d9Log::m_logc[ch].m_color; }
 inline	void	D9_LogOpenChannel( int ch, BOOL open )																	{ D9_LogSetChannelFlag( ch, D9_LOGFLAG_OPEN, open ); }

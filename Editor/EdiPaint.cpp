@@ -54,14 +54,14 @@ int		gstile_total;			// status report on total tiles declared (load+failed)
 int		gstile_fail;			// status report on tiles failed to load
 int		gstile_duplicates;		// status report on id duplicates
 
-BOOL cEdiPaint::TileLoadFile( char* filepath )
+BOOL cEdiPaint::TileLoadFile( const char* filepath )
 {
 	guard(cEdiPaint::TileLoadFile)
 	
 	// check file type (not counted if unaccepted); only TGA and PNG files accepted
-	char* ext = file_path2ext(filepath); if(!ext) return FALSE;
+	const char* ext = file_path2ext(filepath); if(!ext) return FALSE;
 	if( 0!=stricmp(ext,"tga") && 0!=strcmp(ext,"png") ) return FALSE;
-	char* name = file_path2file(filepath); if(!name) return FALSE;
+	const char* name = file_path2file(filepath); if(!name) return FALSE;
 	
 	gstile_total++;
 
@@ -127,7 +127,7 @@ BOOL cEdiPaint::TileLoadFile( char* filepath )
 	unguard()
 }
 
-void FFCallback_Tile( char* filepath, BOOL dir )
+void FFCallback_Tile( const char* filepath, BOOL dir )
 {
 	guard(FFCallback_Tile)
 	if(dir) return;
@@ -136,7 +136,7 @@ void FFCallback_Tile( char* filepath, BOOL dir )
 	unguard()
 }
 
-BOOL cEdiPaint::TileLoad( char* path )
+BOOL cEdiPaint::TileLoad( const char* path )
 {
 	guard(cEdiPaint::TileLoad)
 	if(!path || !path[0]) return FALSE; // invalid path

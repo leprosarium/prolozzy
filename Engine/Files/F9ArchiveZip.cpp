@@ -19,7 +19,7 @@ f9ArchiveZip::~f9ArchiveZip()
 	unguard();
 }
 
-int f9ArchiveZip::Open( const char *name, int mode, char* password )
+int f9ArchiveZip::Open( const char *name, int mode, const char* password )
 {
 	guard(f9ArchiveZip::Open);
 	if( IsOpen() ) Close();

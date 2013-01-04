@@ -447,7 +447,7 @@ void cDizDebug::ConsoleDraw()
 	unguard();
 }
 
-void cDizDebug::ConsolePush( int ch, char* msg )
+void cDizDebug::ConsolePush( int ch, const char* msg )
 {
 	guard(cDizDebug::ConsolePush);
 	if(msg==NULL) return;
@@ -491,7 +491,7 @@ void cDizDebug::ConsolePush( int ch, char* msg )
 	unguard();
 }
 
-void cDizDebug::Con_LogCallback( int ch, char* msg )
+void cDizDebug::Con_LogCallback( int ch, const char* msg )
 {
 	guard(cDizDebug::Con_LogCallback);
 	if(g_dizdebug.m_con_lines==NULL) return; // not yet

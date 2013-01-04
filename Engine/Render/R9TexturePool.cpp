@@ -23,7 +23,7 @@ void r9TexturePool::Done()
 	unguard();
 }
 
-int r9TexturePool::Add( R9TEXTURE texture, char* name )
+int r9TexturePool::Add( R9TEXTURE texture, const char* name )
 {
 	guard(r9TexturePool::Add);
 	sassert(name!=NULL);
@@ -43,7 +43,7 @@ int r9TexturePool::Add( R9TEXTURE texture, char* name )
 	unguard();
 }
 
-int r9TexturePool::Load( char* name, BOOL noduplicate )
+int r9TexturePool::Load( const char* name, BOOL noduplicate )
 {
 	guard(r9TexturePool::Load);
 	sassert(name!=NULL);
@@ -58,11 +58,11 @@ int r9TexturePool::Load( char* name, BOOL noduplicate )
 	unguard();
 }
 
-int r9TexturePool::Find( char* name )
+int r9TexturePool::Find( const char* name )
 {
 	guard(r9TexturePool::Find);
 	int idx = -1;
-	m_hash.Find(name,idx);
+	m_hash.Find(const_cast<char *>(name), idx);
 	return idx;
 	unguard();
 }

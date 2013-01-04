@@ -133,7 +133,7 @@ float r9Font::GetCharWidth( char c )
 	unguard();
 }
 
-float r9Font::GetTextWidth( char* text )
+float r9Font::GetTextWidth( const char* text )
 {
 	guard( r9Font::GetTextWidth );
 	if( text==NULL ) return 0.0f;
@@ -141,7 +141,7 @@ float r9Font::GetTextWidth( char* text )
 	unguard();
 }
 
-float r9Font::GetTextWidth( char* text, int size )
+float r9Font::GetTextWidth( const char* text, int size )
 {
 	guard( r9Font::GetTextWidth );
 	if( text==NULL ) return 0.0f;
@@ -155,7 +155,7 @@ float r9Font::GetTextWidth( char* text, int size )
 	unguard();
 }
 
-void r9Font::GetTextBox( char* text, float& w, float& h )
+void r9Font::GetTextBox( const char* text, float& w, float& h )
 {
 	guard(r9Font::GetTextBox);
 	w=0; h=0;
@@ -286,7 +286,7 @@ void r9Font::Printf( float x, float y, char* format, ... )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // utils
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL r9Font::Check( char* text, float size, int& len )
+BOOL r9Font::Check( const char* text, float size, int& len )
 {
 	guard(r9Font::Check);
 

@@ -217,7 +217,7 @@ int	A9_CodecDecodeToWave( A9CODEC codec, byte* buffer )
 	unguard();
 }
 
-int A9_CodecDecodeToWave( char* filename, byte* &buffer, int& size )
+int A9_CodecDecodeToWave( const char* filename, byte* &buffer, int& size )
 {
 	guard(A9_CodecDecodeToWave);
 	// load and decode file

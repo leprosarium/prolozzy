@@ -42,7 +42,7 @@ public:
 						f9ArchivePak	();
 virtual					~f9ArchivePak	();
 						
-virtual	int				Open			( const char *name, int mode = F9_READ, char* password=NULL );
+virtual	int				Open			( const char *name, int mode = F9_READ, const char* password=NULL );
 virtual	int				Close			();
 						
 virtual	f9File*	 		FileOpen		( const char* name, int mode = F9_READ );

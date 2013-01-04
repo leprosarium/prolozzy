@@ -16,8 +16,8 @@
 // LOADER
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL	R9_ImgLoadFile	( const char* name, r9Img* img );
-BOOL	R9_ImgSaveFile	( char* name, r9Img* img );
-BOOL	R9_ImgLoadHeader( char* name, r9Img* img );
+BOOL	R9_ImgSaveFile	( const char* name, r9Img* img );
+BOOL	R9_ImgLoadHeader( const char* name, r9Img* img );
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // TGA LOADER

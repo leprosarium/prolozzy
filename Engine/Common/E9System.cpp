@@ -247,7 +247,7 @@ void decrypt_data( void* data, dword size, int key )
 	unguard()
 }
 
-void encrypt_data( void* data, dword size, char* key )
+void encrypt_data( void* data, dword size, const char* key )
 {
 	guard(encrypt_data)
 	if(data==NULL || size==0 || key==NULL) return;
@@ -257,7 +257,7 @@ void encrypt_data( void* data, dword size, char* key )
 	unguard()
 }
 
-void decrypt_data( void* data, dword size, char* key )
+void decrypt_data( void* data, dword size, const char* key )
 {
 	guard(decrypt_data)
 	if(data==NULL || size==0 || key==NULL) return;

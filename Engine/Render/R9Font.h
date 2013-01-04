@@ -70,9 +70,9 @@ inline	float		GetItalic()											{ return m_scale * m_aspect * m_italic; }
 // sizes
 inline	float		GetCharWidth()										{ return m_scale * m_aspect * m_chrw; }
 		float		GetCharWidth( char c );								// gets the current width of a char (in pixels) - italic not included
-		float		GetTextWidth( char* text );							// gets the current width of a string (in pixels) - italic included, newlines ignored
-		float		GetTextWidth( char* text, int size );				// gets the current width of a string (in pixels) - italic included, newlines ignored
-		void		GetTextBox( char* text, float &w, float& h );		// gets the box sizes the text fits in; italic and newlines included
+		float		GetTextWidth( const char* text );					// gets the current width of a string (in pixels) - italic included, newlines ignored
+		float		GetTextWidth( const char* text, int size );				// gets the current width of a string (in pixels) - italic included, newlines ignored
+		void		GetTextBox( const char* text, float &w, float& h );		// gets the box sizes the text fits in; italic and newlines included
 
 // draw
 		void		Char( float x, float y, char c );					// draw a single char at (x,y)
@@ -81,7 +81,7 @@ inline	float		GetCharWidth()										{ return m_scale * m_aspect * m_chrw; }
 		void		Printf( float x, float y, char* format, ... );		// draw a formated text at (x,y)
 
 // utils
-		BOOL		Check( char* text, float size, int& len );			// if FALSE len is size of str that fits in size pixels area (space break if possible)
+		BOOL		Check( const char* text, float size, int& len );			// if FALSE len is size of str that fits in size pixels area (space break if possible)
 
 public:
 

@@ -39,7 +39,7 @@ void d9Guard::MyTranslator(unsigned int nCode, EXCEPTION_POINTERS *pExp)
 	throw d9Exception();
 }
 
-void d9Guard::Assert( const char* desc, const char* func, int line, char* file )
+void d9Guard::Assert( const char* desc, const char* func, int line, const char* file )
 {
 	#ifdef D9_ENABLE_DH
 	D9_DHLogCallStack();

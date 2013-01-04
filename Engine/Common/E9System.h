@@ -69,10 +69,10 @@ inline	int			sys_msgbox( HWND hwnd, const char* text, const char* caption, dword
 inline	int			sys_desktopwidth()												{ return GetSystemMetrics(SM_CXSCREEN); }
 inline	int			sys_desktopheight()												{ return GetSystemMetrics(SM_CYSCREEN); }
 		BOOL		sys_senddata( HWND fromhwnd, HWND tohwnd, int cmd, int slot, int size, char* data );
-inline	void		sys_outputdebugstring( char* msg )								{ OutputDebugString( msg ); }
+inline	void		sys_outputdebugstring( const char* msg )						{ OutputDebugString( msg ); }
 
 typedef HANDLE HSEMAPHORE;
-inline	HSEMAPHORE	sys_createsemaphore( char* name=NULL )							{ return (HSEMAPHORE)CreateSemaphore(NULL, 1, 1, name); }
+inline	HSEMAPHORE	sys_createsemaphore( const char* name=NULL )					{ return (HSEMAPHORE)CreateSemaphore(NULL, 1, 1, name); }
 inline	void		sys_destroysemaphore( HSEMAPHORE semaphore )					{ if(semaphore) CloseHandle(semaphore); }
 inline	BOOL		sys_waitsemaphore( HSEMAPHORE semaphore, dword msec=INFINITE )	{ return WaitForSingleObject(semaphore,msec)==WAIT_OBJECT_0; }
 inline	void		sys_releasesemaphore( HSEMAPHORE semaphore )					{ ReleaseSemaphore(semaphore,1,NULL); }
@@ -109,12 +109,12 @@ typedef void (*file_ffcallback) ( const char* filepath, BOOL dir );	// filepath=
 
 const char*	file_getfullpath	( const char* file );
 const char*	file_path2file		( const char* path );
-int		file_path2dir		( const char* path );
+int			file_path2dir		( const char* path );
 const char*	file_path2ext		( const char* path );
-char	file_path2drive		( const char* path );
-void	file_pathsplit		( const char* path, char* drive, char* dir, char* fname, char* ext );	// bufers must have enought space _MAX_DRIVE, _MAX_DIR, _MAX_FNAME, _MAX_EXT
-void	file_findfiles		( const char* path, file_ffcallback ffcallback, dword flags );		// path must include terminal '\'; use FINDFILE flags
-void	file_delete			( const char* path );
+char		file_path2drive		( const char* path );
+void		file_pathsplit		( const char* path, char* drive, char* dir, char* fname, char* ext );	// bufers must have enought space _MAX_DRIVE, _MAX_DIR, _MAX_FNAME, _MAX_EXT
+void		file_findfiles		( const char* path, file_ffcallback ffcallback, dword flags );		// path must include terminal '\'; use FINDFILE flags
+void		file_delete			( const char* path );
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -122,8 +122,8 @@ void	file_delete			( const char* path );
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void encrypt_data( void* data, dword size, int key );	// encrypt
 void decrypt_data( void* data, dword size, int key );	// decrypt
-void encrypt_data( void* data, dword size, char* key );	// encrypt
-void decrypt_data( void* data, dword size, char* key );	// decrypt
+void encrypt_data( void* data, dword size, const char* key );	// encrypt
+void decrypt_data( void* data, dword size, const char* key );	// decrypt
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

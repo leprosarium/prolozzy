@@ -53,7 +53,7 @@ class e9App
 {
 public:
 static	e9AppCallback SetCallback( int idx, e9AppCallback callback );	// set a callback
-static	BOOL		Init( HINSTANCE	hinstance, char* cmdline );		// init the application
+static	BOOL		Init( HINSTANCE	hinstance, const char* cmdline );	// init the application
 static	void		Done();											// done the application
 static	void		Run();											// main loop
 
@@ -72,7 +72,7 @@ static	void		UpdateClocks();
 static	LRESULT CALLBACK WndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
 
 // members
-static	char*		m_cmdline;					// pointer to command line string
+static	const char*	m_cmdline;					// pointer to command line string
 static	char		m_path[MAX_PATH];			// path to exe
 static	HWND		m_hwnd;						// main window handle
 static	HINSTANCE	m_hinstance;				// instance handle
@@ -99,7 +99,7 @@ static	e9AppCallback	m_callback[E9_APP_CALLBACKS];
 // INTERFACE
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 inline	e9AppCallback E9_AppSetCallback( int idx, e9AppCallback callback )	{ return e9App::SetCallback( idx, callback ); }
-inline	BOOL		E9_AppInit( HINSTANCE hinstance, char* cmdline )		{ return e9App::Init( hinstance, cmdline ); }
+inline	BOOL		E9_AppInit( HINSTANCE hinstance, const char* cmdline )		{ return e9App::Init( hinstance, cmdline ); }
 inline	void		E9_AppDone()											{ e9App::Done(); }
 inline	void		E9_AppRun()												{ e9App::Run(); }
 inline	void		E9_AppSetStr( int prop, const char* value )				{ e9App::SetStr( prop, value ); }

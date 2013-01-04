@@ -5,7 +5,7 @@
 #include "D9Debug.h"
 #include "E9App.h"
 
-char*		e9App::m_cmdline					= NULL;
+const char*	e9App::m_cmdline					= NULL;
 char	    e9App::m_path[MAX_PATH]				= "";
 HINSTANCE	e9App::m_hinstance					= NULL;
 HWND		e9App::m_hwnd						= NULL;
@@ -35,7 +35,7 @@ e9AppCallback e9App::SetCallback( int idx, e9AppCallback callback )
 	unguard();
 }
 
-BOOL e9App::Init( HINSTANCE hinstance, char* cmdline )
+BOOL e9App::Init( HINSTANCE hinstance, const char* cmdline )
 {
 	guard(e9App::Init);
 	// init

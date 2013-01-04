@@ -24,9 +24,9 @@ public:
 		void		Done();
 
 inline	int			Size()											{ return m_array.Size(); }
-		int			Add( R9TEXTURE texture, char* name );			// add a specific texture, return index
-		int			Load( char* name, BOOL noduplicate=TRUE );		// load a texture by file; if noduplicate and texture already in pool, the same index is returned
-		int			Find( char* name );								// search for a texture; return index
+		int			Add( R9TEXTURE texture, const char* name );		// add a specific texture, return index
+		int			Load( const char* name, BOOL noduplicate=TRUE );// load a texture by file; if noduplicate and texture already in pool, the same index is returned
+		int			Find( const char* name );						// search for a texture; return index
 		void		Del( int idx );									// delete a texture
 inline	R9TEXTURE	GetTexture( int idx )							{ if(0<=idx && idx<Size()) return m_array[idx].m_texture; else return NULL; }
 inline	char*		GetName( int idx )								{ if(0<=idx && idx<Size()) return m_array[idx].m_name; else return NULL; }

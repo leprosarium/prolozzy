@@ -16,7 +16,7 @@ public:
 						f9Archive		();
 virtual					~f9Archive		();
 						
-virtual	int				Open			( const char *name, int mode = F9_READ, char* password=NULL );
+virtual	int				Open			( const char *name, int mode = F9_READ, const char* password=NULL );
 virtual	int				Close			();
 inline	BOOL			IsOpen			()									{ return m_open; }
 						

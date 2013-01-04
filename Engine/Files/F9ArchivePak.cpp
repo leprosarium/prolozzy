@@ -24,7 +24,7 @@ f9ArchivePak::~f9ArchivePak()
 	unguard();
 }
 
-int f9ArchivePak::Open( const char *name, int mode, char* password )
+int f9ArchivePak::Open( const char *name, int mode, const char* password )
 {
 	guard(f9ArchivePak::Open);
 	if(IsOpen()) Close();

@@ -64,7 +64,7 @@ BOOL R9_ImgLoadFile( const char* name, r9Img* img )
 	unguard();
 }
 
-BOOL R9_ImgSaveFile( char* name, r9Img* img )
+BOOL R9_ImgSaveFile( const char* name, r9Img* img )
 {
 	guard(R9_ImgSaveFile);
 	if(!name || !img || !R9_ImgIsValid(img)) return FALSE;
@@ -93,7 +93,7 @@ BOOL R9_ImgSaveFile( char* name, r9Img* img )
 	unguard();
 }
 
-BOOL R9_ImgLoadHeader( char* name, r9Img* img )
+BOOL R9_ImgLoadHeader( const char* name, r9Img* img )
 {
 	guard(R9_ImgLoadHeader);
 	if(!name || !img || R9_ImgIsValid(img) ) return FALSE;

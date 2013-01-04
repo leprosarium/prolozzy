@@ -86,7 +86,7 @@ virtual	void			Update();													// update driver
 
 virtual A9BUFFERPROTO	BufferPrecache( const char* filename );							// create a buffer proto, for faster creation of the buffer at runtime (file decompressed in memory)
 virtual void			BufferDeprecache( A9BUFFERPROTO proto );					// destroy a buffer proto
-virtual	A9BUFFER		BufferCreate( char* filename, int flags = A9_FLAG_VOLUME );	// create buffer
+virtual	A9BUFFER		BufferCreate( const char* filename, int flags = A9_FLAG_VOLUME );	// create buffer
 virtual	A9BUFFER		BufferCreateFromProto( A9BUFFERPROTO proto, int flags = A9_FLAG_VOLUME );			// create buffer from proto
 virtual	A9BUFFER		BufferCreateFromMemory( a9Info* info, void* audiodata, int flags = A9_FLAG_VOLUME );	// create buffer from memory; audiodata must have the right size (info->DataSize())
 virtual	void			BufferDestroy( A9BUFFER buffer );							// destroy buffer
@@ -131,7 +131,7 @@ inline	void			A9_Update()														{ guardfast(A9_AudioSet);			sassert(a9_au
 
 inline	A9BUFFERPROTO	A9_BufferPrecache( const char* filename )								{ guardfast(A9_BufferCreate);		sassert(a9_audio); return a9_audio->BufferPrecache(filename); unguardfast(); }
 inline	void			A9_BufferDeprecache( A9BUFFERPROTO proto )						{ guardfast(A9_BufferCreate);		sassert(a9_audio); a9_audio->BufferDeprecache(proto); unguardfast(); }
-inline	A9BUFFER		A9_BufferCreate( char* filename, int flags=A9_FLAG_VOLUME )		{ guardfast(A9_BufferCreate);		sassert(a9_audio); return a9_audio->BufferCreate(filename,flags); unguardfast(); }
+inline	A9BUFFER		A9_BufferCreate( const char* filename, int flags=A9_FLAG_VOLUME )		{ guardfast(A9_BufferCreate);		sassert(a9_audio); return a9_audio->BufferCreate(filename,flags); unguardfast(); }
 inline	A9BUFFER		A9_BufferCreateFromProto( A9BUFFERPROTO proto, int flags = A9_FLAG_VOLUME )					{ guardfast(A9_BufferCreate);		sassert(a9_audio); return a9_audio->BufferCreateFromProto(proto,flags); unguardfast(); }
 inline	A9BUFFER		A9_BufferCreateFromMemory( a9Info* info, void* audiodata, int flags = A9_FLAG_VOLUME )	{ guardfast(A9_BufferCreate);		sassert(a9_audio); return a9_audio->BufferCreateFromMemory(info,audiodata,flags); unguardfast(); }
 inline	void			A9_BufferDestroy( A9BUFFER buffer )								{ guardfast(A9_BufferDestroy);		sassert(a9_audio); a9_audio->BufferDestroy(buffer); unguardfast(); }

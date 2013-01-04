@@ -102,7 +102,7 @@ inline	char			GetKeyAscii( int key )							{ if( key<0 || key>=I9_KEYS ) return 
 inline	char			GetKeyShifted( int key )						{ if( key<0 || key>=I9_KEYS ) return 0; else return m_keyname[ key ].m_shifted; }
 inline	const char*		GetKeyName( int key )							{ if( key<0 || key>=I9_KEYS ) return m_keyname[0].m_name; else return m_keyname[ key ].m_name; }
 		int				FindKeyByAscii( char ascii );					// find key (0=unknown if not found)
-		int				FindKeyByName( char* name );					// find key (0=unknown if not found)
+		int				FindKeyByName( const char* name );				// find key (0=unknown if not found)
 
 // axes access
 inline	i9Axe&			GetAxe( int axe )								{ return m_axe[axe]; }
@@ -161,7 +161,7 @@ inline	char		I9_GetKeyAscii( int key )					{ guardfast(I9_GetKeyAscii);		sassert
 inline	char		I9_GetKeyShifted( int key )					{ guardfast(I9_GetKeyShifted);		sassert(i9_input); return i9_input->GetKeyShifted(key); unguardfast(); }
 inline	const char*	I9_GetKeyName( int key )					{ guardfast(I9_GetKeyName);			sassert(i9_input); return i9_input->GetKeyName(key); unguardfast(); }
 inline	int			I9_FindKeyByAscii( char ascii )				{ guardfast(I9_FindKeyByAscii);		sassert(i9_input); return i9_input->FindKeyByAscii(ascii); unguardfast(); }
-inline	int			I9_FindKeyByName( char* name )				{ guardfast(I9_FindKeyByName);		sassert(i9_input); return i9_input->FindKeyByName(name); unguardfast(); }
+inline	int			I9_FindKeyByName( const char* name )		{ guardfast(I9_FindKeyByName);		sassert(i9_input); return i9_input->FindKeyByName(name); unguardfast(); }
 
 inline	int		I9_GetAxeValue( int axe )						{ guardfast(I9_GetAxeValue);		sassert(i9_input); return i9_input->GetAxeValue(axe); unguardfast(); }
 inline	int		I9_GetAxeDelta( int axe )						{ guardfast(I9_GetAxeDelta);		sassert(i9_input); return i9_input->GetAxeDelta(axe); unguardfast(); }

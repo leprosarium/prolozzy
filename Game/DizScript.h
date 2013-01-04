@@ -32,7 +32,6 @@ class cDizScript
 		functor_t _musicLoop;
 		functor_t _debug;		
 		functor_t _reloadMap;
-		functor_t _reloadScript;
 
 		void CallHandler (functor_t handler, const PlTermv &av = 0);
 	

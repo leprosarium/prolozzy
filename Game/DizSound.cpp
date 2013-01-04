@@ -173,16 +173,19 @@ void FFCallback_Sample( const char* filepath, BOOL dir )
 	unguard()
 }
 
-bool cDizSound::SampleLoad( char* path, int group )
+bool cDizSound::SampleLoad( const char* path, int group )
 {
 	guard(cDizSound::SampleLoad)
 	if(!A9_IsReady()) { dlog(LOGAPP,"Sound disabled - no samples are loaded.\n"); return false; }
 
 	if(!path || !path[0]) return false; // invalid path
-	int szlen = (int)strlen(path);
-	if(path[szlen-1]!='\\') strcat(path,"\\");
-	_strlwr(path);
-	dlog(LOGAPP,"Loading samples from \"%s\" (group=%i)\n", path, group);
+	char spath[256];
+	strcpy(spath, path);
+
+	int szlen = (int)strlen(spath);
+	if(spath[szlen-1]!='\\') strcat(spath,"\\");
+	_strlwr(spath);
+	dlog(LOGAPP,"Loading samples from \"%s\" (group=%i)\n", spath, group);
 
 	// init
 	m_sample_total		= 0;
@@ -194,14 +197,14 @@ bool cDizSound::SampleLoad( char* path, int group )
 	int archivefiles = F9_ArchiveGetFileCount(0);
 	if(archivefiles==0) // if no archive found then open from disk
 	{
-		file_findfiles( path, FFCallback_Sample, FILE_FINDREC );
+		file_findfiles( spath, FFCallback_Sample, FILE_FINDREC );
 	}
 	else // if archive opened, load from it
 	{
 		for(int i=0;i<archivefiles;i++)
 		{
 			char* filename = F9_ArchiveGetFileName(0,i);
-			if(strstr(filename,path)==filename)
+			if(strstr(filename, spath)==filename)
 			{
 				FFCallback_Sample(filename,false);
 			}
@@ -374,16 +377,19 @@ void FFCallback_Music( const char* filepath, BOOL dir )
 	unguard()
 }
 
-bool cDizSound::MusicLoad( char* path, int group )
+bool cDizSound::MusicLoad( const char* path, int group )
 {
 	guard(cDizSound::MusicLoad)
 	if(!A9_IsReady()) { dlog(LOGAPP,"Sound disabled - no musics are loaded.\n"); return false; }
 
 	if(!path || !path[0]) return false; // invalid path
-	int szlen = (int)strlen(path);
-	if(path[szlen-1]!='\\') strcat(path,"\\");
-	_strlwr(path);
-	dlog(LOGAPP,"Loading musics from \"%s\" (group=%i)\n", path, group);
+	char spath[256];
+	strcpy(spath, path);
+
+	int szlen = (int)strlen(spath);
+	if(spath[szlen-1]!='\\') strcat(spath,"\\");
+	_strlwr(spath);
+	dlog(LOGAPP,"Loading musics from \"%s\" (group=%i)\n", spath, group);
 
 	// init
 	m_music_total		= 0;
@@ -395,14 +401,14 @@ bool cDizSound::MusicLoad( char* path, int group )
 	int archivefiles = F9_ArchiveGetFileCount(0);
 	if(archivefiles==0) // if no archive found then open from disk
 	{
-		file_findfiles( path, FFCallback_Music, FILE_FINDREC );
+		file_findfiles( spath, FFCallback_Music, FILE_FINDREC );
 	}
 	else // if archive opened, load from it
 	{
 		for(int i=0;i<archivefiles;i++)
 		{
 			char* filename = F9_ArchiveGetFileName(0,i);
-			if(strstr(filename,path)==filename)
+			if(strstr(filename, spath)==filename)
 			{
 				FFCallback_Music(filename,false);
 			}

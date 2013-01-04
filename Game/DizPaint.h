@@ -72,7 +72,7 @@ public:
 					~cFont()					{ if(m_font) sdelete(m_font); }
 inline	int			GetSize()					{ return (int)m_font->GetSize(); }
 inline	int			GetCharWidth( char c )		{ return (int)m_font->GetCharWidth(c); }
-inline	int			GetTextWidth( char* text )	{ return (int)m_font->GetTextWidth(text); }
+inline	int			GetTextWidth( const char* text )	{ return (int)m_font->GetTextWidth(text); }
 inline	int			GetOfsX()					{ return (int)m_font->GetOfsX(); }
 inline	int			GetOfsY()					{ return (int)m_font->GetOfsY(); }
 };

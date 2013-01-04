@@ -75,8 +75,6 @@ bool cDizScript::Init()
 	_musicLoop = PL_new_functor(PL_new_atom("musicLoop"), 0);
 	_debug = PL_new_functor(PL_new_atom("debug"), 0);
 	_reloadMap = PL_new_functor(PL_new_atom("reloadMap"), 0);
-	_reloadScript = PL_new_functor(PL_new_atom("reloadScript"), 0);
-
 
 	gameInit();
 

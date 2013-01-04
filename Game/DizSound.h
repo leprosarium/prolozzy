@@ -54,7 +54,7 @@ public:
 		void				Update				();								// update called every frame
 						
 		// samples		
-		bool				SampleLoad			( char* path, int group=0 );	// load samples from a path (protos)
+		bool				SampleLoad			( const char* path, int group=0 );	// load samples from a path (protos)
 		bool				SampleLoadFile		( const char* filepath, int group=0 );// load a sample file (proto)
 		void				SampleUnload		( int group=0 );				// destroy all samples (proto)
 		int					SamplePlay			( PlAtom id, int loop=0 );		// play a proto sample; return voiceidx or -1 if failed
@@ -74,7 +74,7 @@ inline	int					SampleFind			( PlAtom id )						{ for(int i=0;i<m_sampleproto.Siz
 		int					m_sample_group;										// current loading group
 
 		// music
-		bool				MusicLoad			( char* path, int group=0 );	// load all musics from a path (protos)
+		bool				MusicLoad			( const char* path, int group=0 );	// load all musics from a path (protos)
 		bool				MusicLoadFile		( const char* filename, int group=0 );// load a music file (proto)
 		void				MusicUnload			( int group=0 );				// destroy all musics (proto)
 		void				MusicFade			( int out, int in );			// set fade values

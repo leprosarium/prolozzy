@@ -87,17 +87,17 @@ inline	void		sys_releasesemaphore( HSEMAPHORE semaphore )					{ ReleaseSemaphore
 //   int my_int = 0; // default
 //	 ret = ini_getint( file_getfullpath("test.ini"), "TEST", "MY_INT", &my_int );
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL	ini_getchr	( char* file, char* group, char* key, char* value );
-BOOL	ini_getint	( const char* file, char* group, char* key, int* value );
-BOOL	ini_getflt	( char* file, char* group, char* key, float* value );
-BOOL	ini_getstr	( char* file, char* group, char* key, char* value, int size );	// size include space for eos
-BOOL	ini_getbin	( char* file, char* group, char* key, void* value, int size );
+BOOL	ini_getchr	( const char* file, const char* group, const char* key, char* value );
+BOOL	ini_getint	( const char* file, const char* group, const char* key, int* value );
+BOOL	ini_getflt	( const char* file, const char* group, const char* key, float* value );
+BOOL	ini_getstr	( const char* file, const char* group, const char* key, char* value, int size );	// size include space for eos
+BOOL	ini_getbin	( const char* file, const char* group, const char* key, void* value, int size );
 
-void	ini_setchr	( char* file, char* group, char* key, char value );
-void	ini_setint	( char* file, char* group, char* key, int value );
-void	ini_setflt	( char* file, char* group, char* key, float value );
-void	ini_setstr	( char* file, char* group, char* key, char* value );
-void	ini_setbin	( char* file, char* group, char* key, void* value, int size );
+void	ini_setchr	( const char* file, const char* group, const char* key, char value );
+void	ini_setint	( const char* file, const char* group, const char* key, int value );
+void	ini_setflt	( const char* file, const char* group, const char* key, float value );
+void	ini_setstr	( const char* file, const char* group, const char* key, const char* value );
+void	ini_setbin	( const char* file, const char* group, const char* key, void* value, int size );
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

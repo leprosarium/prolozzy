@@ -52,70 +52,70 @@ BOOL sys_senddata( HWND fromhwnd, HWND tohwnd, int cmd, int slot, int size, char
 	WritePrivateProfileString( group, key, sz, file );									\
 }
 
-BOOL ini_getchr( char* file, char* group, char* key, char* value )
+BOOL ini_getchr( const char* file, const char* group, const char* key, char* value )
 {
 	guard(ini_getchr)
 	_GETPRIVATEPROFILEINT( char, "%c" );
 	unguard()
 }
 
-BOOL ini_getint( const char* file, char* group, char* key, int* value )
+BOOL ini_getint( const char* file, const char* group, const char* key, int* value )
 {
 	guard(ini_getint)
 	_GETPRIVATEPROFILEINT( int, "%i" );
 	unguard()
 }
 
-BOOL ini_getflt( char* file, char* group, char* key, float* value )
+BOOL ini_getflt( const char* file, const char* group, const char* key, float* value )
 {
 	guard(ini_getflt)
 	_GETPRIVATEPROFILEINT( float, "%f" );
 	unguard()
 }
 
-BOOL ini_getstr( char* file, char* group, char* key, char* value, int size )
+BOOL ini_getstr( const char* file, const char* group, const char* key, char* value, int size )
 {
 	guard(ini_getchr)
 	return(0!=GetPrivateProfileString( group, key, "", value, size, file ));
 	unguard()
 }
 
-BOOL ini_getbin( char* file, char* group, char* key, void* value, int size )
+BOOL ini_getbin( const char* file, const char* group, const char* key, void* value, int size )
 {
 	guard(ini_getchr)
 	return GetPrivateProfileStruct( group, key, value, size, file );
 	unguard()
 }
 
-void ini_setchr( char* file, char* group, char* key, char value )
+void ini_setchr( const char* file, const char* group, const char* key, char value )
 {
 	guard(ini_setchr)
 	_SETPRIVATEPROFILEINT( char, "%c" );
 	unguard()
 }
 
-void ini_setint( char* file, char* group, char* key, int value )
+void ini_setint( const char* file, const char* group, const char* key, int value )
 {
 	guard(ini_setint)
 	_SETPRIVATEPROFILEINT( int, "%i" );
 	unguard()
 }
 
-void ini_setflt( char* file, char* group, char* key, float value )
+void ini_setflt( const char* file, const char* group, const char* key, float value )
 {
 	guard(ini_setflt)
 	_SETPRIVATEPROFILEINT( float, "%f" );
 	unguard()
 }
 
-void ini_setstr( char* file, char* group, char* key, char* value )
+void ini_setstr( const char* file, const char* group, const char* key, const char* value )
 {
 	guard(ini_setstr)
 	WritePrivateProfileString( group, key, value, file );
 	unguard()
 }
 
-void ini_setbin( char* file, char* group, char* key, void* value, int size )
+void ini_setbin( const char* file, const char* group, const char* key, void* value, int size )
 {
 	guard(ini_setbin)
 	WritePrivateProfileStruct( group, key, value, size, file );

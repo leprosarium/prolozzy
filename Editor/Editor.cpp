@@ -4,9 +4,12 @@
 #include "stdafx.h"
 #include "resource.h"
 
+#include "SWI-cpp-m.h"
+
 #include "E9App.h"
 #include "EdiApp.h"
 #include "EdiDef.h"
+
 
 static cEdiApp* g_ediapp = NULL;
 
@@ -124,6 +127,11 @@ int APIENTRY WinMain(HINSTANCE hInstance,
                      LPSTR     lpCmdLine,
                      int       nCmdShow)
 {
+
+	PL_action(PL_ACTION_GUIAPP, TRUE);
+	char *av[] = { __argv[0], 0};
+	PlEngine e(sizeof(av) / sizeof(*av) - 1, av);
+
 	// init debug
 	BOOL openlog = TRUE;
 	D9_INIT("editor.log",NULL,openlog);

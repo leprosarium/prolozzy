@@ -155,7 +155,6 @@
     <ClInclude Include="DizSound.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="StdAfx.h" />
-    <ClInclude Include="SWI-cpp-m.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Game.ico" />

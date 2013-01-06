@@ -47,7 +47,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\Engine; ..\Engine\Common; ..\Engine\Debug; ..\Engine\Files; ..\Engine\Input; ..\Engine\Sound; ..\Engine\App; ..\Engine\Render; ..\Engine\Gs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\pl\include;..\Engine;..\Engine\Common;..\Engine\Debug;..\Engine\Files;..\Engine\Input;..\Engine\Sound;..\Engine\App;..\Engine\Render;..\Engine\Gs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -58,7 +58,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>dxguid.lib;dinput8.lib;dsound.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dxguid.lib;dinput8.lib;dsound.lib;libswipl.dll.a;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).exe</OutputFile>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -67,13 +67,13 @@
       <AdditionalLibraryDirectories>C:\Program Files (x86)\pl\lib;$(DXSDK_DIR)Lib\x86;</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(OutDir)$(ProjectName).exe ..\Bin\$(ProjectName)_d.exe</Command>
+      <Command>copy /B $(OutDir)$(ProjectName).exe+$(OutDir)$(ProjectName).prc ..\Bin\$(ProjectName)_d.exe</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <Optimization>MinSpace</Optimization>
-      <AdditionalIncludeDirectories>..\Engine; ..\Engine\Common; ..\Engine\Debug; ..\Engine\Files; ..\Engine\Input; ..\Engine\Sound; ..\Engine\App; ..\Engine\Render; ..\Engine\Gs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\pl\include;..\Engine;..\Engine\Common;..\Engine\Debug;..\Engine\Files;..\Engine\Input;..\Engine\Sound;..\Engine\App;..\Engine\Render;..\Engine\Gs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -82,7 +82,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>dxguid.lib;dinput8.lib;dsound.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dxguid.lib;dinput8.lib;dsound.lib;libswipl.dll.a;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -92,7 +92,7 @@
       <AdditionalLibraryDirectories>C:\Program Files (x86)\pl\lib;$(DXSDK_DIR)Lib\x86;</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(OutDir)$(ProjectName).exe ..\..\Bin\$(ProjectName).exe</Command>
+      <Command>copy /B $(OutDir)$(ProjectName).exe+$(OutDir)$(ProjectName).prc ..\Bin\$(ProjectName).exe</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -134,6 +134,17 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Editor.ico" />
+    <CustomBuild Include="scripts\editor.pl">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"c:\Program Files (x86)\pl\bin\swipl.exe" -q --stand_alone=true  -o $(OutDir)$(ProjectName).prc -c %(FullPath)</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Build Prolog State</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)$(ProjectName).prc</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)$(ProjectName).prc</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Build Prolog State</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"c:\Program Files (x86)\pl\bin\swipl.exe" -q --stand_alone=true  -o $(OutDir)$(ProjectName).prc -c %(FullPath)</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">scripts\editor.pl</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">scripts\editor.pl</AdditionalInputs>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Editor.rc" />

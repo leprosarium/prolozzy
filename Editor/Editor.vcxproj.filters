@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="EdiApp.cpp" />
+    <ClCompile Include="EdiMap.cpp" />
+    <ClCompile Include="EdiPaint.cpp" />
+    <ClCompile Include="EdiTool.cpp" />
+    <ClCompile Include="Editor.cpp" />
+    <ClCompile Include="GUI.cpp" />
+    <ClCompile Include="GUIButton.cpp" />
+    <ClCompile Include="GUIColor.cpp" />
+    <ClCompile Include="GUIDlg.cpp" />
+    <ClCompile Include="GUIEdit.cpp" />
+    <ClCompile Include="GUIItem.cpp" />
+    <ClCompile Include="GUITile.cpp" />
+    <ClCompile Include="GUIUtil.cpp" />
+    <ClCompile Include="StdAfx.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="EdiApp.h" />
+    <ClInclude Include="EdiDef.h" />
+    <ClInclude Include="EdiMap.h" />
+    <ClInclude Include="EdiPaint.h" />
+    <ClInclude Include="EdiTool.h" />
+    <ClInclude Include="GUI.h" />
+    <ClInclude Include="GUIButton.h" />
+    <ClInclude Include="GUIColor.h" />
+    <ClInclude Include="GUIDef.h" />
+    <ClInclude Include="GUIDlg.h" />
+    <ClInclude Include="GUIEdit.h" />
+    <ClInclude Include="GUIItem.h" />
+    <ClInclude Include="GUITile.h" />
+    <ClInclude Include="GUIUtil.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="StdAfx.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Editor.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Editor.ico" />
+    <None Include="scripts\gui.pl">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\mod.pl">
+      <Filter>scripts</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="scripts">
+      <UniqueIdentifier>{876beb75-a46e-4427-87d1-b48b40afecc5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="scripts\editor.pl">
+      <Filter>scripts</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

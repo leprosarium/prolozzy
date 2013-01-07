@@ -7,12 +7,24 @@
 #include "EdiApp.h"
 #include "Resource.h"
 
+#include "SWI-cpp-m.h"
+
 #include "gs.h"
 #include "EdiMap.h"
 #include "Gui.h"
 #include "GuiTile.h"
 
 cEdiApp* cEdiApp::m_app = NULL;
+
+PREDICATE_M(core, dl, 1)
+{
+	char * msg = A1;
+	dlog(LOGGS, msg);
+	dlog(LOGGS, "\n");
+	return true;
+}
+
+
 
 cEdiApp::cEdiApp()
 {
@@ -88,7 +100,9 @@ BOOL cEdiApp::Init()
 		ERRORMESSAGE("Script compiling error."); 
 		return FALSE; 
 	}
+	g_gui->ScriptPrologDo("editor:init");
 	g_gui->ScriptDo("EDI_Init();");
+
 
 	// tools
 	m_tool[TOOL_PAINT]->Init();

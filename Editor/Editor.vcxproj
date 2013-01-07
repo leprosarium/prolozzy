@@ -69,6 +69,12 @@
     <PostBuildEvent>
       <Command>copy /B $(OutDir)$(ProjectName).exe+$(OutDir)$(ProjectName).prc ..\Bin\$(ProjectName)_d.exe</Command>
     </PostBuildEvent>
+    <CustomBuild>
+      <AdditionalInputs>scripts\gui.pl;scripts\editor.pl;scripts\mod.pl</AdditionalInputs>
+      <Outputs>$(OutDir)$(ProjectName).prc</Outputs>
+      <Message>Build Prolog State</Message>
+      <Command>"c:\Program Files (x86)\pl\bin\swipl.exe" -q --stand_alone=true  -o $(OutDir)$(ProjectName).prc -c %(FullPath)</Command>
+    </CustomBuild>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -94,6 +100,12 @@
     <PostBuildEvent>
       <Command>copy /B $(OutDir)$(ProjectName).exe+$(OutDir)$(ProjectName).prc ..\Bin\$(ProjectName).exe</Command>
     </PostBuildEvent>
+    <CustomBuild>
+      <AdditionalInputs>scripts\gui.pl;scripts\editor.pl;scripts\mod.pl</AdditionalInputs>
+      <Outputs>$(OutDir)$(ProjectName).prc</Outputs>
+      <Message>Build Prolog State</Message>
+      <Command>"c:\Program Files (x86)\pl\bin\swipl.exe" -q --stand_alone=true  -o $(OutDir)$(ProjectName).prc -c %(FullPath)</Command>
+    </CustomBuild>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="EdiApp.cpp" />
@@ -136,15 +148,9 @@
     <None Include="Editor.ico" />
     <CustomBuild Include="scripts\editor.pl">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"c:\Program Files (x86)\pl\bin\swipl.exe" -q --stand_alone=true  -o $(OutDir)$(ProjectName).prc -c %(FullPath)</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Build Prolog State</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)$(ProjectName).prc</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)$(ProjectName).prc</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Build Prolog State</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"c:\Program Files (x86)\pl\bin\swipl.exe" -q --stand_alone=true  -o $(OutDir)$(ProjectName).prc -c %(FullPath)</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">scripts\editor.pl</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">scripts\editor.pl</AdditionalInputs>
     </CustomBuild>
+    <None Include="scripts\gui.pl" />
+    <None Include="scripts\mod.pl" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Editor.rc" />

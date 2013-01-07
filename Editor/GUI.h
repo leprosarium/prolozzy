@@ -85,6 +85,7 @@ virtual	int				DlgFind( cGUIDlg* dlg );		// return idx
 		BOOL			ScriptInit();					// init script
 		void			ScriptDone();					// finish script
 		void			ScriptDo( char* szcmd );		// do command
+		void			ScriptPrologDo(const std::string & pred);
 		int				ScriptCallback( int fid );		// call a script function by function id
 		BOOL			ScriptCompile( char* file );	// compile a file
 		void			ScriptRegister();				// register script functions

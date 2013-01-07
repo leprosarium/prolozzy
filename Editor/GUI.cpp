@@ -6,6 +6,8 @@
 #include "E9App.h"
 #include "I9Input.h"
 
+#include "SWI-cpp-m.h"
+
 #include "GUIItem.h"
 #include "GUIButton.h"
 #include "GUIEdit.h"
@@ -295,6 +297,21 @@ void cGUI::ScriptDo( char* szcmd )
 	unguard()
 }
 
+void cGUI::ScriptPrologDo(const std::string & pred)
+{
+	try
+	{
+		PlCall(pred.c_str());
+	}
+	catch(PlException const & e)
+	{
+		PlException ee(e);
+		dlog("Exception: %s", static_cast<LPCSTR>(ee));
+	}
+
+}
+
+
 int	cGUI::ScriptCallback( int fid )
 {
 	guard(cGUI::ScriptCallback)
@@ -407,6 +424,11 @@ int gsItemFind( gsVM* vm )
 	gs_pushint(vm, idx);
 	return 1;
 	unguard()
+}
+
+PREDICATE_M(gui, imgLoad, 2)
+{
+	return A2 = g_gui->ImgLoad(A1);
 }
 
 int gsImgLoad( gsVM* vm )

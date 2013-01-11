@@ -2,6 +2,9 @@
 // EdiApp.cpp
 //////////////////////////////////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
+
+#include <iostream>
+
 #include "Resource.h"
 #include "E9App.h"
 #include "EdiApp.h"
@@ -24,7 +27,26 @@ PREDICATE_M(core, dl, 1)
 	return true;
 }
 
+PREDICATE_M(core, ini, 4)
+{
+	static char tmp_fullpath[256];
+	if(!GetFullPathName(A1, 255, tmp_fullpath, NULL )) 
+		return false;
 
+	PlTerm val = A4;	
+	if(val.type() == PL_VARIABLE)
+	{
+		char value[256]; value[0]=0;
+		if(GetPrivateProfileString(A2, A3, "", value, 256, tmp_fullpath ) == 0)
+			return false;
+		PlTerm ct;
+		if ( !PL_chars_to_term(value, ct))
+			throw PlResourceError(ct);
+		return A4 = ct;
+	}
+	WritePrivateProfileString(A2, A3, val, tmp_fullpath );
+	return true;
+}
 
 cEdiApp::cEdiApp()
 {
@@ -594,6 +616,133 @@ int gsTileReload( gsVM* vm )
 	unguard()
 }
 
+PREDICATE_M(edi, getTool, 1)
+{
+	return A1 = EdiApp()->m_toolcrt;
+}
+
+PREDICATE_M(edi, getAxes, 1)
+{
+	return A1 = EdiApp()->m_axes;
+}
+
+PREDICATE_M(edi, getSnap, 1)
+{
+	return A1 = EdiApp()->m_snap;
+}
+
+PREDICATE_M(edi, getGrid, 1)
+{
+	return A1 = EdiApp()->m_grid;
+}
+
+PREDICATE_M(edi, getGridSize, 1)
+{
+	return A1 = EdiApp()->m_gridsize;
+}
+
+PREDICATE_M(edi, getScrW, 1)
+{
+	return A1 = EdiApp()->GetScrW();
+}
+
+PREDICATE_M(edi, getScrH, 1)
+{
+	return A1 = EdiApp()->GetScrH();
+}
+
+PREDICATE_M(edi, getMapW, 1)
+{
+	return A1 = g_map.m_mapw;
+}
+
+PREDICATE_M(edi, getMapH, 1)
+{
+	return A1 = g_map.m_maph;
+}
+
+PREDICATE_M(edi, getRoomW, 1)
+{
+	return A1 = g_map.m_roomw;
+}
+
+PREDICATE_M(edi, getRoomH, 1)
+{
+	return A1 = g_map.m_roomh;
+}
+
+PREDICATE_M(edi, getRoomGrid, 1)
+{
+	return A1 = g_map.m_roomgrid;
+}
+
+PREDICATE_M(edi, getCamX, 1)
+{
+	return A1 = g_map.m_camx;
+}
+
+PREDICATE_M(edi, getCamY, 1)
+{
+	return A1 = g_map.m_camy;
+}
+
+PREDICATE_M(edi, getAxeX, 1)
+{
+	return A1 = EdiApp()->GetAxeX();
+}
+
+PREDICATE_M(edi, getAxeY, 1)
+{
+	return A1 = EdiApp()->GetAxeY();
+}
+
+PREDICATE_M(edi, getCamZ, 1)
+{
+	return A1 = g_map.m_camz;
+}
+
+PREDICATE_M(edi, getSelect, 1)
+{
+	return A1 = g_map.m_selectcount;
+}
+
+
+PREDICATE_M(edi, getBrushRect, 1)
+{
+	return A1 = g_paint.m_brushrect;
+}
+
+
+PREDICATE_M(edi, getColorBack1, 1)
+{
+	return A1 = static_cast<int>(EdiApp()->GetColor(EDI_COLORBACK1));
+}
+
+PREDICATE_M(edi, getColorBack2, 1)
+{
+	return A1 = static_cast<int>(EdiApp()->GetColor(EDI_COLORBACK2));
+}
+
+PREDICATE_M(edi, getColorGrid1, 1)
+{
+	return A1 = static_cast<int>(EdiApp()->GetColor(EDI_COLORGRID1));
+}
+
+PREDICATE_M(edi, getColorGrid2, 1)
+{
+	return A1 = static_cast<int>(EdiApp()->GetColor(EDI_COLORGRID2));
+}
+
+PREDICATE_M(edi, getColorGrid3, 1)
+{
+	return A1 = static_cast<int>(EdiApp()->GetColor(EDI_COLORGRID3));
+}
+
+PREDICATE_M(edi, getColorMap, 1)
+{
+	return A1 = static_cast<int>(EdiApp()->GetColor(EDI_COLORMAP));
+}
+
 // edi .....................................................................................
 int gsEdiGet( gsVM* vm ) 
 {
@@ -631,6 +780,141 @@ int gsEdiGet( gsVM* vm )
 	gs_pushint(vm,ret);
 	return 1;
 	unguard()
+}
+
+
+PREDICATE_M(edi, setTool, 1)
+{
+	EdiApp()->ToolSet(A1);
+	return true;
+}
+
+PREDICATE_M(edi, setAxes, 1)
+{
+	EdiApp()->m_axes = A1;
+	return true;
+}
+
+PREDICATE_M(edi, setSnap, 1)
+{
+	EdiApp()->m_snap = A1;
+	return true;
+}
+
+PREDICATE_M(edi, setGrid, 1)
+{
+	EdiApp()->m_grid = A1;
+	return true;
+}
+
+PREDICATE_M(edi, setGridSize, 1)
+{
+	EdiApp()->m_gridsize = A1;
+	return true;
+}
+
+PREDICATE_M(edi, setRoomW, 1)
+{
+	g_map.m_roomw = A1;
+	return true;
+}
+
+PREDICATE_M(edi, setRoomH, 1)
+{
+	g_map.m_roomh = A1;
+	return true;
+}
+
+PREDICATE_M(edi, setRoomGrid, 1)
+{
+	g_map.m_roomgrid = A1;
+	return true;
+}
+
+PREDICATE_M(edi, setCamX, 1)
+{
+	g_map.m_camx = A1;
+	return true;
+}
+
+PREDICATE_M(edi, setCamY, 1)
+{
+	g_map.m_camy = A1;
+	return true;
+}
+
+PREDICATE_M(edi, setCamZ, 1)
+{
+	g_map.m_camz = A1;
+	return true;
+}
+
+PREDICATE_M(edi, setSelect, 1)
+{
+	g_map.m_selectcount = A1;
+	return true;
+}
+
+
+PREDICATE_M(edi, setBrushRect, 1)
+{
+	g_paint.m_brushrect = A1;
+	return true;
+}
+
+PREDICATE_M(edi, setColorBack1, 1)
+{
+	int64 l;
+	if(!PL_get_int64(A1, &l))
+		return false;
+	EdiApp()->m_color[EDI_COLORBACK1-EDI_COLOR] = l;
+	return true;
+}
+
+PREDICATE_M(edi, setColorBack2, 1)
+{
+	int64 l;
+	if(!PL_get_int64(A1, &l))
+		return false;
+	EdiApp()->m_color[EDI_COLORBACK2-EDI_COLOR] = l;
+	return true;
+}
+
+PREDICATE_M(edi, setColorGrid1, 1)
+{
+	int64 l;
+	if(!PL_get_int64(A1, &l))
+		return false;
+	EdiApp()->m_color[EDI_COLORGRID1-EDI_COLOR] = l;
+	return true;
+}
+
+PREDICATE_M(edi, setColorGrid2, 1)
+{
+	int64 l;
+	if(!PL_get_int64(A1, &l))
+		return false;
+	EdiApp()->m_color[EDI_COLORGRID2-EDI_COLOR] = l;
+	return true;
+}
+
+PREDICATE_M(edi, setColorGrid3, 1)
+{
+	int64 l;
+	if(!PL_get_int64(A1, &l))
+		return false;
+	EdiApp()->m_color[EDI_COLORGRID3-EDI_COLOR] = l;
+	return true;
+}
+
+
+PREDICATE_M(edi, setColorMap, 1)
+{
+	int64 l;
+	if(!PL_get_int64(A1, &l))
+		return false;
+	EdiApp()->m_color[EDI_COLORMAP-EDI_COLOR] = l;
+	return true;
 }
 
 int gsEdiSet( gsVM* vm ) 

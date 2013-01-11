@@ -228,37 +228,37 @@ func DlgOptions_BrowseColorTheme()
 // called from EDI_Init to load values from ini file
 func DlgOptions_Load()
 {
-	axes = 0;
-	gs_inigetint( INIFILE, "editor", "options_axes", &axes );
-	EdiSet(EDI_AXES,axes);
+//	axes = 0;
+//	gs_inigetint( INIFILE, "editor", "options_axes", &axes );
+//	EdiSet(EDI_AXES,axes);
 	
-	grid = 1;
-	gs_inigetint( INIFILE, "editor", "options_grid", &grid );
-	EdiSet(EDI_GRID,grid);
+//	grid = 1;
+//	gs_inigetint( INIFILE, "editor", "options_grid", &grid );
+//	EdiSet(EDI_GRID,grid);
 
-	snap = 1;
-	gs_inigetint( INIFILE, "editor", "options_snap", &snap );
-	EdiSet(EDI_SNAP,snap);
+//	snap = 1;
+//	gs_inigetint( INIFILE, "editor", "options_snap", &snap );
+//	EdiSet(EDI_SNAP,snap);
 
-	roomgrid = 0;
-	gs_inigetint( INIFILE, "editor", "options_roomgrid", &roomgrid );
-	EdiSet(EDI_ROOMGRID,roomgrid);
+//	roomgrid = 0;
+//	gs_inigetint( INIFILE, "editor", "options_roomgrid", &roomgrid );
+//	EdiSet(EDI_ROOMGRID,roomgrid);
 	
-	brushrect = 0;
-	gs_inigetint( INIFILE, "editor", "options_brushrect", &brushrect );
-	EdiSet(EDI_BRUSHRECT,brushrect);
+//	brushrect = 0;
+//	gs_inigetint( INIFILE, "editor", "options_brushrect", &brushrect );
+//	EdiSet(EDI_BRUSHRECT,brushrect);
 	
-	roomw = ROOMW;
-	gs_inigetint( INIFILE, "editor", "options_roomw", &roomw );
-	EdiSet(EDI_ROOMW,roomw);
+//	roomw = ROOMW;
+//	gs_inigetint( INIFILE, "editor", "options_roomw", &roomw );
+//	EdiSet(EDI_ROOMW,roomw);
 
-	roomh = ROOMH;
-	gs_inigetint( INIFILE, "editor", "options_roomh", &roomh );
-	EdiSet(EDI_ROOMH,roomh);
+//	roomh = ROOMH;
+//	gs_inigetint( INIFILE, "editor", "options_roomh", &roomh );
+//	EdiSet(EDI_ROOMH,roomh);
 	
-	color = COLOR_MAP;
-	gs_inigetint( INIFILE, "editor", "options_colormap", &color );
-	EdiSet(EDI_COLORMAP,color);
+//	color = COLOR_MAP;
+//	gs_inigetint( INIFILE, "editor", "options_colormap", &color );
+//	EdiSet(EDI_COLORMAP,color);
 }
 
 // called from EDI_Done to save some values in ini file

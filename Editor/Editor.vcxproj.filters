@@ -45,6 +45,12 @@
     <None Include="scripts\mod.pl">
       <Filter>scripts</Filter>
     </None>
+    <None Include="scripts\def.pl">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\dlgoptions.pl">
+      <Filter>scripts</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="scripts">

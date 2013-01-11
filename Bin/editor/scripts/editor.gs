@@ -45,7 +45,7 @@ func EDI_Init()
 	if( g_viewcount==0 ) error("No view modes defined!");
 	
 	// Options
-	DlgOptions_Load();
+//	DlgOptions_Load();
 	DlgOptions_ColorTheme();
 
 	// editor colors

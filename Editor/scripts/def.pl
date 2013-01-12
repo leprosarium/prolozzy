@@ -1,10 +1,13 @@
 :- module(def, [roomW/1, roomH/1,
 		color/2,
 		colorTheme/3,
-		setColorTheme/1]).
+		setColorTheme/1,
+		id/2]).
 
 roomW(240).	% default game room width
 roomH(136).	% default game room height
+
+
 
 % Colors
 
@@ -78,6 +81,15 @@ colorTheme(2, editsel, 0xffffffff).
 colorTheme(2, layer0, 0xff7A848B).
 colorTheme(2, layer1, 0xff90C0DF).
 colorTheme(2, layer2, 0xffffffff).
+
+
+% IDS
+
+id(dlgBack, 10).
+
+
+
+
 
 
 

@@ -864,45 +864,35 @@ PREDICATE_M(edi, setBrushRect, 1)
 
 PREDICATE_M(edi, setColorBack1, 1)
 {
-	int64 l;
-	if(!PL_get_int64(A1, &l))
-		return false;
+	int64 l = A1;
 	EdiApp()->m_color[EDI_COLORBACK1-EDI_COLOR] = l;
 	return true;
 }
 
 PREDICATE_M(edi, setColorBack2, 1)
 {
-	int64 l;
-	if(!PL_get_int64(A1, &l))
-		return false;
+	int64 l = A1;
 	EdiApp()->m_color[EDI_COLORBACK2-EDI_COLOR] = l;
 	return true;
 }
 
 PREDICATE_M(edi, setColorGrid1, 1)
 {
-	int64 l;
-	if(!PL_get_int64(A1, &l))
-		return false;
+	int64 l = A1;
 	EdiApp()->m_color[EDI_COLORGRID1-EDI_COLOR] = l;
 	return true;
 }
 
 PREDICATE_M(edi, setColorGrid2, 1)
 {
-	int64 l;
-	if(!PL_get_int64(A1, &l))
-		return false;
+	int64 l = A1;
 	EdiApp()->m_color[EDI_COLORGRID2-EDI_COLOR] = l;
 	return true;
 }
 
 PREDICATE_M(edi, setColorGrid3, 1)
 {
-	int64 l;
-	if(!PL_get_int64(A1, &l))
-		return false;
+	int64 l = A1;
 	EdiApp()->m_color[EDI_COLORGRID3-EDI_COLOR] = l;
 	return true;
 }
@@ -910,9 +900,7 @@ PREDICATE_M(edi, setColorGrid3, 1)
 
 PREDICATE_M(edi, setColorMap, 1)
 {
-	int64 l;
-	if(!PL_get_int64(A1, &l))
-		return false;
+	int64 l = A1;
 	EdiApp()->m_color[EDI_COLORMAP-EDI_COLOR] = l;
 	return true;
 }

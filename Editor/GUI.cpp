@@ -6,8 +6,6 @@
 #include "E9App.h"
 #include "I9Input.h"
 
-#include "SWI-cpp-m.h"
-
 #include "GUIItem.h"
 #include "GUIButton.h"
 #include "GUIEdit.h"
@@ -335,6 +333,20 @@ BOOL cGUI::ScriptCompile( char* file )
 	unguard()
 }
 
+cGUIDlg * cGUI::GetLastDlg()
+{
+	if(cGUIDlg * dlg = DlgGet(m_lastdlg))
+		return dlg;
+	throw PlException("no selected dialog");
+}
+
+cGUIItem * cGUI::GetLastItem()
+{
+	if(cGUIItem* item = GetLastDlg()->ItemGet(m_lastitem))
+		return item;
+	throw PlException("no selected item");
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // GUI EXPORT
@@ -587,6 +599,35 @@ int gsWinDlgOpenColor( gsVM* vm )
 // GUIDlg EXPORT
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
+int cGUI::makeDlg(char * className)
+{
+	if(cGUIDlg* dlg = (cGUIDlg*)GUICreateClass(className))
+		return m_lastdlg = DlgAdd(dlg); 
+	throw PlException("dialog creation failure");
+}
+
+PREDICATE_M(gui, dlgNew, 1)
+{
+	return A1 = g_gui->makeDlg("cGUIDlg");
+}
+
+PREDICATE_M(gui, dlgNew, 2)
+{
+	return A1 = g_gui->makeDlg(A2);
+}
+
+PREDICATE_M(gui, dlgSetRect, 4)
+{
+	cGUIDlg * dlg = g_gui->GetLastDlg();
+	dlg->SetInt(DV_X,  A1);
+	dlg->SetInt(DV_Y,  A2);
+	dlg->SetInt(DV_X2, A3);
+	dlg->SetInt(DV_Y2, A4);
+	return true;
+}
+
+
+
 int gsDlgNew( gsVM* vm )
 {
 	guard(gsDlgNew)
@@ -718,6 +759,27 @@ int gsDlgCount( gsVM* vm)
 // GUIItem EXPORT
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
+int cGUI::makeItem(char * className)
+{
+	cGUIDlg* dlg = GetLastDlg();
+	if(dlg->ItemCount() >= MAX_GUIITEMS)
+		throw PlException("too many items in a dialog");
+	cGUIItem* item = (cGUIItem*)GUICreateClass(className);
+	if(!item)
+		throw PlException("item creation failure");
+	return m_lastitem = dlg->ItemAdd(item);
+}
+
+PREDICATE_M(gui, itemNew, 1)
+{
+	return A1 = g_gui->makeItem("cGUIItem");
+}
+
+PREDICATE_M(gui, itemNew, 2)
+{
+	return A1 = g_gui->makeItem(A2);
+}
+
 int gsItemNew( gsVM* vm )
 {
 	guard(gsItemNew)
@@ -780,6 +842,52 @@ int gsItemGetInt( gsVM* vm )
 	gs_pushint( vm, item->GetInt( var ) );
 	return 1;
 	unguard()
+}
+
+PREDICATE_M(gui, itemSetRect, 4)
+{
+	cGUIItem* item = g_gui->GetLastItem();
+	item->SetInt(IV_X,  A1);
+	item->SetInt(IV_Y,  A2);
+	item->SetInt(IV_X2, A3);
+	item->SetInt(IV_Y2, A4);
+	return true;
+}
+
+PREDICATE_M(gui, itemSetTxt, 1)
+{
+	g_gui->GetLastItem()->SetTxt(IV_TXT,  A1);
+	return true;
+}
+
+PREDICATE_M(gui, itemSetColor, 2)
+{
+	cGUIItem* item = g_gui->GetLastItem();
+	int ColorIdx = A1;
+	if(ColorIdx < 0 || ColorIdx > 3)
+		throw PlDomainError("Color index", A1);
+	
+	int64 Color = A2;
+	item->SetInt(IV_COLOR + ColorIdx,  Color);
+	return true;
+}
+
+PREDICATE_M(gui, itemSetStyle, 1)
+{
+	g_gui->GetLastItem()->SetInt(IV_STYLE,  A1);
+	return true;
+}
+
+PREDICATE_M(gui, itemSetTxtAlign, 1)
+{
+	g_gui->GetLastItem()->SetInt(IV_TXTALIGN,  A1);
+	return true;
+}
+
+PREDICATE_M(gui, itemSetID, 1)
+{
+	g_gui->GetLastItem()->SetInt(IV_ID,  A1);
+	return true;
 }
 
 int gsItemSetInt( gsVM* vm )

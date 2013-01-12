@@ -1,4 +1,4 @@
-:- module(dlgoptions, [load/0,
+:- module(dlgOptions, [load/0,
 		      getOpt/3]).
 
 getOpt(Opt, _, Val) :-

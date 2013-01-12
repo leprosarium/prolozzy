@@ -190,9 +190,7 @@ PREDICATE_M(game, mapColor, 1)
 
 PREDICATE_M(game, setMapColor, 1)
 {
-	int64 v;
-	if(!PL_get_int64(A1, &v))
-		return false; 
+	int64 v = A1;
 	g_game.mapColor(v); 
 	return true;
 }
@@ -204,9 +202,7 @@ PREDICATE_M(game, borderColor, 1)
 
 PREDICATE_M(game, setBorderColor, 1)
 {
-	int64 v;
-	if(!PL_get_int64(A1, &v))
-		return false; 
+	int64 v = A1;
 	g_game.borderColor(v); 
 	return true;
 }

@@ -4,12 +4,13 @@
 :- use_module(mod, []).
 :- use_module(def, []).
 :- use_module(dlgoptions, []).
+:- use_module(dlgMenuBar, []).
 
 init :-
 	core:dl("editor init."),
 	gui:loadResources,
 	mod:init,
-	dlgoptions:load,
+	dlgOptions:load,
 
 
 	% editor colors
@@ -17,4 +18,7 @@ init :-
 	def:color(back2, BACK2), edi:setColorBack2(BACK2),
 	def:color(grid1, GRID1), edi:setColorGrid1(GRID1),
 	def:color(grid2, GRID2), edi:setColorGrid2(GRID2),
-	def:color(grid3, GRID3), edi:setColorGrid3(GRID3).
+	def:color(grid3, GRID3), edi:setColorGrid3(GRID3),
+
+	% MenuBar
+	dlgMenuBar:create.

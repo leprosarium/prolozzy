@@ -128,6 +128,7 @@ public:
   operator char *(void) const;
   operator long(void) const;
   operator int(void) const;
+  operator int64_t(void) const;
   operator double(void) const;
   operator PlAtom(void) const;
   operator void *(void) const;
@@ -640,6 +641,16 @@ __inline PlTerm::operator int(void) const
 { int v;
 
   if ( PL_get_integer(ref, &v) )
+    return v;
+
+  throw PlTypeError("integer", ref);
+  PL_THROWN(0);
+}
+
+__inline PlTerm::operator int64_t(void) const
+{ int64_t v;
+
+  if ( PL_get_int64(ref, &v) )
     return v;
 
   throw PlTypeError("integer", ref);

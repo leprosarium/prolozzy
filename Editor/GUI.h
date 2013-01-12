@@ -13,6 +13,7 @@
 #include "GUIUtil.h"
 #include "GUIDlg.h"
 
+#include "SWI-cpp-m.h"
 
 #define	GUIKEY_MB1			0
 #define	GUIKEY_MB2			1
@@ -69,6 +70,11 @@ inline	int				DlgAdd( cGUIDlg* dlg )			{ if(dlg) return m_dlg.Add(dlg); else ret
 inline	void			DlgDel( int idx )				{ if(0<=idx && idx<DlgCount()) m_dlg.Del(idx); }
 virtual	int				DlgFind( int id );				// return idx
 virtual	int				DlgFind( cGUIDlg* dlg );		// return idx
+
+	int makeDlg(char * className);
+	int makeItem(char * className);
+	cGUIDlg * GetLastDlg();
+	cGUIItem * GetLastItem(); 	
 
 		// data
 		cPList<cGUIDlg>	m_dlg;							// cGUIDlg list

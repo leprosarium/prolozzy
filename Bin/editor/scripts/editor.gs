@@ -49,12 +49,12 @@ func EDI_Init()
 	DlgOptions_ColorTheme();
 
 	// editor colors
-	EdiSet( EDI_COLORBACK1, 	COLOR_BACK1 ); 
-	EdiSet( EDI_COLORBACK2, 	COLOR_BACK2 ); 
-	EdiSet( EDI_COLORGRID1,		COLOR_GRID1 ); 
-	EdiSet( EDI_COLORGRID2,		COLOR_GRID2 ); 
-	EdiSet( EDI_COLORGRID3,		COLOR_GRID3 ); 
-	EdiSet( EDI_COLORMAP,		COLOR_MAP ); 
+//	EdiSet( EDI_COLORBACK1, 	COLOR_BACK1 ); 
+//	EdiSet( EDI_COLORBACK2, 	COLOR_BACK2 ); 
+//	EdiSet( EDI_COLORGRID1,		COLOR_GRID1 ); 
+//	EdiSet( EDI_COLORGRID2,		COLOR_GRID2 ); 
+//	EdiSet( EDI_COLORGRID3,		COLOR_GRID3 ); 
+//	EdiSet( EDI_COLORMAP,		COLOR_MAP ); 
 	
 	// MenuBar
 	DlgMenuBar_Create();

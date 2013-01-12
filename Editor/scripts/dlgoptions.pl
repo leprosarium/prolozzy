@@ -1,5 +1,5 @@
 :- module(dlgoptions, [load/0,
-		      colorTheme/0]).
+		      getOpt/3]).
 
 getOpt(Opt, _, Val) :-
 	format(string(Key), 'options_~a', [Opt]),
@@ -9,7 +9,6 @@ getOpt(_Key, Def, Def).
 
 
 load :-
-	core:dl(load),
 	getOpt(axes, 0, Axes ),
 	getOpt(grid, 1, Grid ),
 	getOpt(snap, 1, Snap ),
@@ -21,8 +20,8 @@ load :-
 	getOpt(roomh, DefRoomH, Roomh),
 	def:color(map, DefColor),
 	getOpt(colormap, DefColor, Color),
+	getOpt(colortheme, 0, Theme),
 
-	core:dl(axes(Axes)),
 	edi:setAxes(Axes),
 	edi:setGrid(Grid),
 	edi:setSnap(Snap),
@@ -31,14 +30,11 @@ load :-
 	edi:setRoomW(Roomw),
 	edi:setRoomH(Roomh),
 	edi:setColorMap(Color),
+	def:setColorTheme(Theme).
 
-	core:dl(grid(Grid)),
-	core:dl(snap(Snap)),
-	core:dl(roomgrid(Roomgrid)),
-	core:dl(brushrect(Brushrect)),
-	core:dl(roomw(Roomw)),
-	core:dl(roomh(Roomh)),
-	core:dl(coloMap(Color)).
 
-colorTheme.
+
+
+
+
 

@@ -57,8 +57,8 @@ func EDI_Init()
 //	EdiSet( EDI_COLORMAP,		COLOR_MAP ); 
 	
 	// MenuBar
-	DlgMenuBar_Create();
-	LayerSetButton(0,2);
+//	DlgMenuBar_Create();
+//	LayerSetButton(0,2);
 	
 	// Status Bar
 	DlgStatusBar_Create();

@@ -33,10 +33,12 @@
 struct  tDlgKey
 {
 	tDlgKey()	{};
+	tDlgKey(int key, int flags, const std::string & cmd) : m_key(key), m_flags(flags), cmd(cmd) {}
 	~tDlgKey()	{ if(m_cmd) sfree(m_cmd); }
 	int		m_key;
 	byte	m_flags;			// bit 0 = shift, bit 1 = ctrl, bit 2 = alt etc
 	char*	m_cmd;				// action to be done on key
+	std::string cmd;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -80,6 +82,7 @@ virtual	int				ItemFind			( cGUIItem* item );
 
 		cPList<tDlgKey>		m_keys;										// key list
 		void				AddKey				( int key, byte flags, char* cmd );
+		void				AddKeyP  (int key, int flags, const std::string & cmd);
 		void				TestKey				();
 					
 };

@@ -27,6 +27,7 @@
 
 #include <SWI-Prolog.h>
 #include <string.h>
+#include <string>
 #ifndef __APPLE__
 #include <malloc.h>
 #endif
@@ -132,6 +133,7 @@ public:
   operator double(void) const;
   operator PlAtom(void) const;
   operator void *(void) const;
+  operator std::string() const;
 
   int type()
   { return PL_term_type(ref);
@@ -686,6 +688,17 @@ __inline PlTerm::operator void *(void) const
   throw PlTypeError("pointer", ref);
   PL_THROWN(NULL);
 }
+
+__inline PlTerm::operator std::string() const
+{ char *s;
+
+  if ( PL_get_chars(ref, &s, CVT_ALL|CVT_WRITE|BUF_RING) )
+    return std::string(s);
+
+  throw PlTypeError("text", ref);
+  PL_THROWN(NULL);
+}
+
 
 					/* compounds */
 

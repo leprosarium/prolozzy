@@ -2,7 +2,8 @@
 		color/2,
 		colorTheme/3,
 		setColorTheme/1,
-		id/2]).
+		id/2,
+	       mb/3]).
 
 roomW(240).	% default game room width
 roomH(136).	% default game room height
@@ -86,6 +87,52 @@ colorTheme(2, layer2, 0xffffffff).
 % IDS
 
 id(dlgBack, 10).
+id(dlgTitle, 11).
+id(dlgItem, 20).
+
+% user defined ids should start from here (1000+)
+id(dlgMenuBar, 1000).
+id(dlgStatusBar1, 1001).
+id(dlgStatusBar2, 1002).
+
+id(dlgTileMap, 1015).
+id(dlgTileBrowse, 1018).
+id(dlgProps, 1020).
+id(dlgColor, 1021).
+id(dlgOptions, 1022).
+id(dlgInfo, 1023).
+id(dlgRoomProps, 1024).
+
+
+%mb(first, 1100).
+
+
+% menubar buttons
+mb(t0, menu, 1100).
+mb(t0, view, 1101).
+mb(t0, tool, 1102).
+
+mb(t1, props, 1103).
+mb(t1, tile, 1104).
+mb(t1, mapping, 1105).
+mb(t1, flip, 1106).
+mb(t1, color, 1107).
+mb(t1, shader, 1108).
+mb(t1, type, 1109).
+mb(t1, draw, 1110).
+mb(t1, material, 1111).
+mb(t1, class, 1112).
+
+mb(t2, search, 1113).
+mb(t2, change, 1114).
+mb(t2, script, 1115).
+mb(t2, script2, 1116).
+mb(t2, script3, 1117).
+
+%mb(last, 1118).
+
+%mb(layer, 1200). %LAYER_MAX, consecutive, ids
+%, 1220
 
 
 

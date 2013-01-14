@@ -2,7 +2,9 @@
 	       styleCode/2,
 	       alignCode/2,
 	       createDlg/5,
-	       createItem/6]).
+	       createItem/6,
+	       dlgAddKeys/1,
+	       createButtonImg/7]).
 
 styleCode(none, 0).
 styleCode(backgr, 1). % color bar
@@ -65,10 +67,10 @@ loadResources :-
 % Dialogs
 
 createDlg(X, Y, W, H, Style) :-
-	gui:dlgNew(_IDX),
+	dlg:new(_IDX),
 	X2 is X + W,
 	Y2 is Y + H,
-	gui:dlgSetRect(X, Y, X2, Y2),
+	dlg:setRect(X, Y, X2, Y2),
 	def:color(gui, COLOR_GUI),
 	createItem(0, 0, W, H, Style, [color(0, COLOR_GUI), color(1, COLOR_GUI), color(2, COLOR_GUI)]),
 	def:id(dlgBack, ID),
@@ -87,6 +89,19 @@ createItem(X, Y, W, H, Style, Props) :-
 	alignCode(centerxy, Align),
 	gui:itemSetTxtAlign(Align).
 
+createButtonImg(X, Y, W, H, Img0, Img1, Cmd ) :-
+	def:color(gui, COLOR_GUI),
+	def:color(gui1, COLOR_GUI1),
+	def:color(gui2, COLOR_GUI2),
+	createItem(X, Y, W, H, [gradient, border3d], [color(0, COLOR_GUI1), color(1, COLOR_GUI2), color(2, COLOR_GUI)]),
+	gui:itemSetImg0(Img0),
+	gui:itemSetImg1(Img1),
+	gui:itemSetCmdAction(Cmd).
+
+
+
+
+
 itemSetProps([]).
 itemSetProps([Prop|Props]) :-
 	itemSetProp(Prop),
@@ -94,6 +109,29 @@ itemSetProps([Prop|Props]) :-
 
 itemSetProp(text(Text)):- gui:itemSetTxt(Text).
 itemSetProp(color(N, Text)):- gui:itemSetColor(N, Text).
+
+dlgAddKeys([]).
+dlgAddKeys([Key|Keys]) :-
+	addKey(Key),
+	dlgAddKeys(Keys).
+
+
+addKey(KeyOp > Cmd) :-
+	parceKeyOp(KeyOp, Key, Flags),
+	dlg:addKey(Key, Flags, Cmd).
+
+
+parceKeyOp(Key, K, 0) :-
+	keys:key(Key, K).
+
+parceKeyOp(Flag, 0, F) :-
+	keys:flag(Flag, F).
+
+
+parceKeyOp(A+B, K, F):-
+	(   parceKeyOp(A, 0, F1), parceKeyOp(B, K, F2)
+	;   parceKeyOp(A, K, F1), parceKeyOp(B, 0, F2)),
+	F is F1 + F2.
 
 
 

@@ -54,6 +54,9 @@
     <None Include="scripts\dlgMenuBar.pl">
       <Filter>scripts</Filter>
     </None>
+    <None Include="scripts\keys.pl">
+      <Filter>scripts</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="scripts">

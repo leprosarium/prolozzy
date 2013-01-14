@@ -415,6 +415,11 @@ int gsGuiSetTxt( gsVM* vm )
 }
 
 
+PREDICATE_M(dlg, find, 2)
+{
+	return A2 = g_gui->DlgFind(A1);
+}
+
 int gsDlgFind( gsVM* vm )
 {
 	guard(gsDlgFind)
@@ -423,6 +428,12 @@ int gsDlgFind( gsVM* vm )
 	gs_pushint(vm, idx);
 	return 1;
 	unguard()
+}
+
+
+PREDICATE_M(gui, itemFind, 2)
+{
+	return A2 = g_gui->GetLastDlg()->ItemFind(A1);
 }
 
 int gsItemFind( gsVM* vm )
@@ -606,17 +617,17 @@ int cGUI::makeDlg(char * className)
 	throw PlException("dialog creation failure");
 }
 
-PREDICATE_M(gui, dlgNew, 1)
+PREDICATE_M(dlg, new, 1)
 {
 	return A1 = g_gui->makeDlg("cGUIDlg");
 }
 
-PREDICATE_M(gui, dlgNew, 2)
+PREDICATE_M(dlg, new, 2)
 {
 	return A1 = g_gui->makeDlg(A2);
 }
 
-PREDICATE_M(gui, dlgSetRect, 4)
+PREDICATE_M(dlg, setRect, 4)
 {
 	cGUIDlg * dlg = g_gui->GetLastDlg();
 	dlg->SetInt(DV_X,  A1);
@@ -646,6 +657,17 @@ int gsDlgNew( gsVM* vm )
 	gs_pushint(vm, g_gui->m_lastdlg);
 	return 1;
 	unguard()
+}
+
+
+PREDICATE_M(dlg, select, 1)
+{
+	int idx = A1;
+	if(idx < 0 || idx >= g_gui->DlgCount()) 
+		throw PlDomainError("invalid dialog index", A1);
+	g_gui->m_lastdlg = idx;
+	g_gui->m_lastitem = -1;
+	return true;
 }
 
 int gsDlgSelect( gsVM* vm )
@@ -689,6 +711,25 @@ int gsDlgGetInt( gsVM* vm )
 	return 1;
 	unguard()
 }
+
+PREDICATE_M(dlg, setID, 1)
+{
+	g_gui->GetLastDlg()->SetInt(DV_ID, A1);
+	return true;
+}
+
+PREDICATE_M(dlg, setTestKey, 0)
+{
+	g_gui->GetLastDlg()->SetInt(DV_TESTKEY, 1);
+	return true;
+}
+
+PREDICATE_M(dlg, resetTestKey, 0)
+{
+	g_gui->GetLastDlg()->SetInt(DV_TESTKEY, 0);
+	return true;
+}
+
 
 int gsDlgSetInt( gsVM* vm )
 {
@@ -734,6 +775,12 @@ int gsDlgSetTxt( gsVM* vm )
 	unguard()
 }
 
+PREDICATE_M(dlg, addKey, 3)
+{
+	g_gui->GetLastDlg()->AddKeyP(A1, A2, A3);
+	return true;
+}
+
 int gsDlgAddKey( gsVM* vm)
 {
 	guard(gsDlgAddKey)
@@ -741,7 +788,7 @@ int gsDlgAddKey( gsVM* vm)
 	if(!gs_cktype(vm,0,GS_INT)) return 0;
 	if(!gs_cktype(vm,1,GS_INT)) return 0;
 	if(!gs_cktype(vm,2,GS_STR)) return 0;
-	dlg->AddKey( gs_toint(vm, 0), gs_toint(vm, 1), gs_tostr(vm, 2));
+	dlg->AddKey( gs_toint(vm, 0), static_cast<byte>(gs_toint(vm, 1)), gs_tostr(vm, 2));
 	return 0;
 	unguard()
 }
@@ -803,6 +850,18 @@ int gsItemNew( gsVM* vm )
 	unguard()
 }
 
+PREDICATE_M(gui, itemSelect, 1)
+{
+	cGUIDlg * dlg = g_gui->GetLastDlg();
+	int idx = A1;
+	if(idx<0 || idx>=dlg->ItemCount())
+		throw PlDomainError("invalid item index", A1);
+	sassert(dlg->ItemGet(idx)); // safety
+	g_gui->m_lastitem = idx;
+	return true;
+}
+
+
 int gsItemSelect( gsVM* vm )
 {
 	guard(gsItemSelect)
@@ -832,6 +891,12 @@ int gsItemBuild( gsVM* vm )
 	unguard()
 }
 
+PREDICATE_M(gui, itemGetHidden, 0)
+{
+	return g_gui->GetLastItem()->GetInt(IV_HIDDEN) == 1;
+}
+
+
 int gsItemGetInt( gsVM* vm )
 {
 	guard(gsItemGetInt)
@@ -842,6 +907,12 @@ int gsItemGetInt( gsVM* vm )
 	gs_pushint( vm, item->GetInt( var ) );
 	return 1;
 	unguard()
+}
+
+PREDICATE_M(gui, itemSetID, 1)
+{
+	g_gui->GetLastItem()->SetInt(IV_ID,  A1);
+	return true;
 }
 
 PREDICATE_M(gui, itemSetRect, 4)
@@ -884,11 +955,43 @@ PREDICATE_M(gui, itemSetTxtAlign, 1)
 	return true;
 }
 
-PREDICATE_M(gui, itemSetID, 1)
+
+PREDICATE_M(gui, itemSetToolTip, 1)
 {
-	g_gui->GetLastItem()->SetInt(IV_ID,  A1);
+	g_gui->GetLastItem()->SetTxt(IV_TOOLTIP,  A1);
 	return true;
 }
+
+PREDICATE_M(gui, itemSetImg0, 1)
+{
+	g_gui->GetLastItem()->SetInt(IV_IMG,  A1);
+	return true;
+}
+
+PREDICATE_M(gui, itemSetImg1, 1)
+{
+	g_gui->GetLastItem()->SetInt(IV_IMG + 1,  A1);
+	return true;
+}
+
+PREDICATE_M(gui, itemSetCmdAction, 1)
+{
+	g_gui->GetLastItem()->SetTxt(IV_CMDACTION,  A1);
+	return true;
+}
+
+PREDICATE_M(gui, itemSetHidden, 1)
+{
+	g_gui->GetLastItem()->SetInt(IV_HIDDEN,  A1);
+	return true;
+}
+
+PREDICATE_M(gui, itemSetDisable, 1)
+{
+	g_gui->GetLastItem()->SetInt(IV_DISABLE,  A1);
+	return true;
+}
+
 
 int gsItemSetInt( gsVM* vm )
 {

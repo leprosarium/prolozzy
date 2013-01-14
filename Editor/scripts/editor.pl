@@ -5,6 +5,7 @@
 :- use_module(def, []).
 :- use_module(dlgoptions, []).
 :- use_module(dlgMenuBar, []).
+:- use_module(keys, []).
 
 init :-
 	core:dl("editor init."),

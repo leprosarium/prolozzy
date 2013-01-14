@@ -197,6 +197,12 @@ int cGUIDlg::ItemFind( cGUIItem* item )
 	unguard()
 }
 
+void cGUIDlg::AddKeyP( int key, int flags, const std::string & cmd )
+{
+	m_keys.Add(snew tDlgKey(key, flags, cmd));
+}
+
+
 void cGUIDlg::AddKey( int key, byte flags, char* cmd )
 {
 	guard(cGUIDlg::AddKey)

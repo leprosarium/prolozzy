@@ -61,7 +61,7 @@ func EDI_Init()
 //	LayerSetButton(0,2);
 	
 	// Status Bar
-	DlgStatusBar_Create();
+//	DlgStatusBar_Create();
 	
 	// DlgColor
 	DlgColor_Init();

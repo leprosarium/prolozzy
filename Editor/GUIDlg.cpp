@@ -82,7 +82,7 @@ void cGUIDlg::Close(int ret)
 	g_gui->m_lastitem = -1;
 
 	SetInt(DV_CLOSERET,ret);
-	g_gui->ScriptDo(GetTxt(DV_CLOSECMD)); 
+	g_gui->ScriptPrologDo(GetTxt(DV_CLOSECMD)); 
 	
 	g_gui->m_lastdlg = -1;
 	g_gui->m_lastitem = -1;
@@ -234,7 +234,7 @@ void cGUIDlg::TestKey()
 				// select this dialog when we call OnKey command
 				g_gui->m_lastdlg = g_gui->DlgFind(this);
 				g_gui->m_lastitem = -1;
-				g_gui->ScriptDo(m_keys.Get(i)->m_cmd);
+				g_gui->ScriptPrologDo(m_keys.Get(i)->m_cmd);
 				return;
 			}
 		}

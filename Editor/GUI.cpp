@@ -992,6 +992,19 @@ PREDICATE_M(gui, itemSetDisable, 1)
 	return true;
 }
 
+PREDICATE_M(gui, itemSetValue, 1)
+{
+	g_gui->GetLastItem()->SetInt(IV_VALUE,  A1);
+	return true;
+}
+
+PREDICATE_M(gui, itemSetTxtColor, 1)
+{
+	int64 Color = A1;
+	g_gui->GetLastItem()->SetInt(IV_TXTCOLOR,  Color);
+	return true;
+}
+
 
 int gsItemSetInt( gsVM* vm )
 {

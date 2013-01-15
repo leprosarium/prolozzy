@@ -2,12 +2,15 @@
 		color/2,
 		colorTheme/3,
 		setColorTheme/1,
-		id/2,
-	       mb/3]).
+		dlg/2,
+		mb/3,
+		mb/2, layerMax/1]).
 
 roomW(240).	% default game room width
 roomH(136).	% default game room height
 
+
+layerMax(8).
 
 
 % Colors
@@ -86,23 +89,22 @@ colorTheme(2, layer2, 0xffffffff).
 
 % IDS
 
-id(dlgBack, 10).
-id(dlgTitle, 11).
-id(dlgItem, 20).
+dlg(back, 10).
+dlg(title, 11).
+dlg(item, 20).
 
 % user defined ids should start from here (1000+)
-id(dlgMenuBar, 1000).
-id(dlgStatusBar1, 1001).
-id(dlgStatusBar2, 1002).
+dlg(menuBar, 1000).
+dlg(statusBar1, 1001).
+dlg(statusBar2, 1002).
 
-id(dlgTileMap, 1015).
-id(dlgTileBrowse, 1018).
-id(dlgProps, 1020).
-id(dlgColor, 1021).
-id(dlgOptions, 1022).
-id(dlgInfo, 1023).
-id(dlgRoomProps, 1024).
-
+dlg(tileMap, 1015).
+dlg(tileBrowse, 1018).
+dlg(props, 1020).
+dlg(color, 1021).
+dlg(options, 1022).
+dlg(info, 1023).
+dlg(roomProps, 1024).
 
 %mb(first, 1100).
 
@@ -131,7 +133,7 @@ mb(t2, script3, 1117).
 
 %mb(last, 1118).
 
-%mb(layer, 1200). %LAYER_MAX, consecutive, ids
+mb(layer, 1200). %LAYER_MAX, consecutive, ids
 %, 1220
 
 

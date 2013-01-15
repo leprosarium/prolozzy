@@ -238,7 +238,7 @@ void cGUIItem::Action()
 	char* cmd = GetTxt(IV_CMDACTION);
 	if(cmd==NULL || cmd[0]==0) return;
 	Select();	
-	g_gui->ScriptDo(cmd);
+	g_gui->ScriptPrologDo(cmd);
 	unguard()
 }
 

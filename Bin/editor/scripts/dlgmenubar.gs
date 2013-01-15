@@ -65,13 +65,13 @@ func DlgMenuBar_Create()
 //	DlgMenuBar_Refresh();
 	
 	// layers
-	size = 16;
-	x = barw-2-size*LAYER_MAX;
-	for(i=0;i<LAYER_MAX;i++)
-	{
+//	size = 16;
+//	x = barw-2-size*LAYER_MAX;
+//	for(i=0;i<LAYER_MAX;i++)
+//	{
 //		LayerCreateButton(i,x,2);
-		x+=size;
-	}
+//		x+=size;
+//	}
 }
 
 // reposition the visible buttons

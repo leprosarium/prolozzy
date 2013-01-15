@@ -5,6 +5,7 @@
 :- use_module(def, []).
 :- use_module(dlgoptions, []).
 :- use_module(dlgMenuBar, []).
+:- use_module(dlgStatusBar, []).
 :- use_module(keys, []).
 
 init :-
@@ -22,4 +23,8 @@ init :-
 	def:color(grid3, GRID3), edi:setColorGrid3(GRID3),
 
 	% MenuBar
-	dlgMenuBar:create.
+	dlgMenuBar:create,
+
+	dlgStatusBar:create.
+
+

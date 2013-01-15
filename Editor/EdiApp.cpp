@@ -245,7 +245,7 @@ void cEdiApp::Done()
 	// must be able to destroy partial init too, in case Init has failed
 
 	// script exit
-	if(g_gui) g_gui->ScriptDo("EDI_Done();");
+	if(g_gui) g_gui->ScriptPrologDo("EDI_Done();");
 
 	// tools
 	m_tool[m_toolcrt]->Switch(FALSE);
@@ -298,7 +298,7 @@ void cEdiApp::Close()
 	if(m_toolcrt==0 && mode==1) return;
 	if(m_toolcrt==1 && (mode==1||mode==2)) return;
 	m_tool[m_toolcrt]->Reset();
-	g_gui->ScriptDo("EDI_Close();");
+	g_gui->ScriptPrologDo("EDI_Close();");
 	g_gui->m_isbusy = TRUE; // avoid tools problems
 	unguard();
 }

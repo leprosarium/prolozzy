@@ -3,8 +3,11 @@
 	       alignCode/2,
 	       createDlg/5,
 	       createItem/6,
+	       createItem/7,
 	       dlgAddKeys/1,
-	       createButtonImg/7]).
+	       createButtonImg/7,
+	       createText/5,
+	       createText/4]).
 
 styleCode(none, 0).
 styleCode(backgr, 1). % color bar
@@ -71,15 +74,14 @@ createDlg(X, Y, W, H, Style) :-
 	X2 is X + W,
 	Y2 is Y + H,
 	dlg:setRect(X, Y, X2, Y2),
-	def:color(gui, COLOR_GUI),
-	createItem(0, 0, W, H, Style, [color(0, COLOR_GUI), color(1, COLOR_GUI), color(2, COLOR_GUI)]),
-	def:id(dlgBack, ID),
+	createItem(0, 0, W, H, Style, [color(0, gui), color(1, gui), color(2, gui)]),
+	def:dlg(back, ID),
 	gui:itemSetID(ID).
 
 % Controls
 
-createItem(X, Y, W, H, Style, Props) :-
-	gui:itemNew(_ID, "cGUIItem"),
+createItem(Class, X, Y, W, H, Style, Props) :-
+	gui:itemNew(_ID, Class),
 	X2 is X + W,
 	Y2 is Y + H,
 	gui:itemSetRect(X, Y, X2, Y2),
@@ -89,17 +91,26 @@ createItem(X, Y, W, H, Style, Props) :-
 	alignCode(centerxy, Align),
 	gui:itemSetTxtAlign(Align).
 
+createItem(X, Y, W, H, Style, Props) :-
+	createItem("cGUIItem", X, Y, W, H, Style, Props).
+
 createButtonImg(X, Y, W, H, Img0, Img1, Cmd ) :-
-	def:color(gui, COLOR_GUI),
-	def:color(gui1, COLOR_GUI1),
-	def:color(gui2, COLOR_GUI2),
-	createItem(X, Y, W, H, [gradient, border3d], [color(0, COLOR_GUI1), color(1, COLOR_GUI2), color(2, COLOR_GUI)]),
+	createItem("cGUIButton", X, Y, W, H, [gradient, border3d], [color(0, gui1), color(1, gui2), color(2, gui)]),
 	gui:itemSetImg0(Img0),
 	gui:itemSetImg1(Img1),
 	gui:itemSetCmdAction(Cmd).
 
+createText(X, Y, W, Text) :-
+	createText(X, Y, W, Text, [left, centery]).
 
-
+createText(X, Y, W, Text, Align) :-
+	gui:itemNew(_IDX, "cGUIItem"),
+	X2 is X + W,
+	Y2 is Y + 20,
+	gui:itemSetRect(X, Y, X2, Y2),
+	gui:itemSetTxt(Text),
+	alignCode(Align, AlignCode),
+	gui:itemSetTxtAlign(AlignCode).
 
 
 itemSetProps([]).
@@ -108,7 +119,7 @@ itemSetProps([Prop|Props]) :-
 	itemSetProps(Props).
 
 itemSetProp(text(Text)):- gui:itemSetTxt(Text).
-itemSetProp(color(N, Text)):- gui:itemSetColor(N, Text).
+itemSetProp(color(N, Color)):- def:color(Color, Code), gui:itemSetColor(N, Code).
 
 dlgAddKeys([]).
 dlgAddKeys([Key|Keys]) :-

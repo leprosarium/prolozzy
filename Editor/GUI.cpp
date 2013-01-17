@@ -474,12 +474,22 @@ int gsImgFind( gsVM* vm )
 	unguard()
 }
 
+PREDICATE_M(gui, mouseX, 1)
+{
+	return A1 = g_gui->m_mousex;
+}
+
 int gsMouseX( gsVM* vm )
 {
 	guard(gsMouseX)
 	gs_pushint( vm, g_gui->m_mousex); 
 	return 1;
 	unguard()
+}
+
+PREDICATE_M(gui, mouseY, 1)
+{
+	return A1 = g_gui->m_mousey;
 }
 
 int gsMouseY( gsVM* vm )
@@ -510,6 +520,8 @@ int gsScrH( gsVM* vm )
 	unguard()
 }
 
+
+
 int gsFontH( gsVM* vm )
 {
 	guard(gsFontH)
@@ -518,6 +530,16 @@ int gsFontH( gsVM* vm )
 	return 1;
 	unguard()
 }
+
+PREDICATE_M(gui, textW, 2)
+{
+	if(!g_gui->m_font) return A2 = 0;
+	float w, h;
+	g_gui->m_font->GetTextBox(A1, w, h);
+	return A2 = static_cast<int>(w);
+
+}
+
 
 int gsTextW( gsVM* vm )
 {
@@ -530,6 +552,15 @@ int gsTextW( gsVM* vm )
 	return 1;
 	unguard()
 }
+
+PREDICATE_M(gui, textH, 2)
+{
+	if(!g_gui->m_font) return A2 = 0;
+	float w, h;
+	g_gui->m_font->GetTextBox(A1, w, h);
+	return A2 = static_cast<int>(h);
+}
+
 
 int gsTextH( gsVM* vm )
 {
@@ -627,18 +658,6 @@ PREDICATE_M(dlg, new, 2)
 	return A1 = g_gui->makeDlg(A2);
 }
 
-PREDICATE_M(dlg, setRect, 4)
-{
-	cGUIDlg * dlg = g_gui->GetLastDlg();
-	dlg->SetInt(DV_X,  A1);
-	dlg->SetInt(DV_Y,  A2);
-	dlg->SetInt(DV_X2, A3);
-	dlg->SetInt(DV_Y2, A4);
-	return true;
-}
-
-
-
 int gsDlgNew( gsVM* vm )
 {
 	guard(gsDlgNew)
@@ -689,6 +708,18 @@ int gsDlgGetSelect( gsVM* vm )
 	unguard()
 }
 
+PREDICATE_M(gui, dlgClose, 0)
+{
+	g_gui->GetLastDlg()->Close(0);
+	return true;
+}
+
+PREDICATE_M(gui, dlgClose, 1)
+{
+	g_gui->GetLastDlg()->Close(A1);
+	return true;
+}
+
 int gsDlgClose( gsVM* vm )
 {
 	guard(gsDlgClose)
@@ -698,6 +729,32 @@ int gsDlgClose( gsVM* vm )
 	dlg->Close(ret);
 	return 0;	
 	unguard()
+}
+
+PREDICATE_M(dlg, getRect, 4)
+{
+	cGUIDlg * dlg = g_gui->GetLastDlg();
+	bool a1 = A1 = dlg->GetInt(DV_X);
+	bool a2 = A2 = dlg->GetInt(DV_Y);
+	bool a3 = A3 = dlg->GetInt(DV_X2);
+	bool a4 = A4 = dlg->GetInt(DV_Y2);
+	return a1 && a2 && a3 && a4;
+}
+
+PREDICATE_M(dlg, getPos, 2)
+{
+	cGUIDlg * dlg = g_gui->GetLastDlg();
+	bool a1 = A1 = dlg->GetInt(DV_X);
+	bool a2 = A2 = dlg->GetInt(DV_Y);
+	return a1 && a2;
+}
+
+PREDICATE_M(dlg, getPos2, 2)
+{
+	cGUIDlg * dlg = g_gui->GetLastDlg();
+	bool a1 = A1 = dlg->GetInt(DV_X2);
+	bool a2 = A2 = dlg->GetInt(DV_Y2);
+	return a1 && a2;
 }
 
 int gsDlgGetInt( gsVM* vm )
@@ -730,6 +787,28 @@ PREDICATE_M(dlg, resetTestKey, 0)
 	return true;
 }
 
+PREDICATE_M(dlg, setModal, 0)
+{
+	g_gui->GetLastDlg()->SetInt(DV_MODAL,  1);
+	return true;
+}
+
+PREDICATE_M(dlg, setCloseOut, 0)
+{
+	g_gui->GetLastDlg()->SetInt(DV_CLOSEOUT,  1);
+	return true;
+}
+
+
+PREDICATE_M(dlg, setRect, 4)
+{
+	cGUIDlg * dlg = g_gui->GetLastDlg();
+	dlg->SetInt(DV_X,  A1);
+	dlg->SetInt(DV_Y,  A2);
+	dlg->SetInt(DV_X2, A3);
+	dlg->SetInt(DV_Y2, A4);
+	return true;
+}
 
 int gsDlgSetInt( gsVM* vm )
 {
@@ -777,7 +856,7 @@ int gsDlgSetTxt( gsVM* vm )
 
 PREDICATE_M(dlg, addKey, 3)
 {
-	g_gui->GetLastDlg()->AddKeyP(A1, A2, A3);
+	g_gui->GetLastDlg()->AddKey(A1, A2, A3);
 	return true;
 }
 
@@ -1002,6 +1081,13 @@ PREDICATE_M(gui, itemSetTxtColor, 1)
 {
 	int64 Color = A1;
 	g_gui->GetLastItem()->SetInt(IV_TXTCOLOR,  Color);
+	return true;
+}
+
+
+PREDICATE_M(gui, itemSetImgAlign, 1)
+{
+	g_gui->GetLastItem()->SetInt(IV_IMGALIGN,  A1);
 	return true;
 }
 

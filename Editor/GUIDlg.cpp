@@ -82,7 +82,8 @@ void cGUIDlg::Close(int ret)
 	g_gui->m_lastitem = -1;
 
 	SetInt(DV_CLOSERET,ret);
-	g_gui->ScriptPrologDo(GetTxt(DV_CLOSECMD)); 
+	if(char * cmd = GetTxt(DV_CLOSECMD))
+		g_gui->ScriptPrologDo(cmd);		
 	
 	g_gui->m_lastdlg = -1;
 	g_gui->m_lastitem = -1;
@@ -197,22 +198,9 @@ int cGUIDlg::ItemFind( cGUIItem* item )
 	unguard()
 }
 
-void cGUIDlg::AddKeyP( int key, int flags, const std::string & cmd )
+void cGUIDlg::AddKey( int key, int flags, const std::string & cmd )
 {
 	m_keys.Add(snew tDlgKey(key, flags, cmd));
-}
-
-
-void cGUIDlg::AddKey( int key, byte flags, char* cmd )
-{
-	guard(cGUIDlg::AddKey)
-	sassert(cmd!=NULL);
-	tDlgKey *t	= snew tDlgKey;
-	t->m_key	= key;
-	t->m_flags	= flags;
-	t->m_cmd	= sstrdup(cmd);
-	m_keys.Add(t);
-	unguard()
 }
 
 void cGUIDlg::TestKey()
@@ -234,7 +222,7 @@ void cGUIDlg::TestKey()
 				// select this dialog when we call OnKey command
 				g_gui->m_lastdlg = g_gui->DlgFind(this);
 				g_gui->m_lastitem = -1;
-				g_gui->ScriptPrologDo(m_keys.Get(i)->m_cmd);
+				g_gui->ScriptPrologDo(m_keys.Get(i)->cmd);	
 				return;
 			}
 		}

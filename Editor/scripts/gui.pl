@@ -1,13 +1,20 @@
 :- module(gui, [loadResources/0,
-	       styleCode/2,
-	       alignCode/2,
-	       createDlg/5,
-	       createItem/6,
-	       createItem/7,
-	       dlgAddKeys/1,
-	       createButtonImg/7,
-	       createText/5,
-	       createText/4]).
+		styleCode/2,
+		alignCode/2,
+		createDlg/5,
+		createDlgTitle/5,
+		createDlgTitleModal/5,
+		createItem/6,
+		createItem/7,
+		dlgAddKeys/1,
+		createButtonImg/7,
+		createText/5,
+		createText/4,
+		createImage/5,
+		dlgTitleH/1,
+		msgBoxOk/3]).
+
+dlgTitleH(20).
 
 styleCode(none, 0).
 styleCode(backgr, 1). % color bar
@@ -45,27 +52,22 @@ alignCode([Align|Aligns], A) :-
 
 
 loadResources :-
-	gui:imgLoad("Editor\\Graphics\\check1.tga", Img_check1),
-	core:dl(img(Img_check1)),
-	gui:imgLoad("Editor\\Graphics\\check2.tga", Img_check2),
-	core:dl(img(Img_check2)),
-	gui:imgLoad("Editor\\Graphics\\check3.tga", Img_check3),
-	core:dl(img(Img_check3)),
-	gui:imgLoad("Editor\\Graphics\\check4.tga", Img_check4),
-	core:dl(img(Img_check4)),
-	gui:imgLoad("Editor\\Graphics\\radio1.tga", Img_radio1),
-	core:dl(img(Img_radio1)),
-	gui:imgLoad("Editor\\Graphics\\radio2.tga", Img_radio2),
-	core:dl(img(Img_radio2)),
+	forall(member(Img,
+		      [check1, check2, check3, check4,
+		       radio1, radio2,
+		       icon_info, icon_question, icon_warning, icon_error]),
+	       loadImg(Img)).
 
-	gui:imgLoad("Editor\\Graphics\\icon_info.tga", Img_Icon_Info),
-	core:dl(img(Img_Icon_Info)),
-	gui:imgLoad("Editor\\Graphics\\icon_question.tga", Img_icon_Question),
-	core:dl(img(Img_icon_Question)),
-	gui:imgLoad("Editor\\Graphics\\icon_warning.tga", Img_Icon_Warning),
-	core:dl(img(Img_Icon_Warning)),
-	gui:imgLoad("Editor\\Graphics\\icon_error.tga", Img_Icon_Error),
-	core:dl(img(Img_Icon_Error)).
+
+loadImg(Img) :-
+	format(string(Path), 'Editor\\Graphics\\~a.tga', [Img]),
+	gui:imgLoad(Path, Idx),
+	recordz(img, img(Img, Idx)).
+
+getImg(Img, Idx) :-
+	recorded(img, img(Img, Idx)).
+
+
 
 % Dialogs
 
@@ -77,6 +79,24 @@ createDlg(X, Y, W, H, Style) :-
 	createItem(0, 0, W, H, Style, [color(0, gui), color(1, gui), color(2, gui)]),
 	def:dlg(back, ID),
 	gui:itemSetID(ID).
+
+createDlgTitle(X, Y, W, H, Text, Color0, Color1) :-
+	createDlg(X, Y, W, H, [backgr, border3d]),
+	WW is W - 4,
+	dlgTitleH(HH),
+	createItem("cGUITitle", 2, 2, WW, HH, [gradient, border3d, pressed], [text(Text), color(0, Color0), color(1, Color1), color(2, gui)]),
+	def:dlg(title, DLGID),
+	gui:itemSetID(DLGID).
+
+createDlgTitle(X, Y, W, H, Text) :-
+	createDlgTitle(X, Y, W, H, Text, title1, title2).
+
+
+createDlgTitleModal(X, Y, W, H, Text) :-
+	createDlgTitle(X, Y, W, H, Text, modal1, modal2),
+	dlg:setModal.
+
+
 
 % Controls
 
@@ -93,6 +113,11 @@ createItem(Class, X, Y, W, H, Style, Props) :-
 
 createItem(X, Y, W, H, Style, Props) :-
 	createItem("cGUIItem", X, Y, W, H, Style, Props).
+
+
+createButton(X, Y, W, Text, Cmd) :-
+	createItem("cGUIButton", X, Y, W, 20, [gradient, border3d], [text(Text), color(0, gui1), color(1, gui2), color(2, gui)]),
+	gui:itemSetCmdAction(Cmd).
 
 createButtonImg(X, Y, W, H, Img0, Img1, Cmd ) :-
 	createItem("cGUIButton", X, Y, W, H, [gradient, border3d], [color(0, gui1), color(1, gui2), color(2, gui)]),
@@ -111,6 +136,19 @@ createText(X, Y, W, Text, Align) :-
 	gui:itemSetTxt(Text),
 	alignCode(Align, AlignCode),
 	gui:itemSetTxtAlign(AlignCode).
+
+
+createImage(X, Y, W, H, Img) :-
+	getImg(Img, ImgIdx),
+	gui:itemNew(_, "cGUIItem"),
+	X2 is X + W,
+	Y2 is Y + H,
+	gui:itemSetRect(X, Y, X2, Y2),
+	styleCode(none, Style),
+	gui:itemSetStyle(Style),
+	gui:itemSetImg0(ImgIdx),
+	alignCode([left, top], Align),
+	gui:itemSetImgAlign(Align).
 
 
 itemSetProps([]).
@@ -143,6 +181,130 @@ parceKeyOp(A+B, K, F):-
 	(   parceKeyOp(A, 0, F1), parceKeyOp(B, K, F2)
 	;   parceKeyOp(A, K, F1), parceKeyOp(B, 0, F2)),
 	F is F1 + F2.
+
+
+
+msgBoxOk(Title, Text, Icon) :-
+	msgBox(Title, Text, Icon, [btn("OK", true)]),
+	addKey(return > gui:dlgClose),
+	addKey(escape > gui:dlgClose).
+
+
+
+
+% Message Boxes
+% buttoninfo = button tab info (if missing or empty then no buttons) {
+% {b1_name, b1_cmd}, ... }
+
+calcButtonW(Text, Min, Width) :-
+	gui:textW(Text, W),
+	W2 is W + 32,
+	(   W2 > Min
+	->  Width = W2
+	;   Width = Min).
+
+
+
+calcButtonsW([], Min, Min).
+calcButtonsW([btn(Text, _) |Btns], Min, Width) :-
+	calcButtonW(Text, Min, BtnWidth),
+	calcButtonsW(Btns, BtnWidth, Width).
+
+msgBox(Title, Text, Icon, ButtonInfos):-
+	length(ButtonInfos, Buttons),
+	core:dl(buttons(Buttons)),
+	calcButtonsW(ButtonInfos, 64, ButtonW0),
+	core:dl(buttonw(ButtonW0)),
+	MaxWidth = 200,
+	(   ButtonW0 > MaxWidth
+	->  ButtonW = MaxWidth
+	;   ButtonW = ButtonW0),
+	gui:textW(Title, TitleW),
+	gui:textW(Text, TextW),
+	gui:textH(Text, TextH),
+	dlgTitleH(DLGTITLEH),
+	DlgW = TextW + 8 + 32,  %Icon
+	DlgH is TextH + DLGTITLEH + 16,
+	(DlgW < TitleW ->  DlgW2 = TitleW; DlgW2 = DlgW),
+	(   Buttons > 0	->  DlgH2 is DlgH + 8 + 20; DlgH2 = DlgH),
+	ButtonsW is Buttons * (ButtonW + 8),
+	(DlgW2 < ButtonsW -> DlgW3 = ButtonsW; DlgW3 = DlgW2),
+	DlgW4 is DlgW2 + 16,
+	createDlgTitleModal(0, 0, DlgW4, DlgH2, Title),
+	dlg:setCloseOut,
+
+	% text box
+	TextX = 40,    %Icon
+	TextY is DLGTITLEH + 8,
+	createText(TextX, TextY, TextW, Text, [left, top]),
+	createImage(8, TextY, 32, 32, Icon),  %Icon
+	createButtons(ButtonInfos, Buttons, DlgW, TextY, TextH, ButtonW).
+
+createButtons(_, 0, _, _, _, _).
+createButtons(ButtonInfos, Buttons, DlgW, TextY, TextH, ButtonW) :-
+	ButtonW2 is ButtonW // 2,
+	Buts is (DlgW - 16) // Buttons,
+	Buts2 is Buts // 2,
+	ButX = 8,
+	ButY is TextY + TextH + 8,
+	createButtons1(ButtonInfos, ButX, ButY, Buts, Buts2, ButtonW, ButtonW2).
+
+createButtons1([], _, _, _, _, _, _).
+createButtons1([btn(Text, Cmd)|Bo], ButX, ButY, Buts, Buts2, ButtonW, ButtonW2) :-
+	X is ButX + Buts2 - ButtonW2,
+	createButton(X, ButY, ButtonW, Text, (gui:dlgClose, Cmd)),
+	XX is ButX + Buts,
+	createButtons1(Bo, XX, ButY, Buts, Buts2, ButtonW, ButtonW2),
+	dclgMoveToMouse,
+	dlgDockUp.
+
+
+% move dialog to mouse position and also prevent it to get ouside the screen
+dclgMoveToMouse :-
+	dlg:getRect(X, Y, X2, Y2),
+	W is X2 - X,
+	H is Y2 - Y,
+	gui:mouseX(MX),
+	gui:mouseY(MY),
+	XX is MX - W // 2,
+	YY is MY - H // 2,
+	(   XX < 0
+	->  XX2 = 0
+	;   XX2 = XX),
+	(   YY < 0
+	->  YY2 = 0
+	;   YY2 = YY),
+	edi:getScrW(ScrW),
+	edi:getScrH(ScrH),
+	XS is ScrW - W,
+	YS is ScrH - H,
+	(   XX2 > XS
+	->  XX3 = XS
+	;   XX3 = XX2),
+	(   YY2 > YS
+	->  YY3 = YS
+	;   YY3 = YY2),
+	XX4 is XX3 + W,
+	YY4 is YY3 + H,
+	dlg:setRect(XX3, YY3, XX4, YY4).
+
+% move dialog to the top menubar
+dlgDockUp :-
+	dlg:getPos(Y, X),
+	(   Y < 32
+	->  dlgMove(X, 32)
+	;   true).
+
+% just move dialog
+dlgMove(X, Y) :-
+	dlg:getRect(X1, Y1, X2, Y2),
+	XX is X + X2 - X1,
+	YY is Y + Y2 - Y1,
+	dlg:setRect(X, Y, XX, YY).
+
+
+
+
 
 
 

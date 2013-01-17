@@ -60,6 +60,12 @@
     <None Include="scripts\dlgStatusBar.pl">
       <Filter>scripts</Filter>
     </None>
+    <None Include="scripts\dlgColor.pl">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\actions.pl">
+      <Filter>scripts</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="scripts">

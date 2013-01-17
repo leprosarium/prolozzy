@@ -1,4 +1,5 @@
-:- module(editor, [init/0]).
+:- module(editor, [init/0,
+		  close/0]).
 
 :- use_module(gui, []).
 :- use_module(mod, []).
@@ -6,7 +7,9 @@
 :- use_module(dlgoptions, []).
 :- use_module(dlgMenuBar, []).
 :- use_module(dlgStatusBar, []).
+:- use_module(dlgColor, []).
 :- use_module(keys, []).
+:- use_module(actions, []).
 
 init :-
 	core:dl("editor init."),
@@ -25,6 +28,17 @@ init :-
 	% MenuBar
 	dlgMenuBar:create,
 
-	dlgStatusBar:create.
+	dlgStatusBar:create,
 
+	dlgColor:init,
+	(   edi:tileReload
+	->  (   edi:tileCount(0)
+	    ->	gui:msgBoxOk("Warning","No tiles loaded.\nCheck the path and the tiles folder.", icon_warning)
+	    ;	true)
+	;   actions:options). %failed to load tiles, check the tiles folder
 
+% also called on Alt+F4
+close :-
+	gui:msgBox("Question", "Do you want to exit the editor?\n(current map will be lost if not saved)", icon_question, [btn("EXIT", edi:exit), btn("CANCEL",true)]),
+	gui:dlgAddKeys([return > (gui:dlgClose, edi:exit),
+			escape > gui:dlgClose]).

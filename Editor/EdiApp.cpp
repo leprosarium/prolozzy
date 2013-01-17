@@ -298,7 +298,7 @@ void cEdiApp::Close()
 	if(m_toolcrt==0 && mode==1) return;
 	if(m_toolcrt==1 && (mode==1||mode==2)) return;
 	m_tool[m_toolcrt]->Reset();
-	g_gui->ScriptPrologDo("EDI_Close();");
+	g_gui->ScriptPrologDo("editor:close");
 	g_gui->m_isbusy = TRUE; // avoid tools problems
 	unguard();
 }
@@ -561,6 +561,12 @@ int gsTileFind( gsVM* vm )
 	unguard()
 }
 
+PREDICATE_M(edi, tileCount, 1) 
+{
+	return A1 = g_paint.TileCount();
+}
+
+
 int gsTileCount( gsVM* vm )  
 {
 	guard(gsTileCount)
@@ -591,6 +597,28 @@ int gsTileGet( gsVM* vm )
 	return 1;
 	unguard()
 }
+
+PREDICATE_M(edi, tileReload, 0)
+{
+	dlog(LOGAPP,"Reload tiles ...\n");
+
+	// clear old
+	g_paint.TileUnload();
+
+	// load from 2 ini dirs
+	BOOL ok = TRUE;
+	int loads = 0;
+	static char tilepath[256];
+	
+	if(ini_getstr( file_getfullpath(USER_INIFILE), "editor", "options_tiledir", tilepath, 256 )) 
+	{
+		if(g_paint.TileLoad(tilepath)) loads++;
+	}
+	else dlog(LOGAPP,"TileDir not specified in editor.ini\n");
+
+	return loads > 0;
+}
+
 
 int gsTileReload( gsVM* vm )
 {
@@ -940,6 +968,12 @@ int gsEdiSet( gsVM* vm )
 	
 	return 0;
 	unguard()
+}
+
+PREDICATE_M(edi, exit, 0)
+{
+	EdiApp()->m_exit=1;
+	return true;
 }
 
 int gsEdiExit( gsVM* vm )

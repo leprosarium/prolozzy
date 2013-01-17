@@ -67,12 +67,12 @@ func EDI_Init()
 	DlgColor_Init();
 
 	// Load tiles
-	ok = TileReload();
-	if(!ok) // failed to load tiles, check the tiles folder
-		Act_Options();
-	else
-	if(TileCount()==0)
-		MsgBoxOk("Warning","No tiles loaded.\nCheck the path and the tiles folder.",ICON_WARNING );
+//	ok = TileReload();
+//	if(!ok) // failed to load tiles, check the tiles folder
+//		Act_Options();
+//	else
+//	if(TileCount()==0)
+//		MsgBoxOk("Warning","No tiles loaded.\nCheck the path and the tiles folder.",ICON_WARNING );
 
 	g_mapfile = "noname.map";
 	RoomNamesReset(0);

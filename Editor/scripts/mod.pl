@@ -1,4 +1,4 @@
-:-module(mod, [init/0,
+:-module(mod, [shader/2,
 	       density/2,
 	       material/4,
 	       class/1,
@@ -6,7 +6,85 @@
 	       setView/1,
 	       viewMode/2,
 	       roomInfo/1,
-	       setRoomInfo/1]).
+	       setRoomInfo/1,
+	       brushNew/1,
+	       brushProp/2,
+	       brushProp/3,
+	       brushProp/4]).
+
+brushProp(user, 32).
+brushProp(max, 48).
+
+brushProp(layer, "layer",	"layer").
+brushProp(x, "x*",		"x readonly").
+brushProp(y, "y*",		"y readonly").
+brushProp(w, "w*",		"w readonly").
+brushProp(h, "h*",		"h readonly").
+brushProp(title, "tile",	"tile id").
+brushProp(frame, "frame",	"tile frame").
+brushProp(maxX1, "map x1",	"map left").
+brushProp(maxY1, "map y1",	"map top").
+brushProp(maxX2, "map x2",	"map right").
+brushProp(maxY2, "map y2",	"map bottom").
+brushProp(flip,  "flip",	"flip", select(["none","flip x","flip y","flip xy","flip r","flip xr","flip yr","flip xyr"])).
+brushProp(color, "color",	"color", color).
+brushProp(shader, "shader",	"shader", select(ShaderNames)) :-
+	ShaderNames = [opaque, blend, add, mod, mod2]. % only those shaders are available for users
+brushProp(scale, "scale",	"scale").
+brushProp(select, "select*",	"select").
+
+		% 16
+brushProp(type, "type",		"brush type (0=static,1=dynamic)", select(["static","dynamic"])).
+brushProp(id, "id",		"object id").
+brushProp(material, "material",	"material", select(MatNames)):-
+	mod:matNames(MatNames).
+brushProp(draw, "draw",		"draw mode (1=img,2=mat,3=both)", select(["none","img","mat","img+mat"])).
+brushProp(disable, "disable",	"no update no draw", select(["no","yes"])).
+brushProp(delay, "delay",	"frame delay").
+brushProp(anim, "anim",		"animation mode", select(["stop","play","loop"])).
+brushProp(collider, "collider",	"collider mode", select(["none","call handler","hard collision"])).
+brushProp(class, "class",	"generic class", select(ClassNames)) :-
+	mod:classNames(ClassNames).
+
+brushProp(status, "status",	"generic status").
+brushProp(target, "target",	"target id").
+brushProp(death, "death",	"death cause").
+brushProp(reserved, "reserved",	"reserved").
+brushProp(reserved, "reserved",	"reserved").
+brushProp(reserved, "reserved",	"reserved").
+brushProp(reserved, "reserved",	"reserved").% collision
+
+		% 32
+brushProp(user, "user",		"user", custom).
+brushProp(user, "user",		"user",	custom).
+brushProp(user, "user",		"user", custom).
+brushProp(user, "user",		"user",	custom).
+brushProp(user, "user",		"user", custom).
+brushProp(user, "user",		"user",	custom).
+brushProp(user, "user",		"user", custom).
+brushProp(user, "user",		"user",	custom).
+brushProp(user, "user",		"user", custom).
+brushProp(user, "user",		"user",	custom).
+brushProp(user, "user",		"user", custom).
+brushProp(user, "user",		"user",	custom).
+brushProp(user, "user",		"user", custom).
+brushProp(user, "user",		"user",	custom).
+brushProp(user, "user",		"user", custom).
+brushProp(user, "user",		"user",	custom).
+
+
+
+
+
+
+
+shader(opaque,	 0). % opaque
+shader(blend,    1). % alpha blend
+shader(add,      2). % additive color - used for light
+shader(mod,      3). % modulate color - used for darken
+shader(mod2,     4). % modulate 2 color - used for detail
+shader(alpharep, 5). % internal use for material view
+shader(max,      6). % max shaders
 
 density(void, 0xFF000000).
 density(soft, 0xff606060).
@@ -59,70 +137,38 @@ setView(V) :- propSet(view, V).
 roomInfo(I):- propGet(roomInfo, I).
 setRoomInfo(I) :- propSet(roomInfo, I).
 
-init :-
-	% shaders
-	ShaderNames = [opaque, blend, add, mod, mod2], % only those shaders are available for users
-	mod:classNames(ClassNames),
-	mod:matNames(MatNames),
-	BrushProps = [
-		prop( "layer",		"layer"),
-		prop( "x*",		"x readonly"),
-		prop( "y*",		"y readonly"),
-		prop( "w*",		"w readonly"),
-		prop( "h*",		"h readonly"),
-		prop( "tile",		"tile id"),
-		prop( "frame",		"tile frame"),
-		prop( "map x1",		"map left"),
-		prop( "map y1",		"map top"),
-		prop( "map x2",		"map right"),
-		prop( "map y2",		"map bottom"),
-		prop( "flip",		"flip", select(["none","flip x","flip y","flip xy","flip r","flip xr","flip yr","flip xyr"])),
-		prop( "color",		"color", color),
-		prop( "shader",		"shader", select(ShaderNames)),
-		prop( "scale",		"scale"),
-		prop( "select*",	"select"),
-
-		% 16
-		prop( "type",		"brush type (0=static,1=dynamic)", select(["static","dynamic"])),
-		prop( "id",		"object id"),
-		prop( "material",	"material", select(MatNames)),
-		prop( "draw",		"draw mode (1=img,2=mat,3=both)", select(["none","img","mat","img+mat"])),
-		prop( "disable",	"no update no draw", select(["no","yes"])),
-		prop( "delay",		"frame delay"),
-		prop( "anim",		"animation mode", select(["stop","play","loop"])),
-		prop( "collider",	"collider mode", select(["none","call handler","hard collision"])),
-		prop( "class",		"generic class", select(ClassNames)),
-		prop( "status",		"generic status"),
-		prop( "target",		"target id"),
-		prop( "death",		"death cause"),
-		prop( "reserved",	"reserved"),
-		prop( "reserved",	"reserved"),
-		prop( "reserved",	"reserved"),
-		prop( "reserved",	"reserved"),% collision
-
-		% 32
-		prop( "user",		"user", custom),
-		prop( "user",		"user",	custom),
-		prop( "user",		"user", custom),
-		prop( "user",		"user",	custom),
-		prop( "user",		"user", custom),
-		prop( "user",		"user",	custom),
-		prop( "user",		"user", custom),
-		prop( "user",		"user",	custom),
-		prop( "user",		"user", custom),
-		prop( "user",		"user",	custom),
-		prop( "user",		"user", custom),
-		prop( "user",		"user",	custom),
-		prop( "user",		"user", custom),
-		prop( "user",		"user",	custom),
-		prop( "user",		"user", custom),
-		prop( "user",		"user",	custom)],
-	core:dl(props(BrushProps)).
-
 classNames(Names):-
 	findall(Name, class(Name), Names).
 matNames(Names) :-
 	findall(Name, material(Name, _, _, _), Names).
+
+% Initialize props of the current tool brush, specific to the current type
+% Called from Brush Type button in the menu bar
+
+brushNew(Type) :-
+	shader(blend, SHADER_BLEND),
+	edi:toolBrushSetShader(SHADER_BLEND),
+	edi:toolBrushSetScale(100),
+	edi:toolBrushSetID(0),
+	edi:toolBrushSetMaterial(0),
+	edi:toolBrushSetDisable(0),
+	edi:toolBrushSetDelay(3),
+	edi:toolBrushSetAnim(2),
+	edi:toolBrushSetCollider(0),
+	edi:toolBrushSetClass(0),
+	edi:toolBrushSetStatus(0),
+	edi:toolBrushSetTarget(0),
+	edi:toolBrushSetDeath(0),
+	(   Type == 0
+	->  Draw = 3   % draw in img+mat
+	;   Draw = 1), % visible
+	edi:toolBrushSetDraw(Draw),
+	brushProp(user, USER),
+	brushProp(max, MX),
+	UserMax is MX - USER - 1,
+	forall(between(0, UserMax, Idx), edi:toolBrushSetUser(Idx,0)).
+
+
 
 
 

@@ -75,12 +75,12 @@ func EDI_Init()
 //		MsgBoxOk("Warning","No tiles loaded.\nCheck the path and the tiles folder.",ICON_WARNING );
 
 	g_mapfile = "noname.map";
-	RoomNamesReset(0);
+//	RoomNamesReset(0);
 	RoomTextsReset(0);
 	RoomPropsReset(0);
 	
 	// initialize default static brush
-	MOD_BrushNew(0);
+//	MOD_BrushNew(0);
 }
 
 func EDI_Done()

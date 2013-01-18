@@ -10,11 +10,12 @@
 :- use_module(dlgColor, []).
 :- use_module(keys, []).
 :- use_module(actions, []).
+:- use_module(dlgInfo, []).
+:- use_module(roomNames, []).
 
 init :-
 	core:dl("editor init."),
 	gui:loadResources,
-	mod:init,
 	dlgOptions:load,
 
 
@@ -35,7 +36,13 @@ init :-
 	->  (   edi:tileCount(0)
 	    ->	gui:msgBoxOk("Warning","No tiles loaded.\nCheck the path and the tiles folder.", icon_warning)
 	    ;	true)
-	;   actions:options). %failed to load tiles, check the tiles folder
+	;   actions:options), %failed to load tiles, check the tiles folder
+
+	roomNames:reset(false),
+
+
+	% initialize default static brush
+	mod:brushNew(0).
 
 % also called on Alt+F4
 close :-

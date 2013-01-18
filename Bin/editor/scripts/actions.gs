@@ -37,12 +37,12 @@ func Act_ViewSet( view )
 }
 
 //................................................................................
-func Act_Tool()
-{
-	tool = !EdiGet(EDI_TOOL); // toggle tool
-	EdiSet(EDI_TOOL,tool);
-	DlgMenuBar_Refresh();
-}
+//func Act_Tool()
+//{
+//	tool = !EdiGet(EDI_TOOL); // toggle tool
+//	EdiSet(EDI_TOOL,tool);
+//	DlgMenuBar_Refresh();
+//}
 
 //................................................................................
 func Act_Props()

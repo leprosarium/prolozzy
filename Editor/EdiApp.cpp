@@ -300,7 +300,6 @@ void cEdiApp::Close()
 	m_tool[m_toolcrt]->Reset();
 	g_gui->ScriptPrologDo("editor:close");
 	g_gui->m_isbusy = TRUE; // avoid tools problems
-	unguard();
 }
 
 void cEdiApp::DropFile( char* filepath )
@@ -1037,6 +1036,101 @@ int gsToolBrushGet( gsVM* vm )
 	gs_pushint(vm, brush.m_data[idx]);
 	return 1;
 	unguard()
+}
+
+#define TOOL_BRUSH_PROP(Prop, PROP)\
+GET_TOOL_BRUSH_PROP(Prop, PROP)\
+SET_TOOL_BRUSH_PROP(Prop, PROP)
+
+#define GET_TOOL_BRUSH_PROP(Prop, PROP) PREDICATE_M(edi, toolBrushGet##Prop, 1)\
+{\
+	return A1 = EdiApp()->m_brush.m_data[BRUSH_##PROP];\
+	return true;\
+}
+
+#define SET_TOOL_BRUSH_PROP(Prop, PROP) PREDICATE_M(edi, toolBrushSet##Prop, 1)\
+{\
+	EdiApp()->m_brush.m_data[BRUSH_##PROP] = A1;\
+	return true;\
+}
+
+TOOL_BRUSH_PROP(Layer, LAYER)
+TOOL_BRUSH_PROP(X, X)
+TOOL_BRUSH_PROP(Y, Y)
+TOOL_BRUSH_PROP(W, W)
+TOOL_BRUSH_PROP(H, H)
+TOOL_BRUSH_PROP(Title, TILE)
+TOOL_BRUSH_PROP(Frame, FRAME)
+TOOL_BRUSH_PROP(MapX1, MAP)
+TOOL_BRUSH_PROP(MapY1, MAP+1)
+TOOL_BRUSH_PROP(MapX2, MAP+2)
+TOOL_BRUSH_PROP(MapY2, MAP+3)
+TOOL_BRUSH_PROP(Flip, FLIP)
+TOOL_BRUSH_PROP(Shader, SHADER)
+TOOL_BRUSH_PROP(Scale, SCALE)
+TOOL_BRUSH_PROP(Select, SELECT)
+
+TOOL_BRUSH_PROP(Tyep, TYPE)
+TOOL_BRUSH_PROP(ID, ID)
+TOOL_BRUSH_PROP(Material, MATERIAL)
+TOOL_BRUSH_PROP(Draw, DRAW)
+TOOL_BRUSH_PROP(Disable, DISABLE)
+TOOL_BRUSH_PROP(Delay, DELAY)
+TOOL_BRUSH_PROP(Anim, ANIM)
+TOOL_BRUSH_PROP(Collider, COLLIDER)
+TOOL_BRUSH_PROP(Class, CLASS)
+TOOL_BRUSH_PROP(Status, STATUS)
+TOOL_BRUSH_PROP(Target, TARGET)
+TOOL_BRUSH_PROP(Death, DEATH)
+
+PREDICATE_M(edi, toolBrushSetColor, 1)
+{
+	int64 color = A1;
+	EdiApp()->m_brush.m_data[BRUSH_COLOR] = color;
+	return true;
+}
+
+PREDICATE_M(edi, toolBrushSetCustom, 2) 
+{
+	int idx = A1;
+	idx += BRUSH_CUSTOM;
+	if(idx < 0 || idx >= BRUSH_MAX) 
+		throw PlDomainError("invalid brush variable", A1);
+	EdiApp()->m_brush.m_data[idx] = A2;
+	return true;
+}
+
+PREDICATE_M(edi, toolBrushSetUser, 2) 
+{
+	int idx = A1;
+	idx += BRUSH_USER;
+	if(idx < 0 || idx >= BRUSH_MAX) 
+		throw PlDomainError("invalid brush variable", A1);
+	EdiApp()->m_brush.m_data[idx] = A2;
+	return true;
+}
+
+PREDICATE_M(edi, toolBrushGetColor, 1)
+{
+	return A1 = EdiApp()->m_brush.m_data[BRUSH_COLOR];
+}
+
+PREDICATE_M(edi, toolBrushGetCustom, 2) 
+{
+	int idx = A1;
+	idx += BRUSH_CUSTOM;
+	if(idx < 0 || idx >= BRUSH_MAX) 
+		throw PlDomainError("invalid brush variable", A1);
+	return A2 = EdiApp()->m_brush.m_data[idx];
+}
+
+PREDICATE_M(edi, toolBrushGetUser, 2) 
+{
+	int idx = A1;
+	idx += BRUSH_USER;
+	if(idx < 0 || idx >= BRUSH_MAX) 
+		throw PlDomainError("invalid brush variable", A1);
+	return A2 = EdiApp()->m_brush.m_data[idx];
 }
 
 int gsToolBrushSet( gsVM* vm ) 

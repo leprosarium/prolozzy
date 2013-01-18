@@ -10,11 +10,11 @@ create :-
 		grave > actMenu,
 		alt+1+ctrl > actMenu,
 		2 > actView,
-		space > actTool,
+		space > actions:tool,
 		p > actProps,
 		b > actTile,
 		m > actMapping,
-		f > actJustFlip,
+		f > actions:justFlip,
 		r > actJustRotate,
 		c > actColor,
 		c+shift > actColorWin,
@@ -38,12 +38,12 @@ create :-
 	Btns = [
 		btn(menu,	"system menu [`]/[1]", actMenu),
 		btn(view,	"view mode [2]", actView),
-		btn(tool,	"switch tool [SPACE]", actTool),
+		btn(tool,	"switch tool [SPACE]", actions:tool),
 		%
 		btn(props,	"brush properties [P]", actProps),
 		btn(tile,	"brush tile [B]", actTile),
 		btn(mapping,"brush mapping [M]", actMapping),
-		btn(flip,	"brush flip [F]", actFlip),
+		btn(flip,	"brush flip [F]", actions:flip),
 		btn(color,	"brush color [C]", actColor),
 		btn(shader,	"brush shader", actShader),
 		btn(type,	"brush type", actType),
@@ -100,7 +100,6 @@ refresh :-
 
 
 showButton(Id, Show) :-
-	core:dl(show(Id, Show)),
 	def:dlg(menuBar, MB),
 	dlg:find(MB, IDX),
 	dlg:select(IDX),
@@ -114,7 +113,6 @@ showButton(Id, Show) :-
 % reposition the visible buttons
 reposition :-
 	findall(ID, def:mb(_, _, ID), IDs),
-	core:dl(ids(IDs)),
 	reposition(IDs, 0, 32).
 
 reposition([], _, _).

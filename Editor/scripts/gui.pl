@@ -12,7 +12,10 @@
 		createText/4,
 		createImage/5,
 		dlgTitleH/1,
-		msgBoxOk/3]).
+		msgBoxOk/3,
+		createPullDownSelect/5,
+		createPullDown/4,
+		createPullDown/3]).
 
 dlgTitleH(20).
 
@@ -212,9 +215,7 @@ calcButtonsW([btn(Text, _) |Btns], Min, Width) :-
 
 msgBox(Title, Text, Icon, ButtonInfos):-
 	length(ButtonInfos, Buttons),
-	core:dl(buttons(Buttons)),
 	calcButtonsW(ButtonInfos, 64, ButtonW0),
-	core:dl(buttonw(ButtonW0)),
 	MaxWidth = 200,
 	(   ButtonW0 > MaxWidth
 	->  ButtonW = MaxWidth
@@ -255,12 +256,12 @@ createButtons1([btn(Text, Cmd)|Bo], ButX, ButY, Buts, Buts2, ButtonW, ButtonW2) 
 	createButton(X, ButY, ButtonW, Text, (gui:dlgClose, Cmd)),
 	XX is ButX + Buts,
 	createButtons1(Bo, XX, ButY, Buts, Buts2, ButtonW, ButtonW2),
-	dclgMoveToMouse,
+	dlgMoveToMouse,
 	dlgDockUp.
 
 
 % move dialog to mouse position and also prevent it to get ouside the screen
-dclgMoveToMouse :-
+dlgMoveToMouse :-
 	dlg:getRect(X, Y, X2, Y2),
 	W is X2 - X,
 	H is Y2 - Y,
@@ -301,6 +302,84 @@ dlgMove(X, Y) :-
 	XX is X + X2 - X1,
 	YY is Y + Y2 - Y1,
 	dlg:setRect(X, Y, XX, YY).
+
+createPullDownSelect(X, Y, Callbackname, List, Sel):-
+	length(List, Count),
+	Count == 0;
+	makeMenuList(List, 0, Callbackname, Menu),
+	createPullDown(X, Y, Menu, Sel).
+
+makeMenuList([], _, _, []).
+makeMenuList([A|As], I, Act, [item(A, (gui:dlgClose, Action), [])|Ms]) :-
+	copy_term(Act, act(I, Action)),
+	I2 is I + 1,
+	makeMenuList(As, I2, Act, Ms).
+
+calcPullDowmSizes(ItemH, MenuH, MenuW, Menu) :-
+	length(Menu, Size),
+	MenuH is Size * ItemH,
+	calcPullDowmSizes(Menu, MenuW0),
+	MenuW is MenuW0 + 20.
+calcPullDowmSizes([], 0).
+calcPullDowmSizes([item(Text, _, _)|Ms], W) :-
+	gui:textW(Text, Wt),
+	calcPullDowmSizes(Ms, MsW),
+	(   Wt > MsW
+	->  W = Wt
+	;   W = MsW).
+
+createPullDown(_, _, []).
+createPullDown(X, Y, Menu) :-
+	createPullDown(X, Y, Menu, -1).
+
+createPullDown(_, _, [], _).
+createPullDown(X, Y, Menu, Sel) :-
+	ItemH = 20,
+	calcPullDowmSizes(ItemH, MenuH, MenuW, Menu),
+	createDlg(X, Y, MenuW, MenuH, [none]),
+	dlg:setModal,
+	dlg:setCloseOut,
+	addKey(escape > gui:dlgClose),
+	addPullDownItems(Menu, 0, ItemH, MenuW, 0, Sel).
+
+addPullDownItems([], _, _, _, _, _).
+addPullDownItems([M|Ms], Y, Step, W, I, Sel) :-
+	addPullDownItem(M, Y, W, I, Sel),
+	Y2 is Y + Step,
+	I2 is I + 1,
+	addPullDownItems(Ms, Y2, Step, W, I2, Sel).
+
+
+
+addPullDownItem(item(Name, Cmd, Props), Y, MenuW, I, Sel) :-
+	createButton(0, Y, MenuW, Name, Cmd),
+	styleCode([backgr, border3d], Style),
+	gui:itemSetStyle(Style),
+	alignCode([left, centery], AlignCode),
+	gui:itemSetTxtAlign(AlignCode),
+	(   Cmd = ""
+	->  (Color = gui1, gui:itemSetDisable(1))
+	;   (I==Sel->Color=layer1;Color = gui)),
+	def:color(Color, Code),
+	gui:itemSetColor(0, Code),
+	gui:itemSetColor(1, Code),
+	gui:itemSetColor(2, Code),
+	(   member(key(Key), Props)
+	->  addKey(Key > Cmd)
+	;   true),
+	(   member(tooltip(Tooltip), Props)
+	->  gui:itemSetToolTip(Tooltip)
+	;   true).
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -4,7 +4,9 @@
 		setColorTheme/1,
 		dlg/2,
 		mb/3,
-		mb/2, layerMax/1]).
+		mb/2,
+		layerMax/1,
+	        flip/2]).
 
 roomW(240).	% default game room width
 roomH(136).	% default game room height
@@ -12,6 +14,14 @@ roomH(136).	% default game room height
 
 layerMax(8).
 
+flip(none, 0).
+flip(x, 1).
+flip(y, 2).
+flip(xy, 3).
+flip(r, 4).
+flip(xr, 5).
+flip(yr, 6).
+flip(xyr, 7).
 
 % Colors
 

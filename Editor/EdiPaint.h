@@ -57,6 +57,22 @@ inline	int		GetHeight	()					{ return fy > 0 ? R9_TextureGetHeight(m_tex) / fy :
 #define BRUSH_SCALE		14			// scale value (0=1, 1, 2, ...)
 #define BRUSH_SELECT	15			// editor internal use reserved
 #define BRUSH_CUSTOM	16			// game custom 
+
+#define BRUSH_TYPE		16			// type: 0=static(for map drawing), 1=dynamic(for objects)
+#define BRUSH_ID		17			// object or brush id (for search in game); 0=no id
+#define BRUSH_MATERIAL	18			// material that brushes will write in material map if draw set correctly
+#define BRUSH_DRAW		19			// draw mode: 0=don't draw, 1=draw in view, 2=write material in material map (brush only), 3=both (brush only)
+#define BRUSH_DISABLE	20			// 0=enable, 1=disabled (don't draw, don't update)
+#define BRUSH_DELAY		21			// frame delay ( should be updated only once in BRUSH_DELAY frames )
+#define BRUSH_ANIM		22			// animation mode: 0=none, 1=play once, 2=play loop
+#define BRUSH_COLLIDER	23			// collider mode: 0=none, 1=call handler, 2=hard collision, 3=both
+#define BRUSH_CLASS		24			// generic object class
+#define BRUSH_STATUS	25			// generic status
+#define BRUSH_TARGET	26			// generic target id (used to link objects)
+#define BRUSH_DEATH		27			// cause of death
+#define BRUSH_USER		32			// generic user props
+
+
 #define BRUSH_MAX		48			// dummy
 
 struct tBrush

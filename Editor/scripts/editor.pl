@@ -42,7 +42,7 @@ init :-
 
 
 	% initialize default static brush
-	mod:brushNew(0).
+	mod:brushNew(static).
 
 % also called on Alt+F4
 close :-

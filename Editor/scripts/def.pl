@@ -6,7 +6,12 @@
 		mb/3,
 		mb/2,
 		layerMax/1,
-	        flip/2]).
+	        flip/3,
+		shader/3,
+		brushType/3,
+		drawMode/3,
+		material/4,
+		class/3]).
 
 roomW(240).	% default game room width
 roomH(136).	% default game room height
@@ -14,14 +19,51 @@ roomH(136).	% default game room height
 
 layerMax(8).
 
-flip(none, 0).
-flip(x, 1).
-flip(y, 2).
-flip(xy, 3).
-flip(r, 4).
-flip(xr, 5).
-flip(yr, 6).
-flip(xyr, 7).
+flip(none, 0, "none").
+flip(x, 1, "flip x").
+flip(y, 2, "flip y").
+flip(xy, 3, "flip xy").
+flip(r, 4, "flip r").
+flip(xr, 5, "flip xr").
+flip(yr, 6, "flip yr").
+flip(xyr, 7, "flip xyr").
+
+shader(opaque, 0, "opaque").
+shader(blend, 1, "blend").
+shader(add, 2, "add").
+shader(mod, 3, "mod").
+shader(mod2, 4, "mod2").
+
+brushType(static, 0, "static").
+brushType(dynamic, 1, "dynamic").
+
+drawMode(none, 0, "none").
+drawMode(img, 1, "img").
+drawMode(mat, 2, "mat").
+drawMode(imgmat, 3, "img+mat").
+
+material(air,	 0, void, 0xFF000000).	% void
+material(water,	 1, void, 0xFF0060FF).	% water (void); player can drawn in water
+material(hurt,	 2, void, 0xFFFF8000).	% hurt (void); player gets hurt
+material(kill,	 3, void, 0xFFD00000).	% kill (void); player gets killed
+material(cloud,	 4, soft, 0xFFC0C0C0).	% clouds (medium); player sinks on clouds
+material(climb,	 5, soft, 0xFF909090).	% stairs (medium); player stands on
+material(wind,	 6, soft, 0xFF707070).	% winds (medium); player is pushed up
+material(block,	 7, hard, 0xFF006000).	% ground, walls (hard); blocks the player
+material(jumpFix, 8, jump, 0xFF008000).	% jumper fix (hard)
+material(jumpPro, 9, jump, 0xFF00B000).	% jumper progressive (hard)
+
+class(none, 0, "none").
+class(action, 1, "action").
+class(hurt, 2, "hurt").
+class(kill, 3, "kill").
+class(item, 4, "item").
+class(coin, 5, "coin").
+class(food, 6, "food").
+class(life, 7, "life").
+class(waypoint, 8, "waypoint").
+
+
 
 % Colors
 

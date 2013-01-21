@@ -26,7 +26,7 @@ brushProp(maxX1, "map x1",	"map left").
 brushProp(maxY1, "map y1",	"map top").
 brushProp(maxX2, "map x2",	"map right").
 brushProp(maxY2, "map y2",	"map bottom").
-brushProp(flip,  "flip",	"flip", select(["none","flip x","flip y","flip xy","flip r","flip xr","flip yr","flip xyr"])).
+brushProp(flip,  "flip",	"flip", select([none-"none",x-"flip x",y-"flip y",xy-"flip xy",r-"flip r",xr-"flip xr",yr-"flip yr",xyr-"flip xyr"])).
 brushProp(color, "color",	"color", color).
 brushProp(shader, "shader",	"shader", select(ShaderNames)) :-
 	ShaderNames = [opaque, blend, add, mod, mod2]. % only those shaders are available for users
@@ -133,7 +133,7 @@ property(roomInfo, 0).
 
 
 view(V) :- propGet(view, V).
-setView(V) :- propSet(view, V).
+setView(V) :- viewMode(V, _), propSet(view, V).
 roomInfo(I):- propGet(roomInfo, I).
 setRoomInfo(I) :- propSet(roomInfo, I).
 

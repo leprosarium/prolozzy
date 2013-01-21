@@ -1,10 +1,25 @@
 :-module(actions, [options/0,
-		  tool/0,
-		  flip/0,
-		  flipSet/1,
-		  justFlip/0]).
+		   view/0,
+		   viewSet/1,
+		   tool/0,
+		   flip/0,
+		   flipSet/1,
+		   justFlip/0]).
 
 options.
+
+view :-
+	mod:view(Sel),
+	findall(Mode-Name, mod:viewMode(Mode, Name), ViewNames),
+	gui:createPullDownSelect(0, 0, act(Val, actions:viewSet(Val)), ViewNames, Sel),
+	gui:dlgMoveToMouse,
+	gui:dlgDockUp.
+
+
+viewSet(View) :-
+	mod:setView(View),
+	map:refresh.
+
 
 tool :-
 	edi:getTool(Tool),
@@ -14,7 +29,8 @@ tool :-
 
 flip :-
 	edi:getTool(1);
-	edi:toolBrushGetFlip(Sel),
+	edi:toolBrushGetFlip(Code),
+	def:flip(Sel, Code),
 	mod:brushProp(flip, _, _, select(Select)),
 	gui:createPullDownSelect(0, 0, act(Val, actions:flipSet(Val)), Select, Sel),
 	gui:dlgMoveToMouse,
@@ -22,7 +38,8 @@ flip :-
 
 flipSet(Flip) :-
 	edi:getTool(1);
-	edi:toolBrushSetFlip(Flip).
+	def:flip(Flip, Code),
+	edi:toolBrushSetFlip(Code).
 
 justFlip :-
 	edi:getTool(1);

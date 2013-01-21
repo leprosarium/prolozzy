@@ -9,7 +9,7 @@ create :-
 	Keys = [
 		grave > actMenu,
 		alt+1+ctrl > actMenu,
-		2 > actView,
+		2 > actions:view,
 		space > actions:tool,
 		p > actProps,
 		b > actTile,
@@ -37,7 +37,7 @@ create :-
 	gui:dlgAddKeys(Keys),
 	Btns = [
 		btn(menu,	"system menu [`]/[1]", actMenu),
-		btn(view,	"view mode [2]", actView),
+		btn(view,	"view mode [2]", actions:view),
 		btn(tool,	"switch tool [SPACE]", actions:tool),
 		%
 		btn(props,	"brush properties [P]", actProps),

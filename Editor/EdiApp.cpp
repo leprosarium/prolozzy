@@ -1233,6 +1233,12 @@ int gsMapRepartition( gsVM* vm )
 	unguard()
 }
 
+PREDICATE_M(map, refresh, 0) 
+{
+	g_map.m_refresh = TRUE;
+	return true;
+}
+
 int gsMapRefresh( gsVM* vm ) 
 {
 	guard(gsMapRefresh)

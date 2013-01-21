@@ -306,14 +306,13 @@ dlgMove(X, Y) :-
 createPullDownSelect(X, Y, Callbackname, List, Sel):-
 	length(List, Count),
 	Count == 0;
-	makeMenuList(List, 0, Callbackname, Menu),
+	makeMenuList(List, Callbackname, Menu),
 	createPullDown(X, Y, Menu, Sel).
 
-makeMenuList([], _, _, []).
-makeMenuList([A|As], I, Act, [item(A, (gui:dlgClose, Action), [])|Ms]) :-
-	copy_term(Act, act(I, Action)),
-	I2 is I + 1,
-	makeMenuList(As, I2, Act, Ms).
+makeMenuList([], _, []).
+makeMenuList([Id-A|As], Act, [item(Id-A, (gui:dlgClose, Action), [])|Ms]) :-
+	copy_term(Act, act(Id, Action)),
+	makeMenuList(As, Act, Ms).
 
 calcPullDowmSizes(ItemH, MenuH, MenuW, Menu) :-
 	length(Menu, Size),
@@ -321,7 +320,7 @@ calcPullDowmSizes(ItemH, MenuH, MenuW, Menu) :-
 	calcPullDowmSizes(Menu, MenuW0),
 	MenuW is MenuW0 + 20.
 calcPullDowmSizes([], 0).
-calcPullDowmSizes([item(Text, _, _)|Ms], W) :-
+calcPullDowmSizes([item(_-Text, _, _)|Ms], W) :-
 	gui:textW(Text, Wt),
 	calcPullDowmSizes(Ms, MsW),
 	(   Wt > MsW
@@ -340,18 +339,17 @@ createPullDown(X, Y, Menu, Sel) :-
 	dlg:setModal,
 	dlg:setCloseOut,
 	addKey(escape > gui:dlgClose),
-	addPullDownItems(Menu, 0, ItemH, MenuW, 0, Sel).
+	addPullDownItems(Menu, 0, ItemH, MenuW, Sel).
 
-addPullDownItems([], _, _, _, _, _).
-addPullDownItems([M|Ms], Y, Step, W, I, Sel) :-
-	addPullDownItem(M, Y, W, I, Sel),
+addPullDownItems([], _, _, _, _).
+addPullDownItems([M|Ms], Y, Step, W, Sel) :-
+	addPullDownItem(M, Y, W, Sel),
 	Y2 is Y + Step,
-	I2 is I + 1,
-	addPullDownItems(Ms, Y2, Step, W, I2, Sel).
+	addPullDownItems(Ms, Y2, Step, W, Sel).
 
 
 
-addPullDownItem(item(Name, Cmd, Props), Y, MenuW, I, Sel) :-
+addPullDownItem(item(Id-Name, Cmd, Props), Y, MenuW, Sel) :-
 	createButton(0, Y, MenuW, Name, Cmd),
 	styleCode([backgr, border3d], Style),
 	gui:itemSetStyle(Style),
@@ -359,7 +357,7 @@ addPullDownItem(item(Name, Cmd, Props), Y, MenuW, I, Sel) :-
 	gui:itemSetTxtAlign(AlignCode),
 	(   Cmd = ""
 	->  (Color = gui1, gui:itemSetDisable(1))
-	;   (I==Sel->Color=layer1;Color = gui)),
+	;   (Id=Sel->Color=layer1;Color = gui)),
 	def:color(Color, Code),
 	gui:itemSetColor(0, Code),
 	gui:itemSetColor(1, Code),

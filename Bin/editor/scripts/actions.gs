@@ -2,27 +2,6 @@
 // Actions
 //////////////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////////////
-// MenuBar buttons and their actions
-//////////////////////////////////////////////////////////////////////////////////
-func Act_Menu()
-{
-	datatab = { 
-		{"File",""},
-		{" new",  		"DlgClose();Act_FileNew();",		KEY_N, 	"new map [N]"},
-		{" open", 		"DlgClose();Act_FileOpen();",		KEY_O, 	"open map [O]"},
-		{" save as",	"DlgClose();Act_FileSave();",		KEY_S, 	"save map [S]"},
-		{" export", 	"DlgClose();Act_FileExport();",		KEY_E, 	"export map as image [E]"},
-		{" info", 		"DlgClose();Act_FileInfo();",		KEY_I, 	"info about current map [I]"},
-		{"Editor",""},
-		{" options", 	"DlgClose();Act_Options();", 		KEY_P, "change editor preferences [P]"},
-		{" help", 		"DlgClose();Act_Help();",			KEY_H, "open editor help [H]"},
-		{" exit", 		"DlgClose();Act_Exit();", 			KEY_X, "exit editor [X]"}
-	};
-	CreatePullDown( 0,0, &datatab );
-	DlgMoveToMouse(); DlgDockUp();
-}
-
 //................................................................................
 func Act_Props()
 {
@@ -281,12 +260,6 @@ func Act_Help()
 {
 	DlgHelp_Create();
 }
-
-func Act_Exit()
-{
-	EDI_Close();
-}
-
 
 //////////////////////////////////////////////////////////////////////////////////
 // Tool special callback (called from code)

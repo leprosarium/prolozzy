@@ -1,4 +1,6 @@
-:-module(actions, [options/0,
+:-module(actions, [menu/0,
+		   exit/0,
+		   options/0,
 		   view/0,
 		   viewSet/1,
 		   shader/0,
@@ -17,7 +19,29 @@
 		   justFlip/0,
 		   layer/1]).
 
+menu :-
+	Data = [
+	item(file-"File", "", []),
+	item(new-" new",       (gui:dlgClose, actions:fileNew), [key(n), tooltip("new map [N]")]),
+	item(open-" open",     (gui:dlgClose, actions:fileOpen), [key(o), tooltip("open map [O]")]),
+	item(save-" save as",  (gui:dlgClose, actions:fileSave), [key(s), tooltip("save map [S]")]),
+	item(export-" export", (gui:dlgClose, actions:fileExport), [key(e), tooltip("export map as image [E]")]),
+	item(info-" info",     (gui:dlgClose, actions:fileInfo), [key(i), tooltip("info about current map [I]")]),
+	item(editor-"Editor", "", []),
+	item(options-" options", (gui:dlgClose, actions:options), [key(p), tooltip("change editor preferences [P]")]),
+	item(help-" help",       (gui:dlgClose, actions:help), [key(h), tooltip("open editor help [H]")]),
+	item(exit-" exit",	 (gui:dlgClose, actions:exit), [key(x), tooltip("exit editor [X]")])],
+
+	gui:createPullDown( 0,0, Data),
+	gui:dlgMoveToMouse,
+	gui:dlgDockUp.
+
+
+exit:-
+	edi:close.
+
 options.
+
 
 view :-
 	mod:view(Sel),

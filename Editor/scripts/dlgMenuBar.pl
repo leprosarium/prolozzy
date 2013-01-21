@@ -8,8 +8,8 @@ create :-
 	dlg:setID(ID),
 	dlg:setTestKey,
 	Keys = [
-		grave > actMenu,
-		alt+1+ctrl > actMenu,
+		grave > actions:menu,
+		1 > actions:menu,
 		2 > actions:view,
 		space > actions:tool,
 		p > actProps,
@@ -37,7 +37,7 @@ create :-
 	       ],
 	gui:dlgAddKeys(Keys),
 	Btns = [
-		btn(menu,	"system menu [`]/[1]", actMenu),
+		btn(menu,	"system menu [`]/[1]", actions:menu),
 		btn(view,	"view mode [2]", actions:view),
 		btn(tool,	"switch tool [SPACE]", actions:tool),
 		%

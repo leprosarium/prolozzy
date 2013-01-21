@@ -1,4 +1,5 @@
-:- module(dlgMenuBar, [create/0]).
+:- module(dlgMenuBar, [create/0,
+		      layerSetButton/2]).
 
 create :-
 	edi:getScrW(BarW),
@@ -133,6 +134,29 @@ layerCreateButton(Layer, X, Y) :-
 	ID is ID_MB_LAYER + Layer,
 	gui:itemSetID(ID),
 	gui:itemSetValue(1),
-	format(string(Action), 'actLayer(~d)', [Layer]),
-	gui:itemSetCmdAction(Action).
+	gui:itemSetCmdAction(actions:layer(Layer)).
+
+
+layerSetButton(Layer, Status) :-
+	def:dlg(menuBar, MB),
+	dlg:find(MB, IDX),
+	dlg:select(IDX),
+	Layer >= 0,
+	def:layerMax(LayerMax),
+	LayerMax < LayerMax;
+	def:mb(layer, ID_MB_LAYER),
+	ID is ID_MB_LAYER + Layer,
+	gui:itemFind(ID, IDX),
+	gui:itemSelect(IDX),
+	gui:itemSetValue(Status),
+	layerButtonColor(Status, Color),
+	def:color(Color, COLOR),
+	gui:itemSetColor(0, COLOR),
+	edi:layerSet(Layer, Status).
+layerSetButton(_, _).
+
+
+layerButtonColor(0, layer0).
+layerButtonColor(1, layer1).
+layerButtonColor(2, layer2).
 

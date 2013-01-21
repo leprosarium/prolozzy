@@ -14,7 +14,8 @@
 		   tool/0,
 		   flip/0,
 		   flipSet/1,
-		   justFlip/0]).
+		   justFlip/0,
+		   layer/1]).
 
 options.
 
@@ -141,6 +142,32 @@ classSet(Class) :-
 	def:class(Class, Code, _),
 	edi:toolBrushSetClass(Code).
 
+layer(Layer) :-
+	gui:itemGetCmdActionParam(Param),
+	gui:itemSetCmdActionParam(0),
+	Layer >= 0,
+	def:layerMax(LayerMax),
+	Layer < LayerMax,
+	layerActivate(Param, Layer),
+	map:refresh.
+layer(_).
+
+
+layerActivate(0, _).
+layerActivate(1, Layer) :-
+	edi:layerActive(Act),
+	(   Act == -1;
+	dlgMenuBar:layerSetButton(Act, 1),
+	dlgMenuBar:layerSetButton(Layer, 2)).
+
+layerActivate(2, Layer) :-
+	edi:layerActive(Layer)
+	->  dlgMenuBar:layerSetButton(Layer, 2);
+	edi:layerGet(Layer, State),
+	(   State =\= 0
+	->  NState = 0
+	;   NState = 1),
+	dlgMenuBar:layerSetButton(Layer, NState).
 
 
 

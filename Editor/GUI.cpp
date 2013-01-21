@@ -975,6 +975,15 @@ PREDICATE_M(gui, itemGetHidden, 0)
 	return g_gui->GetLastItem()->GetInt(IV_HIDDEN) == 1;
 }
 
+PREDICATE_M(gui, itemGetCmdActionParam, 1)
+{
+	return A1 = g_gui->GetLastItem()->GetInt(IV_CMDACTIONPARAM);
+}
+
+PREDICATE_M(gui, itemGetValue, 1)
+{
+	return A1 = g_gui->GetLastItem()->GetInt(IV_VALUE);
+}
 
 int gsItemGetInt( gsVM* vm )
 {
@@ -1058,6 +1067,13 @@ PREDICATE_M(gui, itemSetCmdAction, 1)
 	g_gui->GetLastItem()->SetTxt(IV_CMDACTION,  A1);
 	return true;
 }
+
+PREDICATE_M(gui, itemSetCmdActionParam, 1)
+{
+	g_gui->GetLastItem()->SetInt(IV_CMDACTIONPARAM,  A1);
+	return true;
+}
+
 
 PREDICATE_M(gui, itemSetHidden, 1)
 {

@@ -992,37 +992,28 @@ int gsWaitCursor(gsVM* vm )
 	unguard()
 }
 
-
 // layers ..................................................................................
-int gsLayerGet( gsVM* vm )
+
+PREDICATE_M(edi, layerGet, 2)
 {
-	guard(gsLayerGet)
-	if(!gs_cktype(vm,0,GS_INT)) GS_RETURNINT(vm,0);
-	int layer = gs_toint(vm,0);
-	if(layer<0 || layer>=LAYER_MAX) { GS_ERROR(layer,LAYER_MAX,"invalid layer index"); GS_RETURNINT(vm,0); }
-	gs_pushint(vm, EdiApp()->LayerGet(layer));
-	return 1;
-	unguard()
+	int layer = A1;
+	if(layer < 0 || layer >= LAYER_MAX) 
+		throw PlDomainError ("invalid layer index", A1);
+	return A2 = EdiApp()->LayerGet(layer);
 }
 
-int gsLayerSet( gsVM* vm )
+PREDICATE_M(edi, layerSet, 2)
 {
-	guard(gsLayerSet)
-	if(!gs_cktype(vm,0,GS_INT)) return 0;
-	if(!gs_cktype(vm,1,GS_INT)) return 0;
-	int layer = gs_toint(vm,0);
-	if(layer<0 || layer>=LAYER_MAX) { GS_ERROR(layer,LAYER_MAX,"invalid layer index"); return 0; }
-	EdiApp()->LayerSet(layer, gs_toint(vm,1));
-	return 0;
-	unguard()
+	int layer = A1;
+	if(layer < 0 || layer >= LAYER_MAX) 
+		throw PlDomainError("invalid layer index", A1);
+	EdiApp()->LayerSet(layer, A2);
+	return true;
 }
 
-int gsLayerActive( gsVM* vm )
+PREDICATE_M(edi, layerActive, 1)
 {
-	guard(gsLayerActive)
-	gs_pushint(vm,EdiApp()->LayerActive());
-	return 1;
-	unguard()
+	return A1 = EdiApp()->LayerActive();
 }
 
 // tool brush ..............................................................................
@@ -1393,10 +1384,6 @@ void cEdiApp::ScriptRegister()
 	gs_regfn( vm, "EdiSet",				gsEdiSet );					// int(data), int(val)
 	gs_regfn( vm, "EdiExit",			gsEdiExit );				// 
 	gs_regfn( vm, "WaitCursor",			gsWaitCursor );				// int(1/0)
-
-	gs_regfn( vm, "LayerGet",			gsLayerGet );				// int(idx) > int(val 0,1,2 / 0)
-	gs_regfn( vm, "LayerSet",			gsLayerSet );				// int(idx), int(val 0,1,2)
-	gs_regfn( vm, "LayerActive",		gsLayerActive );			// > int(idx/-1)
 
 	gs_regfn( vm, "ToolBrushGet",		gsToolBrushGet );			// int(data) > int(val/0)
 	gs_regfn( vm, "ToolBrushSet",		gsToolBrushSet );			// int(data), int(val)

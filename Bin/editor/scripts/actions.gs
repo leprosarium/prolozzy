@@ -24,27 +24,6 @@ func Act_Menu()
 }
 
 //................................................................................
-//func Act_View()
-//{
-//	sel = g_view;
-//	CreatePullDownSelect( 0, 0, "Act_ViewSet", g_viewname, sel );
-//	DlgMoveToMouse(); DlgDockUp();
-//}
-//func Act_ViewSet( view )
-//{
-//	g_view = view;
-//	MapRefresh();
-//}
-
-//................................................................................
-//func Act_Tool()
-//{
-//	tool = !EdiGet(EDI_TOOL); // toggle tool
-//	EdiSet(EDI_TOOL,tool);
-//	DlgMenuBar_Refresh();
-//}
-
-//................................................................................
 func Act_Props()
 {
 	if(EdiGet(EDI_TOOL)!=0) return;
@@ -87,34 +66,6 @@ func Act_Mapping()
 	DlgTileMap_Create();
 }
 	
-//................................................................................
-//func Act_Flip()
-//{
-//	if(EdiGet(EDI_TOOL)!=0) return;
-//	sel = ToolBrushGet(BRUSH_FLIP);
-//	CreatePullDownSelect( 0, 0, "Act_FlipSet", g_brushprop[BRUSH_FLIP][BRUSHPROP_BROWSESEL], sel );
-//	DlgMoveToMouse(); DlgDockUp();
-//}
-// call without param to toggle
-//func Act_FlipSet( flip ) 
-//{
-//	if(EdiGet(EDI_TOOL)!=0) return;
-//	if(!?flip)
-//	{
-//		flip = ToolBrushGet(BRUSH_FLIP);
-//		flip++; if(flip>FLIP_XYR) flip=0;
-//	}
-//	ToolBrushSet(BRUSH_FLIP,flip);
-//}
-
-//func Act_JustFlip() 
-//{
-//	if(EdiGet(EDI_TOOL)!=0) return;
-//	flip = ToolBrushGet(BRUSH_FLIP) & FLIP_XY;
-//	flip++; if(flip>FLIP_XY) flip=0;
-//	ToolBrushSet(BRUSH_FLIP, (ToolBrushGet(BRUSH_FLIP) & FLIP_R) | flip);
-//}
-
 func Act_JustRotate()
 {
 	if(EdiGet(EDI_TOOL)!=0) return;
@@ -147,79 +98,6 @@ func Act_ColorWin()
 		PushUsedColor(color);
 	}
 }
-
-//................................................................................
-//func Act_Shader()
-//{
-//	if(EdiGet(EDI_TOOL)!=0) return;
-//	sel = ToolBrushGet(BRUSH_SHADER);
-//	CreatePullDownSelect( 0, 0, "Act_ShaderSet", g_brushprop[BRUSH_SHADER][BRUSHPROP_BROWSESEL], sel ); // user can add up to 10 shaders
-//	DlgMoveToMouse(); DlgDockUp();
-//}
-//func Act_ShaderSet( shader )
-//{
-//	if(EdiGet(EDI_TOOL)!=0) return;
-//	ToolBrushSet(BRUSH_SHADER,shader);
-//}
-
-//................................................................................
-//func Act_Type()
-//{
-//	if(EdiGet(EDI_TOOL)!=0) return;
-//	sel = ToolBrushGet(BRUSH_TYPE);
-//	CreatePullDownSelect( 0, 0, "Act_TypeSet", g_brushprop[BRUSH_TYPE][BRUSHPROP_BROWSESEL], sel );
-//	DlgMoveToMouse(); DlgDockUp();
-//}
-//func Act_TypeSet( value )
-//{
-//	if(EdiGet(EDI_TOOL)!=0) return;
-//	ToolBrushSet(BRUSH_TYPE,value);
-//	MOD_BrushNew(value);
-//}
-
-//................................................................................
-//func Act_Draw()
-//{
-//	if(EdiGet(EDI_TOOL)!=0) return;
-//	sel = ToolBrushGet(BRUSH_DRAW);
-//	CreatePullDownSelect( 0, 0, "Act_DrawSet", g_brushprop[BRUSH_DRAW][BRUSHPROP_BROWSESEL], sel );
-//	DlgMoveToMouse(); DlgDockUp();
-//}
-//func Act_DrawSet( value )
-//{
-//	if(EdiGet(EDI_TOOL)!=0) return;
-//	ToolBrushSet(BRUSH_DRAW,value);
-//}
-
-//................................................................................
-//func Act_Material()
-//{
-//	if(EdiGet(EDI_TOOL)!=0) return;
-//	sel = ToolBrushGet(BRUSH_MATERIAL);
-//	CreatePullDownSelect( 0, 0, "Act_MaterialSet", g_brushprop[BRUSH_MATERIAL][BRUSHPROP_BROWSESEL], sel );
-//	DlgMoveToMouse(); DlgDockUp();
-//}
-
-//func Act_MaterialSet( value )
-//{
-//	if(EdiGet(EDI_TOOL)!=0) return;
-//	ToolBrushSet(BRUSH_MATERIAL,value);
-//}
-
-//................................................................................
-//func Act_Class()
-//{
-//	if(EdiGet(EDI_TOOL)!=0) return;
-//	sel = ToolBrushGet(BRUSH_CLASS);
-//	CreatePullDownSelect( 0, 0, "Act_ClassSet", g_brushprop[BRUSH_CLASS][BRUSHPROP_BROWSESEL], sel );
-//	DlgMoveToMouse(); DlgDockUp();
-//}
-
-//func Act_ClassSet( value )
-//{
-//	if(EdiGet(EDI_TOOL)!=0) return;
-//	ToolBrushSet(BRUSH_CLASS,value);
-//}
 
 //................................................................................
 func Act_Search()
@@ -279,41 +157,6 @@ func Act_Script3()
 	CreatePullDown( 0,0, &datatab );
 	DlgMoveToMouse(); DlgDockUp();
 }
-
-//////////////////////////////////////////////////////////////////////////////////
-// LAYERS
-//////////////////////////////////////////////////////////////////////////////////
-func Act_Layer( layer )
-{
-	param = ItemGetInt(IV_CMDACTIONPARAM);
-	ItemSetInt(IV_CMDACTIONPARAM,0);
-	if(layer<0 || layer>=LAYER_MAX) return;
-	if(param==1) // activate set
-	{
-		// deactivate old active layer
-		act = LayerActive();
-		if(act==-1) return; // safety
-		LayerSetButton(act,1);
-		LayerSetButton(layer,2);
-	}	
-	else
-	if(param==2) // visible toggle
-	{
-		act = LayerActive();
-		if(act==layer) // cant hide active layer, keep button active
-		{
-			LayerSetButton(layer,2);
-		}
-		else
-		{
-			state = LayerGet(layer);
-			state = state?0:1;
-			LayerSetButton(layer,state);
-		}
-	}
-	MapRefresh();
-}
-
 
 //////////////////////////////////////////////////////////////////////////////////
 // File

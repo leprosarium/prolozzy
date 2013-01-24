@@ -574,6 +574,18 @@ int gsTextH( gsVM* vm )
 	unguard()
 }
 
+PREDICATE_M(gui, winDlgOpenFile, 4)
+{
+	static char filename[256];
+	filename[0]=0;
+	strcpy(filename, A1);
+	
+	if(WinDlgOpenFile( filename, A3, A4))
+		return A2 = filename;
+	return false;	
+}
+
+
 int gsWinDlgOpenFile( gsVM* vm )
 {
 	guard(gsWinDlgOpenFile)

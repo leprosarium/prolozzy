@@ -1214,3 +1214,121 @@ BOOL cEdiMap::SaveMapImage( char* filename )
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
+
+PREDICATE_M(map, load, 1)
+{
+	return g_map.Load(A1);
+
+}
+
+bool cEdiMap::Load( const std::string & filename )
+{
+	dlog(LOGAPP,"Loading map \"%s\"\n",filename.c_str());
+
+	if(!LoadMap(filename)) { dlog(LOGERR,"Loading map FAILED!\n\n"); return false; }
+	dlog(LOGAPP,"Loading map SUCCESSFUL!\n\n");
+
+	return true;
+	unguard()
+}
+
+
+#define ERROR_CHUNK( info )	{ F9_FileClose(file); dlog(LOGAPP,"brocken chunk (%s)\n", info); return false; }
+bool cEdiMap::LoadMap(const std::string &filename)
+{
+
+	// open file
+	F9FILE file = F9_FileOpen(filename.c_str());
+	if(!file) { dlog(LOGAPP, "  map file not found.\n"); return false; }
+	F9_FileSeek(file,0,2);
+	int filesize = F9_FileTell(file);
+	F9_FileSeek(file,0,0);
+
+	// read chunks
+	int size;
+	int chunkid=0;
+	int chunksize=0;
+	int chunkcount=0;
+	int count_brush = 0;
+	int count_obj = 0;
+	int dummy;
+	char* buffer;
+
+	while(true)
+	{
+		if( F9_FileRead(&chunkid,4,file)!=4 )	{ ERROR_CHUNK("header"); }
+		if( F9_FileRead(&chunksize,4,file)!=4 )	{ ERROR_CHUNK("header"); }
+		
+		switch(chunkid)
+		{
+			case MAP_CHUNKID:
+			{
+				if( chunksize!=strlen(MAP_ID) )	{ ERROR_CHUNK("size"); }
+				buffer = (char*)smalloc(chunksize);
+				size = 0;
+				size += F9_FileRead(buffer, chunksize, file);
+				if(size!=chunksize) { sfree(buffer);  ERROR_CHUNK("size"); }
+
+				if(memcmp(buffer,MAP_ID,chunksize)!=0) { dlog(LOGAPP,"invalid map id: '%s' (current version: '%s')\n", buffer, MAP_ID); sfree(buffer); F9_FileClose(file); return false; }
+				sfree(buffer);
+				break;
+			}
+
+			case MAP_CHUNKINFO2:
+			{
+				if( chunksize!= 6*4 ) { ERROR_CHUNK("size"); }
+				size = 0;
+				size += F9_FileRead(&m_mapw, 4, file);
+				size += F9_FileRead(&m_maph, 4, file);
+				size += F9_FileRead(&g_map.m_roomw, 4, file);
+				size += F9_FileRead(&g_map.m_roomh, 4, file);
+				size += F9_FileRead(&g_map.m_camx, 4, file);
+				size += F9_FileRead(&g_map.m_camy, 4, file);
+				if( size!=chunksize ) { ERROR_CHUNK("size"); }
+				
+				break;
+			}
+
+			case MAP_CHUNKMARKERS2:
+			{
+				F9_FileSeek(file,chunksize,1); // skip
+				break;
+			}
+
+			case MAP_CHUNKBRUSHES2:
+			{
+				if(chunksize%(BRUSH_MAX*4)!=0) { ERROR_CHUNK("size"); }
+				int brushcount = chunksize/(BRUSH_MAX*4);
+				for(int i = 0; i < brushcount;i++)
+				{
+					if(i != g_map.BrushNew()) { ERROR_CHUNK("index"); }
+					for(int j = 0; j  < BRUSH_MAX; j++)
+					{	
+						int val = 0;
+						if(!F9_FileRead(&val, sizeof(val), file)) { ERROR_CHUNK("size"); }
+
+						g_map.m_brush[i].m_data[j] = val;
+					}
+				}
+				break;
+			}
+			
+			default:
+			{
+				dlog(LOGAPP, "  unknown chunk: id=%x size=%i\n", chunkid, chunksize);
+				if(chunksize>0) F9_FileSeek(file,chunksize,1);
+			}
+		}
+		if( F9_FileTell(file)>=filesize) break;
+
+	}
+
+	F9_FileClose(file);
+	dlog(LOGAPP,"  map=%ix%i, room=%ix%i, brushes=%i, objects=%i\n", m_mapw, m_maph, g_map.m_roomw, g_map.m_roomh, count_brush, count_obj );
+
+	int ret=g_map.Resize(m_mapw, m_maph); 
+	EdiApp()->UndoReset();
+
+	return true;
+	unguard()
+}

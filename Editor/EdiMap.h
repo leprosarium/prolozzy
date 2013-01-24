@@ -33,6 +33,16 @@
 #define INVIEW( x, y )	 ((x>=0 && x<VIEWW) && (y>=0 && y<VIEWH))
 #define INVIEWB( x, y )	 ((x>=-VIEWB && x<VIEWW+VIEWB) && (y>=-VIEWB && y<VIEWH+VIEWB))
 
+#define MAP_ID							"dizzymap"
+#define MAP_CHUNKID						0x11111111
+#define MAP_CHUNKINFO					0x22222222	// obsolete
+#define MAP_CHUNKINFO2					0x22222223
+#define MAP_CHUNKMARKERS				0x33333333	// obsolete
+#define MAP_CHUNKMARKERS2				0x33333334
+#define MAP_CHUNKBRUSHES				0x88888888	// obsolete
+#define MAP_CHUNKBRUSHES2				0x88888889
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // partitioning
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -165,6 +175,8 @@ inline	int			PartitionCountH		()							{ return (m_maph+PARTITION_CELSIZE-1) / P
 
 		// save map image
 		BOOL		SaveMapImage( char* filename );					// save huge map image, rendering in the target texture each 256x256 cel
+		bool		Load( const std::string & filename );
+		bool		LoadMap(const std::string & filename );
 };				
 
 extern	cEdiMap		g_map;

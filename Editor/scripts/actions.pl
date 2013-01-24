@@ -17,7 +17,8 @@
 		   flip/0,
 		   flipSet/1,
 		   justFlip/0,
-		   layer/1]).
+		   layer/1,
+		   fileOpen/0]).
 
 menu :-
 	Data = [
@@ -193,6 +194,19 @@ layerActivate(2, Layer) :-
 	;   NState = 1),
 	dlgMenuBar:layerSetButton(Layer, NState).
 
+
+
+fileOpen :-
+	edi:toolReset,
+	dlgInfo:mapFile(CurFile),
+	gui:winDlgOpenFile(CurFile, ActFile, "map", 0),
+	dlgInfo:setMapFile(ActFile),
+	edi:waitCursor(1),
+	(   fileio:mapLoad(ActFile)
+	->  edi:waitCursor(0)
+	;   edi:waitCursor(0),
+	    gui:msgBoxOk("Error", "File open failed.\nFile might be incorrect or damaged.", icon_error)).
+fileOpen.
 
 
 

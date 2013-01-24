@@ -72,6 +72,9 @@
     <None Include="scripts\roomNames.pl">
       <Filter>scripts</Filter>
     </None>
+    <None Include="scripts\fileio.pl">
+      <Filter>scripts</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="scripts">

@@ -489,6 +489,13 @@ int cEdiApp::GetMouseY()
 	unguard()
 }
 
+PREDICATE_M(edi, waitCursor, 1)
+{
+	E9_AppSetCursor(static_cast<int>(A1) ? E9_CURSOR_WAIT : E9_CURSOR_ARROW );
+	return true;
+}
+
+
 void cEdiApp::WaitCursor( BOOL on )
 {
 	guard(cEdiApp::WaitCursor)
@@ -1137,6 +1144,12 @@ int gsToolBrushSet( gsVM* vm )
 	unguard()
 }
 
+PREDICATE_M(edi, toolReset, 0)
+{
+	EdiApp()->m_tool[EdiApp()->m_toolcrt]->Reset(); 
+	return true; 
+}
+
 int gsToolReset( gsVM* vm )
 {
 	guard(gsToolReset)
@@ -1153,7 +1166,13 @@ int gsToolCommand( gsVM* vm )
 	return 0; 
 	unguard()
 }
-		
+
+PREDICATE_M(map, load, 1)
+{
+	g_map.Reset();
+	return g_map.Load(A1);
+}
+
 // map brush ................................................................................
 int gsMapBrushCount( gsVM* vm ) 
 {

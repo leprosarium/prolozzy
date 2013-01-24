@@ -150,6 +150,7 @@ public:
   int operator =(const char *v);	/* atom (from char *) */
   int operator =(long v);		/* integer */
   int operator =(int v);		/* integer */
+  int operator =(int64_t v);		/* integer */
   int operator =(double v);		/* float */
   int operator =(const PlFunctor &f);	/* functor */
 
@@ -790,6 +791,15 @@ __inline int PlTerm::operator =(long v)
 
 __inline int PlTerm::operator =(int v)
 { int rc = PL_unify_integer(ref, v);
+  term_t ex;
+
+  if ( !rc && (ex=PL_exception(0)) )
+    throw PlResourceError(ex);
+  return rc;
+}
+
+__inline int PlTerm::operator =(int64_t v)
+{ int rc = PL_unify_int64(ref, v);
   term_t ex;
 
   if ( !rc && (ex=PL_exception(0)) )

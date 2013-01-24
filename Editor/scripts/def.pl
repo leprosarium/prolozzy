@@ -8,9 +8,11 @@
 		layerMax/1,
 	        flip/3,
 		shader/3,
+		internalShader/2,
 		brushType/3,
 		drawMode/3,
 		material/4,
+		density/2,
 		class/3]).
 
 roomW(240).	% default game room width
@@ -34,6 +36,8 @@ shader(add, 2, "add").
 shader(mod, 3, "mod").
 shader(mod2, 4, "mod2").
 
+internalShader(alpharep, 5).
+
 brushType(static, 0, "static").
 brushType(dynamic, 1, "dynamic").
 
@@ -52,6 +56,11 @@ material(wind,	 6, soft, 0xFF707070).	% winds (medium); player is pushed up
 material(block,	 7, hard, 0xFF006000).	% ground, walls (hard); blocks the player
 material(jumpFix, 8, jump, 0xFF008000).	% jumper fix (hard)
 material(jumpPro, 9, jump, 0xFF00B000).	% jumper progressive (hard)
+
+density(void, 0xff000000).
+density(soft, 0xff606060).
+density(hard, 0xffa0a0a0).
+density(jump, 0xffffffff).
 
 class(none, 0, "none").
 class(action, 1, "action").
@@ -144,6 +153,7 @@ colorTheme(2, layer2, 0xffffffff).
 dlg(back, 10).
 dlg(title, 11).
 dlg(item, 20).
+dlg(item1, 21).
 
 % user defined ids should start from here (1000+)
 dlg(menuBar, 1000).

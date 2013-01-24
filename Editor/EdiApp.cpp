@@ -373,8 +373,7 @@ BOOL cEdiApp::Update()
 
 	// statusbar
 	m_tool[m_toolcrt]->BeginUserUpdate();
-	int fid = gs_findfn(g_gui->m_vm,"MOD_UserUpdate");
-	if(fid!=-1) g_gui->ScriptCallback(fid);
+	g_gui->ScriptPrologDo("mod:userUpdate");
 	m_tool[m_toolcrt]->EndUserUpdate();
 
 	// gui
@@ -749,32 +748,32 @@ PREDICATE_M(edi, getBrushRect, 1)
 
 PREDICATE_M(edi, getColorBack1, 1)
 {
-	return A1 = static_cast<int>(EdiApp()->GetColor(EDI_COLORBACK1));
+	return A1 = static_cast<int64>(EdiApp()->GetColor(EDI_COLORBACK1));
 }
 
 PREDICATE_M(edi, getColorBack2, 1)
 {
-	return A1 = static_cast<int>(EdiApp()->GetColor(EDI_COLORBACK2));
+	return A1 = static_cast<int64>(EdiApp()->GetColor(EDI_COLORBACK2));
 }
 
 PREDICATE_M(edi, getColorGrid1, 1)
 {
-	return A1 = static_cast<int>(EdiApp()->GetColor(EDI_COLORGRID1));
+	return A1 = static_cast<int64>(EdiApp()->GetColor(EDI_COLORGRID1));
 }
 
 PREDICATE_M(edi, getColorGrid2, 1)
 {
-	return A1 = static_cast<int>(EdiApp()->GetColor(EDI_COLORGRID2));
+	return A1 = static_cast<int64>(EdiApp()->GetColor(EDI_COLORGRID2));
 }
 
 PREDICATE_M(edi, getColorGrid3, 1)
 {
-	return A1 = static_cast<int>(EdiApp()->GetColor(EDI_COLORGRID3));
+	return A1 = static_cast<int64>(EdiApp()->GetColor(EDI_COLORGRID3));
 }
 
 PREDICATE_M(edi, getColorMap, 1)
 {
-	return A1 = static_cast<int>(EdiApp()->GetColor(EDI_COLORMAP));
+	return A1 = static_cast<int64>(EdiApp()->GetColor(EDI_COLORMAP));
 }
 
 // edi .....................................................................................
@@ -1110,7 +1109,8 @@ PREDICATE_M(edi, toolBrushSetUser, 2)
 
 PREDICATE_M(edi, toolBrushGetColor, 1)
 {
-	return A1 = EdiApp()->m_brush.m_data[BRUSH_COLOR];
+	int64 color = static_cast<unsigned>(EdiApp()->m_brush.m_data[BRUSH_COLOR]);
+	return A1 = color;
 }
 
 PREDICATE_M(edi, toolBrushGetCustom, 2) 

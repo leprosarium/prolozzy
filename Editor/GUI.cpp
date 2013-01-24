@@ -295,18 +295,18 @@ void cGUI::ScriptDo( char* szcmd )
 	unguard()
 }
 
-void cGUI::ScriptPrologDo(const std::string & pred)
+bool cGUI::ScriptPrologDo(const std::string & pred)
 {
 	try
 	{
-		PlCall(pred.c_str());
+		return PlCall(pred.c_str());
 	}
 	catch(PlException const & e)
 	{
 		PlException ee(e);
 		dlog("Exception: %s", static_cast<LPCSTR>(ee));
 	}
-
+	return false;
 }
 
 

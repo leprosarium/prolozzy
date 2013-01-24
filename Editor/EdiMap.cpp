@@ -543,7 +543,6 @@ void cEdiMap::BrushDrawExtra( iRect& view )
 	m_count_brushcheck = 0;
 
 	tBrush brushtemp = EdiApp()->m_brush;
-	int fid = gs_findfn(g_gui->m_vm,"MOD_BrushDraw");
 
 	int partition[32];
 	int partitioncount = PartitionGet(view, partition,32);
@@ -627,11 +626,7 @@ void cEdiMap::BrushDrawExtra( iRect& view )
 
 		// user callback
 		EdiApp()->m_brush = brush;
-		if(fid!=-1)
-		{
-			int ret=g_gui->ScriptCallback(fid);
-			if(!ret) continue;
-		}
+		if(!g_gui->ScriptPrologDo("mod:brushDraw")) continue;
 
 		if( m_hideselected && brush.m_data[BRUSH_SELECT] ) continue;
 		int x = m_camz * (EdiApp()->m_brush.m_data[BRUSH_X]-view.x1);

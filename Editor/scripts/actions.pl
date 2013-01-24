@@ -56,7 +56,6 @@ viewSet(View) :-
 	mod:setView(View),
 	map:refresh.
 
-
 tool :-
 	edi:getTool(Tool),
 	NTool is 1 - Tool, % toggle tool

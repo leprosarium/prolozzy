@@ -1,4 +1,5 @@
-:-module(dlgStatusBar, [create/0]).
+:-module(dlgStatusBar, [create/0,
+		        set/2]).
 
 % Those are some text controls that are updated per frame from
 % the MOD_UserUpdate callback to show status info
@@ -40,6 +41,21 @@ create :-
 	gui:itemSetTxtColor(COLOR_BLACK),
 	gui:itemSetID(IID2).
 
+
+select(1, statusBar1, item).
+select(2, statusBar1, item1).
+select(3, statusBar2, item).
+select(4, statusBar2, item1).
+
+set(N, Text) :-
+	select(N, Bar, Item),
+	def:dlg(Bar, ID),
+	dlg:find(ID, IDX),
+	dlg:select(IDX),
+	def:dlg(Item, IID),
+	gui:itemFind(IID, IIDX),
+	gui:itemSelect(IIDX),
+	gui:itemSetTxt(Text).
 
 
 

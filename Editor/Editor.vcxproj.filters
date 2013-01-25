@@ -75,6 +75,9 @@
     <None Include="scripts\fileio.pl">
       <Filter>scripts</Filter>
     </None>
+    <None Include="scripts\brush.pl">
+      <Filter>scripts</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="scripts">

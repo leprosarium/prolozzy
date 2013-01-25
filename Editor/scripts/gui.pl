@@ -225,12 +225,15 @@ msgBox(Title, Text, Icon, ButtonInfos):-
 	gui:textH(Text, TextH),
 	dlgTitleH(DLGTITLEH),
 	DlgW = TextW + 8 + 32,  %Icon
-	DlgH is TextH + DLGTITLEH + 16,
+	(   TextH < 32
+	->  TextH2 = 32
+	;   TextH2 = TextH),
+	DlgH is TextH2 + DLGTITLEH + 16,
 	(DlgW < TitleW ->  DlgW2 = TitleW; DlgW2 = DlgW),
 	(   Buttons > 0	->  DlgH2 is DlgH + 8 + 20; DlgH2 = DlgH),
 	ButtonsW is Buttons * (ButtonW + 8),
 	(DlgW2 < ButtonsW -> DlgW3 = ButtonsW; DlgW3 = DlgW2),
-	DlgW4 is DlgW2 + 16,
+	DlgW4 is DlgW3 + 16,
 	createDlgTitleModal(0, 0, DlgW4, DlgH2, Title),
 	dlg:setCloseOut,
 
@@ -239,7 +242,7 @@ msgBox(Title, Text, Icon, ButtonInfos):-
 	TextY is DLGTITLEH + 8,
 	createText(TextX, TextY, TextW, Text, [left, top]),
 	createImage(8, TextY, 32, 32, Icon),  %Icon
-	createButtons(ButtonInfos, Buttons, DlgW, TextY, TextH, ButtonW).
+	createButtons(ButtonInfos, Buttons, DlgW4, TextY, TextH2, ButtonW).
 
 createButtons(_, 0, _, _, _, _).
 createButtons(ButtonInfos, Buttons, DlgW, TextY, TextH, ButtonW) :-

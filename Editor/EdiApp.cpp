@@ -1173,6 +1173,11 @@ PREDICATE_M(map, load, 1)
 	return g_map.Load(A1);
 }
 
+PREDICATE_M(map, brushCount, 1)
+{
+	return A1 = g_map.m_brushcount;
+}
+
 // map brush ................................................................................
 int gsMapBrushCount( gsVM* vm ) 
 {
@@ -1181,6 +1186,23 @@ int gsMapBrushCount( gsVM* vm )
 	return 1;
 	unguard()
 }
+
+PREDICATE_M(map, brushGet, 3) 
+{
+	int bi = A1;
+	if(bi < 0 || bi >= g_map.m_brushcount) 
+		throw PlDomainError("invalid map brush index", A1);
+	tBrush & brush = g_map.m_brush[bi];
+	int idx = A2;
+	if(idx < 0 || idx >= BRUSH_MAX) 
+		throw PlDomainError("invalid brush variable", A2);
+	if(idx == BRUSH_COLOR) {
+		int64 color = static_cast<unsigned>(brush.m_data[idx]);
+		return A3 = color;
+	}
+	return A3 = brush.m_data[idx];
+}
+
 
 int gsMapBrushGet( gsVM* vm ) 
 {
@@ -1196,6 +1218,28 @@ int gsMapBrushGet( gsVM* vm )
 	return 1;
 	unguard()
 }
+
+PREDICATE_M(map, brushSet , 3) 
+{
+	int bi = A1;
+	if(bi < 0 || bi >= g_map.m_brushcount) 
+		throw PlDomainError("invalid map brush index", A1);
+	tBrush & brush = g_map.m_brush[bi];
+	int idx = A2;
+	if(idx < 0 || idx >= BRUSH_MAX) 
+		throw PlDomainError("invalid brush variable", A2);
+	if(idx == BRUSH_COLOR)
+	{
+		int64 color = A3;
+		brush.m_data[idx] = color;
+	} 
+	else 
+	{
+		brush.m_data[idx] = A3;
+	}
+	return true;
+}
+
 
 int gsMapBrushSet( gsVM* vm ) 
 {
@@ -1213,6 +1257,20 @@ int gsMapBrushSet( gsVM* vm )
 	unguard()
 }
 
+PREDICATE_M(map, brushNew, 0)
+{
+	g_map.BrushNew();
+	EdiApp()->UndoReset();
+	return true;
+}
+PREDICATE_M(map, brushNew, 1)
+{
+	int idx = g_map.BrushNew();
+	EdiApp()->UndoReset();
+	return A1 = idx;
+}
+
+
 int gsMapBrushNew( gsVM* vm )
 {
 	guard(gsMapBrushNew)
@@ -1222,6 +1280,14 @@ int gsMapBrushNew( gsVM* vm )
 	return 1;
 	unguard()
 }
+
+PREDICATE_M(map, brushDel, 1)
+{
+	g_map.BrushDel(A1);
+	EdiApp()->UndoReset();
+	return 0;
+}
+
 
 int gsMapBrushDel( gsVM* vm )
 {
@@ -1233,6 +1299,12 @@ int gsMapBrushDel( gsVM* vm )
 	return 0;
 	unguard()
 }
+
+PREDICATE_M(map, repartition, 0)
+{
+	return g_map.PartitionRepartition();
+}
+
 
 int gsMapRepartition( gsVM* vm )
 {
@@ -1257,6 +1329,13 @@ int gsMapRefresh( gsVM* vm )
 	unguard()
 }
 
+PREDICATE_M(map, reset, 0)
+{
+	g_map.Reset();
+	EdiApp()->UndoReset();
+	return true;
+}
+
 int gsMapReset( gsVM* vm )
 {
 	guard(gsMapReset)
@@ -1265,7 +1344,14 @@ int gsMapReset( gsVM* vm )
 	return 0;
 	unguard()
 }
-		
+
+PREDICATE_M(map, resize, 2)
+{
+	int ret = g_map.Resize(A1, A2); 
+	EdiApp()->UndoReset();
+	return ret; 
+}
+
 int gsMapResize( gsVM* vm )
 {
 	guard(gsMapReset)

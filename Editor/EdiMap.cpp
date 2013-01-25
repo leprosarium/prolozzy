@@ -1246,7 +1246,6 @@ bool cEdiMap::LoadMap(const std::string &filename)
 	int chunkcount=0;
 	int count_brush = 0;
 	int count_obj = 0;
-	int dummy;
 	char* buffer;
 
 	while(true)

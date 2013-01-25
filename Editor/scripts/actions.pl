@@ -18,14 +18,17 @@
 		   flipSet/1,
 		   justFlip/0,
 		   layer/1,
-		   fileOpen/0]).
+		   fileOpen/0,
+		   fileOpen2/0,
+		   fileSave/1]).
 
 menu :-
 	Data = [
 	item(file-"File", "", []),
 	item(new-" new",       (gui:dlgClose, actions:fileNew), [key(n), tooltip("new map [N]")]),
 	item(open-" open",     (gui:dlgClose, actions:fileOpen), [key(o), tooltip("open map [O]")]),
-	item(save-" save as",  (gui:dlgClose, actions:fileSave), [key(s), tooltip("save map [S]")]),
+	item(open2-" open2",   (gui:dlgClose, actions:fileOpen2), [key(shift+o), tooltip("open map 2 [Shift+O]")]),
+	item(save-" save as",  (gui:dlgClose, actions:fileSave(false)), [key(s), tooltip("save map [S]")]),
 	item(export-" export", (gui:dlgClose, actions:fileExport), [key(e), tooltip("export map as image [E]")]),
 	item(info-" info",     (gui:dlgClose, actions:fileInfo), [key(i), tooltip("info about current map [I]")]),
 	item(editor-"Editor", "", []),
@@ -207,6 +210,33 @@ fileOpen :-
 	    gui:msgBoxOk("Error", "File open failed.\nFile might be incorrect or damaged.", icon_error)).
 fileOpen.
 
+
+fileOpen2 :-
+	edi:toolReset,
+	dlgInfo:mapFile(CurFile),
+	gui:winDlgOpenFile(CurFile, ActFile, "pmp", 0),
+	dlgInfo:setMapFile(ActFile),
+	edi:waitCursor(1),
+	(   fileio:mapLoad2(ActFile)
+	->  edi:waitCursor(0)
+	;   edi:waitCursor(0),
+	    gui:msgBoxOk("Error", "File open failed.\nFile might be incorrect or damaged.", icon_error)).
+fileOpen2.
+
+
+fileSave(Silent) :-
+	DefName = "noname.pmp",
+	dlgInfo:mapFile(CurFile),
+	(   (   (\+ Silent; CurFile==DefName), gui:winDlgOpenFile(CurFile, ActFile, "pmp", 1))
+	;   Silent, CurFile \= DefName, ActFile = CurFile),
+	dlgInfo:setMapFile(ActFile),
+	edi:waitCursor(1),
+	(   fileio:mapSave(ActFile)
+	->  edi:waitCursor(0),
+	    gui:msgBoxOk("Message", "File save successful.", icon_info)
+	;   edi:waitCursor(0),
+	    gui:msgBoxOk("Error", "File save failed.", icon_error)), !.
+fileSave(_).
 
 
 

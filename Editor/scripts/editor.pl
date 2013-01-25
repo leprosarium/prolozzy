@@ -13,6 +13,7 @@
 :- use_module(dlgInfo, []).
 :- use_module(roomNames, []).
 :- use_module(fileio, []).
+:- use_module(brush, []).
 
 init :-
 	core:dl("editor init."),

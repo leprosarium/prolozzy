@@ -1,7 +1,7 @@
 :-module(dlgInfo, [mapFile/1,
 		   setMapFile/1]).
 
-:-recorda(mapFile, "noname.map").
+:-recorda(mapFile, "noname.pmp").
 
 mapFile(X) :-
 	recorded(mapFile, X).

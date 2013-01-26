@@ -51,7 +51,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>C:\Program Files (x86)\pl\include;..\Engine;..\Engine\Common;..\Engine\Debug;..\Engine\Files;..\Engine\Input;..\Engine\Sound;..\Engine\App;..\Engine\Render;..\Engine\Gs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProgramFiles)\pl\include;..\Engine;..\Engine\Common;..\Engine\Debug;..\Engine\Files;..\Engine\Input;..\Engine\Sound;..\Engine\App;..\Engine\Render;..\Engine\Gs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;D3D_DEBUG_INFO1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -68,7 +68,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>C:\Program Files (x86)\pl\lib;$(DXSDK_DIR)Lib\x86;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProgramFiles)\pl\lib;$(DXSDK_DIR)Lib\x86;</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>copy /B $(OutDir)$(ProjectName).exe+$(OutDir)$(ProjectName).prc ..\Bin\dizzy_d.exe</Command>
@@ -85,7 +85,7 @@
     </CustomBuildStep>
     <CustomBuildStep />
     <CustomBuild>
-      <Command>"c:\Program Files (x86)\pl\bin\swipl.exe" -q --stand_alone=true  -o $(OutDir)$(ProjectName).prc -c %(FullPath)</Command>
+      <Command>"$(ProgramFiles)\pl\bin\swipl.exe" -q --stand_alone=true  -o $(OutDir)$(ProjectName).prc -c %(FullPath)</Command>
     </CustomBuild>
     <CustomBuild>
       <Outputs>$(OutDir)$(ProjectName).prc</Outputs>
@@ -98,7 +98,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <Optimization>MinSpace</Optimization>
-      <AdditionalIncludeDirectories>C:\Program Files (x86)\pl\include;..\Engine;..\Engine\Common;..\Engine\Debug;..\Engine\Files;..\Engine\Input;..\Engine\Sound;..\Engine\App;..\Engine\Render;..\Engine\Gs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProgramFiles)\pl\include;..\Engine;..\Engine\Common;..\Engine\Debug;..\Engine\Files;..\Engine\Input;..\Engine\Sound;..\Engine\App;..\Engine\Render;..\Engine\Gs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -113,7 +113,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>C:\Program Files (x86)\pl\lib;$(DXSDK_DIR)Lib\x86;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProgramFiles)\pl\lib;$(DXSDK_DIR)Lib\x86;</AdditionalLibraryDirectories>
       <AdditionalDependencies>dinput8.lib;dsound.lib;dxguid.lib;%(AdditionalDependencies);libswipl.dll.a</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
@@ -123,7 +123,7 @@
       <Message>Build Prolog State</Message>
       <Outputs>$(OutDir)$(ProjectName).prc</Outputs>
       <AdditionalInputs>scripts\action.pl;scripts\ai.pl;scripts\brush.pl;scripts\def.pl;scripts\dialog.pl;scripts\file.pl;scripts\game.pl;scripts\gamedef.pl;scripts\handlers.pl;scripts\inventory.pl;scripts\menu.pl;scripts\message.pl;scripts\movement.pl;scripts\obj.pl;scripts\player.pl;scripts\roomprops.pl;scripts\sound.pl;scripts\start.pl;scripts\update.pl;scripts\util.pl</AdditionalInputs>
-      <Command>"c:\Program Files (x86)\pl\bin\swipl.exe" -q --stand_alone=true  -o $(OutDir)$(ProjectName).prc -c %(FullPath)</Command>
+      <Command>"$(ProgramFiles)\pl\bin\swipl.exe" -q --stand_alone=true  -o $(OutDir)$(ProjectName).prc -c %(FullPath)</Command>
     </CustomBuild>
   </ItemDefinitionGroup>
   <ItemGroup>

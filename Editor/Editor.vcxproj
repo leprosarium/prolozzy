@@ -73,7 +73,7 @@
       <AdditionalInputs>scripts\gui.pl;scripts\editor.pl;scripts\mod.pl;scripts\def.pl;scripts\dlgoptions.pl;scripts\actions.pl;scripts\keys.pl;scripts\dlgMenuBar.pl;scripts\dlgStatusBar.pl;scripts\dlgInfo.pl;scripts\roomNames.pl;scripts\fileio.pl;scripts\brush.pl</AdditionalInputs>
       <Outputs>$(OutDir)$(ProjectName).prc</Outputs>
       <Message>Build Prolog State</Message>
-      <Command>"$(ProgramFiles)\pl\bin\swipl.exe" -q --stand_alone=true  -o $(OutDir)$(ProjectName).prc -c %(FullPath)</Command>
+      <Command>"$(ProgramFiles)\pl\bin\swipl.exe" -q --stand_alone=true  -o $(OutDir)$(ProjectName).prc -c %(RelativeDir)%(Filename)%(Extension)</Command>
     </CustomBuild>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -104,7 +104,7 @@
       <AdditionalInputs>scripts\gui.pl;scripts\editor.pl;scripts\mod.pl;scripts\def.pl;scripts\dlgoptions.pl;scripts\actions.pl;scripts\keys.pl;scripts\dlgMenuBar.pl;scripts\dlgStatusBar.pl;scripts\dlgInfo.pl;scripts\roomNames.pl;scripts\fileio.pl;scripts\brush.pl</AdditionalInputs>
       <Outputs>$(OutDir)$(ProjectName).prc</Outputs>
       <Message>Build Prolog State</Message>
-      <Command>"$(ProgramFiles)\pl\bin\swipl.exe" -q --stand_alone=true  -o $(OutDir)$(ProjectName).prc -c %(FullPath)</Command>
+      <Command>"$(ProgramFiles)\pl\bin\swipl.exe" -q --stand_alone=true  -o $(OutDir)$(ProjectName).prc -c %(RelativeDir)%(Filename)%(Extension)</Command>
     </CustomBuild>
   </ItemDefinitionGroup>
   <ItemGroup>

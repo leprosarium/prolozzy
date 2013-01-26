@@ -85,7 +85,7 @@
     </CustomBuildStep>
     <CustomBuildStep />
     <CustomBuild>
-      <Command>"$(ProgramFiles)\pl\bin\swipl.exe" -q --stand_alone=true  -o $(OutDir)$(ProjectName).prc -c %(FullPath)</Command>
+      <Command>"$(ProgramFiles)\pl\bin\swipl.exe" -q --stand_alone=true  -o $(OutDir)$(ProjectName).prc -c %(RelativeDir)%(Filename)%(Extension)</Command>
     </CustomBuild>
     <CustomBuild>
       <Outputs>$(OutDir)$(ProjectName).prc</Outputs>
@@ -123,7 +123,7 @@
       <Message>Build Prolog State</Message>
       <Outputs>$(OutDir)$(ProjectName).prc</Outputs>
       <AdditionalInputs>scripts\action.pl;scripts\ai.pl;scripts\brush.pl;scripts\def.pl;scripts\dialog.pl;scripts\file.pl;scripts\game.pl;scripts\gamedef.pl;scripts\handlers.pl;scripts\inventory.pl;scripts\menu.pl;scripts\message.pl;scripts\movement.pl;scripts\obj.pl;scripts\player.pl;scripts\roomprops.pl;scripts\sound.pl;scripts\start.pl;scripts\update.pl;scripts\util.pl</AdditionalInputs>
-      <Command>"$(ProgramFiles)\pl\bin\swipl.exe" -q --stand_alone=true  -o $(OutDir)$(ProjectName).prc -c %(FullPath)</Command>
+      <Command>"$(ProgramFiles)\pl\bin\swipl.exe" -q --stand_alone=true  -o $(OutDir)$(ProjectName).prc -c %(RelativeDir)%(Filename)%(Extension)</Command>
     </CustomBuild>
   </ItemDefinitionGroup>
   <ItemGroup>

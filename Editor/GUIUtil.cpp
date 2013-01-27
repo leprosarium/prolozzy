@@ -183,17 +183,17 @@ void GUIDrawImg( int x1, int y1, int x2, int y2, int img, dword color, int align
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL WinDlgOpenFile( char* filename, char* ext, int mode )
+BOOL WinDlgOpenFile( LPWSTR filename, LPWSTR ext, int mode )
 {
 	guard(WinDlgOpenFile)
 	if(mode!=0 && mode!=1) return FALSE;
 	
 	dword flags=0;
-	char title[32]; title[0]=0;
+	WCHAR title[32]; title[0]=0;
 
 	if(mode==0)
 	{
-		strcpy(title,"Open File");
+		wcscpy(title, L"Open File");
 		flags |= OFN_FILEMUSTEXIST;
 		flags |= OFN_NOCHANGEDIR;
 		flags |= OFN_PATHMUSTEXIST;
@@ -203,22 +203,22 @@ BOOL WinDlgOpenFile( char* filename, char* ext, int mode )
 	{
 		flags |= OFN_NOCHANGEDIR;
 		flags |= OFN_OVERWRITEPROMPT;
-		strcpy(title,"Save File");
+		wcscpy(title, L"Save File");
 	}
 	// other flags ? OFN_EXTENSIONDIFFERENT
 
-	char filter[64];
+	WCHAR filter[64];
 	if(ext)
 	{
-		int extsize=(int)strlen(ext);
-		strcpy(filter,"*.");
-		strcat(filter,ext);
-		strcpy(filter+extsize+3,"*.");
-		strcat(filter+extsize+3,ext);
+		size_t extsize = wcslen(ext);
+		wcscpy(filter, L"*.");
+		wcscat(filter, ext);
+		wcscpy(filter + extsize + 3, L"*.");
+		wcscat(filter + extsize + 3, ext);
 		filter[(extsize+3)*2] = 0;
 	}
 
-	OPENFILENAME ofn;
+	OPENFILENAMEW ofn;
 	memset(&ofn,0,sizeof(ofn));
 	ofn.lStructSize			= sizeof(ofn);
 	ofn.hwndOwner			= E9_GetHWND();
@@ -239,10 +239,10 @@ BOOL WinDlgOpenFile( char* filename, char* ext, int mode )
 
 	BOOL ok;
 	if(mode==0)
-		ok = GetOpenFileName( &ofn );
+		ok = GetOpenFileNameW( &ofn );
 	else
 	if(mode==1)
-		ok = GetSaveFileName( &ofn );
+		ok = GetSaveFileNameW( &ofn );
 	return ok;
 	unguard()
 }

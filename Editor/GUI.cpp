@@ -576,40 +576,20 @@ int gsTextH( gsVM* vm )
 
 PREDICATE_M(gui, winDlgOpenFile, 4)
 {
-	static char filename[256];
+	static WCHAR filename[256];
 	filename[0]=0;
-	strcpy(filename, A1);
+	wcscpy(filename, A1);
 	
 	if(WinDlgOpenFile( filename, A3, A4))
+	{
+		//for(char * c = filename; *c; ++c)
+		//	if(*c == '\\')
+		//		*c = '/';
 		return A2 = filename;
+	}
 	return false;	
 }
 
-
-int gsWinDlgOpenFile( gsVM* vm )
-{
-	guard(gsWinDlgOpenFile)
-	if(!gs_cktype(vm,0,GS_REF))		GS_RETURNINT(vm,0);
-	if(!gs_ckreftype(vm,0,GS_STR))	GS_RETURNINT(vm,0);
-	if(!gs_cktype(vm,1,GS_STR))		GS_RETURNINT(vm,0);
-	if(!gs_cktype(vm,2,GS_INT))		GS_RETURNINT(vm,0);
-	static char filename[256];
-	gsObj* obj = gs_toref(vm,0);
-
-	filename[0]=0;
-	if(obj->s!=NULL) strcpy(filename, obj->s);
-	
-	BOOL ok = WinDlgOpenFile( filename, gs_tostr(vm,1), gs_toint(vm,2) );
-	if(ok)
-	{
-		gso_del(*obj);
-		*obj = gso_dup( gsObj(filename,gsstrsize(filename)) );
-	}
-	
-	gs_pushint(vm,ok);
-	return 1;
-	unguard()
-}
 
 int gsWinDlgOpenFolder( gsVM* vm )
 {
@@ -1201,7 +1181,6 @@ void cGUI::ScriptRegister()
 	gs_regfn( m_vm, "FontH",			gsFontH );					// > int(font height/0)
 	gs_regfn( m_vm, "TextW",			gsTextW );					// str(text) > int(text width/0)
 	gs_regfn( m_vm, "TextH",			gsTextH );					// str(text) > int(text height/0)
-	gs_regfn( m_vm, "WinDlgOpenFile",	gsWinDlgOpenFile );			// refstr(file), str(ext), int(mode) > int(1/0)
 	gs_regfn( m_vm, "WinDlgOpenFolder",	gsWinDlgOpenFolder );		// refstr(folder) > int(1/0)
 	gs_regfn( m_vm, "WinDlgOpenColor",	gsWinDlgOpenColor );		// retint(color) > int(1/0)
 		

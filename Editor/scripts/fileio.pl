@@ -17,7 +17,8 @@ mapLoad(File) :-
 
 mapLoad2(File) :-
 	map:reset,
-	setup_call_cleanup(open(File, read, S), loadTerms(S), close(S)).
+	setup_call_cleanup(
+	    catch(open(File, read, S), Ex, (core:dl(Ex), fail)), loadTerms(S), close(S)).
 
 loadTerms(S) :-
 	catch(read_term(S, Term, []), E, (core:dl(readError(E)), fail)),

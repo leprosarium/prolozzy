@@ -117,6 +117,8 @@ public:
 
 					/* C --> PlTerm */
   PlTerm(const char *text);
+  PlTerm(LPCWSTR text);
+
   PlTerm(long val);
   PlTerm(double val);
   PlTerm(const PlAtom &a);
@@ -127,6 +129,7 @@ public:
   { return ref;
   }
   operator char *(void) const;
+  operator LPWSTR() const;
   operator long(void) const;
   operator int(void) const;
   operator int64_t(void) const;
@@ -148,6 +151,7 @@ public:
   int operator =(const PlTerm &t2);	/* term */
   int operator =(const PlAtom &a);	/* atom */
   int operator =(const char *v);	/* atom (from char *) */
+  int operator =(LPCWSTR v);
   int operator =(long v);		/* integer */
   int operator =(int v);		/* integer */
   int operator =(int64_t v);		/* integer */
@@ -183,6 +187,7 @@ public:
 
 					/* comparison (string) */
   int operator ==(const char *s);
+  int operator ==(LPCWSTR s);
   int operator ==(const PlAtom &a);
 };
 
@@ -364,6 +369,12 @@ __inline
 PlTerm::PlTerm(const char *text)
 { if ( !(ref = PL_new_term_ref()) ||
        !PL_put_atom_chars(ref, text) )
+    throw PlResourceError();
+}
+
+__inline
+PlTerm::PlTerm(LPCWSTR text)
+{ if ( !(ref = PL_new_atom_wchars(wcslen(text), text) ))
     throw PlResourceError();
 }
 
@@ -630,6 +641,18 @@ __inline PlTerm::operator char *(void) const
   PL_THROWN(NULL);
 }
 
+__inline PlTerm::operator LPWSTR() const
+{
+  WCHAR *s;
+  size_t len;
+
+  if ( PL_get_wchars(ref, &len, &s, CVT_ALL|CVT_WRITE|BUF_RING) )
+    return s;
+
+  throw PlTypeError("text", ref);
+  PL_THROWN(NULL);
+}
+
 __inline PlTerm::operator long(void) const
 { long v;
 
@@ -780,6 +803,16 @@ __inline int PlTerm::operator =(const char *v)		/* term = atom */
   return rc;
 }
 
+__inline int PlTerm::operator =(LPCWSTR v)		/* term = atom */
+{ 
+  int rc = PL_unify_wchars(ref, PL_ATOM, wcslen(v), v);
+  term_t ex;
+
+  if ( !rc && (ex=PL_exception(0)) )
+    throw PlResourceError(ex);
+  return rc;
+}
+
 __inline int PlTerm::operator =(long v)
 { int rc = PL_unify_integer(ref, v);
   term_t ex;
@@ -895,6 +928,17 @@ __inline int PlTerm::operator ==(const char *s)
 
   if ( PL_get_chars(ref, &s0, CVT_ALL) )
     return strcmp(s0, s) == 0;
+
+  throw PlTypeError("text", ref);
+  PL_THROWN(0);
+}
+
+__inline int PlTerm::operator ==(LPCWSTR s)
+{ LPWSTR s0;
+  size_t len;
+	
+  if ( PL_get_wchars(ref, &len, &s0, CVT_ALL) )
+    return wcscmp(s0, s) == 0;
 
   throw PlTypeError("text", ref);
   PL_THROWN(0);

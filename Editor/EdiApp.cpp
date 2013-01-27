@@ -1169,8 +1169,7 @@ int gsToolCommand( gsVM* vm )
 
 PREDICATE_M(map, load, 1)
 {
-	g_map.Reset();
-	return g_map.Load(A1);
+	return g_map.Load(WideStringToMultiByte(A1));
 }
 
 PREDICATE_M(map, brushCount, 1)

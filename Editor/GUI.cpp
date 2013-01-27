@@ -1005,6 +1005,35 @@ PREDICATE_M(gui, itemSetRect, 4)
 	return true;
 }
 
+PREDICATE_M(gui, itemSetX, 1)
+{
+	cGUIItem* item = g_gui->GetLastItem();
+	item->SetInt(IV_X,  A1);
+	return true;
+}
+
+PREDICATE_M(gui, itemSetY, 1)
+{
+	cGUIItem* item = g_gui->GetLastItem();
+	item->SetInt(IV_Y,  A1);
+	return true;
+}
+
+PREDICATE_M(gui, itemSetX2, 1)
+{
+	cGUIItem* item = g_gui->GetLastItem();
+	item->SetInt(IV_X2,  A1);
+	return true;
+}
+
+PREDICATE_M(gui, itemSetY2, 1)
+{
+	cGUIItem* item = g_gui->GetLastItem();
+	item->SetInt(IV_Y2,  A1);
+	return true;
+}
+
+
 PREDICATE_M(gui, itemSetTxt, 1)
 {
 	g_gui->GetLastItem()->SetTxt(IV_TXT,  A1);

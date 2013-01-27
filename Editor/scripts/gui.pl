@@ -1,6 +1,8 @@
 :- module(gui, [loadResources/0,
 		styleCode/2,
 		alignCode/2,
+		createEdit/4,
+		createEdit/5,
 		createDlg/5,
 		createDlgTitle/5,
 		createDlgTitleModal/5,
@@ -12,6 +14,7 @@
 		createText/4,
 		createImage/5,
 		dlgTitleH/1,
+		msgBox/4,
 		msgBoxOk/3,
 		createPullDownSelect/5,
 		createPullDown/4,
@@ -153,6 +156,13 @@ createImage(X, Y, W, H, Img) :-
 	alignCode([left, top], Align),
 	gui:itemSetImgAlign(Align).
 
+createEdit(X, Y, W, Text) :-
+	createItem("cGUIEdit", X, Y, W, 20, [backgr, border], [color(0, edit), color(1, gui1), color(2, editsel)]),
+	gui:itemSetTxt(Text).
+
+createEdit(X, Y, W, Text, Cmd) :-
+	createEdit(X, Y, W, Text),
+	gui:itemSetCmdAction(Cmd).
 
 itemSetProps([]).
 itemSetProps([Prop|Props]) :-
@@ -294,7 +304,7 @@ dlgMoveToMouse :-
 
 % move dialog to the top menubar
 dlgDockUp :-
-	dlg:getPos(Y, X),
+	dlg:getPos(X, Y),
 	(   Y < 32
 	->  dlgMove(X, 32)
 	;   true).

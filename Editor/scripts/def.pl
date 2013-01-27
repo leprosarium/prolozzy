@@ -154,6 +154,7 @@ dlg(back, 10).
 dlg(title, 11).
 dlg(item, 20).
 dlg(item1, 21).
+dlg(item(N), NN) :- NN is 20 + N.
 
 % user defined ids should start from here (1000+)
 dlg(menuBar, 1000).

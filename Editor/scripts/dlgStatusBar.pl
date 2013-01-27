@@ -43,9 +43,9 @@ create :-
 
 
 select(1, statusBar1, item).
-select(2, statusBar1, item1).
+select(2, statusBar1, item(1)).
 select(3, statusBar2, item).
-select(4, statusBar2, item1).
+select(4, statusBar2, item(1)).
 
 set(N, Text) :-
 	select(N, Bar, Item),

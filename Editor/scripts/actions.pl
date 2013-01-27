@@ -18,9 +18,12 @@
 		   flipSet/1,
 		   justFlip/0,
 		   layer/1,
+		   fileNew/0,
+		   fileNewDo/0,
 		   fileOpen/0,
 		   fileOpen2/0,
-		   fileSave/1]).
+		   fileSave/1,
+		   fileInfo/0]).
 
 menu :-
 	Data = [
@@ -198,6 +201,18 @@ layerActivate(2, Layer) :-
 
 
 
+fileNew :-
+	gui:msgBox("Question", "Do you want to create a new map?\n( current map will be lost if not saved )", icon_question, [btn("YES", actions:fileNewDo), btn("NO" , true)]).
+
+
+fileNewDo :-
+
+	map:reset,
+%	RoomNamesReset(0);
+%	RoomTextsReset(0);
+%	RoomPropsReset(0);
+	fileInfo.
+
 fileOpen :-
 	edi:toolReset,
 	dlgInfo:mapFile(CurFile),
@@ -238,9 +253,8 @@ fileSave(Silent) :-
 	    gui:msgBoxOk("Error", "File save failed.", icon_error)), !.
 fileSave(_).
 
-
-
-
+fileInfo :-
+	dlgInfo:create.
 
 
 

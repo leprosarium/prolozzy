@@ -206,7 +206,6 @@ fileNew :-
 
 
 fileNewDo :-
-
 	map:reset,
 %	RoomNamesReset(0);
 %	RoomTextsReset(0);
@@ -240,7 +239,7 @@ fileOpen2.
 
 
 fileSave(Silent) :-
-	DefName = "noname.pmp",
+	dlgInfo:defName(DefName),
 	dlgInfo:mapFile(CurFile),
 	(   (   (\+ Silent; CurFile==DefName), gui:winDlgOpenFile(CurFile, ActFile, "pmp", 1))
 	;   Silent, CurFile \= DefName, ActFile = CurFile),

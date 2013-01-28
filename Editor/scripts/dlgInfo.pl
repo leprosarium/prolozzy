@@ -1,8 +1,11 @@
-:-module(dlgInfo, [mapFile/1,
+:-module(dlgInfo, [defName/1,
+		   mapFile/1,
 		   setMapFile/1,
 		   create/0]).
 
-:-recorda(mapFile, "noname.pmp").
+defName('noname.pmp').
+
+:-defName(Def), recorda(mapFile, Def).
 
 mapFile(X) :-
 	recorded(mapFile, X).
@@ -76,42 +79,93 @@ create :-
 	gui:dlgMoveToMouse,
 	gui:dlgDockUp.
 
-update.
 
-%func DlgInfo_Update()
-%{
-%	ItemSelect(ItemFind(ID_DLGITEM+0));	ItemSetTxt(IV_TXT,(str)EdiGet(EDI_MAPW));
-%	ItemSelect(ItemFind(ID_DLGITEM+1));	ItemSetTxt(IV_TXT,(str)EdiGet(EDI_MAPH));
+select(Item) :-
+	def:dlg(Item, IID),
+	gui:itemFind(IID, IIDX),
+	gui:itemSelect(IIDX).
+
+setVal(Item, Text) :-
+	select(Item),
+	gui:itemSetTxt(Text).
+
+getVal(Item, Text) :-
+	select(Item),
+	gui:itemGetTxt(Text).
+
+
+cropString("", "", _).
+cropString(Nm, Nm, Max) :-
+	gui:textW(Nm, Sz),
+	Sz =< Max.
+cropString([_|No], Nr, Max) :-
+	cropString(No, Nr, Max).
+
+
+update :-
+	edi:getMapW(MapW), setVal(item, MapW),
+	edi:getMapH(MapH), setVal(item(1), MapH),
+	edi:getRoomW(RoomW), setVal(item(2), RoomW),
+	edi:getRoomH(RoomH), setVal(item(3), RoomH),
+	mapFile(Name),
+	atom_chars(Name, Chars),
+	cropString(Chars, NM, 280),
+
+	RoomX = MapW // RoomW,
+	RoomY = MapH // RoomH,
+	map:brushCount(BC),
+	edi:tileCount(TC),
+	RC = RoomX * RoomY,
+	format(string(Info), 'Map: ~s\nBrush count: ~d\nTiles count: ~d\nRooms count: ~d ( ~d x ~d )', [NM, BC, TC, RC, RoomX, RoomY]),
+	setVal(item(10), Info),
+	gui:textH(Info, TextH),
+	gui:itemGetY(Y),
+	Y2 is Y + TextH,
+	gui:itemSetY2(Y2).
+
+
+getVals(MapW, MapH, RoomW, RoomH) :-
+	getVal(item, MW), atom_number(MW, MapW),
+	getVal(item(1), MH), atom_number(MH, MapH),
+	getVal(item(2), RW), atom_number(RW, RoomW),
+	getVal(item(3), RH),  atom_number(RH, RoomH).
+
+roomsToSmall(RoomW, RoomH) :-
+	(RoomW < 64;  RoomH < 64)
+	-> gui:msgBoxOk("Error", "The rooms are too small.\nEnter bigger values for room sizes.", icon_error).
+
+roomsToBig(RoomW, RoomH) :-
+	(RoomW > 256; RoomH > 192)
+	-> gui:msgBoxOk("Error", "The rooms are too big.\nEnter smaller values for room sizes.", icon_error).
+
+mapToSmall(MapW, MapH) :-
+	(MapW < 128; MapH < 128)
+	-> gui:msgBoxOk("Error", "The map is too small.\nEnter bigger values for map sizes.", icon_error).
+oneRoomMap(MapW, MapH, RoomW, RoomH) :-
+	(MapW < RoomW; MapH < RoomH)
+	-> gui:msgBoxOk("Error", "The map must contain at least one room.\nEnter bigger values for map sizes.", icon_error).
+mapResize :-
+	getVals(MapW, MapH, RoomW, RoomH),
+	(   roomsToSmall(RoomW, RoomH)
+	;   roomsToBig(RoomW, RoomH)
+	;   mapToSmall(MapW, MapH)
+	;   oneRoomMap(MapW, MapH, RoomW, RoomH)
+	;   mapResize(MapW, MapH, RoomW, RoomH)).
+
+
+mapResize(MapW, MapH, RoomW, RoomH) :-
+	(   \+ map:resize(MapW, MapH)
+	->  gui:msgBoxOk("Warning", "Some brushes have been cropped \nand left out of the current map area.", icon_warning)
+	;   true),
+	edi:setRoomW(RoomW),
+	edi:setRoomH(RoomH),
+	core:ini('editor.ini', 'editor', 'options_roomw', RoomW),
+	core:ini('editor.ini', 'editor', 'options_roomh', RoomH),
+	update.
+%	RoomNamesReset(1);
+%	RoomTextsReset(1);
+%	RoomPropsReset(1);
 %
-%	ItemSelect(ItemFind(ID_DLGITEM+2));	ItemSetTxt(IV_TXT,(str)EdiGet(EDI_ROOMW));
-%	ItemSelect(ItemFind(ID_DLGITEM+3));	ItemSetTxt(IV_TXT,(str)EdiGet(EDI_ROOMH));
-%
-%	// crop too long file names
-%	i=0; len = strlen(g_mapfile);
-%	while(TextW(strsub(g_mapfile,i))>280 && i<len) i++;
-%	mapfile = strsub(g_mapfile,i);
-%
-%	// infos
-%	ItemSelect(ItemFind(ID_DLGITEM+10));
-%	roomw = EdiGet(EDI_ROOMW);
-%	roomh = EdiGet(EDI_ROOMH);
-%	roomx = EdiGet(EDI_MAPW) / roomw;
-%	roomy = EdiGet(EDI_MAPH) / roomh;
-%	text =	"Map: "+mapfile+"\n"+
-%			"Brushes count: "+(str)MapBrushCount()+"\n"+
-%			"Tiles count: "+(str)TileCount()+"\n"+
-%			"Rooms count: "+(str)(roomx*roomy)+"  ( "+(str)roomx+" x "+(str)roomy+" )";
-%	ItemSetTxt(IV_TXT, text);
-%	texth = TextH(text)+8;
-%	ItemSetInt(IV_Y2, ItemGetInt(IV_Y)+texth);
-%	//...
-%}
-%
-
-
-mapResize.
-
-
 
 
 

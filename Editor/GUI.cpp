@@ -962,6 +962,28 @@ int gsItemBuild( gsVM* vm )
 	unguard()
 }
 
+PREDICATE_M(gui, itemGetX, 1)
+{
+	return A1 = g_gui->GetLastItem()->GetInt(IV_X);
+}
+PREDICATE_M(gui, itemGetY, 1)
+{
+	return A1 = g_gui->GetLastItem()->GetInt(IV_Y);
+}
+PREDICATE_M(gui, itemGetX2, 1)
+{
+	return A1 = g_gui->GetLastItem()->GetInt(IV_X2);
+}
+PREDICATE_M(gui, itemGetY2, 1)
+{
+	return A1 = g_gui->GetLastItem()->GetInt(IV_Y2);
+}
+
+PREDICATE_M(gui, itemGetTxt, 1)
+{
+	return A1 = g_gui->GetLastItem()->GetTxt(IV_TXT);
+}
+
 PREDICATE_M(gui, itemGetHidden, 0)
 {
 	return g_gui->GetLastItem()->GetInt(IV_HIDDEN) == 1;

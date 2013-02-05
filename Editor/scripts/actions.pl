@@ -47,7 +47,8 @@ menu :-
 exit:-
 	edi:close.
 
-options.
+options :-
+	dlgOptions:create.
 
 
 view :-

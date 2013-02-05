@@ -6,8 +6,15 @@
 		createDlg/5,
 		createDlgTitle/5,
 		createDlgTitleModal/5,
+		createItem/5,
 		createItem/6,
 		createItem/7,
+		createBar/5,
+		createBar/6,
+		createCheck/3,
+		createCheck/4,
+		createRadio/4,
+		createRadio/5,
 		dlgAddKeys/1,
 		createButtonImg/7,
 		createText/5,
@@ -103,14 +110,35 @@ createDlgTitleModal(X, Y, W, H, Text) :-
 	dlg:setModal.
 
 
+createBar(X, Y, W, H, Color0) :-
+	createItem(X, Y, W, H),
+	itemSetProp(color(0, Color0)),
+	styleCode(backgr, StyleCode),
+	gui:itemSetStyle(StyleCode).
+
+createBar(X, Y, W, H, Color0, Color1) :-
+	createItem(X, Y, W, H),
+	itemSetProp(color(0, Color0)),
+	itemSetProp(color(1, Color1)),
+	styleCode(gradient, StyleCode),
+	gui:itemSetStyle(StyleCode).
+
+
 
 % Controls
 
-createItem(Class, X, Y, W, H, Style, Props) :-
+createItem(X, Y, W, H) :-
+	createItem("cGUIItem", X, Y, W, H).
+
+createItem(Class, X, Y, W, H) :-
 	gui:itemNew(_ID, Class),
 	X2 is X + W,
 	Y2 is Y + H,
-	gui:itemSetRect(X, Y, X2, Y2),
+	gui:itemSetRect(X, Y, X2, Y2).
+
+
+createItem(Class, X, Y, W, H, Style, Props) :-
+	createItem(Class, X, Y, W, H),
 	itemSetProps(Props),
 	styleCode(Style, StyleCode),
 	gui:itemSetStyle(StyleCode),
@@ -131,14 +159,43 @@ createButtonImg(X, Y, W, H, Img0, Img1, Cmd ) :-
 	gui:itemSetImg1(Img1),
 	gui:itemSetCmdAction(Cmd).
 
+createCheck(X, Y, Value) :-
+	createItem("cGUICheck", X, Y, 20, 20),
+	getImg(check1, Img0),
+	getImg(check2, Img1),
+	gui:itemSetImg0(Img0),
+	gui:itemSetImg1(Img1),
+	def:color(edit, Color),
+	gui:itemSetImgColor(Color),
+	gui:itemSetValue(Value).
+
+createCheck(X, Y, Value, Cmd) :-
+	createCheck(X, Y, Value),
+	gui:itemSetCmdAction(Cmd).
+
+
+
+createRadio(X, Y, Value, Group, Cmd) :-
+	createRadio(X, Y, Value, Group),
+	gui:itemSetCmdAction(Cmd).
+
+
+createRadio(X, Y, Value, Group) :-
+	createItem("cGUIRadio", X, Y, 20, 20),
+	getImg(radio1, Img0),
+	getImg(radio2, Img1),
+	gui:itemSetImg0(Img0),
+	gui:itemSetImg1(Img1),
+	def:color(edit, Color),
+	gui:itemSetImgColor(Color),
+	gui:itemSetValue(Value),
+	gui:itemSetGroup(Group).
+
 createText(X, Y, W, Text) :-
 	createText(X, Y, W, Text, [left, centery]).
 
 createText(X, Y, W, Text, Align) :-
-	gui:itemNew(_IDX, "cGUIItem"),
-	X2 is X + W,
-	Y2 is Y + 20,
-	gui:itemSetRect(X, Y, X2, Y2),
+	createItem(X, Y, W, 20),
 	gui:itemSetTxt(Text),
 	alignCode(Align, AlignCode),
 	gui:itemSetTxtAlign(AlignCode).
@@ -146,10 +203,7 @@ createText(X, Y, W, Text, Align) :-
 
 createImage(X, Y, W, H, Img) :-
 	getImg(Img, ImgIdx),
-	gui:itemNew(_, "cGUIItem"),
-	X2 is X + W,
-	Y2 is Y + H,
-	gui:itemSetRect(X, Y, X2, Y2),
+	createItem(X, Y, W, H),
 	styleCode(none, Style),
 	gui:itemSetStyle(Style),
 	gui:itemSetImg0(ImgIdx),

@@ -3,6 +3,7 @@
 	       viewMode/2,
 	       roomInfo/1,
 	       setRoomInfo/1,
+	       roomInfoName/2,
 	       brushNew/1,
 	       brushProp/2,
 	       brushProp/3,
@@ -73,7 +74,7 @@ propGet(Key, Val) :-
 propSet(Key, Val) :-
 	recorded(Key, _, Ref),
 	erase(Ref),
-	recorda(view, Val).
+	recorda(Key, Val).
 
 viewMode(default, "default view").
 viewMode(select, "select view").
@@ -81,8 +82,8 @@ viewMode(game, "game view").
 viewMode(matrial, "matrial view").
 viewMode(density, "density view").
 
-property(view, Def) :- viewMode(Def, _), !.
 property(roomInfo, 0).
+property(view, Def) :- viewMode(Def, _), !.
 
 
 :- forall(property(Prop, Def), recorda(Prop, Def)).
@@ -221,7 +222,12 @@ updateRoomInfo(X, Y) :-
 
 roomInfo(_RX, _RY, "<Info>").
 
-
+roomInfoName(0, "show room name").
+roomInfoName(5, "show room props 0-3").
+roomInfoName(6, "show room props 4-7").
+roomInfoName(X, Text) :-
+	between(1, 4, X),
+	format(string(Text), 'show room text ~d', [X-1]).
 
 
 

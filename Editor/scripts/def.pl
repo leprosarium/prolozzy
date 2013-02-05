@@ -116,6 +116,8 @@ colorTheme(0, editsel, 0xfffbbe55).
 colorTheme(0, layer0, 0xff4d4833).
 colorTheme(0, layer1, 0xffbd540e).
 colorTheme(0, layer2, 0xffffff00).
+colorTheme(0, sample, 0xff4d4833).
+
 
 colorTheme(1, gui, 0xff006B46).
 colorTheme(1, gui1, 0xff007751).
@@ -131,6 +133,8 @@ colorTheme(1, editsel, 0xfffbbe55).%0xff009F50).
 colorTheme(1, layer0, 0xff006B46).
 colorTheme(1, layer1, 0xff00BD73).
 colorTheme(1, layer2, 0xff00FF9C).
+colorTheme(1, sample, 0xff006B46).
+
 
 colorTheme(2, gui, 0xff7A848B).
 colorTheme(2, gui1, 0xff8A969E).
@@ -146,6 +150,7 @@ colorTheme(2, editsel, 0xffffffff).
 colorTheme(2, layer0, 0xff7A848B).
 colorTheme(2, layer1, 0xff90C0DF).
 colorTheme(2, layer2, 0xffffffff).
+colorTheme(2, sample, 0xff7A848B).
 
 
 % IDS

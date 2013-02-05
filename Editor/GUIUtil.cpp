@@ -249,29 +249,29 @@ BOOL WinDlgOpenFile( LPWSTR filename, LPWSTR ext, int mode )
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL WinDlgOpenFolder( char* foldername )
+BOOL WinDlgOpenFolder( LPWSTR foldername )
 {
 	guard(WinDlgOpenFolder)
 	foldername[0]=0;
 
-	BROWSEINFO bi;
+	BROWSEINFOW bi;
 	bi.hwndOwner = E9_GetHWND();
 	bi.pidlRoot = NULL;
 	bi.pszDisplayName = foldername;
-	bi.lpszTitle = "Select folder";
+	bi.lpszTitle = L"Select folder";
 	bi.ulFlags = BIF_DONTGOBELOWDOMAIN | BIF_RETURNFSANCESTORS | BIF_RETURNONLYFSDIRS;
 	bi.lpfn = NULL;
 	bi.lParam = NULL;
 	bi.iImage = 0;
 
 	LPITEMIDLIST pidl;
-	pidl=SHBrowseForFolder(&bi);
+	pidl=SHBrowseForFolderW(&bi);
 	if(pidl==NULL) return 0;
-	if(!SHGetPathFromIDList(pidl, foldername)) return 0;
+	if(!SHGetPathFromIDListW(pidl, foldername)) return 0;
 
-	int s=(int)strlen(foldername);
-	if(s==0) return 0;
-	if(foldername[s-1]=='\\') foldername[s-1]=0;
+	size_t s = wcslen(foldername);
+	if (s == 0) return 0;
+	if (foldername[s - 1] == L'\\') foldername[s-1] = 0;
 	return 1;
 	unguard()
 }

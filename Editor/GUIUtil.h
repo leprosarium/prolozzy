@@ -29,7 +29,7 @@ inline	void		GUIDrawBar			( int x1, int y1, int x2, int y2, dword color )					{ 
 		void		GUIDrawImg			( int x1, int y1, int x2, int y2, int img, dword color = 0xffffffff, int align = GUIALIGN_CENTERX | GUIALIGN_CENTERY );
 
 		BOOL		WinDlgOpenFile		( LPWSTR filename, LPWSTR ext, int mode ); // filenname must have at least 256 chars; mode 0=open 1=save
-		BOOL		WinDlgOpenFolder	( char* foldername ); // foldername muse have at least 256 chars
+		BOOL		WinDlgOpenFolder	( LPWSTR foldername ); // foldername muse have at least 256 chars
 		BOOL		WinDlgOpenColor		( dword* color, BOOL extended=FALSE );
 
 #endif

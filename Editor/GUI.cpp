@@ -590,28 +590,19 @@ PREDICATE_M(gui, winDlgOpenFile, 4)
 	return false;	
 }
 
-
-int gsWinDlgOpenFolder( gsVM* vm )
+PREDICATE_M(gui, winDlgOpenFolder, 2)
 {
-	guard(gsWinDlgOpenFolder)
-	if(!gs_cktype(vm,0,GS_REF))		GS_RETURNINT(vm,0);
-	if(!gs_ckreftype(vm,0,GS_STR))	GS_RETURNINT(vm,0);
-	static char foldername[256];
-	gsObj* obj = gs_toref(vm,0);
-
+	static WCHAR foldername[256];
 	foldername[0]=0;
-	if(obj->s!=NULL) strcpy(foldername, obj->s);
-	
+	wcscpy(foldername, A1);
 	BOOL ok = WinDlgOpenFolder( foldername );
-	if(ok)
-	{
-		gso_del(*obj);
-		*obj = gso_dup( gsObj(foldername,gsstrsize(foldername)) );
+	if(ok) {
+		//for(WCHAR * c = foldername; *c; ++c)
+		//if( *c == L'\\')
+		//	*c = L'/';
+		return A2 = foldername;
 	}
-	
-	gs_pushint(vm,ok);
-	return 1;
-	unguard()
+	return false;
 }
 
 int gsWinDlgOpenColor( gsVM* vm )
@@ -791,6 +782,12 @@ PREDICATE_M(dlg, setCloseOut, 0)
 	return true;
 }
 
+PREDICATE_M(dlg, setCloseCmd, 1)
+{
+	g_gui->GetLastDlg()->SetTxt(DV_CLOSECMD,  A1);
+	return true;
+}
+
 
 PREDICATE_M(dlg, setRect, 4)
 {
@@ -951,6 +948,12 @@ int gsItemGetSelect( gsVM* vm )
 	gs_pushint(vm, g_gui->m_lastitem); 
 	return 1;
 	unguard()
+}
+
+PREDICATE_M(gui, itemBuild, 0)
+{
+	g_gui->GetLastItem()->Build();
+	return true;
 }
 
 int gsItemBuild( gsVM* vm )
@@ -1136,6 +1139,12 @@ PREDICATE_M(gui, itemSetValue, 1)
 	return true;
 }
 
+PREDICATE_M(gui, itemSetGroup, 1)
+{
+	g_gui->GetLastItem()->SetInt(IV_GROUP,  A1);
+	return true;
+}
+
 PREDICATE_M(gui, itemSetTxtColor, 1)
 {
 	int64 Color = A1;
@@ -1147,6 +1156,20 @@ PREDICATE_M(gui, itemSetTxtColor, 1)
 PREDICATE_M(gui, itemSetImgAlign, 1)
 {
 	g_gui->GetLastItem()->SetInt(IV_IMGALIGN,  A1);
+	return true;
+}
+
+PREDICATE_M(gui, itemSetImgColor, 1)
+{
+	int64 Color = A1;
+	g_gui->GetLastItem()->SetInt(IV_IMGCOLOR,  Color);
+	return true;
+}
+
+PREDICATE_M(gui, itemSetUser, 2)
+{
+	int idx = A1;
+	g_gui->GetLastItem()->SetInt(IV_USER + idx,  A2);
 	return true;
 }
 
@@ -1232,7 +1255,6 @@ void cGUI::ScriptRegister()
 	gs_regfn( m_vm, "FontH",			gsFontH );					// > int(font height/0)
 	gs_regfn( m_vm, "TextW",			gsTextW );					// str(text) > int(text width/0)
 	gs_regfn( m_vm, "TextH",			gsTextH );					// str(text) > int(text height/0)
-	gs_regfn( m_vm, "WinDlgOpenFolder",	gsWinDlgOpenFolder );		// refstr(folder) > int(1/0)
 	gs_regfn( m_vm, "WinDlgOpenColor",	gsWinDlgOpenColor );		// retint(color) > int(1/0)
 		
 	// GUIDlg													

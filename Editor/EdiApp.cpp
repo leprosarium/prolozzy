@@ -40,9 +40,12 @@ PREDICATE_M(core, ini, 4)
 		if(GetPrivateProfileString(A2, A3, "", value, 256, tmp_fullpath ) == 0)
 			return false;
 		PlTerm ct;
-		if ( !PL_chars_to_term(value, ct))
-			throw PlResourceError(ct);
-		return A4 = ct;
+		if (PL_chars_to_term(value, ct))
+			return A4 = ct;
+		PlTerm at;
+		if(PL_unify_atom_chars(at, value))
+			return A4 = at;
+		throw PlResourceError(ct);
 	}
 	WritePrivateProfileString(A2, A3, val, tmp_fullpath );
 	return true;

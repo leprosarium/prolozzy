@@ -4,7 +4,7 @@
 :- use_module(gui, []).
 :- use_module(mod, []).
 :- use_module(def, []).
-:- use_module(dlgoptions, []).
+:- use_module(dlgOptions, []).
 :- use_module(dlgMenuBar, []).
 :- use_module(dlgStatusBar, []).
 :- use_module(dlgColor, []).
@@ -14,6 +14,7 @@
 :- use_module(roomNames, []).
 :- use_module(fileio, []).
 :- use_module(brush, []).
+
 
 init :-
 	core:dl("editor init."),

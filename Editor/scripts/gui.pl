@@ -1,4 +1,5 @@
 :- module(gui, [loadResources/0,
+		select/1,
 		styleCode/2,
 		alignCode/2,
 		createEdit/4,
@@ -9,6 +10,7 @@
 		createItem/5,
 		createItem/6,
 		createItem/7,
+		createRect/7,
 		createBar/5,
 		createBar/6,
 		createCheck/3,
@@ -20,6 +22,7 @@
 		createText/5,
 		createText/4,
 		createImage/5,
+		createImage/4,
 		dlgTitleH/1,
 		msgBox/4,
 		msgBoxOk/3,
@@ -80,6 +83,10 @@ loadImg(Img) :-
 getImg(Img, Idx) :-
 	recorded(img, img(Img, Idx)).
 
+select(Item) :-
+	(def:dlg(Item, IID); def:dlg(item(Item), IID)),
+	gui:itemFind(IID, IIDX),
+	gui:itemSelect(IIDX).
 
 
 % Dialogs
@@ -148,6 +155,14 @@ createItem(Class, X, Y, W, H, Style, Props) :-
 createItem(X, Y, W, H, Style, Props) :-
 	createItem("cGUIItem", X, Y, W, H, Style, Props).
 
+createRect(X, Y, W, H, Color, Is3d, IsPressed) :-
+	(   Is3d == true
+	->  Style0 = [border]
+	;   Style0 = [border3d]),
+	(   IsPressed == true
+	->  Style = [pressed | Style0]
+	;   Style = Style0),
+	createItem(X, Y, W, H, Style, [color(2, Color)]).
 
 createButton(X, Y, W, Text, Cmd) :-
 	createItem("cGUIButton", X, Y, W, 20, [gradient, border3d], [text(Text), color(0, gui1), color(1, gui2), color(2, gui)]),
@@ -203,12 +218,17 @@ createText(X, Y, W, Text, Align) :-
 
 createImage(X, Y, W, H, Img) :-
 	getImg(Img, ImgIdx),
+	createImage(X, Y, W, H),
+	gui:itemSetImg0(ImgIdx).
+
+createImage(X, Y, W, H) :-
 	createItem(X, Y, W, H),
 	styleCode(none, Style),
 	gui:itemSetStyle(Style),
-	gui:itemSetImg0(ImgIdx),
 	alignCode([left, top], Align),
 	gui:itemSetImgAlign(Align).
+
+
 
 createEdit(X, Y, W, Text) :-
 	createItem("cGUIEdit", X, Y, W, 20, [backgr, border], [color(0, edit), color(1, gui1), color(2, editsel)]),

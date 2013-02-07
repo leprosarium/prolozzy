@@ -164,7 +164,6 @@ createBox4(X, Y, DDY) :-
 	gui:createBar(XX, YY, W, 64, gui1),
 	(core:ini('editor.ini', 'editor', 'options_tiledir', TileFolder);
 	 TileFolder = ''),
-	core:dl(tf(TileFolder)),
 	gui:createText(X, Y, 100, "Tiles Folder"),
 	XB is X + 244,
 	gui:createButton( XB, Y, 64, "reload", dlgOptions:reloadTiles),
@@ -215,10 +214,6 @@ createBox5(X, Y, DDX, DDY) :-
 	gui:itemSetToolTip("change editor color preferences").
 
 
-close :-
-	core:dl(close(dd)).
-
-
 roomInfo :-
 	findall(item(Info-Name,	(gui:dlgClose, dlgOptions:roomInfoSet(Info)), []), mod:roomInfoName(Info, Name), Menu),
 	mod:roomInfo(Info),
@@ -231,9 +226,7 @@ roomInfoSet(Info):-
 	def:dlg(options, MB),
 	dlg:find(MB, IDX),
 	dlg:select(IDX),
-	def:dlg(item(5), Id),
-	gui:itemFind(Id, Idx),
-	gui:itemSelect(Idx),
+	gui:select(5),
 	mod:roomInfoName(Info, Name),
 	gui:itemSetTxt(Name).
 
@@ -252,9 +245,7 @@ setTileFolder :-
 	core:ini('editor.ini', 'editor', 'options_tiledir', TileFolder).
 
 browseTileFolder :-
-	def:dlg(item(20), Id),
-	gui:itemFind(Id, Idx),
-	gui:itemSelect(Idx),
+	gui:select(20),
 	gui:itemGetTxt(TileFolder),
 	gui:winDlgOpenFolder( TileFolder, NewTileFolder), !,
 	gui:itemSetTxt(NewTileFolder),
@@ -266,8 +257,8 @@ browseTileFolder :- !.
 browseColor :-
 	edi:getColorMap(ColorMap),
 	Color is ColorMap \/ 0xff000000,
-	dlgColor:create(0, 0, dlgOptions:colorSet, Color),
-	gui:moveToMouse.
+	dlgColor:create(0, 0, dlgOptions:colorSet(_), Color),
+	gui:dlgMoveToMouse.
 
 
 browseColorTheme :-
@@ -283,10 +274,7 @@ browseColorTheme :-
 	def:dlg(options, ID),
 	dlg:find(ID, IDX),
 	dlg:select(IDX),
-	def:dlg(item(31), ID31),
-	gui:itemFind(ID31, IIDX),
-	gui:itemSelect(IIDX),
-
+	gui:select(31),
 	gui:itemSetColor(0, Color).
 
 
@@ -295,9 +283,68 @@ colorSet(Color) :-
 	def:dlg(options, ID),
 	dlg:find(ID, IDX),
 	dlg:select(IDX),
-	def:dlg(item(30), ID30),
-	gui:itemFind(ID30, IIDX),
-	gui:itemSelect(IIDX),
+	gui:select(30),
 	gui:itemSetColor(0, C),
 	edi:setColorMap(C),
 	map:refresh.
+
+
+getsetoption(Opt) :-
+	(core:ini('editor.ini', 'editor', Opt, Var); Var = 0),
+	core:ini('editor.ini', 'editor', Opt, Var).
+
+
+
+getValue(Item, Val) :-
+	gui:select(Item),
+	gui:itemGetValue(Val).
+
+close :-
+	getsetoption('options_videoapi'),
+	getsetoption('options_cool'),
+
+	getValue(0, Axes),
+	edi:setAxes(Axes),
+	core:ini('editor.ini', 'editor', 'options_axes', Axes),
+
+	getValue(1, Grid),
+	edi:setGrid(Grid),
+	core:ini('editor.ini', 'editor', 'options_grid', Grid),
+
+	getValue(2, Snap),
+	edi:setSnap(Snap),
+	core:ini('editor.ini', 'editor', 'options_snap', Snap),
+
+	getValue(3, RoomGrid),
+	edi:setRoomGrid(RoomGrid),
+	core:ini('editor.ini', 'editor', 'options_roomgrid', RoomGrid),
+
+	getValue(4, BrushRect),
+	edi:setBrushRect(BrushRect),
+	core:ini('editor.ini', 'editor', 'options_brushrect', BrushRect),
+
+	(   getValue(10, 1), ScreenSize = 0;
+	getValue(11, 1), ScreenSize = 1;
+	getValue(12, 1), ScreenSize = 2;
+	getValue(13, 1), ScreenSize = 3),
+	core:ini('editor.ini', 'editor', 'options_screensize', ScreenSize),
+
+	gui:select(20),
+	gui:itemGetTxt(TileFolder),
+	core:ini('editor.ini', 'editor', 'options_tiledir', TileFolder),
+
+	gui:select(30),
+	gui:itemGetColor(Color),
+	core:dl(color(Color)),
+	core:ini('editor.ini', 'editor', 'options_colormap', Color),
+
+	map:refresh,
+	(   edi:tileCount(0)
+	->  gui:msgBoxOk('Warning', 'No tiles loaded.\nCheck the path and the tiles folder.', icon_warning);
+	true).
+
+
+
+
+
+

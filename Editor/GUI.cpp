@@ -451,7 +451,10 @@ int gsItemFind( gsVM* vm )
 
 PREDICATE_M(gui, imgLoad, 2)
 {
-	return A2 = g_gui->ImgLoad(A1);
+	int img = g_gui->ImgLoad(A1);
+	if (img == -1)
+		return false;
+	return A2 = img;
 }
 
 int gsImgLoad( gsVM* vm )
@@ -462,6 +465,14 @@ int gsImgLoad( gsVM* vm )
 	gs_pushint(vm,img);
 	return 1;
 	unguard()
+}
+
+PREDICATE_M(gui, imgFind, 2)
+{
+	int img = g_gui->ImgFind(A1);
+	if(img == -1)
+		return false;
+	return A2 = img;
 }
 
 int gsImgFind( gsVM* vm )
@@ -788,6 +799,13 @@ PREDICATE_M(dlg, setCloseCmd, 1)
 	return true;
 }
 
+PREDICATE_M(dlg, setUser, 2)
+{
+	int idx = A1;
+	g_gui->GetLastDlg()->SetInt(DV_USER+idx,  A2);
+	return true;
+}
+
 
 PREDICATE_M(dlg, setRect, 4)
 {
@@ -1000,6 +1018,11 @@ PREDICATE_M(gui, itemGetCmdActionParam, 1)
 PREDICATE_M(gui, itemGetValue, 1)
 {
 	return A1 = g_gui->GetLastItem()->GetInt(IV_VALUE);
+}
+
+PREDICATE_M(gui, itemGetColor, 1)
+{
+	return A1 = static_cast<int64>(g_gui->GetLastItem()->GetInt(IV_COLOR));
 }
 
 int gsItemGetInt( gsVM* vm )

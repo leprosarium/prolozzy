@@ -1196,6 +1196,18 @@ PREDICATE_M(gui, itemSetUser, 2)
 	return true;
 }
 
+PREDICATE_M(gui, itemSetGuiTileScale, 0)
+{
+	g_gui->GetLastItem()->SetInt(IV_GUITILE_SCALE, 1);
+	return true;
+}
+
+PREDICATE_M(gui, itemSetGuiTileShrink, 0)
+{
+	g_gui->GetLastItem()->SetInt(IV_GUITILE_SHRINK, 1);
+	return true;
+}
+
 
 int gsItemSetInt( gsVM* vm )
 {

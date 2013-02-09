@@ -23,7 +23,10 @@
 		   fileOpen/0,
 		   fileOpen2/0,
 		   fileSave/1,
-		   fileInfo/0]).
+		   fileInfo/0,
+		   tile/0,
+		   tileBrowseSet/1,
+		   mapping/0]).
 
 menu :-
 	Data = [
@@ -255,6 +258,33 @@ fileSave(_).
 
 fileInfo :-
 	dlgInfo:create.
+
+tile :-
+	(   edi:getTool(0), \+ edi:tileCount(0)),
+	dlgTileBrowse:create(0, 0, actions:tileBrowseSet(_TileID)),
+	gui:dlgMoveToMouse,
+	gui:dlgDockUp.
+
+
+tileBrowseSet(TileID) :-
+	edi:tileFind(TileID, Idx),
+	edi:tileGetFrames(Idx, Fr),
+	(   Fr =< 0
+	->  Frames = 1
+	;   Frames = Fr),
+	edi:tileGetW(Idx, W),
+	edi:tileGetH(Idx, H),
+	edi:toolBrushSetTile(TileID),
+	edi:toolBrushSetFrame(Frames),
+	edi:toolBrushSetMapX1(0),
+	edi:toolBrushSetMapY1(0),
+	edi:toolBrushSetMapX2(W),
+	edi:toolBrushSetMapY2(H),
+	mapping.
+
+mapping :-
+	(edi:getTool(0), \+ edi:tileCount(0)).%,
+	%dlgTileMap:create.
 
 
 

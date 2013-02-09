@@ -335,7 +335,6 @@ close :-
 
 	gui:select(30),
 	gui:itemGetColor(Color),
-	core:dl(color(Color)),
 	core:ini('editor.ini', 'editor', 'options_colormap', Color),
 
 	map:refresh,

@@ -78,6 +78,9 @@
     <None Include="scripts\brush.pl">
       <Filter>scripts</Filter>
     </None>
+    <None Include="scripts\dlgTileBrowse.pl">
+      <Filter>scripts</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="scripts">

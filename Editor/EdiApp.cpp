@@ -559,6 +559,16 @@ void cEdiApp::UndoSet( int op, int idx, tBrush* brush )
 #define GS_ERROR( p1,p2,desc )	gs_error( vm, GSE_USER, p1, p2, desc );
 
 // tiles ...................................................................................
+
+PREDICATE_M(edi, tileFind, 2) 
+{
+	int idx = g_paint.TileFind(A1);
+	if(idx == -1)
+		return false;
+	return A2 = idx; 
+}
+
+
 int gsTileFind( gsVM* vm ) 
 {
 	guard(gsTileFind)
@@ -581,6 +591,40 @@ int gsTileCount( gsVM* vm )
 	gs_pushint(vm,g_paint.TileCount());
 	return 1;
 	unguard()
+}
+
+cTile *TileGet(PlTerm idx)
+{
+	cTile * tile = g_paint.TileGet(idx); 
+	if(!tile)
+		throw PlDomainError("invalid tile index", idx);
+	return tile;
+}
+
+PREDICATE_M(edi, tileGetID, 2) 
+{
+	return A2 = TileGet(A1)->m_id; 
+}
+
+PREDICATE_M(edi, tileGetW, 2) 
+{
+	return A2 = TileGet(A1)->GetWidth(); 
+}
+
+PREDICATE_M(edi, tileGetH, 2) 
+{
+	return A2 = TileGet(A1)->GetHeight(); 
+}
+
+PREDICATE_M(edi, tileGetFrames, 2) 
+{
+	return A2 = TileGet(A1)->m_frames; 
+}
+
+PREDICATE_M(edi, tileGetName, 2) 
+{
+	cTile * t = TileGet(A1);
+	return A2 = t->m_name ? t->m_name : ""; 
 }
 
 int gsTileGet( gsVM* vm ) 
@@ -1059,7 +1103,7 @@ TOOL_BRUSH_PROP(X, X)
 TOOL_BRUSH_PROP(Y, Y)
 TOOL_BRUSH_PROP(W, W)
 TOOL_BRUSH_PROP(H, H)
-TOOL_BRUSH_PROP(Title, TILE)
+TOOL_BRUSH_PROP(Tile, TILE)
 TOOL_BRUSH_PROP(Frame, FRAME)
 TOOL_BRUSH_PROP(MapX1, MAP)
 TOOL_BRUSH_PROP(MapY1, MAP+1)

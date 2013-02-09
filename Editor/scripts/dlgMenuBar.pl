@@ -13,7 +13,7 @@ create :-
 		2 > actions:view,
 		space > actions:tool,
 		p > actProps,
-		b > actTile,
+		b > actions:tile,
 		m > actMapping,
 		f > actions:justFlip,
 		r > actJustRotate,
@@ -42,7 +42,7 @@ create :-
 		btn(tool,	"switch tool [SPACE]", actions:tool),
 		%
 		btn(props,	"brush properties [P]", actProps),
-		btn(tile,	"brush tile [B]", actTile),
+		btn(tile,	"brush tile [B]", actions:tile),
 		btn(mapping,"brush mapping [M]", actMapping),
 		btn(flip,	"brush flip [F]", actions:flip),
 		btn(color,	"brush color [C]", actColor),

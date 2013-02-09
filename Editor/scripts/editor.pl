@@ -7,6 +7,7 @@
 :- use_module(dlgOptions, []).
 :- use_module(dlgMenuBar, []).
 :- use_module(dlgStatusBar, []).
+:- use_module(dlgTileBrowse, []).
 :- use_module(dlgColor, []).
 :- use_module(keys, []).
 :- use_module(actions, []).

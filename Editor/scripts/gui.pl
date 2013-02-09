@@ -157,8 +157,8 @@ createItem(X, Y, W, H, Style, Props) :-
 
 createRect(X, Y, W, H, Color, Is3d, IsPressed) :-
 	(   Is3d == true
-	->  Style0 = [border]
-	;   Style0 = [border3d]),
+	->  Style0 = [border3d]
+	;   Style0 = [border]),
 	(   IsPressed == true
 	->  Style = [pressed | Style0]
 	;   Style = Style0),

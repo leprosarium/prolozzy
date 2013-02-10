@@ -433,7 +433,10 @@ int gsDlgFind( gsVM* vm )
 
 PREDICATE_M(gui, itemFind, 2)
 {
-	return A2 = g_gui->GetLastDlg()->ItemFind(A1);
+	int idx = g_gui->GetLastDlg()->ItemFind(A1);
+	if(idx == -1)
+		return false;
+	return A2 = idx;
 }
 
 int gsItemFind( gsVM* vm )
@@ -1196,16 +1199,45 @@ PREDICATE_M(gui, itemSetUser, 2)
 	return true;
 }
 
-PREDICATE_M(gui, itemSetGuiTileScale, 0)
+#define SET_ITEM_PROP(Prop, PROP) PREDICATE_M(gui, itemSet##Prop, 1)\
+{\
+	g_gui->GetLastItem()->SetInt(IV_##PROP, A1);\
+	return true;\
+}
+
+#define GET_ITEM_PROP(Prop, PROP) PREDICATE_M(gui, itemGet##Prop, 1)\
+{\
+	return A1 = g_gui->GetLastItem()->GetInt(IV_##PROP);\
+}
+
+#define ITEM_PROP(Prop, PROP) SET_ITEM_PROP(Prop, PROP) \
+GET_ITEM_PROP(Prop, PROP)
+
+ITEM_PROP(GuiTileScale, GUITILE_SCALE)
+ITEM_PROP(GuiTileShrink, GUITILE_SHRINK)
+ITEM_PROP(GuiTileMapScale, GUITILEMAP_SCALE)
+ITEM_PROP(GuiTileMapSnap, GUITILEMAP_SNAP)
+ITEM_PROP(GuiTileMapGrid, GUITILEMAP_GRID)
+ITEM_PROP(GuiTileMapAxes, GUITILEMAP_AXES)
+
+PREDICATE_M(gui, itemSetGuiTileMapMap, 4)
 {
-	g_gui->GetLastItem()->SetInt(IV_GUITILE_SCALE, 1);
+	cGUIItem * i = g_gui->GetLastItem();
+	i->SetInt(IV_GUITILEMAP_MAP, A1);
+	i->SetInt(IV_GUITILEMAP_MAP+1, A2);
+	i->SetInt(IV_GUITILEMAP_MAP+2, A3);
+	i->SetInt(IV_GUITILEMAP_MAP+3, A4);
 	return true;
 }
 
-PREDICATE_M(gui, itemSetGuiTileShrink, 0)
+PREDICATE_M(gui, itemGetGuiTileMapMap, 4)
 {
-	g_gui->GetLastItem()->SetInt(IV_GUITILE_SHRINK, 1);
-	return true;
+	cGUIItem * i = g_gui->GetLastItem();
+	bool r1 = A1 = i->GetInt(IV_GUITILEMAP_MAP);
+	bool r2 = A2 = i->GetInt(IV_GUITILEMAP_MAP+1);
+	bool r3 = A3 = i->GetInt(IV_GUITILEMAP_MAP+2);
+	bool r4 = A4 = i->GetInt(IV_GUITILEMAP_MAP+3);
+	return r1 & r2 & r3 && r4;
 }
 
 

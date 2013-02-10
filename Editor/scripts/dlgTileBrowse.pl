@@ -1,17 +1,13 @@
 :- module(dlgTileBrowse, [create/3,
 			 close/0]).
 
-param(Key, _, Value) :-
-	core:ini('editor.ini', 'editor', Key, Value).
-param(_, Def, Def).
-
 
 create(X, Y, Cmd) :-
 	edi:tileCount(0);
-	param('tilebrowse_first', 0, First),
-	param('tilebrowse_cols', 4, Cols),
-	param('tilebrowse_rows', 4, Rows),
-	param('tilebrowse_size', 64, Size),
+	editor:param('tilebrowse_first', 0, First),
+	editor:param('tilebrowse_cols', 4, Cols),
+	editor:param('tilebrowse_rows', 4, Rows),
+	editor:param('tilebrowse_size', 64, Size),
 	recorda(params, params(First, Cols, Rows, Size)),
 	gui:dlgTitleH(TITLEH),
 
@@ -48,10 +44,10 @@ create(X, Y, Cmd) :-
 close :-
 	recorded(params, params(First, Cols, Rows, Size), Ref),
 	erase(Ref),
-	param('tilebrowse_first', _, First),
-	param('tilebrowse_cols', _, Cols),
-	param('tilebrowse_rows', _, Rows),
-	param('tilebrowse_size', _, Size).
+	editor:param('tilebrowse_first', _, First),
+	editor:param('tilebrowse_cols', _, Cols),
+	editor:param('tilebrowse_rows', _, Rows),
+	editor:param('tilebrowse_size', _, Size).
 
 
 cells(I, J, X, Y, IDX) :-
@@ -77,8 +73,8 @@ createCell(IDX, I, J, X0, Y0, CelX, CelY, TileSize) :-
 	gui:itemSetValue(-1),
 	def:color(tilebkgr, Color),
 	gui:itemSetColor(1, Color),
-	gui:itemSetGuiTileScale,
-	gui:itemSetGuiTileShrink.
+	gui:itemSetGuiTileScale(1),
+	gui:itemSetGuiTileShrink(1).
 
 
 key(K, Cmd) :-
@@ -145,7 +141,7 @@ updateFilledCell(First, IDX, Cmd)  :-
 	edi:tileGetFrames(Pos, Frames),
 	gui:itemSetValue(ID),
 	makeAction(Cmd, ID, Action),
-	gui:itemSetCmdAction((Action, gui:dlgClose)),
+	gui:itemSetCmdAction((gui:dlgClose,Action)),
 	format(string(ToolTip), 'id=~d w=~d h=~d frames=~d name=~a', [ID, W, H, Frames, Name]),
 	gui:itemSetToolTip(ToolTip).
 

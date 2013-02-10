@@ -70,7 +70,7 @@
       <Command>copy /B $(OutDir)$(ProjectName).exe+$(OutDir)$(ProjectName).prc ..\Bin\$(ProjectName)_d.exe</Command>
     </PostBuildEvent>
     <CustomBuild>
-      <AdditionalInputs>scripts\gui.pl;scripts\editor.pl;scripts\mod.pl;scripts\def.pl;scripts\dlgoptions.pl;scripts\actions.pl;scripts\keys.pl;scripts\dlgMenuBar.pl;scripts\dlgStatusBar.pl;scripts\dlgInfo.pl;scripts\roomNames.pl;scripts\fileio.pl;scripts\brush.pl;scripts\dlgColor.pl;scripts\dlgTileBrowse.pl</AdditionalInputs>
+      <AdditionalInputs>scripts\gui.pl;scripts\editor.pl;scripts\mod.pl;scripts\def.pl;scripts\dlgoptions.pl;scripts\actions.pl;scripts\keys.pl;scripts\dlgMenuBar.pl;scripts\dlgStatusBar.pl;scripts\dlgInfo.pl;scripts\roomNames.pl;scripts\fileio.pl;scripts\brush.pl;scripts\dlgColor.pl;scripts\dlgTileBrowse.pl;scripts\dlgTileMap.pl</AdditionalInputs>
       <Outputs>$(OutDir)$(ProjectName).prc</Outputs>
       <Message>Build Prolog State</Message>
       <Command>"$(ProgramFiles)\pl\bin\swipl.exe" -q --stand_alone=true  -o $(OutDir)$(ProjectName).prc -c %(RelativeDir)%(Filename)%(Extension)</Command>
@@ -101,7 +101,7 @@
       <Command>copy /B $(OutDir)$(ProjectName).exe+$(OutDir)$(ProjectName).prc ..\Bin\$(ProjectName).exe</Command>
     </PostBuildEvent>
     <CustomBuild>
-      <AdditionalInputs>scripts\gui.pl;scripts\editor.pl;scripts\mod.pl;scripts\def.pl;scripts\dlgoptions.pl;scripts\actions.pl;scripts\keys.pl;scripts\dlgMenuBar.pl;scripts\dlgStatusBar.pl;scripts\dlgInfo.pl;scripts\roomNames.pl;scripts\fileio.pl;scripts\brush.pl;scripts\dlgColor.pl;scripts\dlgTileBrowse.pl</AdditionalInputs>
+      <AdditionalInputs>scripts\gui.pl;scripts\editor.pl;scripts\mod.pl;scripts\def.pl;scripts\dlgoptions.pl;scripts\actions.pl;scripts\keys.pl;scripts\dlgMenuBar.pl;scripts\dlgStatusBar.pl;scripts\dlgInfo.pl;scripts\roomNames.pl;scripts\fileio.pl;scripts\brush.pl;scripts\dlgColor.pl;scripts\dlgTileBrowse.pl;scripts\dlgTileMap.pl</AdditionalInputs>
       <Outputs>$(OutDir)$(ProjectName).prc</Outputs>
       <Message>Build Prolog State</Message>
       <Command>"$(ProgramFiles)\pl\bin\swipl.exe" -q --stand_alone=true  -o $(OutDir)$(ProjectName).prc -c %(RelativeDir)%(Filename)%(Extension)</Command>
@@ -158,6 +158,7 @@
     <None Include="scripts\dlgoptions.pl" />
     <None Include="scripts\dlgStatusBar.pl" />
     <None Include="scripts\dlgTileBrowse.pl" />
+    <None Include="scripts\dlgTileMap.pl" />
     <None Include="scripts\fileio.pl" />
     <None Include="scripts\gui.pl" />
     <None Include="scripts\keys.pl" />

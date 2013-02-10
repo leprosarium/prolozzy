@@ -28,7 +28,8 @@
 		msgBoxOk/3,
 		createPullDownSelect/5,
 		createPullDown/4,
-		createPullDown/3]).
+		createPullDown/3,
+		dlgResize/4]).
 
 dlgTitleH(20).
 
@@ -244,7 +245,7 @@ itemSetProps([Prop|Props]) :-
 	itemSetProps(Props).
 
 itemSetProp(text(Text)):- gui:itemSetTxt(Text).
-itemSetProp(color(N, Color)):- def:color(Color, Code), gui:itemSetColor(N, Code).
+itemSetProp(color(N, Color)):- (def:color(Color, Code);Code=Color), gui:itemSetColor(N, Code).
 
 dlgAddKeys([]).
 dlgAddKeys([Key|Keys]) :-
@@ -456,7 +457,20 @@ addPullDownItem(item(Id-Name, Cmd, Props), Y, MenuW, Sel) :-
 	->  gui:itemSetToolTip(Tooltip)
 	;   true).
 
-
+% reposition and resize dialog and it's background and title bar
+dlgResize(X, Y, W, H) :-
+	X2 is X + W,
+	Y2 is Y + H,
+	dlg:setRect(X, Y, X2, Y2),
+	(   select(back)
+	->  gui:itemSetRect(0, 0, W, H)
+	;   true),
+	(   select(title)
+	->  WW is W - 2,
+	    dlgTitleH(TH),
+	    HH is TH + 2,
+	    gui:itemSetRect(2, 2, WW, HH)
+	;   true).
 
 
 

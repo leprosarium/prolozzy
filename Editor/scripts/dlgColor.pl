@@ -1,6 +1,7 @@
 :-module(dlgColor, [init/0,
 		    usedMax/1,
-		    create/4]).
+		    create/4,
+		    colors/1]).
 
 usedMax(14).
 
@@ -15,6 +16,8 @@ gen([V|Y], V, N) :-
 	Ns is N - 1,
 	gen(Y, V, Ns).
 
+colors(Colors) :-
+	recorded(colorUsed, Colors).
 
 create(X, Y, Act, Color) :-
 	Space = 8,

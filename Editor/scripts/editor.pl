@@ -1,5 +1,6 @@
 :- module(editor, [init/0,
-		  close/0]).
+		  close/0,
+		  param/3]).
 
 :- use_module(gui, []).
 :- use_module(mod, []).
@@ -9,12 +10,18 @@
 :- use_module(dlgStatusBar, []).
 :- use_module(dlgTileBrowse, []).
 :- use_module(dlgColor, []).
+:- use_module(dlgTileMap, []).
 :- use_module(keys, []).
 :- use_module(actions, []).
 :- use_module(dlgInfo, []).
 :- use_module(roomNames, []).
 :- use_module(fileio, []).
 :- use_module(brush, []).
+
+
+param(Key, _, Value) :-
+	core:ini('editor.ini', 'editor', Key, Value).
+param(_, Def, Def).
 
 
 init :-

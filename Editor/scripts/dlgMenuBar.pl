@@ -14,7 +14,7 @@ create :-
 		space > actions:tool,
 		p > actProps,
 		b > actions:tile,
-		m > actMapping,
+		m > actions:mapping,
 		f > actions:justFlip,
 		r > actJustRotate,
 		c > actColor,
@@ -43,7 +43,7 @@ create :-
 		%
 		btn(props,	"brush properties [P]", actProps),
 		btn(tile,	"brush tile [B]", actions:tile),
-		btn(mapping,"brush mapping [M]", actMapping),
+		btn(mapping,"brush mapping [M]", actions:mapping),
 		btn(flip,	"brush flip [F]", actions:flip),
 		btn(color,	"brush color [C]", actColor),
 		btn(shader,	"brush shader", actions:shader),

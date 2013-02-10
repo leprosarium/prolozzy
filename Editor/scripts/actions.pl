@@ -283,8 +283,8 @@ tileBrowseSet(TileID) :-
 	mapping.
 
 mapping :-
-	(edi:getTool(0), \+ edi:tileCount(0)).%,
-	%dlgTileMap:create.
+	(edi:getTool(0), \+ edi:tileCount(0)),
+	dlgTileMap:create.
 
 
 

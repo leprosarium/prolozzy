@@ -17,6 +17,7 @@
 		   flip/0,
 		   flipSet/1,
 		   justFlip/0,
+		   justRotate/0,
 		   layer/1,
 		   fileNew/0,
 		   fileNewDo/0,
@@ -26,7 +27,11 @@
 		   fileInfo/0,
 		   tile/0,
 		   tileBrowseSet/1,
-		   mapping/0]).
+		   mapping/0,
+		   color/0,
+		   colorSet/1,
+		   colorWin/0,
+		   zoomSet/1]).
 
 menu :-
 	Data = [
@@ -99,6 +104,12 @@ justFlip :-
 	Flip is (CurFlip /\ FLIP_R) \/ Flip3,
 	edi:toolBrushSetFlip(Flip).
 
+justRotate :-
+	edi:getTool(1);
+	edi:toolBrushGetFlip(Flip),
+	def:flip(r, FLIP_R, _),
+	NewFlip is Flip xor FLIP_R,
+	edi:toolBrushSetFlip(NewFlip).
 
 shader :-
 	edi:getTool(1);
@@ -286,11 +297,26 @@ mapping :-
 	(edi:getTool(0), \+ edi:tileCount(0)),
 	dlgTileMap:create.
 
+color :-
+	edi:getTool(1);
+	edi:toolBrushGetColor(Color),
+	dlgColor:create(0, 0, actions:colorSet(_), Color),
+	gui:dlgMoveToMouse,
+	gui:dlgDockUp.
 
 
+colorSet(C) :-
+	edi:toolBrushSetColor(C),
+	dlgColor:push(C).
+
+colorWin :-
+	edi:toolBrushGetColor(C),
+	gui:winDlgOpenColor(C, CN),
+	colorSet(CN).
 
 
-
-
-
-
+zoomSet(Step) :-
+	edi:getZoom(CurZoom),
+	NewZoom is min(max(CurZoom + Step, 1), 4),
+	edi:setZoom(NewZoom),
+	map:refresh.

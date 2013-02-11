@@ -100,17 +100,17 @@ pick(Act, C) :-
 	RGB is ARGB /\ 0x00ffffff,
 	A is (ARGB /\ 0x000000ff) << 24,
 	gui:itemGetCmdActionParam(Param),
-	(   Param == 1
-	->  C1 = (C /\ 0xff000000) \/ RGB
+	(   Param =:= 1
+	->  C1 is (C /\ 0xff000000) \/ RGB
 	;   C1 = C),
 	(   Param == 2
-	->  C2 = (C1 /\ 0x00ffffff) \/ A
+	->  C2 is (C1 /\ 0x00ffffff) \/ A
 	;   C2 = C1),
 	dlg:setCloseCmd(dlgColor:dlgClose(Act, C2)),
 	gui:dlgClose(1).
 
 
-
+push(_C).
 
 
 

@@ -619,6 +619,15 @@ PREDICATE_M(gui, winDlgOpenFolder, 2)
 	return false;
 }
 
+PREDICATE_M(gui, winDlgOpenColor, 2)
+{
+	dword c = static_cast<int64>(A1);
+	if(WinDlgOpenColor(&c, TRUE))
+		return A2 = static_cast<int64>(c);
+	return false;
+}
+
+
 int gsWinDlgOpenColor( gsVM* vm )
 {
 	guard(gsWinDlgOpenColor)

@@ -16,13 +16,13 @@ create :-
 		b > actions:tile,
 		m > actions:mapping,
 		f > actions:justFlip,
-		r > actJustRotate,
-		c > actColor,
-		c+shift > actColorWin,
-		equals > actZoomSet(1),
-		minus > actZoomSet(-1),
-		add > actZoomSet(1), % on numpad
-		subtract > actZoomSet(-1), % on numpad
+		r > actions:justRotate,
+		c > actions:color,
+		c+shift > actions:colorWin,
+		equals > actions:zoomSet(1),
+		minus > actions:zoomSet(-1),
+		add > actions:zoomSet(1), % on numpad
+		subtract > actions:zoomSet(-1), % on numpad
 		o+ctrl > actFileOpen,
 		s+ctrl > actFileSave(1),
 		f1 > actHelp,
@@ -45,7 +45,7 @@ create :-
 		btn(tile,	"brush tile [B]", actions:tile),
 		btn(mapping,"brush mapping [M]", actions:mapping),
 		btn(flip,	"brush flip [F]", actions:flip),
-		btn(color,	"brush color [C]", actColor),
+		btn(color,	"brush color [C]", actions:color),
 		btn(shader,	"brush shader", actions:shader),
 		btn(type,	"brush type", actions:type),
 		btn(draw,	"brush draw mode", actions:draw),

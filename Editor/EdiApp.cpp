@@ -776,9 +776,9 @@ PREDICATE_M(edi, getAxeY, 1)
 	return A1 = EdiApp()->GetAxeY();
 }
 
-PREDICATE_M(edi, getCamZ, 1)
+PREDICATE_M(edi, getZoom, 1)
 {
-	return A1 = g_map.m_camz;
+	return  A1 = g_map.m_camz;
 }
 
 PREDICATE_M(edi, getSelect, 1)
@@ -862,7 +862,6 @@ int gsEdiGet( gsVM* vm )
 	unguard()
 }
 
-
 PREDICATE_M(edi, setTool, 1)
 {
 	EdiApp()->ToolSet(A1);
@@ -923,7 +922,7 @@ PREDICATE_M(edi, setCamY, 1)
 	return true;
 }
 
-PREDICATE_M(edi, setCamZ, 1)
+PREDICATE_M(edi, setZoom, 1)
 {
 	g_map.m_camz = A1;
 	return true;

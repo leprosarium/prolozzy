@@ -1,13 +1,10 @@
 :- module(dlgOptions, [load/0,
-		      getOpt/3,
 		      create/0,
 		      close/0]).
 
-getOpt(Opt, _, Val) :-
+getOpt(Opt, Def, Val) :-
 	format(string(Key), 'options_~a', [Opt]),
-	core:ini('editor.ini', 'editor', Key, Val), !.
-getOpt(_Key, Def, Def).
-
+	editor:param(Key, Def, Val).
 
 
 load :-

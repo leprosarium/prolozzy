@@ -17,7 +17,10 @@
 		createCheck/4,
 		createRadio/4,
 		createRadio/5,
+		createRadioButton/7,
 		dlgAddKeys/1,
+		createButton/4,
+		createButton/5,
 		createButtonImg/7,
 		createText/5,
 		createText/4,
@@ -29,7 +32,12 @@
 		createPullDownSelect/5,
 		createPullDown/4,
 		createPullDown/3,
-		dlgResize/4]).
+		dlgResize/4,
+		dlgMoveToMouse/0,
+		dlgDockUp/0,
+		dlgMoveInBound/0,
+		dlgSelect/1,
+		select/1]).
 
 dlgTitleH(20).
 
@@ -88,6 +96,11 @@ select(Item) :-
 	(def:dlg(Item, IID); def:dlg(item(Item), IID)),
 	gui:itemFind(IID, IIDX),
 	gui:itemSelect(IIDX).
+
+dlgSelect(Key) :-
+	def:dlg(Key, ID),
+	dlg:find(ID, IDX),
+	dlg:select(IDX).
 
 
 % Dialogs
@@ -165,9 +178,13 @@ createRect(X, Y, W, H, Color, Is3d, IsPressed) :-
 	;   Style = Style0),
 	createItem(X, Y, W, H, Style, [color(2, Color)]).
 
+createButton(X, Y, W, Text) :-
+	createItem("cGUIButton", X, Y, W, 20, [gradient, border3d], [text(Text), color(0, gui1), color(1, gui2), color(2, gui)]).
+
 createButton(X, Y, W, Text, Cmd) :-
-	createItem("cGUIButton", X, Y, W, 20, [gradient, border3d], [text(Text), color(0, gui1), color(1, gui2), color(2, gui)]),
+	createButton(X, Y, W, Text),
 	gui:itemSetCmdAction(Cmd).
+
 
 createButtonImg(X, Y, W, H, Img0, Img1, Cmd ) :-
 	createItem("cGUIButton", X, Y, W, H, [gradient, border3d], [color(0, gui1), color(1, gui2), color(2, gui)]),
@@ -207,6 +224,12 @@ createRadio(X, Y, Value, Group) :-
 	gui:itemSetValue(Value),
 	gui:itemSetGroup(Group).
 
+createRadioButton(X, Y, W, Text, Value, Group, Cmd) :-
+	createItem("cGUIRadio", X, Y, W, 20, [border3d], [text(Text), color(0, gui1), color(1, gui2), color(2, gui)]),
+	gui:itemSetValue(Value),
+	gui:itemSetGroup(Group),
+	gui:itemSetCmdAction(Cmd).
+
 createText(X, Y, W, Text) :-
 	createText(X, Y, W, Text, [left, centery]).
 
@@ -245,7 +268,7 @@ itemSetProps([Prop|Props]) :-
 	itemSetProps(Props).
 
 itemSetProp(text(Text)):- gui:itemSetTxt(Text).
-itemSetProp(color(N, Color)):- (def:color(Color, Code);Code=Color), gui:itemSetColor(N, Code).
+itemSetProp(color(N, Color)):- (def:color(Color, Code);Code=Color), !, gui:itemSetColor(N, Code).
 
 dlgAddKeys([]).
 dlgAddKeys([Key|Keys]) :-
@@ -347,6 +370,18 @@ createButtons1([btn(Text, Cmd)|Bo], ButX, ButY, Buts, Buts2, ButtonW, ButtonW2) 
 	dlgMoveToMouse,
 	dlgDockUp.
 
+% prevent dialog to get outside the screen
+dlgMoveInBound :-
+	dlg:getRect(X, Y, X2, Y2);
+	W is X2 - X,
+	H is Y2 - Y,
+	edi:getScrW(ScrW),
+	edi:getScrH(ScrH),
+	XX is min(ScrW-W, max(0, X)),
+	YY is min(ScrH-H, max(0, H)),
+	XX2 is XX + W,
+	YY2 is YY + W,
+	dlg:setRect(XX, YY, XX2, YY2).
 
 % move dialog to mouse position and also prevent it to get ouside the screen
 dlgMoveToMouse :-

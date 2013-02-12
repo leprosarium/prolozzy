@@ -12,7 +12,7 @@ create :-
 		1 > actions:menu,
 		2 > actions:view,
 		space > actions:tool,
-		p > actProps,
+		p > actions:props,
 		b > actions:tile,
 		m > actions:mapping,
 		f > actions:justFlip,
@@ -23,15 +23,15 @@ create :-
 		minus > actions:zoomSet(-1),
 		add > actions:zoomSet(1), % on numpad
 		subtract > actions:zoomSet(-1), % on numpad
-		o+ctrl > actFileOpen,
-		s+ctrl > actFileSave(1),
+		o+ctrl > actions:fileOpen2,
+		s+ctrl > actions:fileSave(true),
 		f1 > actHelp,
 		f2 > markerGoto(1),
 		f2+shift > markerGoto(-1),
 		f2+ctrl > markerToggle( 'EdiGet(EDI_CAMX), EdiGet(EDI_CAMY)' ),
 		f3 > selectionGoto(1),
 		f3+shift > selectionGoto(-1),
-		f+ctrl > actSearch,
+		f+ctrl > actions:search,
 		r+ctrl > actRoomProps,
 		u > actScript3
 	       ],
@@ -41,7 +41,7 @@ create :-
 		btn(view,	"view mode [2]", actions:view),
 		btn(tool,	"switch tool [SPACE]", actions:tool),
 		%
-		btn(props,	"brush properties [P]", actProps),
+		btn(props,	"brush properties [P]", actions:props),
 		btn(tile,	"brush tile [B]", actions:tile),
 		btn(mapping,"brush mapping [M]", actions:mapping),
 		btn(flip,	"brush flip [F]", actions:flip),
@@ -52,7 +52,7 @@ create :-
 		btn(material,"brush material", actions:material),
 		btn(class,	"brush class", actions:class),
 		%
-		btn(search,	"search brushes and select", actSearch),
+		btn(search,	"search brushes and select", actions:search),
 		btn(change,	"change selected brushes", actChange),
 		btn(script,	"select scripts", actScript),
 		btn(script2,"debug scripts", actScript2),

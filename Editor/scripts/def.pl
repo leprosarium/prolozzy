@@ -7,44 +7,44 @@
 		mb/2,
 		layerMax/1,
 	        flip/3,
-		shader/3,
+		shader/2,
 		internalShader/2,
-		brushType/3,
+		brushType/2,
 		drawMode/3,
 		material/4,
 		density/2,
-		class/3]).
+		class/2,
+		toolCmd/2]).
 
 roomW(240).	% default game room width
 roomH(136).	% default game room height
 
-
 layerMax(8).
 
-flip(none, 0, "none").
-flip(x, 1, "flip x").
-flip(y, 2, "flip y").
-flip(xy, 3, "flip xy").
-flip(r, 4, "flip r").
-flip(xr, 5, "flip xr").
-flip(yr, 6, "flip yr").
-flip(xyr, 7, "flip xyr").
+flip(none, 0, none).
+flip(x, 1, 'flip x').
+flip(y, 2, 'flip y').
+flip(xy, 3, 'flip xy').
+flip(r, 4, 'flip r').
+flip(xr, 5, 'flip xr').
+flip(yr, 6, 'flip yr').
+flip(xyr, 7, 'flip xyr').
 
-shader(opaque, 0, "opaque").
-shader(blend, 1, "blend").
-shader(add, 2, "add").
-shader(mod, 3, "mod").
-shader(mod2, 4, "mod2").
+shader(opaque, 0).
+shader(blend, 1).
+shader(add, 2).
+shader(mod, 3).
+shader(mod2, 4).
 
 internalShader(alpharep, 5).
 
-brushType(static, 0, "static").
-brushType(dynamic, 1, "dynamic").
+brushType(static, 0).
+brushType(dynamic, 1).
 
-drawMode(none, 0, "none").
-drawMode(img, 1, "img").
-drawMode(mat, 2, "mat").
-drawMode(imgmat, 3, "img+mat").
+drawMode(none, 0, 'none').
+drawMode(img, 1, 'img').
+drawMode(mat, 2, 'mat').
+drawMode(imgmat, 3, 'img+mat').
 
 material(air,	 0, void, 0xFF000000).	% void
 material(water,	 1, void, 0xFF0060FF).	% water (void); player can drawn in water
@@ -62,15 +62,15 @@ density(soft, 0xff606060).
 density(hard, 0xffa0a0a0).
 density(jump, 0xffffffff).
 
-class(none, 0, "none").
-class(action, 1, "action").
-class(hurt, 2, "hurt").
-class(kill, 3, "kill").
-class(item, 4, "item").
-class(coin, 5, "coin").
-class(food, 6, "food").
-class(life, 7, "life").
-class(waypoint, 8, "waypoint").
+class(none, 0).
+class(action, 1).
+class(hurt, 2).
+class(kill, 3).
+class(item, 4).
+class(coin, 5).
+class(food, 6).
+class(life, 7).
+class(waypoint, 8).
 
 
 
@@ -204,6 +204,12 @@ mb(t2, script3, 1117).
 mb(layer, 1200). %LAYER_MAX, consecutive, ids
 %, 1220
 
+
+toolCmd(pickBrush,	0).
+toolCmd(pickColor,	1).
+toolCmd(toFront,	2).
+toolCmd(toBack,		3).
+toolCmd(delete,		4).
 
 
 

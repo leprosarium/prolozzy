@@ -1153,6 +1153,23 @@ PREDICATE_M(edi, toolBrushSetUser, 2)
 	return true;
 }
 
+PREDICATE_M(edi, toolBrushSet, 2) 
+{
+	int idx = A1;
+	if(idx < 0 || idx >= BRUSH_MAX) 
+		throw PlDomainError("invalid brush variable", A1);
+	if(idx == BRUSH_COLOR) 
+	{
+		int64 color = A2;
+		EdiApp()->m_brush.m_data[idx] = color;
+	}
+	else {
+		EdiApp()->m_brush.m_data[idx] = A2;
+	}
+	return true;
+}
+
+
 PREDICATE_M(edi, toolBrushGetColor, 1)
 {
 	int64 color = static_cast<unsigned>(EdiApp()->m_brush.m_data[BRUSH_COLOR]);
@@ -1176,6 +1193,20 @@ PREDICATE_M(edi, toolBrushGetUser, 2)
 		throw PlDomainError("invalid brush variable", A1);
 	return A2 = EdiApp()->m_brush.m_data[idx];
 }
+
+PREDICATE_M(edi, toolBrushGet, 2) 
+{
+	int idx = A1;
+	if(idx < 0 || idx >= BRUSH_MAX) 
+		throw PlDomainError("invalid brush variable", A1);
+	if(idx == BRUSH_COLOR)
+	{
+		int64 color = static_cast<unsigned>(EdiApp()->m_brush.m_data[idx]);
+		return A2 = color;
+	}
+	return A2 = EdiApp()->m_brush.m_data[idx];
+}
+
 
 int gsToolBrushSet( gsVM* vm ) 
 {
@@ -1202,6 +1233,12 @@ int gsToolReset( gsVM* vm )
 	EdiApp()->m_tool[EdiApp()->m_toolcrt]->Reset(); 
 	return 0; 
 	unguard()
+}
+
+PREDICATE_M(edi, toolCommand, 1)
+{
+	EdiApp()->m_tool[EdiApp()->m_toolcrt]->Command(A1); 
+	return true; 
 }
 
 int gsToolCommand( gsVM* vm )
@@ -1232,12 +1269,60 @@ int gsMapBrushCount( gsVM* vm )
 	unguard()
 }
 
+#define MAP_BRUSH_PROP(Prop, PROP)\
+GET_MAP_BRUSH_PROP(Prop, PROP)\
+SET_MAP_BRUSH_PROP(Prop, PROP)
+
+#define GET_MAP_BRUSH_PROP(Prop, PROP) PREDICATE_M(map, brushGet##Prop, 2)\
+{\
+	return A2 = g_map.GetBrush(A1).m_data[BRUSH_##PROP];\
+}
+
+#define SET_MAP_BRUSH_PROP(Prop, PROP) PREDICATE_M(map, brushSet##Prop, 2)\
+{\
+	g_map.GetBrush(A1).m_data[BRUSH_##PROP] = A2; \
+	return true;\
+}
+
+MAP_BRUSH_PROP(Layer, LAYER)
+MAP_BRUSH_PROP(X, X)
+MAP_BRUSH_PROP(Y, Y)
+MAP_BRUSH_PROP(W, W)
+MAP_BRUSH_PROP(H, H)
+MAP_BRUSH_PROP(Tile, TILE)
+MAP_BRUSH_PROP(Frame, FRAME)
+MAP_BRUSH_PROP(MapX1, MAP)
+MAP_BRUSH_PROP(MapY1, MAP+1)
+MAP_BRUSH_PROP(MapX2, MAP+2)
+MAP_BRUSH_PROP(MapY2, MAP+3)
+MAP_BRUSH_PROP(Flip, FLIP)
+MAP_BRUSH_PROP(Shader, SHADER)
+MAP_BRUSH_PROP(Scale, SCALE)
+MAP_BRUSH_PROP(Select, SELECT)
+
+MAP_BRUSH_PROP(Type, TYPE)
+MAP_BRUSH_PROP(ID, ID)
+MAP_BRUSH_PROP(Material, MATERIAL)
+MAP_BRUSH_PROP(Draw, DRAW)
+MAP_BRUSH_PROP(Disable, DISABLE)
+MAP_BRUSH_PROP(Delay, DELAY)
+MAP_BRUSH_PROP(Anim, ANIM)
+MAP_BRUSH_PROP(Collider, COLLIDER)
+MAP_BRUSH_PROP(Class, CLASS)
+MAP_BRUSH_PROP(Status, STATUS)
+MAP_BRUSH_PROP(Target, TARGET)
+MAP_BRUSH_PROP(Death, DEATH)
+
+PREDICATE_M(map, brushGetColor, 2) 
+{
+	int64 color = static_cast<unsigned>(g_map.GetBrush(A1).m_data[BRUSH_COLOR]);
+	return A2 = color;
+}
+
+
 PREDICATE_M(map, brushGet, 3) 
 {
-	int bi = A1;
-	if(bi < 0 || bi >= g_map.m_brushcount) 
-		throw PlDomainError("invalid map brush index", A1);
-	tBrush & brush = g_map.m_brush[bi];
+	tBrush & brush = g_map.GetBrush(A1);
 	int idx = A2;
 	if(idx < 0 || idx >= BRUSH_MAX) 
 		throw PlDomainError("invalid brush variable", A2);
@@ -1264,12 +1349,17 @@ int gsMapBrushGet( gsVM* vm )
 	unguard()
 }
 
+PREDICATE_M(map, brushSetColor , 2) 
+{
+	int64 color = A2;
+	g_map.GetBrush(A1).m_data[BRUSH_COLOR] = color;
+	return true;
+}
+
+
 PREDICATE_M(map, brushSet , 3) 
 {
-	int bi = A1;
-	if(bi < 0 || bi >= g_map.m_brushcount) 
-		throw PlDomainError("invalid map brush index", A1);
-	tBrush & brush = g_map.m_brush[bi];
+	tBrush & brush = g_map.GetBrush(A1);
 	int idx = A2;
 	if(idx < 0 || idx >= BRUSH_MAX) 
 		throw PlDomainError("invalid brush variable", A2);

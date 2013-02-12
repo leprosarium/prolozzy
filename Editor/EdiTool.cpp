@@ -174,7 +174,7 @@ void cEdiToolPaint::Update( float dtime )
 	
 		if(m_mode==2 && !I9_GetKeyValue(I9_MOUSE_B2))
 		{
-			if( m_brushidx!=-1 ) g_gui->ScriptDo( sprint("Tool_PickMenu(%i);",m_brushidx) );
+			if( m_brushidx!=-1 ) g_gui->ScriptPrologDo( sprint("actions:toolPickMenu(%i)",m_brushidx) );
 			m_mode=-1; // draw trick
 		}
 		else

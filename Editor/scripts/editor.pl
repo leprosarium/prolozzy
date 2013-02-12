@@ -11,6 +11,7 @@
 :- use_module(dlgTileBrowse, []).
 :- use_module(dlgColor, []).
 :- use_module(dlgTileMap, []).
+:- use_module(dlgProps, []).
 :- use_module(keys, []).
 :- use_module(actions, []).
 :- use_module(dlgInfo, []).

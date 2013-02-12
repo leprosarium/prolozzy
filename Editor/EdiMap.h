@@ -124,6 +124,8 @@ public:
 		void		BrushToBack			( int idx );				// bring brush to back (last visible in layer)
 		void		BrushClear			();							// free brush buffers and counts; selectcount friendly
 
+		tBrush &	GetBrush			(int idx);
+
 		int			m_brushcount;									// brushes count
 		int			m_brushsize;									// brush buffer size (how many it can hold)
 		tBrush*		m_brush;										// brush buffer list (brushes in map)

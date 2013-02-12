@@ -6,8 +6,7 @@
 	       roomInfoName/2,
 	       brushNew/1,
 	       brushProp/2,
-	       brushProp/3,
-	       brushProp/4,
+	       brushProp/5,
 	       brushDraw/0,
 	       brushDraw/1,
 	       userUpdate/0]).
@@ -15,59 +14,59 @@
 brushProp(user, 32).
 brushProp(max, 48).
 
-brushProp(layer, "layer",	"layer").
-brushProp(x, "x*",		"x readonly").
-brushProp(y, "y*",		"y readonly").
-brushProp(w, "w*",		"w readonly").
-brushProp(h, "h*",		"h readonly").
-brushProp(title, "tile",	"tile id").
-brushProp(frame, "frame",	"tile frame").
-brushProp(maxX1, "map x1",	"map left").
-brushProp(maxY1, "map y1",	"map top").
-brushProp(maxX2, "map x2",	"map right").
-brushProp(maxY2, "map y2",	"map bottom").
-brushProp(flip,  "flip",	"flip", select(Flips)):- findall(Id-Name, def:flip(Id, _, Name), Flips).
-brushProp(color, "color",	"color", color).
-brushProp(shader, "shader",	"shader", select(ShaderNames)) :- findall(Id-Name, def:shader(Id, _, Name), ShaderNames).
-brushProp(scale, "scale",	"scale").
-brushProp(select, "select*",	"select").
+brushProp(layer, 0, layer,	layer, common).
+brushProp(x, 1, 'x*',		'x readonly', common).
+brushProp(y, 2, 'y*',		'y readonly', common).
+brushProp(w, 3, 'w*',		'w readonly', common).
+brushProp(h, 4, 'h*',		'h readonly', common).
+brushProp(title, 5, 'tile',	'tile id', common).
+brushProp(frame, 6, 'frame',	'tile frame', common).
+brushProp(maxX1, 7, 'map x1',	'map left', common).
+brushProp(maxY1, 8, 'map y1',	'map top', common).
+brushProp(maxX2, 9, 'map x2',	'map right', common).
+brushProp(maxY2, 10, 'map y2',	'map bottom', common).
+brushProp(flip,  11, 'flip',	'flip', select(Flips)):- findall(Id-Name, def:flip(_, Id, Name), Flips).
+brushProp(color, 12, 'color',	'color', color).
+brushProp(shader, 13, shader,	shader, select(ShaderNames)) :- findall(Id-Name, def:shader(Name, Id), ShaderNames).
+brushProp(scale, 14, 'scale',	'scale', common).
+brushProp(select, 15, 'select*',	'select', common).
 
 		% 16
-brushProp(type, "type",		"brush type", select(Types)):- findall(Id-Name, def:brushType(Id, _, Name), Types).
-brushProp(id, "id",		"object id").
-brushProp(material, "material",	"material", select(MatNames)):- findall(Name-Name, def:material(Name, _, _, _), MatNames).
-brushProp(draw, "draw",		"draw mode", select(DrawNames)):- findall(Id-Name, def:drawMode(Id, _, Name), DrawNames).
-brushProp(disable, "disable",	"no update no draw", select(["no","yes"])).
-brushProp(delay, "delay",	"frame delay").
-brushProp(anim, "anim",		"animation mode", select(["stop","play","loop"])).
-brushProp(collider, "collider",	"collider mode", select(["none","call handler","hard collision"])).
-brushProp(class, "class",	"generic class", select(ClassNames)) :- findall(Id-Name, def:class(Id, _, Name), ClassNames).
+brushProp(type, 16, type,		'brush type', select(Types)):- findall(Id-Name, def:brushType(Name, Id), Types).
+brushProp(id, 17, id,		'object id', common).
+brushProp(material, 18, material,	'material', select(MatNames)):- findall(Id-Name, def:material(Name, Id, _, _), MatNames).
+brushProp(draw, 19,  draw,		'draw mode', select(DrawNames)):- findall(Id-Name, def:drawMode(_, Id, Name), DrawNames).
+brushProp(disable, 20, disable,	'no update no draw', select([0-no,1-yes])).
+brushProp(delay, 21, delay,	'frame delay', common).
+brushProp(anim, 22, anim,		'animation mode', select([0-stop,1-play,2-loop])).
+brushProp(collider, 23, collider,	'collider mode', select([0-none,1-'call handler',1-'hard collision'])).
+brushProp(class, 24, class,	'generic class', select(ClassNames)) :- findall(Id-Name, def:class(Name, Id), ClassNames).
 
-brushProp(status, "status",	"generic status").
-brushProp(target, "target",	"target id").
-brushProp(death, "death",	"death cause").
-brushProp(reserved, "reserved",	"reserved").
-brushProp(reserved, "reserved",	"reserved").
-brushProp(reserved, "reserved",	"reserved").
-brushProp(reserved, "reserved",	"reserved").% collision
+brushProp(status, 25, 'status',	'generic status', common).
+brushProp(target, 26, 'target',	'target id', common).
+brushProp(death, 27, 'death',	'death cause', common).
+brushProp(reserved, 28, 'reserved',	'reserved', common).
+brushProp(reserved, 29, 'reserved',	'reserved', common).
+brushProp(reserved, 30, 'reserved',	'reserved', common).
+brushProp(reserved, 31, 'reserved',	'reserved', common).% collision
 
 		% 32
-brushProp(user, "user",		"user", custom).
-brushProp(user, "user",		"user",	custom).
-brushProp(user, "user",		"user", custom).
-brushProp(user, "user",		"user",	custom).
-brushProp(user, "user",		"user", custom).
-brushProp(user, "user",		"user",	custom).
-brushProp(user, "user",		"user", custom).
-brushProp(user, "user",		"user",	custom).
-brushProp(user, "user",		"user", custom).
-brushProp(user, "user",		"user",	custom).
-brushProp(user, "user",		"user", custom).
-brushProp(user, "user",		"user",	custom).
-brushProp(user, "user",		"user", custom).
-brushProp(user, "user",		"user",	custom).
-brushProp(user, "user",		"user", custom).
-brushProp(user, "user",		"user",	custom).
+brushProp(user, 32, 'user',		'user', custom).
+brushProp(user, 33, 'user',		'user',	custom).
+brushProp(user, 34, 'user',		'user', custom).
+brushProp(user, 35, 'user',		'user',	custom).
+brushProp(user, 36, 'user',		'user', custom).
+brushProp(user, 37, 'user',		'user',	custom).
+brushProp(user, 38, 'user',		'user', custom).
+brushProp(user, 39, 'user',		'user',	custom).
+brushProp(user, 40, 'user',		'user', custom).
+brushProp(user, 41, 'user',		'user',	custom).
+brushProp(user, 42, 'user',		'user', custom).
+brushProp(user, 43, 'user',		'user',	custom).
+brushProp(user, 44, 'user',		'user', custom).
+brushProp(user, 45, 'user',		'user',	custom).
+brushProp(user, 46, 'user',		'user', custom).
+brushProp(user, 47, 'user',		'user',	custom).
 
 propGet(Key, Val) :-
 	recorded(Key, Val).
@@ -76,11 +75,11 @@ propSet(Key, Val) :-
 	erase(Ref),
 	recorda(Key, Val).
 
-viewMode(default, "default view").
-viewMode(select, "select view").
-viewMode(game, "game view").
-viewMode(matrial, "matrial view").
-viewMode(density, "density view").
+viewMode(default, 'default view').
+viewMode(select, 'select view').
+viewMode(game, 'game view').
+viewMode(matrial, 'matrial view').
+viewMode(density, 'density view').
 
 property(roomInfo, 0).
 property(view, Def) :- viewMode(Def, _), !.
@@ -98,7 +97,7 @@ setRoomInfo(I) :- propSet(roomInfo, I).
 % Called from Brush Type button in the menu bar
 
 brushNew(Type) :-
-	def:shader(blend, SHADER_BLEND, _),
+	def:shader(blend, SHADER_BLEND),
 	edi:toolBrushSetShader(SHADER_BLEND),
 	edi:toolBrushSetScale(100),
 	edi:toolBrushSetID(0),
@@ -133,8 +132,8 @@ brushDraw(game) :-
 	edi:toolBrushGetDraw(DrawCode),
 	(def:drawMode(img, DrawCode, _); def:drawMode(imgmat, DrawCode, _)),
 	edi:toolBrushGetType(TypeCode),
-	(def:brushType(static, TypeCode, _);
-	def:brushType(dynamic, TypeCode, _),
+	(def:brushType(static, TypeCode);
+	def:brushType(dynamic, TypeCode),
 	edi:toolBrushGetDisable(0)).
 
 
@@ -151,7 +150,7 @@ brushDraw(density) :-
 
 brushDrawStaticAlpha(MatCode) :-
 	edi:toolBrushGetType(TypeCode),
-	def:brushType(static, TypeCode, _),
+	def:brushType(static, TypeCode),
 	edi:toolBrushGetDraw(DrawCode),
 	(def:drawMode(mat, DrawCode, _); def:drawMode(imgmat, DrawCode, _)),
 	edi:toolBrushGetMaterial(MatCode),
@@ -172,7 +171,7 @@ userUpdate(0) :-
 	edi:toolBrushGetType(TypeCode),
 	edi:toolBrushGetDraw(DrawCode),
 	def:drawMode(Dr, DrawCode, Draw),
-	def:brushType(Type, TypeCode, _),
+	def:brushType(Type, TypeCode),
 	(   Type == static
 	->  edi:toolBrushGetMaterial(MatCode),
 	    def:material(Mat, MatCode, _, _),
@@ -181,7 +180,7 @@ userUpdate(0) :-
 	    ->	Vis = visible
 	    ;	Vis = hidden),
 	    edi:toolBrushGetClass(ClassCode),
-	    def:class(_, ClassCode, Class),
+	    def:class(Class, ClassCode),
 	    format(string(Bar1), 'object~s  ~a  ~s', [IDt, Vis, Class])
 	),
 	dlgStatusBar:set(1, Bar1),
@@ -206,7 +205,7 @@ userUpdate(1) :-
 	edi:getAxeY(AxeY),
 	updateRoomInfo(AxeX, AxeY).
 
-formatID(0, "").
+formatID(0, '').
 formatID(ID, Text) :-
 	format(string(Text), '  ~d', [ID]).
 

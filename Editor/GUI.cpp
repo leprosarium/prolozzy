@@ -1032,6 +1032,12 @@ PREDICATE_M(gui, itemGetValue, 1)
 	return A1 = g_gui->GetLastItem()->GetInt(IV_VALUE);
 }
 
+PREDICATE_M(gui, itemGetDisable, 1)
+{
+	return A1 = g_gui->GetLastItem()->GetInt(IV_DISABLE);
+}
+
+
 PREDICATE_M(gui, itemGetColor, 1)
 {
 	return A1 = static_cast<int64>(g_gui->GetLastItem()->GetInt(IV_COLOR));

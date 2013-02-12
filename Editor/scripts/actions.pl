@@ -1,4 +1,5 @@
-:-module(actions, [menu/0,
+:-module(actions, [props/0,
+		   menu/0,
 		   exit/0,
 		   options/0,
 		   view/0,
@@ -31,7 +32,16 @@
 		   color/0,
 		   colorSet/1,
 		   colorWin/0,
-		   zoomSet/1]).
+		   zoomSet/1,
+		   search/0,
+		   toolPickMenu/1,
+		   toolCommandPickBrush/1]).
+
+
+props :-
+	edi:getTool(1);
+	dlgProps:create.
+
 
 menu :-
 	Data = [
@@ -80,15 +90,15 @@ tool :-
 flip :-
 	edi:getTool(1);
 	edi:toolBrushGetFlip(Code),
-	def:flip(Sel, Code, _),
-	mod:brushProp(flip, _, _, select(Select)),
-	gui:createPullDownSelect(0, 0, act(Val, actions:flipSet(Val)), Select, Sel),
+	def:flip(_Sel, Code, _),
+	mod:brushProp(flip, _, _, _, select(Select)),
+	gui:createPullDownSelect(0, 0, act(Val, actions:flipSet(Val)), Select, Code),
 	gui:dlgMoveToMouse,
 	gui:dlgDockUp.
 
-flipSet(Flip) :-
+flipSet(Code) :-
 	edi:getTool(1);
-	def:flip(Flip, Code, _),
+	def:flip(_Flip, Code, _),
 	edi:toolBrushSetFlip(Code).
 
 justFlip :-
@@ -114,77 +124,77 @@ justRotate :-
 shader :-
 	edi:getTool(1);
 	edi:toolBrushGetShader(Code),
-	def:shader(Shader, Code, _),
-	mod:brushProp(shader, _, _, select(Select)),
-	gui:createPullDownSelect(0, 0, act(Val, actions:shaderSet(Val)), Select, Shader),
+	def:shader(_Shader, Code),
+	mod:brushProp(shader, _, _, _, select(Select)),
+	gui:createPullDownSelect(0, 0, act(Val, actions:shaderSet(Val)), Select, Code),
 	gui:dlgMoveToMouse,
 	gui:dlgDockUp.
 
-shaderSet(Shader) :-
+shaderSet(Code) :-
 	edi:getTool(1);
-	def:shader(Shader, Code, _),
+	def:shader(_Shader, Code),
 	edi:toolBrushSetShader(Code).
 
 
 type :-
 	edi:getTool(1);
 	edi:toolBrushGetType(Code),
-	def:brushType(Type, Code, _),
-	mod:brushProp(type, _, _, select(Select)),
-	gui:createPullDownSelect(0, 0, act(Val, actions:typeSet(Val)), Select, Type),
+	def:brushType(_Type, Code),
+	mod:brushProp(type, _, _, _, select(Select)),
+	gui:createPullDownSelect(0, 0, act(Val, actions:typeSet(Val)), Select, Code),
 	gui:dlgMoveToMouse,
 	gui:dlgDockUp.
 
 
-typeSet(Type):-
+typeSet(Code):-
 	edi:getTool(1);
-	def:brushType(Type, Code, _),
+	def:brushType(Type, Code),
 	edi:toolBrushSetType(Code),
 	mod:brushNew(Type).
 
 draw :-
 	edi:getTool(1);
 	edi:toolBrushGetDraw(Code),
-	def:drawMode(Draw, Code, _),
-	mod:brushProp(draw, _, _, select(Select)),
-	gui:createPullDownSelect(0, 0, act(Val, actions:drawSet(Val)), Select, Draw),
+	def:drawMode(_Draw, Code, _),
+	mod:brushProp(draw, _, _, _, select(Select)),
+	gui:createPullDownSelect(0, 0, act(Val, actions:drawSet(Val)), Select, Code),
 	gui:dlgMoveToMouse,
 	gui:dlgDockUp.
 
 
-drawSet(Draw) :-
+drawSet(Code) :-
 	edi:getTool(1);
-	def:drawMode(Draw, Code, _),
+	def:drawMode(_Draw, Code, _),
 	edi:toolBrushSetDraw(Code).
 
 material :-
 	edi:getTool(1);
 	edi:toolBrushGetMaterial(Code),
-	def:material(Mat, Code, _, _),
-	mod:brushProp(material, _, _, select(Select)),
-	gui:createPullDownSelect(0, 0, act(Val, actions:materialSet(Val)), Select, Mat),
+	def:material(_Mat, Code, _, _),
+	mod:brushProp(material, _, _, _, select(Select)),
+	gui:createPullDownSelect(0, 0, act(Val, actions:materialSet(Val)), Select, Code),
 	gui:dlgMoveToMouse,
 	gui:dlgDockUp.
 
 
-materialSet(Mat) :-
+materialSet(Code) :-
 	edi:getTool(1);
-	def:material(Mat, Code, _, _),
+	def:material(_Mat, Code, _, _),
 	edi:toolBrushSetMaterial(Code).
 
 
 class :-
 	edi:getTool(1);
 	edi:toolBrushGetClass(Code),
-	def:class(Class, Code, _),
-	mod:brushProp(class, _, _, select(Select)),
-	gui:createPullDownSelect(0, 0, act(Val, actions:classSet(Val)), Select, Class),
+	def:class(_Class, Code),
+	mod:brushProp(class, _, _, _, select(Select)),
+	gui:createPullDownSelect(0, 0, act(Val, actions:classSet(Val)), Select, Code),
 	gui:dlgMoveToMouse,
 	gui:dlgDockUp.
 
-classSet(Class) :-
+classSet(Code) :-
 	edi:getTool(1);
-	def:class(Class, Code, _),
+	def:class(_Class, Code),
 	edi:toolBrushSetClass(Code).
 
 layer(Layer) :-
@@ -320,3 +330,43 @@ zoomSet(Step) :-
 	NewZoom is min(max(CurZoom + Step, 1), 4),
 	edi:setZoom(NewZoom),
 	map:refresh.
+
+search :-
+	edi:getTool(1);
+	scrBrushSearch.
+
+
+toolPickMenu(BrushIdx) :-
+	Data = [
+		item(prop-prop,	(gui:dlgClose, dlgProps:create(normal, BrushIdx)), [key(p), tooltip("properties [P]")]),
+		item(pb-'pick brush',	(gui:dlgClose, def:toolCmd(pickBrush, C), edi:toolCommand(C)), [tooltip("pick brush")]),
+		item(pt-'pick tile',	(gui:dlgClose, actions:toolCommandPickBrush(BrushIdx)), [key(t), tooltip("pick tile [T]")]),
+		item(pc-'pick color',	(gui:dlgClose, def:toolCmd(pickColor, C), edi:toolCommand(C)), [key(c), tooltip("pick color [C]")]),
+		item(tf-'to front',	(gui:dlgClose, def:toolCmd(toFront, C), edi:toolCommand(C)), [key(f), tooltip("bring to front [F]")]),
+		item(tb-'to back',	(gui:dlgClose, def:toolCmd(toBack, C), edi:toolCommand(C)), [key(b), tooltip("send to back [B]")]),
+		item(d-delete,	(gui:dlgClose, def:toolCmd(delete, C), edi:toolCommand(C)), [key(delete), tooltip("delete [DEL]")])
+	       ],
+	gui:mouseX(MX),
+	gui:mouseY(MY),
+	XX is MX + 4,
+	YY is MY + 4,
+	gui:createPullDown(XX, YY, Data),
+	dlg:getRect(X, Y, _, Y2),
+	edi:getScrH(ScrH),
+	Y3 is ScrH - (Y2 - Y),
+	(Y > Y3->gui:dlgMove(X, Y3);true).
+
+toolCommandPickBrush( BrushIdx ) :-
+	map:brushGetTile(BrushIdx, Tile),
+	map:brushGetMapX1(BrushIdx, X1),
+	map:brushGetMapY1(BrushIdx, Y1),
+	map:brushGetMapX2(BrushIdx, X2),
+	map:brushGetMapY2(BrushIdx, Y2),
+	map:brushGetFlip(BrushIdx, Flip),
+
+	edi:toolBrushSetTile(Tile),
+	edi:toolBrushSetMapX1(X1),
+	edi:toolBrushSetMapY1(Y1),
+	edi:toolBrushSetMapX2(X2),
+	edi:toolBrushSetMapY2(Y2),
+	edi:toolBrushSetFlip(Flip).

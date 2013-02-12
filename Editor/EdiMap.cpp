@@ -486,6 +486,12 @@ void cEdiMap::BrushDel( int idx )
 	unguard()
 }
 
+tBrush & cEdiMap::GetBrush(int idx)
+{
+	if(idx < 0 || idx >= g_map.m_brushcount) 
+		throw PlDomainError("invalid map brush index");
+	return g_map.m_brush[idx];
+}
 
 /*
 void cEdiMap::BrushDrawOld( iRect& view )

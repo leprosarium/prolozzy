@@ -1183,19 +1183,19 @@ public:
 
 #define PREDICATE_M(module, name, arity) \
 	static foreign_t \
-	pl_ ## name ## __ ## arity(PlTermv _av); \
+	pl_ ## module ## _ ## name ## __ ## arity(PlTermv _av); \
 	static foreign_t \
-	_pl_ ## name ## __ ## arity(term_t t0, int a, control_t c) \
+	_pl_ ## module ## _ ## name ## __ ## arity(term_t t0, int a, control_t c) \
 	{ try \
 	  { \
-	    return pl_ ## name ## __ ## arity(PlTermv(arity, t0)); \
+	  return pl_ ## module ## _ ## name ## __ ## arity(PlTermv(arity, t0)); \
 	  } catch ( PlException &ex ) \
 	  { return ex.plThrow(); \
 	  } \
 	} \
-	static PlRegister _x ## name ## __ ## arity(#module, #name, arity, \
-					    _pl_ ## name ## __ ## arity); \
-	static foreign_t pl_ ## name ## __ ## arity(PlTermv _av)
+	static PlRegister _x ## module ## _ ## name ## __ ## arity(#module, #name, arity, \
+	_pl_ ## module ## _ ## name ## __ ## arity); \
+	static foreign_t pl_ ## module ## _ ## name ## __ ## arity(PlTermv _av)
 
 #define PREDICATE_NONDET(name, arity)          \
 	static foreign_t \

@@ -34,6 +34,8 @@
 		   colorWin/0,
 		   zoomSet/1,
 		   search/0,
+		   change/0,
+		   script/0,
 		   toolPickMenu/1,
 		   toolCommandPickBrush/1]).
 
@@ -334,6 +336,28 @@ zoomSet(Step) :-
 search :-
 	edi:getTool(0);
 	scripts:brushSearch.
+
+
+change :-
+	edi:getTool(0);
+	scripts:brushChange.
+
+script:-
+	edi:getTool(0);
+	Data = [
+		item(sel-'Selection', "", []),
+		item(inv-' invert', (gui:dlgClose, scripts:brushInvert), [key(i), tooltip('invert selection [I]')]),
+		item(move-' move', (gui:dlgClose, scripts:brushMove), [key(m), tooltip('move brushes [M]')]),
+		item(seli-' select by index', (gui:dlgClose, scripts:selectByIdx), [tooltip('select a brush by it\'s index')]),
+		item(keept-' keep topmost', (gui:dlgClose, scripts:brushKeepTopmost), [tooltip('keep the topmost brush from the current selection')]),
+		item(cust-'Custom,', "", []),
+		item(cb-' set block', (gui:dlgClose, scripts:customBlocking(1)), [key(b), tooltip('set material to blocking [B]')]),
+		item(cu-' set unblock', (gui:dlgClose, scripts:customBlocking(0)), [key(u), tooltip('set material to unblocking [U]')]),
+		item(ids-' set group ids', (gui:dlgClose, scripts:brushGroupIds), [tooltip('set group ids for the brushes in the selection')])],
+	gui:createPullDown(0, 0, Data),
+	gui:dlgMoveToMouse,
+	gui:dlgDockUp.
+
 
 
 toolPickMenu(BrushIdx) :-

@@ -87,6 +87,9 @@
     <None Include="scripts\dlgProps.pl">
       <Filter>scripts</Filter>
     </None>
+    <None Include="scripts\scripts.pl">
+      <Filter>scripts</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="scripts">

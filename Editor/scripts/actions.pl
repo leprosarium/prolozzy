@@ -332,8 +332,8 @@ zoomSet(Step) :-
 	map:refresh.
 
 search :-
-	edi:getTool(1);
-	scrBrushSearch.
+	edi:getTool(0);
+	scripts:brushSearch.
 
 
 toolPickMenu(BrushIdx) :-

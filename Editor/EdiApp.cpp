@@ -1587,6 +1587,12 @@ int gsSelectionGoto( gsVM* vm )
 	unguard()
 }
 
+PREDICATE_M(selection, refresh, 0)
+{
+	g_map.SelectionRefresh();
+	return 0;
+}
+
 int gsSelectionRefresh( gsVM* vm )
 {
 	guard(gsSelectionRefresh)

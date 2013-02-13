@@ -37,6 +37,7 @@
 		dlgDockUp/0,
 		dlgMoveInBound/0,
 		dlgSelect/1,
+		dlgSetTitle/1,
 		select/1]).
 
 dlgTitleH(20).
@@ -508,6 +509,10 @@ dlgResize(X, Y, W, H) :-
 	;   true).
 
 
+dlgSetTitle(Text) :-
+	(   select(title)
+	->  gui:itemSetTxt(Text);
+	true).
 
 
 

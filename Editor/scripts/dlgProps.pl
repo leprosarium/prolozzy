@@ -1,17 +1,19 @@
 :-module(dlgProps, [create/0,
+		    create/1,
 		   create/2]).
 
 propsCount(16).
-
-create :-
-	create(normal, -1).
-
 
 readOnly(x).
 readOnly(y).
 readOnly(w).
 readOnly(h).
 readOnly(select).
+
+
+create :- create(noraml).
+create(Mode) :-	create(Mode, -1).
+
 
 create(Mode, BrushIdx ) :-
 	gui:dlgTitleH(TitleH),
@@ -95,10 +97,10 @@ createIndex(bp(_,Idx,_,_,_,_), X, Y, XX):-
 	XX is X + 32 + 8.
 
 createMultiChecks(_, X, _, normal, X) :- !.
-createMultiChecks(bp(Prop, Idx,_,_,_,_), X, Y, _Mode, XX) :-
+createMultiChecks(bp(Prop, Idx,_,_,_,_), X, Y, Mode, XX) :-
 	gui:createImage(X, Y, 20, 20, check1),
 	gui:itemSetValue(0),
-	gui:itemSetCmdAction(dlgProps:multiCheck),
+	gui:itemSetCmdAction(dlgProps:multiCheck(Mode)),
 	setID(Idx, 1),
 	(   readOnly(Prop)
 	->  gui:itemSetDisable(1),
@@ -234,10 +236,10 @@ inputSet(Idx, BrushIdx) :-
 	setValue(Idx, BrushIdx, Value),
 	update(BrushIdx).
 
-multiCheck(serach, 0, 0, check1).
-multiCheck(serach, 1, 1, check3).
-multiCheck(serach, 2, 2, check4).
-multiCheck(serach, 3, 0, check1).
+multiCheck(search, 0, 0, check1).
+multiCheck(search, 1, 1, check3).
+multiCheck(search, 2, 2, check4).
+multiCheck(search, 3, 0, check1).
 
 multiCheck(change, 0, 0, check1).
 multiCheck(change, 1, 1, check2).
@@ -245,12 +247,12 @@ multiCheck(change, 2, 0, check1).
 
 
 multiCheck(Mode) :-
-	edi:itemGetDisable(1);
-	edi:itemGetValue(Val),
+	gui:itemGetDisable(1);
+	gui:itemGetValue(Val),
 	V is Val + 1,
 	multiCheck(Mode, V, NV, C),
 	gui:getImg(C, Img),
-	gui:itemSetImg(Img),
+	gui:itemSetImg0(Img),
 	gui:itemSetValue(NV).
 
 

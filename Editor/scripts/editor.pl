@@ -18,6 +18,7 @@
 :- use_module(roomNames, []).
 :- use_module(fileio, []).
 :- use_module(brush, []).
+:- use_module(scripts, []).
 
 
 param(Key, _, Value) :-

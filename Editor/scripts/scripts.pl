@@ -2,7 +2,9 @@
 		    brushChange/0,
 		    brushInvert/0,
 		    brushMove/0,
-		    selectByIdx/0]).
+		    selectByIdx/0,
+		    brushKeepTopmost/0,
+		    brushGroupIds/0]).
 
 brushSearch :-
 	dlgProps:create(search),
@@ -235,7 +237,7 @@ selectByIdxApply :-
 	;   selectByIdxApplyParams(Mode, Idx),
 	    edi:waitCursor(1),
 	    selectByIdxApply(Mode, Idx, IdxO),
-	    selectByIdxApplyDeselectAll,
+	    deselectAll,
 	    edi:waitCursor(0),
 	    (	IdxO == -1
 	    ->	Msg = 'nothing to select.'
@@ -257,7 +259,7 @@ selectByIdxApplyMode(all) :- gui:select(1), gui:itemGetValue(1).
 selectByIdxApplyMode(static) :- gui:select(2), gui:itemGetValue(1).
 selectByIdxApplyMode(dynamic) :- gui:select(3), gui:itemGetValue(1).
 
-selectByIdxApplyDeselectAll :-
+deselectAll :-
        map:brushCount(BC),
        BCN is BC - 1,
        forall(between(0, BCN, Idx), map:brushSetSelect(Idx, 0)).
@@ -286,6 +288,86 @@ selectByIdxApply(Br, BC, Type, C, IdxI, IdxO) :-
 	selectByIdxApply(Br2, BC, Type, C, IdxI, IdxO).
 
 
+brushKeepTopmost :-
+	edi:waitCursor(1),
+	map:brushCount(BC),
+	BC1 is BC - 1,
+	(   brushKeepTopmost(BC1, Topmost)
+	->  Mx is Topmost - 1,
+	    forall(between(0, Mx, Br), map:brushSetSelect(Br, 0)),
+	    gui:msgBoxOk('Message', 'Topmost brush selected.', icon_info)
+	;   true),
+	edi:waitCursor(0),
+	selection:refresh,
+	map:refresh.
+
+brushKeepTopmost(-1, _) :- !, fail.
+brushKeepTopmost(Br, Br) :- map:brushGetSelect(Br, 1).
+brushKeepTopmost(Br, T) :-
+	Br2 is Br - 1,
+	brushKeepTopmost(Br2, T).
+
+
+brushGroupIds :-
+	edi:getSelect(0)
+	-> gui:msgBoxOk('Message', 'No selected brushes.', icon_info);
+	gui:dlgTitleH(TitleH),
+	W is 8 + 132,
+	H is TitleH + 4 + 14 * 6 + 10 + 20 + 4,
+	gui:createDlgTitleModal(0, 0, W, H, 'Brush Group Ids'),
+	gui:addKey(escape > gui:dlgClose),
+	dlg:setCloseOut,
+	X = 4,
+	Y is TitleH + 4,
+	WW is 14 * 6 + 6,
+	gui:createBar(X, Y, 132, WW, gui1),
+	brushGroupIdsCreateText(['Choose the first id and',
+				 'the selected brushes',
+				 'will have incrementing',
+				 'ids starting from it.',
+				 'Make sure not to',
+				 'generate duplicated ids!'
+				], X, Y, W, YO),
+	YY is YO + 10,
+	gui:createEdit(X, YY, 64, '0'),
+	def:dlg(item(0), ID),
+	gui:itemSetID(ID),
+	XX is 8 + 132 - 48 - 4,
+	gui:createButton(XX, YY, 48, 'Apply', scripts:brushGroupIdsApply),
+	gui:dlgMoveToMouse,
+	gui:dlgDockUp.
+
+
+brushGroupIdsCreateText([], _, Y, _, Y).
+brushGroupIdsCreateText([T|Ts], X, Y, W, YO) :-
+	gui:createText(X, Y, W, T),
+	Y2 is Y +14,
+	brushGroupIdsCreateText(Ts, X, Y2, W, YO).
+
+
+brushGroupIdsApply :-
+	gui:select(0),
+	gui:itemGetTxt(V),
+	atom_number(V, ID0),
+	(   ID0 == 0
+	->  gui:msgBoxOk('Message', 'Choose a valid starting id (non zero).', icon_info)
+	;   map:brushCount(BC),
+	    edi:waitCursor(1),
+	    brushGroupIdsApply(ID0, 0, BC, ID),
+	    edi:waitCursor(0),
+	    map:refresh,
+	    gui:dlgClose,
+	    format(string(Msg), 'Done.\nIds set from ~d to ~d.', [ID0, ID]),
+	    gui:msgBoxOk('Message', Msg, icon_info)).
+
+brushGroupIdsApply(ID, BC, BC, IDO) :- IDO is ID - 1.
+brushGroupIdsApply(ID, Br, BC, IDO) :-
+	(   map:brushGetSelect(Br, 1)
+	->  map:brushSetID(Br, ID),
+	    IDN is ID + 1
+	;   IDN = ID),
+	Br2 is Br + 1,
+	brushGroupIdsApply(IDN, Br2, BC, IDO).
 
 
 

@@ -1577,6 +1577,12 @@ int gsMarkerClear( gsVM* vm )
 	unguard()
 }
 
+PREDICATE_M(selection, goto, 1)
+{
+	g_map.SelectionGoto(A1);
+	return true;
+}
+
 int gsSelectionGoto( gsVM* vm )
 {
 	guard(gsSelectionGoto)

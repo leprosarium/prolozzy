@@ -1,7 +1,8 @@
 :- module(scripts, [brushSearch/0,
 		    brushChange/0,
 		    brushInvert/0,
-		    brushMove/0]).
+		    brushMove/0,
+		    selectByIdx/0]).
 
 brushSearch :-
 	dlgProps:create(search),
@@ -189,6 +190,105 @@ forallBrush(Br, BC, Action, C, Count) :-
 	C2 is C + Cn,
 	Br2 is Br + 1,
 	forallBrush(Br2, BC, Action, C2, Count).
+
+
+selectByIdx :-
+	gui:dlgTitleH(TitleH),
+	W is 8+64+4+48,
+	H is TitleH + 8 + 20 + 20 * 3 + 4,
+
+	gui:createDlgTitleModal(0, 0, W, H, 'Brush Select by idx'),
+	gui:addKey(escape > gui:dlgClose),
+	dlg:setCloseOut,
+	X = 4,
+	Y is TitleH + 4,
+	XX is X + 20,
+	gui:createRadio(X, Y, 1, 1 ),
+	def:dlg(item(1), ID1), gui:itemSetID(ID1),
+	gui:itemSetToolTip('count all brushes'),
+	gui:createText(XX, Y, 32, 'ALL' ),
+	Y2 is Y + 20,
+
+	gui:createRadio(X, Y2, 0, 1 ),
+	def:dlg(item(2), ID2), gui:itemSetID(ID2),
+	gui:itemSetToolTip('count static brushes only'),
+	gui:createText(XX, Y2, 32, 'STATIC'),
+	Y3 is Y2 + 20,
+
+	gui:createRadio(X, Y3, 0, 1 ),
+	def:dlg(item(3), ID3), gui:itemSetID(ID3),
+	gui:itemSetToolTip('count dynamic brushes only'),
+	gui:createText(XX, Y3, 32, 'DYNAMIC'),
+	Y4 is Y3 + 20 + 2,
+	gui:createEdit(X, Y4, 64, "0"),
+	def:dlg(item(0), ID0), gui:itemSetID(ID0),
+	XX2 is X + 64 + 4,
+	gui:createButton(XX2, Y4, 48, 'Select', scripts:selectByIdxApply),
+	gui:dlgMoveToMouse,
+	gui:dlgDockUp.
+
+
+selectByIdxApply :-
+	map:brushCount(0)
+	->  gui:dlgClose,
+	    gui:msgBoxOk('Message', 'nothing to select.', icon_info)
+	;   selectByIdxApplyParams(Mode, Idx),
+	    edi:waitCursor(1),
+	    selectByIdxApply(Mode, Idx, IdxO),
+	    selectByIdxApplyDeselectAll,
+	    edi:waitCursor(0),
+	    (	IdxO == -1
+	    ->	Msg = 'nothing to select.'
+	    ;	format(string(Msg), 'brush #~d selected.', [IdxO]),
+		map:brushSetSelect(IdxO, 1),
+		selection:goto(1),
+		edi:setSelect(1)),
+	    map:refresh,
+	    gui:dlgClose,
+	    gui:msgBoxOk('Message', Msg, icon_info).
+
+selectByIdxApplyParams(Mode, Idx) :-
+	selectByIdxApplyMode(Mode),
+	gui:select(0),
+	gui:itemGetTxt(V),
+	atom_number(V, Idx).
+
+selectByIdxApplyMode(all) :- gui:select(1), gui:itemGetValue(1).
+selectByIdxApplyMode(static) :- gui:select(2), gui:itemGetValue(1).
+selectByIdxApplyMode(dynamic) :- gui:select(3), gui:itemGetValue(1).
+
+selectByIdxApplyDeselectAll :-
+       map:brushCount(BC),
+       BCN is BC - 1,
+       forall(between(0, BCN, Idx), map:brushSetSelect(Idx, 0)).
+
+selectByIdxApply(all, Idx, Idx) :-
+	map:brushCount(BC),
+	Idx >= 0,
+	Idx < BC.
+selectByIdxApply(all, _, -1).
+
+
+selectByIdxApply(Mode, IdxI, IdxO) :-
+	map:brushCount(BC),
+	def:brushType(Mode, Type),
+	selectByIdxApply(0, BC, Type, 0, IdxI, IdxO).
+
+selectByIdxApply(BC, BC, _, _, _, -1).
+selectByIdxApply(Br, BC, Type, C, IdxI, IdxO) :-
+	map:brushGetType(Br, Type)
+	->  (   C == IdxI
+	    ->	IdxO = Br
+	    ;	C1 is C + 1,
+		Br2 is Br + 1,
+		selectByIdxApply(Br2, BC, Type, C1, IdxI, IdxO))
+	;   Br2 is Br + 1,
+	selectByIdxApply(Br2, BC, Type, C, IdxI, IdxO).
+
+
+
+
+
 
 
 

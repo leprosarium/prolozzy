@@ -15,6 +15,7 @@ varDef(flip,	11, 0).
 varDef(color,	12, 0xffffffff).
 varDef(shader,	13, 0).
 varDef(scale,	14, 0).
+varDef(type,	16, 0).
 varDef(id,	17, 0).
 varDef(material, 18, 0).
 varDef(draw,	19, 0).

@@ -19,6 +19,7 @@
 :- use_module(fileio, []).
 :- use_module(brush, []).
 :- use_module(scripts, []).
+:- use_module(scripts2, []).
 
 
 param(Key, _, Value) :-

@@ -90,6 +90,9 @@
     <None Include="scripts\scripts.pl">
       <Filter>scripts</Filter>
     </None>
+    <None Include="scripts\scripts2.pl">
+      <Filter>scripts</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="scripts">

@@ -55,7 +55,7 @@ create :-
 		btn(search,	"search brushes and select", actions:search),
 		btn(change,	"change selected brushes", actions:change),
 		btn(script,	"select scripts", actions:script),
-		btn(script2,    "debug scripts", actScript2),
+		btn(script2,    "debug scripts", actions:script2),
 		btn(script3,	"user scripts", actScript3)],
 	foreach(member(B, Btns), addButton(B)),
 	refresh,

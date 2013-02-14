@@ -36,6 +36,7 @@
 		   search/0,
 		   change/0,
 		   script/0,
+		   script2/0,
 		   toolPickMenu/1,
 		   toolCommandPickBrush/1]).
 
@@ -350,13 +351,26 @@ script:-
 		item(move-' move', (gui:dlgClose, scripts:brushMove), [key(m), tooltip('move brushes [M]')]),
 		item(seli-' select by index', (gui:dlgClose, scripts:selectByIdx), [tooltip('select a brush by it\'s index')]),
 		item(keept-' keep topmost', (gui:dlgClose, scripts:brushKeepTopmost), [tooltip('keep the topmost brush from the current selection')]),
-		item(cust-'Custom,', "", []),
-		item(cb-' set block', (gui:dlgClose, scripts:customBlocking(1)), [key(b), tooltip('set material to blocking [B]')]),
-		item(cu-' set unblock', (gui:dlgClose, scripts:customBlocking(0)), [key(u), tooltip('set material to unblocking [U]')]),
 		item(ids-' set group ids', (gui:dlgClose, scripts:brushGroupIds), [tooltip('set group ids for the brushes in the selection')])],
 	gui:createPullDown(0, 0, Data),
 	gui:dlgMoveToMouse,
 	gui:dlgDockUp.
+
+
+script2:-
+	edi:getTool(0);
+	Data = [
+		item(rc-'Release checks', "", []),
+		item(cmt-' check missing tiles', (gui:dlgClose, scripts2:checkTile), [tooltip('select all brushes with missing tiles')]),
+		item(cdi-' check duplicate ids', (gui:dlgClose, scripts2:checkId), [tooltip('select all brushes with duplicate ids')]),
+		item(co-' check overlapping', (gui:dlgClose, scripts2:checkOverlapping), [tooltip('select overlapping brushes\n(position,size,tile and map)')]),
+		item(cdni-' check dynamic ids', (gui:dlgClose, scripts2:checkDynamicBrushId), [tooltip('select all dynamic brushes without valid ids')]),
+		item(csi-' check static ids', (gui:dlgClose, scripts2:checkStaticBrushId), [tooltip('select all static brushes with valid ids')]),
+		item(cr-' count rooms', (gui:dlgClose, scripts2:countRooms), [tooltip('count and mark all the rooms with brush content')])],
+	gui:createPullDown(0, 0, Data),
+	gui:dlgMoveToMouse,
+	gui:dlgDockUp.
+
 
 
 

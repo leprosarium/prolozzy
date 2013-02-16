@@ -1,5 +1,6 @@
 :-module(scripts2, [checkTile/0,
-		    checkId/0]).
+		    checkId/0,
+		    checkOverlapping/0]).
 
 checkTile :-
 	core:dl('Check Brush Tile:'),
@@ -68,6 +69,57 @@ checkIdProcess(Id, Idxs, C) :-
 	length(Idxs, C),
 	core:dl( duplicate(Id, Idxs)),
 	forall(member(Idx, Idxs), map:brushSetSelect(Idx, 1)).
+
+
+checkOverlapping :-
+	core:dl('Check Brush Overlapping:'),
+	edi:waitCursor(1),
+	checkOverCollect(Ids),
+	checkOverProcess(Ids, Count),
+	edi:waitCursor(0),
+	edi:setSelect(Count),
+	(   Count == 0
+	->  gui:msgBoxOk('Message', 'No overlapping brushes found.', icon_info)
+	;   format(string(Msg), '~d overlapping brushes found.', [Count]),
+	    gui:msgBoxOk('Warning', Msg, icon_warning )).
+
+
+checkOverCollect(Ids) :-
+	map:brushCount(BC),
+	empty_assoc(Emp),
+	checkOverCollect(0, BC, Emp, Ids).
+
+checkOverCollect(BC, BC, Ids, Ids).
+checkOverCollect(Br, BC, CurIds, Ids) :-
+	map:brushGetX(Br, X),
+	map:brushGetY(Br, Y),
+	map:brushGetW(Br, W),
+	map:brushGetH(Br, H),
+	map:brushGetTile(Br, Tile),
+	map:brushGetMapX1(Br, MX1),
+	map:brushGetMapY1(Br, MY1),
+	map:brushGetMapX2(Br, MX2),
+	map:brushGetMapY2(Br, MY2),
+	Key = b(X, Y, W, H, Tile, MX1, MY1, MX2, MY2),
+	map:brushSetSelect(Br, 0),
+	(get_assoc(Key, CurIds, Idxs); Idxs = []),
+	put_assoc(Key, CurIds, [Br|Idxs], NewIds),
+	Br2 is Br + 1,
+	checkOverCollect(Br2, BC, NewIds, Ids).
+
+checkOverProcess(Ids, Count) :-
+	findall(C, (gen_assoc(Key, Ids, [Idx1, Idx2|Idxs]), checkOverProcess(Key, [Idx1, Idx2|Idxs], C)), CC),
+	sum_list(CC, Count).
+
+checkOverProcess(Key, Idxs, C) :-
+	length(Idxs, C),
+	core:dl( overlap(Key, Idxs)),
+	forall(member(Idx, Idxs), map:brushSetSelect(Idx, 1)).
+
+
+
+
+
 
 
 

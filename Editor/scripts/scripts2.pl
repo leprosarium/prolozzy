@@ -1,6 +1,8 @@
 :-module(scripts2, [checkTile/0,
 		    checkId/0,
-		    checkOverlapping/0]).
+		    checkOverlapping/0,
+		    checkDynamicBrushId/0,
+		    checkStaticBrushId/0]).
 
 checkTile :-
 	core:dl('Check Brush Tile:'),
@@ -116,11 +118,55 @@ checkOverProcess(Key, Idxs, C) :-
 	core:dl( overlap(Key, Idxs)),
 	forall(member(Idx, Idxs), map:brushSetSelect(Idx, 1)).
 
+checkDynamicBrushId :-
+	core:dl('Check Dynamic Brush Id:'),
+	edi:waitCursor(1),
+	map:brushCount(BC),
+	checkDynamicBrushId(0, BC, 0, Count),
+	edi:waitCursor(0),
+
+	edi:setSelect(Count),
+	(   Count =\= 0
+	->  format(string(Msg), 'There are ~d dynamic brushes without ids.\nThey will not be accessible in script.\nSet them ids or make them static brushes.', [Count]),
+	    gui:msgBoxOk('Warning', Msg, icon_warning)
+	;   gui:msgBoxOk('Info', 'There are no dynamic brushes without ids.\nThats good.', icon_info)).
+
+checkDynamicBrushId(BC, BC, Count, Count).
+checkDynamicBrushId(Br, BC, Cnt, Total) :-
+	map:brushSetSelect(Br, 0),
+	def:brushType(dynamic, Type),
+	(   map:brushGetType(Br, Type),	map:brushGetID(Br, 0)
+	->  map:brushSetSelect(Br, 1),
+	    C = 1
+	;   C = 0),
+	Br2 is Br + 1,
+	Cnt2 is Cnt + C,
+	checkDynamicBrushId(Br2, BC, Cnt2, Total).
 
 
 
+checkStaticBrushId :-
+	core:dl('Check Static Brush Id:'),
+	edi:waitCursor(1),
+	map:brushCount(BC),
+	checkStaticBrushId(0, BC, 0, Count),
+	edi:waitCursor(0),
 
+	edi:setSelect(Count),
+	(   Count =\= 0
+	->  format(string(Msg), 'There are ~d static brushes with ids.\nMake sure they need ids indeed.', [Count]),
+	    gui:msgBoxOk('Warning', Msg, icon_warning)
+	;   gui:msgBoxOk('Info', 'There are no static brushes with ids.', icon_info)).
 
-
-
+checkStaticBrushId(BC, BC, Count, Count).
+checkStaticBrushId(Br, BC, Cnt, Total) :-
+	map:brushSetSelect(Br, 0),
+	def:brushType(static, Type),
+	(   map:brushGetType(Br, Type), map:brushGetID(Br, Id), Id =\= 0
+	->  map:brushSetSelect(Br, 1),
+	    C = 1
+	;   C = 0),
+	Br2 is Br + 1,
+	Cnt2 is Cnt + C,
+	checkStaticBrushId(Br2, BC, Cnt2, Total).
 

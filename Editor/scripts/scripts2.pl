@@ -2,7 +2,8 @@
 		    checkId/0,
 		    checkOverlapping/0,
 		    checkDynamicBrushId/0,
-		    checkStaticBrushId/0]).
+		    checkStaticBrushId/0,
+		    countRooms/0]).
 
 checkTile :-
 	core:dl('Check Brush Tile:'),
@@ -169,4 +170,87 @@ checkStaticBrushId(Br, BC, Cnt, Total) :-
 	Br2 is Br + 1,
 	Cnt2 is Cnt + C,
 	checkStaticBrushId(Br2, BC, Cnt2, Total).
+
+countRooms :-
+	gui:msgBox('Question', 'Count rooms with brush content.\n\nWARNING\nSave your map BEFORE this operation!\nGuide green brushes are going to be inserted\nto help you verify the counting.\nProceed?\n', icon_question, [btn('YES', scripts2:countRoomsApply), btn('NO', true)]).
+
+countRoomsApply :-
+	edi:waitCursor(1),
+	edi:getRoomW(RW),
+	edi:getRoomH(RH),
+	Params = params(32, RW, RH),
+	countRoomsCollect(Params, Rooms),
+	countRoomsMark(Rooms, Count, Params),
+	edi:waitCursor(0),
+	format(string(Msg), '~d rooms found with content.\nMap has been altered with guide green brushes.\nCheck the counting, but DON\'T save the map.', [Count]),
+	gui:msgBoxOk('Message', Msg, icon_info),
+	map:repartition,
+	map:refresh.
+
+
+countRoomsCollect(Params, Rooms) :-
+	map:brushCount(BC),
+	empty_nb_set(Rooms),
+	countRoomsCollect(0, BC, Params, Rooms).
+
+countRoomsCollect(BC, BC, _, _).
+countRoomsCollect(Br, BC, Params, Rooms) :-
+	countRoomsCollect(Br, Params, Rooms),
+	Br2 is Br + 1,
+	countRoomsCollect(Br2, BC, Params, Rooms).
+
+countRoomsCollect(B, Params, Rooms) :-
+	map:brushGetX(B, X),
+	map:brushGetY(B, Y),
+	map:brushGetW(B, W),
+	map:brushGetH(B, H),
+	X2 is X + W,
+	Y2 is Y + H,
+	countRoomsCollectAdd(X, Y, Params, Rooms),
+	countRoomsCollectAdd(X2, Y2, Params, Rooms).
+
+countRoomsCollectAdd(X, Y, params(C, RW, RH), Rooms) :-
+	DX is X mod RW,
+	DY is Y mod RH,
+	DX > C,
+	DY > C,
+	DX < RW - C,
+	DY < RH - C,
+	XX is X // RW,
+	YY is Y // RH,
+	add_nb_set(p(XX, YY), Rooms).
+countRoomsCollectAdd(_, _, _, _).
+
+countRoomsMark(Rooms, Count, Params) :-
+	size_nb_set(Rooms, Count),
+	forall(gen_nb_set(Rooms, p(X, Y)), countRoomsMarkAdd(X, Y, Params)).
+countRoomsMarkAdd(X, Y, params(C, RW, RH)) :-
+	XX is X * RW + C,
+	YY is Y * RH + C,
+	W is RW - C - C,
+	H is RH - C - C,
+	map:brushNew(B),
+	map:brushSetLayer(B, 7),
+	map:brushSetX(B, XX),
+	map:brushSetY(B, YY),
+	map:brushSetW(B, W),
+	map:brushSetH(B, H),
+	map:brushSetTile(B, 0),
+	map:brushSetMapX2(B, 8),
+	map:brushSetMapY2(B, 8),
+	map:brushSetColor(B, 0x8000ff00),
+	def:shader(blend, Shader),
+	map:brushSetShader(B, Shader),
+	map:brushSetID(B, 1234567),
+	map:brushSetSelect(B, 1).
+
+
+
+
+
+
+
+
+
+
 

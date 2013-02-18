@@ -51,6 +51,12 @@ PREDICATE_M(core, ini, 4)
 	return true;
 }
 
+PREDICATE_M(core, tickCount, 1)
+{
+	return A1 = static_cast<int>(GetTickCount());
+}
+
+
 cEdiApp::cEdiApp()
 {
 	guard(cEdiApp::cEdiApp)

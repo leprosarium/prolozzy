@@ -3,6 +3,7 @@
 	       viewMode/2,
 	       roomInfo/1,
 	       setRoomInfo/1,
+	       brushToolDraw/0,
 	       roomInfoName/2,
 	       brushNew/1,
 	       brushProp/2,
@@ -93,6 +94,18 @@ setView(V) :- viewMode(V, _), propSet(view, V).
 roomInfo(I):- propGet(roomInfo, I).
 setRoomInfo(I) :- propSet(roomInfo, I).
 
+brushToolDraw :-
+	edi:toolBrushGetAnim(0);
+	edi:toolBrushGetDelay(Delay),
+	core:tickCount(Time),
+	Fr  is Time // 25,
+	(   Delay > 0
+	->  Frame is Fr // Delay
+	;   Frame = Fr),
+	edi:toolBrushSetFrame(Frame).
+
+
+
 % Initialize props of the current tool brush, specific to the current type
 % Called from Brush Type button in the menu bar
 
@@ -111,8 +124,8 @@ brushNew(Type) :-
 	edi:toolBrushSetTarget(0),
 	edi:toolBrushSetDeath(0),
 	(   Type = static
-	->  Draw = 3   % draw in img+mat
-	;   Draw = 1), % visible
+	->  def:drawMode(imgmat, Draw, _)   % draw in img+mat
+	;   def:drawMode(img, Draw, _)), % visible
 	edi:toolBrushSetDraw(Draw),
 	brushProp(user, USER),
 	brushProp(max, MX),

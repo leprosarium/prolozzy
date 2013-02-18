@@ -218,8 +218,7 @@ void cEdiToolPaint::Draw()
 
 	if(m_mode==0||m_mode==1)
 	{
-		int fid = gs_findfn(g_gui->m_vm,"MOD_BrushToolDraw");
-		if( fid!=-1 ) g_gui->ScriptCallback(fid);
+		g_gui->ScriptPrologDo("mod:brushToolDraw");	
 		
 		int x = CAMZ*(brush.m_data[BRUSH_X] - CAMX1) + VIEWX;
 		int y = CAMZ*(brush.m_data[BRUSH_Y] - CAMY1) + VIEWY;

@@ -37,6 +37,7 @@
 		   change/0,
 		   script/0,
 		   script2/0,
+		   roomProps/0,
 		   toolPickMenu/1,
 		   toolCommandPickBrush/1]).
 
@@ -408,3 +409,13 @@ toolCommandPickBrush( BrushIdx ) :-
 	edi:toolBrushSetMapX2(X2),
 	edi:toolBrushSetMapY2(Y2),
 	edi:toolBrushSetFlip(Flip).
+
+roomProps :-
+	edi:getTool(1);
+	edi:toolBrushGetX(X),
+	edi:toolBrushGetY(Y),
+	edi:getRoomW(W),
+	edi:getRoomH(H),
+	RX is X // W,
+	RY is Y // H,
+	dlgRoomProps:create(RX, RY).

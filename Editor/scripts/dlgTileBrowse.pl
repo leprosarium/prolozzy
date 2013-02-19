@@ -4,10 +4,10 @@
 
 create(X, Y, Cmd) :-
 	edi:tileCount(0);
-	editor:param('tilebrowse_first', 0, First),
-	editor:param('tilebrowse_cols', 4, Cols),
-	editor:param('tilebrowse_rows', 4, Rows),
-	editor:param('tilebrowse_size', 64, Size),
+	editor:param(tilebrowse_first, 0, First),
+	editor:param(tilebrowse_cols, 4, Cols),
+	editor:param(tilebrowse_rows, 4, Rows),
+	editor:param(tilebrowse_size, 64, Size),
 	recorda(params, params(First, Cols, Rows, Size)),
 	gui:dlgTitleH(TITLEH),
 
@@ -44,10 +44,10 @@ create(X, Y, Cmd) :-
 close :-
 	recorded(params, params(First, Cols, Rows, Size), Ref),
 	erase(Ref),
-	editor:param('tilebrowse_first', _, First),
-	editor:param('tilebrowse_cols', _, Cols),
-	editor:param('tilebrowse_rows', _, Rows),
-	editor:param('tilebrowse_size', _, Size).
+	editor:param(tilebrowse_first, First),
+	editor:param(tilebrowse_cols, Cols),
+	editor:param(tilebrowse_rows, Rows),
+	editor:param(tilebrowse_size, Size).
 
 
 cells(I, J, X, Y, IDX) :-

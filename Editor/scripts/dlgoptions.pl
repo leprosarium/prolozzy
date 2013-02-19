@@ -1,6 +1,7 @@
 :- module(dlgOptions, [load/0,
 		      create/0,
-		      close/0]).
+		      close/0,
+		      save/0]).
 
 getOpt(Opt, Def, Val) :-
 	format(string(Key), 'options_~a', [Opt]),
@@ -285,52 +286,50 @@ colorSet(Color) :-
 
 
 getsetoption(Opt) :-
-	(core:ini('editor.ini', 'editor', Opt, Var); Var = 0),
-	core:ini('editor.ini', 'editor', Opt, Var).
-
-
+	editor:param(Opt, 0, V),
+	editor:param(Opt, V).
 
 getValue(Item, Val) :-
 	gui:select(Item),
 	gui:itemGetValue(Val).
 
 close :-
-	getsetoption('options_videoapi'),
-	getsetoption('options_cool'),
+	getsetoption(options_videoapi),
+	getsetoption(options_cool),
 
 	getValue(0, Axes),
 	edi:setAxes(Axes),
-	core:ini('editor.ini', 'editor', 'options_axes', Axes),
+	editor:param(options_axes, Axes),
 
 	getValue(1, Grid),
 	edi:setGrid(Grid),
-	core:ini('editor.ini', 'editor', 'options_grid', Grid),
+	editor:param(options_grid, Grid),
 
 	getValue(2, Snap),
 	edi:setSnap(Snap),
-	core:ini('editor.ini', 'editor', 'options_snap', Snap),
+	editor:param(options_snap, Snap),
 
 	getValue(3, RoomGrid),
 	edi:setRoomGrid(RoomGrid),
-	core:ini('editor.ini', 'editor', 'options_roomgrid', RoomGrid),
+	editor:param(options_roomgrid, RoomGrid),
 
 	getValue(4, BrushRect),
 	edi:setBrushRect(BrushRect),
-	core:ini('editor.ini', 'editor', 'options_brushrect', BrushRect),
+	editor:param(options_brushrect, BrushRect),
 
 	(   getValue(10, 1), ScreenSize = 0;
 	getValue(11, 1), ScreenSize = 1;
 	getValue(12, 1), ScreenSize = 2;
 	getValue(13, 1), ScreenSize = 3),
-	core:ini('editor.ini', 'editor', 'options_screensize', ScreenSize),
+	editor:param(options_screensize, ScreenSize),
 
 	gui:select(20),
 	gui:itemGetTxt(TileFolder),
-	core:ini('editor.ini', 'editor', 'options_tiledir', TileFolder),
+	editor:param(options_tiledir, TileFolder),
 
 	gui:select(30),
 	gui:itemGetColor(Color),
-	core:ini('editor.ini', 'editor', 'options_colormap', Color),
+	editor:param(options_colormap, Color),
 
 	map:refresh,
 	(   edi:tileCount(0)
@@ -338,6 +337,24 @@ close :-
 	true).
 
 
+save :-
+	edi:getAxes(Axes),
+	edi:getGrid(Grid),
+	edi:getSnap(Snap),
+	edi:getRoomGrid(RoomGrid),
+	edi:getBrushRect(BrushRect),
+	edi:getRoomW(RoomW),
+	edi:getRoomH(RoomH),
+	edi:getColorMap(ColorMap),
+
+	editor:param(options_axes, Axes),
+	editor:param(options_grid, Grid),
+	editor:param(options_snap, Snap),
+	editor:param(options_roomgrid, RoomGrid),
+	editor:param(options_brushrect, BrushRect),
+	editor:param(options_roomw, RoomW),
+	editor:param(options_roomh, RoomH),
+	editor:param(options_colormap, ColorMap).
 
 
 

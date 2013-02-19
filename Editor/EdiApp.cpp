@@ -254,7 +254,7 @@ void cEdiApp::Done()
 	// must be able to destroy partial init too, in case Init has failed
 
 	// script exit
-	if(g_gui) g_gui->ScriptPrologDo("EDI_Done();");
+	if(g_gui) g_gui->ScriptPrologDo("editor:done");
 
 	// tools
 	m_tool[m_toolcrt]->Switch(FALSE);

@@ -163,7 +163,7 @@ setPage(Page, Mode, Key, Idx) :-
 	;   true),
 	setPage(Key, Idx, 2, Y, Y2, HV),
 	setPage(Key, Idx, 3, Y, Y2, HV),
-	editor:param(props_page, _, Page).
+	editor:param(props_page, Page).
 
 setPage(Key, Idx, N, Y, Y2, HV) :-
 	select(Idx, N),

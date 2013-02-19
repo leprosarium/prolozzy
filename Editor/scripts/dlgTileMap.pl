@@ -7,10 +7,10 @@ create :-
 create :-
 	edi:toolBrushGetTile(TileID),
 	edi:tileFind(TileID, _TileIdx),
-	editor:param('tilemap_scale', 2, Scale),
-	editor:param('tilemap_snap', 1, Snap),
-	editor:param('tilemap_grid', 1, Grid),
-	editor:param('tilemap_axes', 0, Axes),
+	editor:param(tilemap_scale, 2, Scale),
+	editor:param(tilemap_snap, 1, Snap),
+	editor:param(tilemap_grid, 1, Grid),
+	editor:param(tilemap_axes, 0, Axes),
 	(Scale < 1 -> SScale = 1; SScale = Scale),
 	recorda(params, params(SScale, Snap, Grid, Axes)),
 	X = 0,
@@ -179,10 +179,10 @@ close :-
 	gui:itemGetGuiTileMapAxes(Axes),
 	recorded(params, _, Ref),
 	erase(Ref),
-	editor:param('tilemap_scale', _, Scale),
-	editor:param('tilemap_snap', _, Snap),
-	editor:param('tilemap_grid', _, Grid),
-	editor:param('tilemap_axes', _, Axes).
+	editor:param(tilemap_scale, Scale),
+	editor:param(tilemap_snap, Snap),
+	editor:param(tilemap_grid, Grid),
+	editor:param(tilemap_axes, Axes).
 
 key(add) :-
 	recorded(params, params(Scale, Snap, Grid, Axes), Ref),

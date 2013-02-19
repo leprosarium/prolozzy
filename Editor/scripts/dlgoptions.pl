@@ -110,8 +110,7 @@ createBox1(X0, Y0, DDX, DDY) :-
 
 	% room info
 	mod:roomInfo(Info),
-	mod:roomInfoName(Info, InfoName),
-	gui:createButton(X, Y5, 140, InfoName, dlgOptions:roomInfo),
+	gui:createButton(X, Y5, 140, Info, dlgOptions:roomInfo),
 	def:dlg(item(5), ID5),
 	gui:itemSetID(ID5),
 	gui:itemSetToolTip("choose what kind of room info\nis displayed in the info bar.").
@@ -212,7 +211,7 @@ createBox5(X, Y, DDX, DDY) :-
 
 
 roomInfo :-
-	findall(item(Info-Name,	(gui:dlgClose, dlgOptions:roomInfoSet(Info)), []), mod:roomInfoName(Info, Name), Menu),
+	setof(item(I-I, (gui:dlgClose, dlgOptions:roomInfoSet(I)), []), X^Y^V^(roomNames:get(X, Y, I, V)), Menu),
 	mod:roomInfo(Info),
 	gui:createPullDown(0, 0, Menu, Info),
 	gui:dlgMoveToMouse.
@@ -224,8 +223,7 @@ roomInfoSet(Info):-
 	dlg:find(MB, IDX),
 	dlg:select(IDX),
 	gui:select(5),
-	mod:roomInfoName(Info, Name),
-	gui:itemSetTxt(Name).
+	gui:itemSetTxt(Info).
 
 
 reloadTiles :-

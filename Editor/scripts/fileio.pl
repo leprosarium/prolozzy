@@ -29,13 +29,14 @@ loadTerms(Term, S) :-
 	loadTerms(S), !.
 
 mapSave(File) :-
-	core:dl(save(File)),
+%	core:dl(save(File)),
 	setup_call_cleanup(open(File, write, S),
 			   saveMapToStream(S),
 			   close(S)).
 saveMapToStream(S) :-
 	map:brushCount(Count),
 	once(saveBrsh(0, Count, S)),
+	saveRooms(S),
 	saveMapCtl(S).
 
 saveMapCtl(S):-
@@ -59,7 +60,15 @@ saveBrsh(I, Count, S) :-
 	saveBrsh(II, Count, S).
 
 
-
+saveRooms(S) :-
+	edi:getMapW(MapW),
+	edi:getMapH(MapH),
+	edi:getRoomW(RoomW),
+	edi:getRoomH(RoomH),
+	W is (MapW // RoomW) - 1,
+	H is (MapH // RoomH) - 1,
+	writet(S, roomNames:reset(false)),
+	forall((between(0, W, X), between(0, H, Y), roomNames:get(X, Y, Props), Props \= []), writet(S, roomNames:set(X, Y, Props))).
 
 
 

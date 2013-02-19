@@ -4,7 +4,6 @@
 	       roomInfo/1,
 	       setRoomInfo/1,
 	       brushToolDraw/0,
-	       roomInfoName/2,
 	       brushNew/1,
 	       brushProp/2,
 	       brushProp/5,
@@ -82,7 +81,7 @@ viewMode(game, 'game view').
 viewMode(matrial, 'matrial view').
 viewMode(density, 'density view').
 
-property(roomInfo, 0).
+property(roomInfo, name).
 property(view, Def) :- viewMode(Def, _), !.
 
 
@@ -229,20 +228,13 @@ updateRoomInfo(X, Y) :-
 	RX is X // RoomW,
 	RY is Y // RoomH,
 	roomInfo(RX, RY, Info),
-	format(string(Bar4), '"~s" room ~d, ~d', [Info, RX, RY]),
+	format(string(Bar4), '"~w" room ~d, ~d', [Info, RX, RY]),
 	dlgStatusBar:set(4, Bar4).
 
-roomInfo(_RX, _RY, "<Info>").
-
-roomInfoName(0, "show room name").
-roomInfoName(5, "show room props 0-3").
-roomInfoName(6, "show room props 4-7").
-roomInfoName(X, Text) :-
-	between(1, 4, X),
-	format(string(Text), 'show room text ~d', [X-1]).
-
-
-
+roomInfo(RX, RY, Val) :-
+	roomInfo(Prop),
+	roomNames:get(RX, RY, Prop, Val).
+roomInfo(_, _, '').
 
 
 

@@ -304,7 +304,8 @@ bool cGUI::ScriptPrologDo(const std::string & pred)
 	catch(PlException const & e)
 	{
 		PlException ee(e);
-		dlog("Exception: %s", static_cast<LPCSTR>(ee));
+		LPCSTR msg = static_cast<LPCSTR>(ee);
+		dlog("Exception: %s", msg);
 	}
 	return false;
 }

@@ -74,7 +74,7 @@ BOOL cEdiPaint::TileLoadFile( const char* filepath )
 	if(ret==0 || id==-1) 
 	{ 
 		gstile_fail++; 
-		dlog(LOGSYS, "! %s (bad name)\n", filepath); 
+		dlog(LOGSYS, L"! %S (bad name)\n", filepath); 
 		return FALSE; 
 	}
 	if(frames<1) frames=1;
@@ -85,7 +85,7 @@ BOOL cEdiPaint::TileLoadFile( const char* filepath )
 	{
 		gstile_fail++;
 		gstile_duplicates++;
-		dlog(LOGSYS, "! %s (duplicate id)\n", filepath, id);
+		dlog(LOGSYS, L"! %S (duplicate id)\n", filepath, id);
 		return FALSE;
 	}
 
@@ -95,7 +95,7 @@ BOOL cEdiPaint::TileLoadFile( const char* filepath )
 	if(!R9_ImgLoadFile(szt,&img))
 	{
 		gstile_fail++;
-		dlog(LOGSYS, "! %s (load failed)\n", filepath);
+		dlog(LOGSYS, L"! %S (load failed)\n", filepath);
 		return FALSE;
 	}
 
@@ -107,7 +107,7 @@ BOOL cEdiPaint::TileLoadFile( const char* filepath )
 	{
 		TileDel(idx);
 		gstile_fail++;
-		dlog(LOGSYS, "! %s (texture failed)\n", filepath);
+		dlog(LOGSYS, L"! %S (texture failed)\n", filepath);
 		return FALSE;
 	}
 
@@ -121,7 +121,7 @@ BOOL cEdiPaint::TileLoadFile( const char* filepath )
 
 	R9_ImgDestroy(&img);
 	
-	dlog(LOGAPP, "  %s [%i]\n", filepath, frames );
+	dlog(LOGAPP, L"  %S [%i]\n", filepath, frames );
 	
 	return TRUE;
 	unguard()
@@ -144,7 +144,7 @@ BOOL cEdiPaint::TileLoad( const char* path )
 	int szlen = (int)strlen(m_tilepath);
 	if( szlen>0 && m_tilepath[szlen-1]!='\\' ) strcat(m_tilepath,"\\");
 	_strlwr(m_tilepath);
-	dlog(LOGAPP,"Loading tiles from \"%s\"\n", m_tilepath);
+	dlog(LOGAPP, L"Loading tiles from \"%S\"\n", m_tilepath);
 
 	// init
 	gstile_total		= 0;
@@ -155,7 +155,7 @@ BOOL cEdiPaint::TileLoad( const char* path )
 	file_findfiles( m_tilepath, FFCallback_Tile, FILE_FINDREC );
 
 	// report
-	dlog(LOGAPP, "Tiles report: total=%i, failed=%i (duplicates=%i)\n", gstile_total, gstile_fail, gstile_duplicates );
+	dlog(LOGAPP, L"Tiles report: total=%i, failed=%i (duplicates=%i)\n", gstile_total, gstile_fail, gstile_duplicates );
 
 	// sort by id
 	int i;

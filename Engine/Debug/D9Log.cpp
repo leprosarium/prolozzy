@@ -7,7 +7,7 @@
 char			d9Log::m_logfile[D9_LOG_NAMESIZE] = "";
 d9LogChannel	d9Log::m_logc[D9_LOG_CHANNELMAX];
 BOOL			d9Log::m_store = FALSE;
-std::string 	d9Log::m_buffer;
+std::wstring 	d9Log::m_buffer;
 d9LogCallback	d9Log::m_callback = NULL;
 
 d9LogChannel::d9LogChannel()				
@@ -48,7 +48,7 @@ void d9Log::Store( BOOL enable )
 	m_store = enable;
 }
 
-void d9Log::PrintBuf( int ch, const char* buffer, size_t size)
+void d9Log::PrintBuf( int ch, LPCSTR buffer, size_t size)
 {
 	if(ch<0 || ch>=D9_LOG_CHANNELMAX) return;
 	int flags = m_logc[ch].m_flags;
@@ -66,44 +66,32 @@ void d9Log::PrintBuf( int ch, const char* buffer, size_t size)
 		}
 	}
 
-	// store
-	if(m_store)
-		m_buffer.append(buffer, size);
+	std::wstring msg(buffer, buffer + size);
+	LPCWSTR cmsg = msg.c_str();
 
-	static char msg[D9_LOG_BUFFERSIZE];
-	if(!( flags & (D9_LOGFLAG_DEBUG|D9_LOGFLAG_CALLBACK) ))
-		return;
-	const size_t mbs = D9_LOG_BUFFERSIZE - 1;
-	while(size)
-	{
-		size_t s = size > mbs ? mbs : size;
-		memcpy(msg, buffer, s);
-		msg[s] = 0;
-	
-		// send to debug
-		if( flags & D9_LOGFLAG_DEBUG )
-			sys_outputdebugstring(msg);
+	// send to debug
+	if( flags & D9_LOGFLAG_DEBUG )
+		sys_outputdebugstring(cmsg);
 
-		// send to callback
-		if( (flags & D9_LOGFLAG_CALLBACK) && m_callback )
-			m_callback(ch, msg);
-		size -= s;
-	}
+	// send to callback
+	if( (flags & D9_LOGFLAG_CALLBACK) && m_callback )
+		m_callback(ch, cmsg);
 
+			// store
+	if(m_store)	
+		m_buffer.append(msg);
 }
 
-
-
-void d9Log::PrintV( int ch, const char* fmt, va_list args )
+void d9Log::PrintV( int ch, LPCWSTR fmt, va_list args )
 {
 	if(ch<0 || ch>=D9_LOG_CHANNELMAX) return;
 	int flags = m_logc[ch].m_flags;
 	if(!(flags & D9_LOGFLAG_OPEN)) return;
 
-	static char msg[D9_LOG_BUFFERSIZE];
+	static WCHAR msg[D9_LOG_BUFFERSIZE];
 	if( flags & (D9_LOGFLAG_DEBUG|D9_LOGFLAG_CALLBACK) )
 	{
-		_vsnprintf(msg, D9_LOG_BUFFERSIZE, fmt, args);
+		_vsnwprintf(msg, D9_LOG_BUFFERSIZE, fmt, args);
 		msg[D9_LOG_BUFFERSIZE-1]=0;
 	}
 	
@@ -118,7 +106,7 @@ void d9Log::PrintV( int ch, const char* fmt, va_list args )
 		f = fopen(m_logfile, "at");
 		if( f!=NULL )
 		{
-			vfprintf( f, fmt, args );
+			vfwprintf( f, fmt, args );
 			fclose(f);
 		}
 	}
@@ -132,7 +120,7 @@ void d9Log::PrintV( int ch, const char* fmt, va_list args )
 		m_buffer.append(msg);
 }
 
-void d9Log::PrintF( int ch, const char* fmt, ... )
+void d9Log::PrintF( int ch, LPCWSTR fmt, ... )
 {
 	va_list	args;
 	va_start(args, fmt);
@@ -140,7 +128,7 @@ void d9Log::PrintF( int ch, const char* fmt, ... )
 	va_end(args);
 }
 
-void d9Log::PrintF( const char* fmt, ... )
+void d9Log::PrintF( LPCWSTR fmt, ... )
 {
 	va_list	args;
 	va_start(args, fmt);

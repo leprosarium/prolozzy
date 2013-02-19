@@ -345,7 +345,7 @@ r9DisplayMode*	r9DisplayModes;				// displaymodes list
 BOOL R9_InitInterface( int api )
 {
 	guard(R9_GatherDisplayModes);
-	dlog(LOGRND, "Render init interface (api=%i).\n",api);
+	dlog(LOGRND, L"Render init interface (api=%i).\n",api);
 	r9Render* render = R9_CreateRender(api);
 	if(!render) return FALSE;
 
@@ -368,8 +368,8 @@ BOOL R9_FilterCfg( r9Cfg& cfg, int &api )
 	r9DisplayMode* displaymode = r9DisplayModes;
 	if(!displaymode || !count) return FALSE;
 
-	dlog(LOGRND, "Filter config:\n");
-	dlog(LOGRND, "  Requested: "); R9_LogCfg(cfg,api);
+	dlog(LOGRND, L"Filter config:\n");
+	dlog(LOGRND, L"  Requested: "); R9_LogCfg(cfg,api);
 
 	BOOL ok = FALSE;
 	r9Cfg cfgout = cfg;
@@ -414,9 +414,9 @@ BOOL R9_FilterCfg( r9Cfg& cfg, int &api )
 	
 	cfg = cfgout;
 	if(ok)
-	{ dlog(LOGRND, "  Received:  "); R9_LogCfg(cfg,api); }
+	{ dlog(LOGRND, L"  Received:  "); R9_LogCfg(cfg,api); }
 	else
-	{ dlog(LOGRND, "  Received:  FAILED\n"); return FALSE; }
+	{ dlog(LOGRND, L"  Received:  FAILED\n"); return FALSE; }
 	return ok;
 	unguard();
 }
@@ -424,7 +424,7 @@ BOOL R9_FilterCfg( r9Cfg& cfg, int &api )
 void R9_LogCfg( r9Cfg& cfg, int api )
 {
 	guard(R9_LogCfg);
-	dlog(LOGRND,"%s %s %ix%i %ibpp %iHz%s\n", 
+	dlog(LOGRND, L"%S %S %ix%i %ibpp %iHz%S\n", 
 		api?"OpenGL":"DirectX",
 		cfg.m_windowed?"windowed":"full-screen",
 		cfg.m_width, cfg.m_height,
@@ -442,7 +442,7 @@ void R9_DoneInterface()
 	sfree(r9DisplayModes);
 	r9DisplayModes = NULL;
 	r9DisplayModesCount = 0;
-	dlog(LOGRND, "Render done interface.\n");
+	dlog(LOGRND, L"Render done interface.\n");
 	unguard();
 }
 
@@ -450,7 +450,7 @@ BOOL R9_Init( HWND hwnd, r9Cfg* cfg, int api )
 {
 	guard(R9_Init);
 	if(r9_render) return TRUE;
-	dlog(LOGRND, "Render init (api=%i).\n",api);
+	dlog(LOGRND, L"Render init (api=%i).\n",api);
 	r9_render = R9_CreateRender(api);
 	if(!r9_render) return FALSE;
 	if(!r9_render->Init(hwnd, cfg))
@@ -472,7 +472,7 @@ void R9_Done()
 	r9_render->UnloadDll();
 	sdelete(r9_render);
 	r9_render = NULL;
-	dlog(LOGRND, "Render done.\n");
+	dlog(LOGRND, L"Render done.\n");
 	unguard();
 }
 

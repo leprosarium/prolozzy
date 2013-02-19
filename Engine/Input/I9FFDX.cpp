@@ -75,7 +75,7 @@ BOOL i9FFDX::Init( IDirectInputDevice8* didevice, int type )
 	return TRUE;
 
 	error:
-	dlog(LOGINP,"INPUT: FFX not supported.");
+	dlog(LOGINP, L"INPUT: FFX not supported.");
 	return FALSE;
 	unguard();
 }

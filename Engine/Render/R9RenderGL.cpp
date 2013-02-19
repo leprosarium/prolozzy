@@ -9,7 +9,7 @@
 #pragma comment( lib, "opengl32.lib" )
 #endif
 
-#define R9_LOGERROR( prefix )	dlog( LOGERR, "RENDER: %s\n", prefix );
+#define R9_LOGERROR( prefix )	dlog( LOGERR, L"RENDER: %S\n", prefix );
 
 r9RenderGL::twglCreateContext		r9RenderGL::m_wglCreateContext		= NULL;
 r9RenderGL::twglMakeCurrent			r9RenderGL::m_wglMakeCurrent		= NULL;		
@@ -198,14 +198,14 @@ void r9RenderGL::LogAdapterInfo()
 		if(!EnumDisplayDevices(NULL,i,&dd,0)) break;
 		if(!(dd.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE)) continue; // ignore other devices
 
-		dlog(LOGRND, "Video adapter #%i info:\n", i);
-		dlog(LOGRND, "  device name = %s\n", dd.DeviceName);
-		dlog(LOGRND, "  device string = %s\n", dd.DeviceString);
-		dlog(LOGRND, "  device flags = %x\n", dd.StateFlags);
+		dlog(LOGRND, L"Video adapter #%i info:\n", i);
+		dlog(LOGRND, L"  device name = %S\n", dd.DeviceName);
+		dlog(LOGRND, L"  device string = %S\n", dd.DeviceString);
+		dlog(LOGRND, L"  device flags = %x\n", dd.StateFlags);
 		return;
 	}
 
-	dlog(LOGRND, "Video adapter unknown.");
+	dlog(LOGRND, L"Video adapter unknown.");
 	unguard();
 }
 
@@ -287,10 +287,10 @@ int r9RenderGL::GatherDisplayModes( r9DisplayMode* displaymode )
 	// log
 	if(displaymode)
 	{
-		dlog(LOGRND,"Display modes:\n");
+		dlog(LOGRND, L"Display modes:\n");
 		for(int i=0;i<count;i++)
-			dlog(LOGRND,"   %i \t%ix%i \t%ibpp \t%iHz \t%s\n", i, displaymode[i].m_width, displaymode[i].m_height, displaymode[i].m_bpp, displaymode[i].m_refresh, displaymode[i].m_windowed?"windowed":"");
-		dlog(LOGRND,"\n");
+			dlog(LOGRND, L"   %i \t%ix%i \t%ibpp \t%iHz \t%S\n", i, displaymode[i].m_width, displaymode[i].m_height, displaymode[i].m_bpp, displaymode[i].m_refresh, displaymode[i].m_windowed?"windowed":"");
+		dlog(LOGRND, L"\n");
 	}
 
 	return count;
@@ -645,7 +645,7 @@ void r9RenderGL::Present()
 BOOL r9RenderGL::ToggleVideoMode()
 {
 	guard(r9RenderGL::ToggleVideoMode);
-	dlog(LOGRND,"Toggle video mode: ");
+	dlog(LOGRND, L"Toggle video mode: ");
 	BOOL ok = FALSE;
 	if(!m_cfg.m_windowed) // change to windowed
 	{
@@ -669,7 +669,7 @@ BOOL r9RenderGL::ToggleVideoMode()
 		m_cfg.m_windowed = !m_cfg.m_windowed;
 		PrepareParentWindow();
 	}
-	dlog(LOGRND,ok?"successful\n":"failed\n");
+	dlog(LOGRND,ok? L"successful\n" : L"failed\n");
 	return ok;
 	unguard();
 }
@@ -776,7 +776,7 @@ BOOL r9RenderGL::SaveScreenShot( fRect* rect, BOOL full )
 	R9_ImgSaveFile(file,&img);
 	R9_ImgDestroy(&img);
 	
-	dlog(LOGRND,"ScreenShot saved!\n");
+	dlog(LOGRND, L"ScreenShot saved!\n");
 
 	return TRUE;
 	unguard()
@@ -787,8 +787,8 @@ BOOL r9RenderGL::TakeScreenShot( r9Img* img, fRect* rect, BOOL full )
 	guard(r9RenderGL::TakeScreenShot)
 
 	if(img==NULL) return FALSE;
-	if( IsBeginEndScene() ) { dlog(LOGRND, "ScreenShot can not be taken inside Begin - End frame.\n"); return FALSE; }
-	if( m_cfg.m_bpp!=32 ) 	{ dlog(LOGRND, "ScreenShot can be taken only in 32bit modes.\n"); return FALSE; }
+	if( IsBeginEndScene() ) { dlog(LOGRND, L"ScreenShot can not be taken inside Begin - End frame.\n"); return FALSE; }
+	if( m_cfg.m_bpp!=32 ) 	{ dlog(LOGRND, L"ScreenShot can be taken only in 32bit modes.\n"); return FALSE; }
 
 	R9_ImgDestroy(img);
 
@@ -900,7 +900,7 @@ BOOL r9RenderGL::CreateRenderWindow()
 	wcex.lpszClassName	= "E9_RNDCLASS";
 	wcex.hIconSm		= NULL;	// use small icon from default icon
 	BOOL ok = RegisterClassEx(&wcex);
-	if(!ok) { dlog(LOGERR, "APP: failed to register render window class (%i).\n",GetLastError()); return FALSE; }
+	if(!ok) { dlog(LOGERR, L"APP: failed to register render window class (%i).\n",GetLastError()); return FALSE; }
 
 	// create child window
 	int style = WS_CHILD | WS_VISIBLE;
@@ -915,7 +915,7 @@ BOOL r9RenderGL::CreateRenderWindow()
 								rec.left, rec.top, rec.right-rec.left, rec.bottom-rec.top, 
 								hwnd_parent, NULL, E9_GetHINSTANCE(), 
 								NULL );
-	if(m_hwnd==NULL) { dlog(LOGERR, "RENDER: failed to create render window (%i).\n",GetLastError()); return FALSE; }
+	if(m_hwnd==NULL) { dlog(LOGERR, L"RENDER: failed to create render window (%i).\n",GetLastError()); return FALSE; }
 
 	return TRUE;
 
@@ -930,7 +930,7 @@ BOOL r9RenderGL::DestroyRenderWindow()
 		DestroyWindow(m_hwnd); 
 		m_hwnd=NULL; 
 	}
-	if(!UnregisterClass("E9_RNDCLASS",E9_GetHINSTANCE())) { dlog(LOGERR,"RENDER: can't unregister window class."); }
+	if(!UnregisterClass("E9_RNDCLASS",E9_GetHINSTANCE())) { dlog(LOGERR, L"RENDER: can't unregister window class."); }
 	return TRUE;
 	unguard();
 }
@@ -977,7 +977,7 @@ void r9RenderGL::PrepareParentWindow()
 	}
 	RECT r;
 	GetWindowRect(hwnd,&r);
-	dlog(LOGRND,"window size %ix%i\n",r.right-r.left,r.bottom-r.top);
+	dlog(LOGRND, L"window size %ix%i\n",r.right-r.left,r.bottom-r.top);
 	unguard();
 }
 

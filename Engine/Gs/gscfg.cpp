@@ -10,7 +10,7 @@ void gslog(const char *fmt, ...)
 	va_list	args;
 	va_start(args, fmt);
 	// gslogv(fmt, args); // primitive log
-	D9_LogPrintV(LOGGS,fmt,args);
+//	D9_LogPrintV(LOGGS,fmt,args);
 	va_end(args);
 	unguard()
 }

@@ -9,7 +9,7 @@
 #define I9_JOYSTICK_BUFFERSIZE	64
 
 #define I9_DI					(((i9InputDX*)i9_input)->m_di)
-#define I9_LOGERROR( prefix )	dlog( LOGINP, "INPUT: %s (%s)\n", prefix, ((i9InputDX*)i9_input)->ErrorDesc(err) );
+#define I9_LOGERROR( prefix )	dlog( LOGINP, L"INPUT: %S (%S)\n", prefix, ((i9InputDX*)i9_input)->ErrorDesc(err) );
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // DEVICE
@@ -150,7 +150,7 @@ void i9DeviceDXKeyboard::Update()
 	{
 		if( err==DIERR_INPUTLOST )
 		{
-			dlog(LOGINP, "Input lost\n");
+			dlog(LOGINP, L"Input lost\n");
 			Acquire();
 			return;
 		}
@@ -247,7 +247,7 @@ void i9DeviceDXMouse::Update()
 	{
 		if( err==DIERR_INPUTLOST )
 		{
-			dlog(LOGINP, "Input lost\n");
+			dlog(LOGINP, L"Input lost\n");
 			Acquire();
 			return;
 		}
@@ -556,7 +556,7 @@ BOOL CALLBACK EnumJoystickObjectsCallback( LPCDIDEVICEOBJECTINSTANCE dideviceoi,
 			_this->m_keyavail[I9_JOY_BUTTONS + idx*4 + i] = 1;
 	}
 
-	dlog(LOGINP, "  DeviceObject: idx=%2d, name=%s, ofs=%d\n", idx, dideviceoi->tszName, dideviceoi->dwOfs);
+	dlog(LOGINP, L"  DeviceObject: idx=%2d, name=%S, ofs=%d\n", idx, dideviceoi->tszName, dideviceoi->dwOfs);
 	return DIENUM_CONTINUE;
 	unguard();
 }

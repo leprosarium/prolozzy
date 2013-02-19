@@ -128,7 +128,7 @@ bool cDizSound::SampleLoadFile( const char* filepath, int group )
 	if(ret==0) 
 	{ 
 		m_sample_fail++; 
-		dlog(LOGAPP, "! %s (bad name)\n", filepath); 
+		dlog(LOGAPP, L"! %S (bad name)\n", filepath); 
 		return false; 
 	}
 	if(instances<1) instances=1;
@@ -141,7 +141,7 @@ bool cDizSound::SampleLoadFile( const char* filepath, int group )
 	{
 		m_sample_fail++;
 		m_sample_duplicates++;
-		dlog(LOGSYS, "! %s (duplicate id)\n", filepath, id);
+		dlog(LOGSYS, L"! %S (duplicate id)\n", filepath, id);
 		return false;
 	}
 
@@ -150,7 +150,7 @@ bool cDizSound::SampleLoadFile( const char* filepath, int group )
 	if(!bufferproto)
 	{
 		m_sample_fail++;
-		dlog(LOGSYS, "! %s (failed to load)\n", filepath);
+		dlog(LOGSYS, L"! %S (failed to load)\n", filepath);
 		return false;
 	}
 
@@ -159,7 +159,7 @@ bool cDizSound::SampleLoadFile( const char* filepath, int group )
 	m_sampleproto.Add(proto);
 
 	if(IS_DEVELOPER()) // log for developers
-		dlog(LOGAPP, "  %s [%i]\n", filepath, instances );
+		dlog(LOGAPP, L"  %S [%i]\n", filepath, instances );
 
 	return true;
 	unguard()
@@ -176,7 +176,7 @@ void FFCallback_Sample( const char* filepath, BOOL dir )
 bool cDizSound::SampleLoad( const char* path, int group )
 {
 	guard(cDizSound::SampleLoad)
-	if(!A9_IsReady()) { dlog(LOGAPP,"Sound disabled - no samples are loaded.\n"); return false; }
+	if(!A9_IsReady()) { dlog(LOGAPP, L"Sound disabled - no samples are loaded.\n"); return false; }
 
 	if(!path || !path[0]) return false; // invalid path
 	char spath[256];
@@ -185,7 +185,7 @@ bool cDizSound::SampleLoad( const char* path, int group )
 	int szlen = (int)strlen(spath);
 	if(spath[szlen-1]!='\\') strcat(spath,"\\");
 	_strlwr(spath);
-	dlog(LOGAPP,"Loading samples from \"%s\" (group=%i)\n", spath, group);
+	dlog(LOGAPP, L"Loading samples from \"%S\" (group=%i)\n", spath, group);
 
 	// init
 	m_sample_total		= 0;
@@ -212,7 +212,7 @@ bool cDizSound::SampleLoad( const char* path, int group )
 	}
 
 	// report
-	dlog(LOGAPP, "Samples report: total=%i, failed=%i (duplicates=%i)\n\n", m_sample_total, m_sample_fail, m_sample_duplicates );
+	dlog(LOGAPP, L"Samples report: total=%i, failed=%i (duplicates=%i)\n\n", m_sample_total, m_sample_fail, m_sample_duplicates );
 
 	return true;
 	unguard()
@@ -345,7 +345,7 @@ bool cDizSound::MusicLoadFile( const char* filepath, int group )
 	{
 		m_music_fail++;
 		m_music_duplicates++;
-		dlog(LOGSYS, "! %s (duplicate id)\n", filepath, id);
+		dlog(LOGSYS, L"! %S (duplicate id)\n", filepath, id);
 		return false;
 	}
 
@@ -354,7 +354,7 @@ bool cDizSound::MusicLoadFile( const char* filepath, int group )
 	if(!stream)
 	{
 		m_music_fail++;
-		dlog(LOGSYS, "! %s (failed to load)\n", filepath);
+		dlog(LOGSYS, L"! %S (failed to load)\n", filepath);
 		return false;
 	}
 
@@ -363,7 +363,7 @@ bool cDizSound::MusicLoadFile( const char* filepath, int group )
 	m_musicproto.Add(proto);
 
 	if(IS_DEVELOPER()) // log for developers
-		dlog(LOGAPP, "  %s\n", filepath );
+		dlog(LOGAPP, L"  %S\n", filepath );
 
 	return true;
 	unguard()
@@ -380,7 +380,7 @@ void FFCallback_Music( const char* filepath, BOOL dir )
 bool cDizSound::MusicLoad( const char* path, int group )
 {
 	guard(cDizSound::MusicLoad)
-	if(!A9_IsReady()) { dlog(LOGAPP,"Sound disabled - no musics are loaded.\n"); return false; }
+	if(!A9_IsReady()) { dlog(LOGAPP, L"Sound disabled - no musics are loaded.\n"); return false; }
 
 	if(!path || !path[0]) return false; // invalid path
 	char spath[256];
@@ -389,7 +389,7 @@ bool cDizSound::MusicLoad( const char* path, int group )
 	int szlen = (int)strlen(spath);
 	if(spath[szlen-1]!='\\') strcat(spath,"\\");
 	_strlwr(spath);
-	dlog(LOGAPP,"Loading musics from \"%s\" (group=%i)\n", spath, group);
+	dlog(LOGAPP, L"Loading musics from \"%S\" (group=%i)\n", spath, group);
 
 	// init
 	m_music_total		= 0;
@@ -416,7 +416,7 @@ bool cDizSound::MusicLoad( const char* path, int group )
 	}
 
 	// report
-	dlog(LOGAPP, "Music report: total=%i, failed=%i (duplicates=%i)\n\n", m_music_total, m_music_fail, m_music_duplicates );
+	dlog(LOGAPP, L"Music report: total=%i, failed=%i (duplicates=%i)\n\n", m_music_total, m_music_fail, m_music_duplicates );
 
 	return true;
 	unguard()

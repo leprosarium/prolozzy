@@ -74,6 +74,9 @@ public:
   PlAtom(const char *text)
   { handle = PL_new_atom(text);
   }
+  PlAtom(LPCWSTR text)
+  { handle = PL_new_atom_wchars(wcslen(text), text);
+  }
   PlAtom(const PlTerm &t);
 
   operator const char *(void)

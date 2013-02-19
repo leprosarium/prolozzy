@@ -14,7 +14,7 @@
 #endif
 #endif
 
-#define R9_LOGERROR( prefix, hr )	dlog( LOGERR, "RENDER: %s (%x)\n", prefix, hr );
+#define R9_LOGERROR( prefix, hr )	dlog( LOGERR, L"RENDER: %S (%x)\n", prefix, hr );
 
 r9RenderDX::tDirect3DCreate9 r9RenderDX::m_Direct3DCreate9 = NULL;
 
@@ -128,10 +128,10 @@ int r9RenderDX::GatherDisplayModes( r9DisplayMode* displaymode )
 
 	if(displaymode==NULL)
 	{
-		dlog(LOGRND, "Video adapter info:\n");
-		dlog(LOGRND, "  driver      = %s\n", (d3dadapter.Driver)?(d3dadapter.Driver):"NONE");
-		dlog(LOGRND, "  description = %s\n", (d3dadapter.Description)?(d3dadapter.Description):"NONE");
-		dlog(LOGRND, "  version     = p%i v%i.%i b%i\n", dvProduct, dvVersion, dvSubVersion, dvBuild );
+		dlog(LOGRND, L"Video adapter info:\n");
+		dlog(LOGRND, L"  driver      = %S\n", (d3dadapter.Driver)?(d3dadapter.Driver):"NONE");
+		dlog(LOGRND, L"  description = %S\n", (d3dadapter.Description)?(d3dadapter.Description):"NONE");
+		dlog(LOGRND, L"  version     = p%i v%i.%i b%i\n", dvProduct, dvVersion, dvSubVersion, dvBuild );
 	}
 
 	// caps
@@ -198,10 +198,10 @@ int r9RenderDX::GatherDisplayModes( r9DisplayMode* displaymode )
 	// log
 	if(displaymode)
 	{
-		dlog(LOGRND,"Display modes:\n");
+		dlog(LOGRND, L"Display modes:\n");
 		for(int i=0;i<count;i++)
-			dlog(LOGRND,"   %i \t%ix%i \t%ibpp \t%iHz \t%s\n", i, displaymode[i].m_width, displaymode[i].m_height, displaymode[i].m_bpp, displaymode[i].m_refresh, displaymode[i].m_windowed?"windowed":"");
-		dlog(LOGRND,"\n");
+			dlog(LOGRND, L"   %i \t%ix%i \t%ibpp \t%iHz \t%S\n", i, displaymode[i].m_width, displaymode[i].m_height, displaymode[i].m_bpp, displaymode[i].m_refresh, displaymode[i].m_windowed?"windowed":"");
+		dlog(LOGRND, L"\n");
 	}
 
 	return count;
@@ -644,7 +644,7 @@ BOOL r9RenderDX::ToggleVideoMode()
 {
 	guard(r9RenderDX::ToggleVideoMode);
 	if(m_d3dd->TestCooperativeLevel()!=D3D_OK ) return FALSE;
-	dlog(LOGRND, "Toggle video mode.\n");
+	dlog(LOGRND, L"Toggle video mode.\n");
 
 	m_cfg.m_windowed = !m_cfg.m_windowed;
 	PrepareWindow(); // prepare for setting style
@@ -763,7 +763,7 @@ BOOL r9RenderDX::SaveScreenShot( fRect* rect, BOOL full )
 	R9_ImgSaveFile(file,&img);
 	R9_ImgDestroy(&img);
 	
-	dlog(LOGRND,"ScreenShot saved!\n");
+	dlog(LOGRND, L"ScreenShot saved!\n");
 	return TRUE;
 	unguard()
 }
@@ -774,8 +774,8 @@ BOOL r9RenderDX::TakeScreenShot( r9Img* img, fRect* rect, BOOL full )
 	HRESULT	hr;
 
 	if(img==NULL) return FALSE;
-	if( IsBeginEndScene() ) { dlog(LOGRND, "ScreenShot can not be taken inside Begin - End frame.\n"); return FALSE; }
-	if( m_cfg.m_bpp!=32 ) 	{ dlog(LOGRND, "ScreenShot can be taken only in 32bit modes.\n"); return FALSE; }
+	if( IsBeginEndScene() ) { dlog(LOGRND, L"ScreenShot can not be taken inside Begin - End frame.\n"); return FALSE; }
+	if( m_cfg.m_bpp!=32 ) 	{ dlog(LOGRND, L"ScreenShot can be taken only in 32bit modes.\n"); return FALSE; }
 
 	int		srfw,srfh;	// surface size
 	RECT	r;			// rectangle in surface
@@ -963,7 +963,7 @@ void r9RenderDX::PrepareWindow()
 	}
 	RECT r;
 	GetWindowRect(m_hwnd,&r);
-	dlog(LOGRND,"window size %ix%i\n",r.right-r.left,r.bottom-r.top);
+	dlog(LOGRND, L"window size %ix%i\n",r.right-r.left,r.bottom-r.top);
 	unguard();
 }
 
@@ -1020,7 +1020,7 @@ BOOL r9RenderDX::D3D_CreateDevice()
 BOOL r9RenderDX::D3D_Reset()
 {
 	guard(r9RenderDX::D3D_Reset);
-	dlog(LOGRND,"RENDER: reset device.\n");
+	dlog(LOGRND, L"RENDER: reset device.\n");
 	D3DPRESENT_PARAMETERS d3dparam;
 	D3D_GetPresentParams(&d3dparam);
 	HRESULT hr = m_d3dd->Reset(&d3dparam);

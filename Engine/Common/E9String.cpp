@@ -41,6 +41,18 @@ char* sprint(char* szFormat, ...)
 	return szString;
 }
 
+LPWSTR swprint(LPCWSTR szFormat, ...)
+{
+	static WCHAR		szString[1024];
+	va_list			vaArg;
+	
+	va_start (vaArg, szFormat);
+	vswprintf (szString, szFormat, vaArg);
+	va_end (vaArg);
+
+	return szString;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // cStr class
 ///////////////////////////////////////////////////////////////////////////////////////////////////

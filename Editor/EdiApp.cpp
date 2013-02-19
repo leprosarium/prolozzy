@@ -21,9 +21,9 @@ cEdiApp* cEdiApp::m_app = NULL;
 
 PREDICATE_M(core, dl, 1)
 {
-	char * msg = A1;
+	LPWSTR msg = A1;
 	dlog(LOGGS, msg);
-	dlog(LOGGS, "\n");
+	dlog(LOGGS, L"\n");
 	return true;
 }
 
@@ -113,13 +113,13 @@ cEdiApp::~cEdiApp()
 BOOL cEdiApp::Init()
 {
 	guard(cEdiApp::Init)
-	dlog(LOGAPP,"App init.\n");
+	dlog(LOGAPP, L"App init.\n");
 
 	// engine
-	if(!InitApp())	 { ERRORMESSAGE("Init app error.");   return FALSE; }
-	if(!InitFiles()) { ERRORMESSAGE("Init files error."); return FALSE; }
-	if(!InitInput()) { ERRORMESSAGE("Init input device error."); return FALSE; }
-	if(!InitVideo()) { ERRORMESSAGE("Init video device error."); return FALSE; }
+	if(!InitApp())	 { ERRORMESSAGE(L"Init app error.");   return FALSE; }
+	if(!InitFiles()) { ERRORMESSAGE(L"Init files error."); return FALSE; }
+	if(!InitInput()) { ERRORMESSAGE(L"Init input device error."); return FALSE; }
+	if(!InitVideo()) { ERRORMESSAGE(L"Init video device error."); return FALSE; }
 
 	// editor
 	g_paint.Init();
@@ -128,12 +128,10 @@ BOOL cEdiApp::Init()
 	ScriptRegister(); // register additional
 	if(!g_gui->ScriptCompile("Editor\\Scripts\\editor.gs")) 
 	{ 
-		ERRORMESSAGE("Script compiling error."); 
+		ERRORMESSAGE(L"Script compiling error."); 
 		return FALSE; 
 	}
 	g_gui->ScriptPrologDo("editor:init");
-	g_gui->ScriptDo("EDI_Init();");
-
 
 	// tools
 	m_tool[TOOL_PAINT]->Init();
@@ -142,15 +140,11 @@ BOOL cEdiApp::Init()
 	m_tool[m_toolcrt]->Switch(TRUE);
 
 	// load param
-	if(E9_AppGetStr(E9_APP_CMDLINE) && strstr(E9_AppGetStr(E9_APP_CMDLINE),"map"))
+	if(E9_AppGetStr(E9_APP_CMDLINE) && strstr(E9_AppGetStr(E9_APP_CMDLINE), "pmp"))
 	{
-		int fp = gs_findfn(g_gui->m_vm, "EDI_Load");
-		if(fp!=-1)
-		{
-			gs_pushstr(g_gui->m_vm,(char*)E9_AppGetStr(E9_APP_CMDLINE));
-			gs_runfn(g_gui->m_vm, fp, 1);
-			gs_pop(g_gui->m_vm);
-		}
+		std::ostringstream s;
+		s<< "editor:load('" << E9_AppGetStr(E9_APP_CMDLINE) << "')";
+		g_gui->ScriptPrologDo(s.str());
 	}
 
 	// accept drop files
@@ -181,7 +175,7 @@ BOOL cEdiApp::InitFiles()
 	BOOL ok = F9_Init();
 	if(!ok) return FALSE;
 	int arc = F9_ArchiveOpen("editor.pak", F9_READ | F9_ARCHIVE_PAK );
-	dlog(LOGAPP,"using editor.pak file.\n");
+	dlog(LOGAPP, L"using editor.pak file.\n");
 	return TRUE;
 	unguard();
 }
@@ -235,7 +229,7 @@ BOOL cEdiApp::InitVideo()
 	BOOL ok = R9_Init(E9_GetHWND(),&cfg,api);
 	if(!ok) // try the other api
 	{
-		dlog("RENDER: init %s (api %i) failed, try the other api.\n",api?"OpenGL":"DirectX9",api);
+		dlog(L"RENDER: init %S (api %i) failed, try the other api.\n",api?"OpenGL":"DirectX9",api);
 		ok = R9_Init(E9_GetHWND(),&cfg,!api);
 		if(!ok)	return FALSE;
 	}
@@ -273,7 +267,7 @@ void cEdiApp::Done()
 	F9_ArchiveClose(0); // close first archive if found
 	F9_Done();
 
-	dlog(LOGAPP,"App done.\n");
+	dlog(LOGAPP, L"App done.\n");
 	unguard()
 }
 
@@ -311,17 +305,28 @@ void cEdiApp::Close()
 	g_gui->m_isbusy = TRUE; // avoid tools problems
 }
 
-void cEdiApp::DropFile( char* filepath )
+void cEdiApp::DropFile( LPCWSTR filepath )
 {
 	guard(cEdiApp::DropFile);
-	sassert(filepath);
 	if(g_gui->m_isbusy) { BEEP_ERROR; return ; } // gui busy (modal dialog)
-	if(!strstr(filepath,".map")) { BEEP_ERROR; return ; } // not map
+	if(!wcsstr(filepath, L".pmp")) { BEEP_ERROR; return ; } // not map
+	
+//	for(const WCHAR * c = filepath; *c; ++c)
+//		if(*c == L'\\')
+//			*c = L'/';
 
-	int fp = gs_findfn(g_gui->m_vm, "EDI_Load"); if(fp==-1) return;
-	gs_pushstr(g_gui->m_vm,filepath);
-	gs_runfn(g_gui->m_vm, fp, 1);
-	gs_pop(g_gui->m_vm);
+	try
+	{
+		PlAtom arg = filepath;
+		PlCall("editor", "load", PlTermv(PlTerm(arg)));
+	}
+	catch(PlException const & e)
+	{
+		PlException ee(e);
+		LPCWSTR msg = static_cast<LPCWSTR>(ee);
+		dlog(L"Exception: %s", msg);
+	}
+
 
 	g_map.Update(0.0f);
 	g_map.Refresh();
@@ -658,7 +663,7 @@ int gsTileGet( gsVM* vm )
 
 PREDICATE_M(edi, tileReload, 0)
 {
-	dlog(LOGAPP,"Reload tiles ...\n");
+	dlog(LOGAPP, L"Reload tiles ...\n");
 
 	// clear old
 	g_paint.TileUnload();
@@ -672,7 +677,7 @@ PREDICATE_M(edi, tileReload, 0)
 	{
 		if(g_paint.TileLoad(tilepath)) loads++;
 	}
-	else dlog(LOGAPP,"TileDir not specified in editor.ini\n");
+	else dlog(LOGAPP, L"TileDir not specified in editor.ini\n");
 
 	return loads > 0;
 }
@@ -681,7 +686,7 @@ PREDICATE_M(edi, tileReload, 0)
 int gsTileReload( gsVM* vm )
 {
 	guard(gsTileReload)
-	dlog(LOGAPP,"Reload tiles ...\n");
+	dlog(LOGAPP, L"Reload tiles ...\n");
 
 	// clear old
 	g_paint.TileUnload();
@@ -695,7 +700,7 @@ int gsTileReload( gsVM* vm )
 	{
 		if(g_paint.TileLoad(tilepath)) loads++;
 	}
-	else dlog(LOGAPP,"TileDir not specified in editor.ini\n");
+	else dlog(LOGAPP, L"TileDir not specified in editor.ini\n");
 
 	gs_pushint(vm,loads>0);
 	return 1;
@@ -1746,10 +1751,10 @@ void cEdiApp::ScriptRegister()
 	unguard();
 }
 
-void cEdiApp::ErrorMessage( char* msg )
+void cEdiApp::ErrorMessage( LPCWSTR msg )
 {
-	dlog(LOGERR, "ERROR:\n%s\n", msg);
-	sys_msgbox( E9_GetHWND(), msg, "ERROR", MB_OK );
+	dlog(LOGERR, L"ERROR:\n%S\n", msg);
+	sys_msgbox( E9_GetHWND(), msg, L"ERROR", MB_OK );
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

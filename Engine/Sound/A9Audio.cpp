@@ -157,7 +157,7 @@ BOOL A9_Init( HWND hwnd, int api )
 {
 	guard(A9_Init);
 	if(a9_audio) return TRUE;
-	dlog(LOGSND, "Audio init (api=%i).\n",api);
+	dlog(LOGSND, L"Audio init (api=%i).\n",api);
 	a9_audio = snew a9AudioDX();
 	if(a9_audio->Init(hwnd)==A9_FAIL)
 	{
@@ -176,7 +176,7 @@ void A9_Done()
 	a9_audio->Done();
 	sdelete(a9_audio);
 	a9_audio = NULL;
-	dlog(LOGSND, "Audio done.\n");
+	dlog(LOGSND, L"Audio done.\n");
 	unguard();
 }
 

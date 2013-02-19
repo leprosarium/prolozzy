@@ -29,7 +29,7 @@ BOOL D9_HardwareBreakpoint( int idx, DWORD address, int mode, int size )
 	}
 
 	if(!SetThreadContext(thread, &context)) return FALSE;
-	dlog(LOGDBG,"HardwareBreakpoint %i = %i\n",idx,address);
+	dlog(LOGDBG, L"HardwareBreakpoint %i = %i\n",idx,address);
 	return TRUE;
 }
 

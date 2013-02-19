@@ -29,13 +29,13 @@ void d9Guard::Done()
 
 void d9Guard::MyTranslator(unsigned int nCode, EXCEPTION_POINTERS *pExp)
 {
-	dlog(LOGSYS,"TRANSLATOR:\n");
+	dlog(LOGSYS, L"TRANSLATOR:\n");
 	#ifdef D9_ENABLE_DH
 	D9_DHLogCallStack(pExp);
 	// D9_DHWriteMiniDump("dump.dmp",pExp);
 	#endif
 	D9_LogStore(TRUE);
-	LogException(pExp); dlog(LOGSYS,"\n");
+	LogException(pExp); dlog(LOGSYS, L"\n");
 	throw d9Exception();
 }
 
@@ -45,20 +45,20 @@ void d9Guard::Assert( const char* desc, const char* func, int line, const char* 
 	D9_DHLogCallStack();
 	#endif
 	D9_LogStore(TRUE);
-	dlog(LOGSYS,"ASSERT: %s\n",desc);
-	dlog(LOGSYS,"[%s; %i; %s]\n", func, line, file );
-	dlog(LOGSYS, "Choose YES to exit, NO to ignore and CANCEL to break.\n");
-	int ret = sys_msgbox( E9_GetHWND(), D9_LogGetBuffer(), "ASSERTION FAILED", MB_YESNOCANCEL|MB_ICONEXCLAMATION );
+	dlog(LOGSYS, L"ASSERT: %S\n",desc);
+	dlog(LOGSYS, L"[%S; %i; %S]\n", func, line, file );
+	dlog(LOGSYS, L"Choose YES to exit, NO to ignore and CANCEL to break.\n");
+	int ret = sys_msgbox( E9_GetHWND(), D9_LogGetBuffer(), L"ASSERTION FAILED", MB_YESNOCANCEL|MB_ICONEXCLAMATION );
 	D9_LogStore( FALSE );
 	if( ret==IDYES )	ErrorExit("Assertion Failed");
-	if( ret==IDCANCEL )	{ dlog(LOGSYS,"BREAK.\n"); DebugBreak(); }
-	dlog(LOGSYS,"CONTINUE.\n"); 
+	if( ret==IDCANCEL )	{ dlog(LOGSYS, L"BREAK.\n"); DebugBreak(); }
+	dlog(LOGSYS, L"CONTINUE.\n"); 
 }
 
 void d9Guard::ErrorExit( char* desc )
 {
 	D9_LogStore(TRUE);
-	dlog(LOGSYS,"ERROREXIT: %s\n",desc);
+	dlog(LOGSYS, L"ERROREXIT: %S\n",desc);
 	#ifdef D9_ENABLE_GUARD
 	throw d9Exception();
 	#else
@@ -69,7 +69,7 @@ void d9Guard::ErrorExit( char* desc )
 void d9Guard::Report()
 { 
 	D9_LogStore(FALSE);
-	sys_msgbox( E9_GetHWND(), D9_LogGetBuffer(), "EXCEPTION", MB_OK|MB_ICONEXCLAMATION ); 
+	sys_msgbox( E9_GetHWND(), D9_LogGetBuffer(), L"EXCEPTION", MB_OK|MB_ICONEXCLAMATION ); 
 }
 
 void d9Guard::LogException( LPEXCEPTION_POINTERS e )
@@ -107,7 +107,7 @@ void d9Guard::LogException( LPEXCEPTION_POINTERS e )
 	{
 		if(code==EXCEPTION_ACCESS_VIOLATION)
 		{
-			dlog( LOGSYS, "%s at address 0x%x (%s 0x%x)", 
+			dlog( LOGSYS, L"%S at address 0x%x (%S 0x%x)", 
 				exceptions[i].desc, 
 				(sizet)e->ExceptionRecord->ExceptionAddress,
 				e->ExceptionRecord->ExceptionInformation[0]?"write to":"read from",
@@ -115,14 +115,14 @@ void d9Guard::LogException( LPEXCEPTION_POINTERS e )
 		}
 		else
 		{
-			dlog( LOGSYS, "%s at address 0x%x", 
+			dlog( LOGSYS, L"%S at address 0x%x", 
 				exceptions[i].desc, 
 				(sizet)e->ExceptionRecord->ExceptionAddress );
 		}
 	}
 	else
 	{
-		dlog( LOGSYS, "EXCEPTION_UNKNOWN (%x) at address 0x%x", 
+		dlog( LOGSYS, L"EXCEPTION_UNKNOWN (%x) at address 0x%x", 
 			code, 
 			(sizet)e->ExceptionRecord->ExceptionAddress );
 	}

@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "i9InputDX.h"
 
-#define I9_LOGERROR( prefix )	dlog( LOGINP, "INPUT: %s (%s)\n", prefix, ErrorDesc(err) );
+#define I9_LOGERROR( prefix )	dlog( LOGINP, L"INPUT: %S (%S)\n", prefix, ErrorDesc(err) );
 
 int i9InputDX::m_tjoyidx = 0;
 int i9InputDX::m_tjoyskip = 0;
@@ -82,14 +82,14 @@ BOOL i9InputDX::DeviceInit( int device )
 		ok = m_device[device]->Init(0, &GUID_SysKeyboard);
 		if(!ok)
 		{
-			dlog(LOGINP,"Keyboard failed.\n");
+			dlog(LOGINP, L"Keyboard failed.\n");
 			m_device[device]->Done();
 			sdelete(m_device[device]);
 			m_device[device]=NULL;
 			return FALSE;
 		}
 		else
-			dlog(LOGINP, "Keyboard ok.\n");
+			dlog(LOGINP, L"Keyboard ok.\n");
 	}
 	else
 	if(device==I9_DEVICE_MOUSE)
@@ -99,14 +99,14 @@ BOOL i9InputDX::DeviceInit( int device )
 		ok = m_device[device]->Init(0, &GUID_SysMouse);
 		if(!ok)
 		{
-			dlog(LOGINP,"Mouse failed.\n");
+			dlog(LOGINP, L"Mouse failed.\n");
 			m_device[device]->Done();
 			sdelete(m_device[device]);
 			m_device[device]=NULL;
 			return FALSE;
 		}
 		else
-			dlog(LOGINP, "Mouse ok.\n");
+			dlog(LOGINP, L"Mouse ok.\n");
 	}
 	else
 	if(device==I9_DEVICE_JOYSTICK1 || device==I9_DEVICE_JOYSTICK2)
@@ -119,15 +119,15 @@ BOOL i9InputDX::DeviceInit( int device )
 		ok = DeviceIsPresent(device);
 		if(!ok) 
 		{
-			dlog(LOGINP,"Joystick %i failed.\n", device-I9_DEVICE_JOYSTICK1+1);
+			dlog(LOGINP, L"Joystick %i failed.\n", device-I9_DEVICE_JOYSTICK1+1);
 			return FALSE;
 		}
 		else
-			dlog(LOGINP, "Joystick %i ok.\n", device-I9_DEVICE_JOYSTICK1+1);
+			dlog(LOGINP, L"Joystick %i ok.\n", device-I9_DEVICE_JOYSTICK1+1);
 	}
 	else
 	{
-		dlog(LOGINP,"Unknown input device (%i).\n", device);
+		dlog(LOGINP, L"Unknown input device (%i).\n", device);
 		return FALSE;
 	}
 
@@ -237,7 +237,7 @@ BOOL CALLBACK i9InputDX::EnumJoysticksCallback( const DIDEVICEINSTANCE* didevice
 {
 	guard(i9InputDX::EnumJoysticksCallback);
 	i9InputDX* _this = (i9InputDX*)user;
-	dlog(LOGINP, "EnumJoystick: %s\n", didevicei->tszProductName);
+	dlog(LOGINP, L"EnumJoystick: %S\n", didevicei->tszProductName);
 	i9DeviceDXJoystick* pdevice = snew i9DeviceDXJoystick();
 	if( !pdevice->Init( m_tjoyidx, &didevicei->guidInstance ) )
 	{

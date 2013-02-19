@@ -266,7 +266,7 @@ static void R9_ImgPNG_FatalError( png_structp png_ptr, png_const_charp message )
 static void R9_ImgPNG_Warning( png_structp png_ptr, png_const_charp message )
 {
 	guard(R9_ImgPNG_Warning);
-	dlog(LOGRND, message);
+	dlog(LOGRND, L"%S", message);
 	unguard();
 }
 
@@ -282,7 +282,7 @@ BOOL R9_ImgReadPNG( F9FILE file, r9Img* img )
 	if(F9_FileRead( header, headersize, file )!=headersize) return FALSE;
 
 	BOOL ispng = png_check_sig(header, headersize) != 0;
-	if(!ispng) { dlog(LOGRND, "png sig failed\n"); return FALSE; }
+	if(!ispng) { dlog(LOGRND, L"png sig failed\n"); return FALSE; }
 
 	// create png structures
 	png_structp png_ptr = png_create_read_struct_2( PNG_LIBPNG_VER_STRING,
@@ -358,7 +358,7 @@ BOOL R9_ImgReadPNG( F9FILE file, r9Img* img )
 	}
 	else
 	{
-		dlog(LOGRND,"png wrong color format\n");
+		dlog(LOGRND, L"png wrong color format\n");
 		png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
 		return FALSE;
 	}
@@ -403,7 +403,7 @@ BOOL R9_ImgWritePNG( F9FILE file, r9Img* img )
 	
 	if(img->m_pf!=R9_PF_RGB && img->m_pf!=R9_PF_ARGB && img->m_pf!=R9_PF_BGR && img->m_pf!=R9_PF_ABGR )
 	{
-		dlog(LOGRND,"png format not supported\n"); return FALSE;
+		dlog(LOGRND, L"png format not supported\n"); return FALSE;
 	}
 
 	png_structp png_ptr = png_create_write_struct_2( PNG_LIBPNG_VER_STRING,
@@ -495,7 +495,7 @@ BOOL R9_ImgReadHeaderPNG( F9FILE file, r9Img* img )
 	if(F9_FileRead( header, headersize, file )!=headersize) return FALSE;
 
 	BOOL ispng = png_check_sig(header, headersize) != 0;
-	if(!ispng) { dlog(LOGRND, "png sig failed\n"); return FALSE; }
+	if(!ispng) { dlog(LOGRND, L"png sig failed\n"); return FALSE; }
 
 	// create png structures
 	png_structp png_ptr = png_create_read_struct_2( PNG_LIBPNG_VER_STRING,

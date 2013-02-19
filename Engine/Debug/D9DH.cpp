@@ -101,7 +101,7 @@ BOOL d9DH::WriteMiniDump( char* file, EXCEPTION_POINTERS *pExp, BOOL full )
 									&exinfo, 
 									NULL, NULL );
 
-	dlog(LOGSYS, "MINIDUMP %s%s (%s)\n", full?"FULL ":"", ok?"saved":"failed", file);
+	dlog(LOGSYS, L"MINIDUMP %S%S (%S)\n", full?"FULL ":"", ok?"saved":"failed", file);
 	
 	::CloseHandle(hFile);
 	return ok;
@@ -162,9 +162,9 @@ void d9DH::LogSource( DWORD addr )
 	memset(&line,0,sizeof(line));
 	line.SizeOfStruct = sizeof(line);
 	if( m_SymGetLineFromAddr( GetCurrentProcess(), addr, (PDWORD)&displacement, &line ) )
-		dlog(LOGSYS, "%s(%d)", line.FileName, line.LineNumber );
+		dlog(LOGSYS, L"%S(%d)", line.FileName, line.LineNumber );
 	else
-		dlog(LOGSYS, "?");
+		dlog(LOGSYS, L"?");
 }
 
 void d9DH::LogSymbol( DWORD addr )

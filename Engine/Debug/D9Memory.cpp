@@ -163,7 +163,7 @@ void d9Memory::Free( void* addr, const char* file, int line, const char *func )
 
 	if(addr==NULL)
 	{
-		dlog( LOGSYS, "Free NULL pointer [%s; %d; %s]\n", func, line, file );
+		dlog( LOGSYS, L"Free NULL pointer [%S; %d; %S]\n", func, line, file );
 		sys_releasesemaphore(m_semaphore);
 		return;
 	}
@@ -171,7 +171,7 @@ void d9Memory::Free( void* addr, const char* file, int line, const char *func )
 	#ifdef D9_ENABLE_MEMORYCHECK
 	if( IsBadReadPtr(addr, 1) || IsBadWritePtr(addr, 1) )
 	{
-		dlog( LOGSYS, "Free inaccesible pointer [%s; %d; %s]\n", func, line, file );
+		dlog( LOGSYS, L"Free inaccesible pointer [%S; %d; %S]\n", func, line, file );
 		sys_releasesemaphore(m_semaphore);
 		errorexit("Free inaccesible pointer");
 		return;
@@ -249,7 +249,7 @@ void d9Memory::Delete( void* addr, const char* file, int line, const char* func 
 
 	if(addr==NULL) 
 	{ 
-		dlog( LOGSYS, "Delete NULL pointer [%s; %d; %s]\n", func, line, file ); 
+		dlog( LOGSYS, L"Delete NULL pointer [%S; %d; %S]\n", func, line, file ); 
 		sys_releasesemaphore(m_semaphore); 
 		return; 
 	}
@@ -257,7 +257,7 @@ void d9Memory::Delete( void* addr, const char* file, int line, const char* func 
 	#ifdef D9_ENABLE_MEMORYCHECK
 	if( IsBadReadPtr(addr, 1) || IsBadWritePtr(addr, 1) )
 	{
-		dlog( LOGSYS, "Delete inaccesible pointer [%s; %d; %s]\n", func, line, file );
+		dlog( LOGSYS, L"Delete inaccesible pointer [%S; %d; %S]\n", func, line, file );
 		sys_releasesemaphore(m_semaphore);
 		errorexit("Delete inaccesible pointer");
 		return;
@@ -364,15 +364,15 @@ BOOL d9Memory::TrackDel( void* addr, int size, const char* file, int line, const
 	
 	if(n==NULL) // not found
 	{
-		dlog( LOGSYS, "Releasing unregistered (or released) pointer [%s; %i; %s]\n", func, line, file );
+		dlog( LOGSYS, L"Releasing unregistered (or released) pointer [%S; %i; %S]\n", func, line, file );
 		return FALSE;
 	}
 
 	if( size!=n->m_size || mode!=n->m_mode )
 	{
-		dlog( LOGSYS, "Releasing pointer that don't match:   "
-			"THIS: [%s; %d; %s] size=%d, mode=%d   "
-			"TRACK:[%s; %d; %s] size=%d, mode=%d\n",
+		dlog( LOGSYS, L"Releasing pointer that don't match:   "
+			L"THIS: [%s; %d; %s] size=%d, mode=%d   "
+			L"TRACK:[%s; %d; %s] size=%d, mode=%d\n",
 			func, line, file, size, mode,
 			n->m_func, n->m_line, n->m_file, n->m_size, n->m_mode );
 	}
@@ -405,8 +405,8 @@ void d9Memory::Report( BOOL full )
 	leakcount = (m_countMalloc-m_countFree) + (m_countNew-m_countDelete);
 	#endif
 
-	dlog(LOGDBG, "----------------------------------------------------------------------\n");
-	dlog(LOGDBG, "MEMORY REPORT  (%i Kb used)\n", m_totalMax/1024 );
+	dlog(LOGDBG, L"----------------------------------------------------------------------\n");
+	dlog(LOGDBG, L"MEMORY REPORT  (%i Kb used)\n", m_totalMax/1024 );
 
 	if( full && leakcount>0 )
 	{
@@ -434,9 +434,9 @@ void d9Memory::Report( BOOL full )
 
 		if(count>0)
 		{
-			dlog( LOGDBG, "There are %d memory blocks registered.\n", count );
-			dlog( LOGDBG, "----------------------------------------------------------------------\n" );
-			dlog( LOGDBG, "%4s NEW %8s %8s %12s %20s %8s %40s %16s\n", "NO", "ADDR", "ID", "SIZE", "FUNC", "LINE", "FILE", "CONTENT" );
+			dlog( LOGDBG, L"There are %d memory blocks registered.\n", count );
+			dlog( LOGDBG, L"----------------------------------------------------------------------\n" );
+			dlog( LOGDBG, L"%4s NEW %8s %8s %12s %20s %8s %40s %16s\n", "NO", "ADDR", "ID", "SIZE", "FUNC", "LINE", "FILE", "CONTENT" );
 
 
 			for( i=0; i<count; i++ )
@@ -475,7 +475,7 @@ void d9Memory::Report( BOOL full )
 				long blockid=-1;
 				if(!_CrtIsMemoryBlock( blocks[i]->m_addr, (dword)_msize(blocks[i]->m_addr), &blockid, NULL, NULL )) blockid=-1;
 
-				dlog(LOGDBG, "%4d  %c  %08x %8x %12d %20s %8d %40s %16s ", 
+				dlog(LOGDBG, L"%4d  %C  %08x %8x %12d %20s %8d %40s %16s ", 
 					i+1,
 					blocks[i]->m_mode ? '*' : ' ',
 					blocks[i]->m_addr,
@@ -486,33 +486,33 @@ void d9Memory::Report( BOOL full )
 					blocks[i]->m_file,
 					content);
 
-				dlog(LOGDBG, "\n");
+				dlog(LOGDBG, L"\n");
 			}
 		}
 		else
 		{
-			dlog(LOGDBG, "There are no memory blocks registered.\n");
+			dlog(LOGDBG, L"There are no memory blocks registered.\n");
 		}
 	
 		free(blocks);
 		#endif
 
 		#ifdef D9_ENABLE_MEMORYCOUNT
-		dlog(LOGDBG, "----------------------------------------------------------------------\n");
-		dlog(LOGDBG, "size             = %d = %d (malloc) + %d (new)\n", m_total, m_totalMalloc, m_totalNew );
-		dlog(LOGDBG, "calls            = %d (malloc) / %d (free)\n", m_countMalloc, m_countFree);
-		dlog(LOGDBG, "calls            = %d (new) / %d (delete)\n", m_countNew, m_countDelete);
+		dlog(LOGDBG, L"----------------------------------------------------------------------\n");
+		dlog(LOGDBG, L"size             = %d = %d (malloc) + %d (new)\n", m_total, m_totalMalloc, m_totalNew );
+		dlog(LOGDBG, L"calls            = %d (malloc) / %d (free)\n", m_countMalloc, m_countFree);
+		dlog(LOGDBG, L"calls            = %d (new) / %d (delete)\n", m_countNew, m_countDelete);
 		#endif
 	}
 
 	// basic report
 	if(leakcount>0)
 	{
-		dlog( LOGDBG, "----------------------------------------------------------------------\n");
-		dlog( LOGSYS, "%-8i                                      MEMORY LEAKS DETECTED :(\n", leakcount);
+		dlog( LOGDBG, L"----------------------------------------------------------------------\n");
+		dlog( LOGSYS, L"%-8i                                      MEMORY LEAKS DETECTED :(\n", leakcount);
 	}
 
-	dlog( LOGDBG, "----------------------------------------------------------------------\n");
+	dlog( LOGDBG, L"----------------------------------------------------------------------\n");
 
 	unguardfast();
 }

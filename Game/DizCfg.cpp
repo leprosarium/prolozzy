@@ -86,7 +86,7 @@ void cDizCfg::Init()
 	Load(); Save();
 	// read info file
 	F9FILE f = F9_FileOpen("Data\\dizzy.inf");
-	if(!f) { dlog(LOGAPP, "dizzy.inf not found\n"); return; }
+	if(!f) { dlog(LOGAPP, L"dizzy.inf not found\n"); return; }
 	int size = F9_FileSize(f);
 	if(size==0) { F9_FileClose(f); return; }
 	m_info = (char*)smalloc(size+1); m_info[size]=0;

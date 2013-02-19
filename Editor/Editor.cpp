@@ -84,9 +84,9 @@ int AppOnMsg()
 	{
 	case WM_DROPFILES:
 	{
-		char filepath[MAX_PATH];
-		if(DragQueryFile((HDROP)wparam, 0xFFFFFFFF, NULL, 0)<1) return 0; // count
-		if(DragQueryFile((HDROP)wparam, 0, filepath, MAX_PATH)==0) return 0; // error
+		WCHAR filepath[MAX_PATH];
+		if(DragQueryFileW((HDROP)wparam, 0xFFFFFFFF, NULL, 0)<1) return 0; // count
+		if(DragQueryFileW((HDROP)wparam, 0, filepath, MAX_PATH)==0) return 0; // error
 		g_ediapp->DropFile( filepath );
 		break;
 	}

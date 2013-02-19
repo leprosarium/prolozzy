@@ -127,7 +127,7 @@ void i9Input::PushKey( int key, BOOL value )
 	// que buffer
 	if( m_nkq >= I9_QUEUESIZE )
 	{
-		dlog(LOGINP, "INPUT: Key que full - input lost.\n" );
+		dlog(LOGINP, L"INPUT: Key que full - input lost.\n" );
 		return;
 	}
 
@@ -498,7 +498,7 @@ BOOL I9_Init( HWND hwnd, HINSTANCE hinstance, int api )
 {
 	guard(I9_Init);
 	if(i9_input) return TRUE;
-	dlog(LOGINP, "Input init (api=%i).\n",api);
+	dlog(LOGINP, L"Input init (api=%i).\n",api);
 	// test api here if more platformes
 	i9_input = snew i9InputDX();
 	BOOL ok = i9_input->Init( hwnd, hinstance );
@@ -519,7 +519,7 @@ void I9_Done()
 	i9_input->Done();
 	sdelete(i9_input);
 	i9_input = NULL;
-	dlog(LOGINP, "Input done.\n");
+	dlog(LOGINP, L"Input done.\n");
 	unguard();
 }
 

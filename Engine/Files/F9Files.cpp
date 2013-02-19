@@ -218,7 +218,7 @@ BOOL F9_Init()
 {
 	guard(F9_Init);
 	if(f9_files) return TRUE;
-	dlog(LOGFIL, "Files init.\n");
+	dlog(LOGFIL, L"Files init.\n");
 	f9_files = snew f9Files();
 	f9_files->Init();
 	return TRUE;
@@ -232,7 +232,7 @@ void F9_Done()
 	f9_files->Done();
 	sdelete( f9_files );
 	f9_files = NULL;
-	dlog(LOGFIL, "Files done.\n");
+	dlog(LOGFIL, L"Files done.\n");
 	unguard();
 }
 

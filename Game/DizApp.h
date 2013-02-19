@@ -30,7 +30,7 @@ public:
 		bool	Update();
 		void	Draw();
 		void	DrawStats();
-static	void	ErrorMessage(const char* msg );	// error message box
+static	void	ErrorMessage(LPCWSTR msg );	// error message box
 
 public:
 		int		m_gamefps;					// game updates per second (logic fps)
@@ -40,7 +40,7 @@ private:
 		bool	m_musicwaspaused;			// if music was paused when application was deactivated
 };
 
-inline void ERRORMESSAGE(const char*  msg )	 { cDizApp::ErrorMessage( msg ); }
+inline void ERRORMESSAGE(LPCWSTR msg )	 { cDizApp::ErrorMessage( msg ); }
 
 
 #endif

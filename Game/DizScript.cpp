@@ -21,9 +21,9 @@
 
 static ssize_t Log_write(void *handle, char *buffer, size_t size)
 { 
-  int ch = reinterpret_cast<int>(handle);
-  D9_LogBuf(ch, buffer, size);
-  return size;
+	int ch = reinterpret_cast<int>(handle);
+	D9_LogBuf(ch, buffer, size);
+	return size;
 }
 
 cDizScript g_script;
@@ -111,7 +111,7 @@ void cDizScript::CallHandler(functor_t handler, const PlTermv &av )
 	catch(PlException const & e)
 	{
 		PlException ee(e);
-		dlog("Dizzy.pl 1111 not found: %s", static_cast<LPCSTR>(ee));
+		dlog(L"Dizzy.pl 1111 not found: %s", static_cast<LPCWSTR>(ee));
 	}
 
 	unguard()
@@ -627,16 +627,16 @@ PREDICATE_M(core, joystickAxe, 1)
 
 PREDICATE_M(core, dlog, 1)
 {
-	char * msg = A1;
-	dlog(LOGGS, msg);
+	LPCWSTR msg = A1;
+	dlog(LOGGS, L"%s", msg);
 	return true;
 }
 
 PREDICATE_M(core, dl, 1)
 {
-	char * msg = A1;
-	dlog(LOGGS, msg);
-	dlog(LOGGS, "\n");
+	LPCWSTR msg = A1;
+	dlog(LOGGS, L"%s", msg);
+	dlog(LOGGS, L"\n");
 	return true;
 }
 

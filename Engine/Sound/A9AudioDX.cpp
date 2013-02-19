@@ -6,7 +6,7 @@
 #include "E9Math.h"
 #include "F9Files.h"
 
-#define A9_LOGERROR( prefix )	dlog( LOGSND, "AUDIO: %s (%s)\n", prefix, ErrorDesc(hr) );
+#define A9_LOGERROR( prefix )	dlog( LOGSND, L"AUDIO: %S (%S)\n", prefix, ErrorDesc(hr) );
 
 a9StreamDX::a9StreamDX()
 {

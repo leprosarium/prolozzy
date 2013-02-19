@@ -51,14 +51,14 @@ cDizApp::cDizApp()
 bool cDizApp::Init()
 {
 	guard(cDizApp::Init);
-	dlog(LOGAPP,"App init.\n");
+	dlog(LOGAPP, L"App init.\n");
 	
 	// engine
-	if(!InitApp())	 { ERRORMESSAGE("Init app error.");   return false; }
-	if(!InitFiles()) { ERRORMESSAGE("Init files error."); return false; }
-	if(!InitInput()) { ERRORMESSAGE("Init input device error."); return false; }
-	if(!InitAudio()) { ERRORMESSAGE("Init audio device error."); } // allow to run without audio
-	if(!InitVideo()) { ERRORMESSAGE("Init video device error."); return false; }
+	if(!InitApp())	 { ERRORMESSAGE(L"Init app error.");   return false; }
+	if(!InitFiles()) { ERRORMESSAGE(L"Init files error."); return false; }
+	if(!InitInput()) { ERRORMESSAGE(L"Init input device error."); return false; }
+	if(!InitAudio()) { ERRORMESSAGE(L"Init audio device error."); } // allow to run without audio
+	if(!InitVideo()) { ERRORMESSAGE(L"Init video device error."); return false; }
 
 	// game init
 	g_cfg.Init();
@@ -66,7 +66,7 @@ bool cDizApp::Init()
 	g_paint.Init();
 	g_game.Init();
 	g_sound.Init();
-	if(!g_script.Init()) { ERRORMESSAGE("Script compiling error."); return false; }
+	if(!g_script.Init()) { ERRORMESSAGE(L"Script compiling error."); return false; }
 
 	// game start
 	g_game.Start();
@@ -97,9 +97,9 @@ bool cDizApp::InitFiles()
 	const char* pakfile = GetPakFile();
 	int arc = F9_ArchiveOpen(pakfile, F9_READ | F9_ARCHIVE_PAK );
 	if(arc==-1)
-		dlog(LOGAPP,"Pak archive %s not found, running from data folder.\n",pakfile);
+		dlog(LOGAPP, L"Pak archive %S not found, running from data folder.\n",pakfile);
 	else
-		dlog(LOGAPP,"Pak archive %s opened, data folder is ignored.\n",pakfile);
+		dlog(LOGAPP, L"Pak archive %S opened, data folder is ignored.\n",pakfile);
 	return true;
 	unguard();
 }
@@ -168,7 +168,7 @@ bool cDizApp::InitVideo()
 	BOOL ok = R9_Init(E9_GetHWND(),&cfg,api);
 	if(!ok) // try the other api
 	{
-		dlog(LOGERR,"RENDER: init %s (api %i) failed, try the other api.\n",api?"OpenGL":"DirectX9",api);
+		dlog(LOGERR, L"RENDER: init %S (api %i) failed, try the other api.\n",api?"OpenGL":"DirectX9",api);
 		ok = R9_Init(E9_GetHWND(),&cfg,!api);
 		if(!ok)	return false;
 	}
@@ -202,7 +202,7 @@ void cDizApp::Done()
 	F9_ArchiveClose(0); // close first archive if found
 	F9_Done();
 
-	dlog(LOGAPP,"App done.\n");
+	dlog(LOGAPP, L"App done.\n");
 	unguard();
 }
 
@@ -229,7 +229,7 @@ bool cDizApp::ToggleVideo()
 	guard(cDizApp::ToggleVideo);
 	if(!R9_GetCfg().m_windowed) return false; // toggle only in windowed mode (not a hw restriction though)
 
-	dlog(LOGAPP,"Toggle video.\n");
+	dlog(LOGAPP, L"Toggle video.\n");
 	int scrwidth = sys_desktopwidth();
 	int scrheight = sys_desktopheight();
 	int w = R9_GetCfg().m_width;
@@ -257,9 +257,9 @@ bool cDizApp::ToggleVideo()
 	BOOL ok = R9_Init(E9_GetHWND(),&cfg,api);
 	if(!ok) // try to go back
 	{
-		dlog(LOGERR,"RENDER: re-init failed; trying to restore original cfg.\n");
+		dlog(LOGERR, L"RENDER: re-init failed; trying to restore original cfg.\n");
 		g_cfg.LoadRenderCfg(cfg,api);
-		if(!R9_Init(E9_GetHWND(),&cfg,api))	{ dlog(LOGERR, "RENDER: critical error!\n"); return false; }
+		if(!R9_Init(E9_GetHWND(),&cfg,api))	{ dlog(LOGERR, L"RENDER: critical error!\n"); return false; }
 	}
 
 	g_cfg.m_scale = 0; // full scale
@@ -343,13 +343,13 @@ bool cDizApp::Update()
 			{
 				volume = A9_VolumeDecibelToPercent( A9_Get(A9_MASTERVOLUME) );
 				vol = 0;
-				dlog(LOGAPP,"sound off\n");
+				dlog(LOGAPP, L"sound off\n");
 			}
 			else
 			{
 				vol = volume;
 				volume = -1;
-				dlog(LOGAPP,"sound on\n");
+				dlog(LOGAPP, L"sound on\n");
 			}
 			A9_Set(A9_MASTERVOLUME, A9_VolumePercentToDecibel(vol) );
 		}
@@ -405,10 +405,10 @@ void cDizApp::DrawStats()
 	unguard()
 }
 
-void cDizApp::ErrorMessage(const char* msg )
+void cDizApp::ErrorMessage(LPCWSTR msg )
 {
-	dlog(LOGERR, "DizzyAGE ERROR:\n%s\n", msg);
-	sys_msgbox( E9_GetHWND(), msg, "DizzyAGE ERROR", MB_OK );
+	dlog(LOGERR, L"DizzyAGE ERROR:\n%s\n", msg);
+	sys_msgbox( E9_GetHWND(), msg, L"DizzyAGE ERROR", MB_OK );
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

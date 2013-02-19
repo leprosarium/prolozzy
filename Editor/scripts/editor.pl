@@ -1,6 +1,7 @@
 :- module(editor, [init/0,
 		   close/0,
 		   done/0,
+		   load/1,
 		   param/3,
 		   param/2]).
 
@@ -65,9 +66,18 @@ init :-
 
 % also called on Alt+F4
 close :-
-	gui:msgBox("Question", "Do you want to exit the editor?\n(current map will be lost if not saved)", icon_question, [btn("EXIT", edi:exit), btn("CANCEL",true)]),
+	gui:msgBox('Question', 'Do you want to exit the editor?\n(current map will be lost if not saved)', icon_question, [btn('EXIT', edi:exit), btn('CANCEL', true)]),
 	gui:dlgAddKeys([return > (gui:dlgClose, edi:exit),
 			escape > gui:dlgClose]).
 done :-
 	dlgOptions:save,
 	core:dl('editor done.').
+
+load(FileName) :-
+	core:dl('loading map'(FileName)),
+	edi:toolReset,
+	edi:waitCursor(1),
+	(   fileio:mapLoad2(FileName)
+	->  edi:waitCursor(0)
+	;   edi:waitCursor(0),
+	    gui:msgBoxOk('Error', 'File open failed.\nFile might be incorrect or damaged.', icon_error)).

@@ -162,10 +162,10 @@ bool cDizMap::Load( const char* filename )
 	if(!filename || !filename[0]) return false; // invalid file
 	strcpy(m_filename,filename);
 	_strlwr(m_filename);
-	dlog(LOGAPP,"Loading map \"%s\"\n",m_filename);
+	dlog(LOGAPP, L"Loading map \"%S\"\n",m_filename);
 
-	if(!LoadMap()) { dlog(LOGERR,"Loading map FAILED!\n\n"); return false; }
-	dlog(LOGAPP,"Loading map SUCCESSFUL!\n\n");
+	if(!LoadMap()) { dlog(LOGERR, L"Loading map FAILED!\n\n"); return false; }
+	dlog(LOGAPP, L"Loading map SUCCESSFUL!\n\n");
 
 	PartitionMake();
 
@@ -180,14 +180,14 @@ bool cDizMap::Load( const char* filename )
 	unguard()
 }
 
-#define ERROR_CHUNK( info )	{ F9_FileClose(file); dlog(LOGAPP,"brocken chunk (%s)\n", info); return false; }
+#define ERROR_CHUNK( info )	{ F9_FileClose(file); dlog(LOGAPP, L"brocken chunk (%S)\n", info); return false; }
 bool cDizMap::LoadMap()
 {
 	guard(cDizMap::LoadMap)
 
 	// open file
 	F9FILE file = F9_FileOpen(m_filename);
-	if(!file) { dlog(LOGAPP, "  map file not found.\n"); return false; }
+	if(!file) { dlog(LOGAPP, L"  map file not found.\n"); return false; }
 	F9_FileSeek(file,0,2);
 	int filesize = F9_FileTell(file);
 	F9_FileSeek(file,0,0);
@@ -217,7 +217,7 @@ bool cDizMap::LoadMap()
 				size += F9_FileRead(buffer, chunksize, file);
 				if(size!=chunksize) { sfree(buffer);  ERROR_CHUNK("size"); }
 
-				if(memcmp(buffer,MAP_ID,chunksize)!=0) { dlog(LOGAPP,"invalid map id: '%s' (current version: '%s')\n", buffer, MAP_ID); sfree(buffer); F9_FileClose(file); return false; }
+				if(memcmp(buffer,MAP_ID,chunksize)!=0) { dlog(LOGAPP, L"invalid map id: '%S' (current version: '%S')\n", buffer, MAP_ID); sfree(buffer); F9_FileClose(file); return false; }
 				sfree(buffer);
 				break;
 			}
@@ -294,7 +294,7 @@ bool cDizMap::LoadMap()
 			
 			default:
 			{
-				dlog(LOGAPP, "  unknown chunk: id=%x size=%i\n", chunkid, chunksize);
+				dlog(LOGAPP, L"  unknown chunk: id=%x size=%i\n", chunkid, chunksize);
 				if(chunksize>0) F9_FileSeek(file,chunksize,1);
 			}
 		}
@@ -303,7 +303,7 @@ bool cDizMap::LoadMap()
 	}
 
 	F9_FileClose(file);
-	dlog(LOGAPP,"  map=%ix%i, room=%ix%i, brushes=%i, objects=%i\n", Width(), Height(), Room::Width, Room::Height, count_brush, count_obj );
+	dlog(LOGAPP, L"  map=%ix%i, room=%ix%i, brushes=%i, objects=%i\n", Width(), Height(), Room::Width, Room::Height, count_brush, count_obj );
 
 	int count = Width() * Height();
 	if(count<=0) return false; // validate size

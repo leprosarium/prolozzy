@@ -65,11 +65,11 @@ typedef ULONG_PTR			ulongptr;	// pointer unsigned long
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 inline	dword		sys_gettickcount()												{ return GetTickCount(); }
 inline	void		sys_sleep( dword miliseconds )									{ Sleep(miliseconds); }
-inline	int			sys_msgbox( HWND hwnd, const char* text, const char* caption, dword type = MB_OK|MB_ICONEXCLAMATION ) { return MessageBox(IsWindow(hwnd)?hwnd:NULL,text,caption,type); }
+inline	int			sys_msgbox( HWND hwnd, LPCWSTR text, LPCWSTR caption, dword type = MB_OK|MB_ICONEXCLAMATION ) { return MessageBoxW(IsWindow(hwnd)?hwnd:NULL,text,caption,type); }
 inline	int			sys_desktopwidth()												{ return GetSystemMetrics(SM_CXSCREEN); }
 inline	int			sys_desktopheight()												{ return GetSystemMetrics(SM_CYSCREEN); }
 		BOOL		sys_senddata( HWND fromhwnd, HWND tohwnd, int cmd, int slot, int size, char* data );
-inline	void		sys_outputdebugstring( const char* msg )						{ OutputDebugString( msg ); }
+inline	void		sys_outputdebugstring( LPCWSTR msg )						{ OutputDebugStringW( msg ); }
 
 typedef HANDLE HSEMAPHORE;
 inline	HSEMAPHORE	sys_createsemaphore( const char* name=NULL )					{ return (HSEMAPHORE)CreateSemaphore(NULL, 1, 1, name); }

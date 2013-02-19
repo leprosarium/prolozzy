@@ -85,12 +85,12 @@ public:
 		void		Done();
 		void		Activate( BOOL active );				// called when application is activated or deactivated
 		void		Close();								// called when application wants to close
-		void		DropFile( char* filepath );				// called when file is dropped
+		void		DropFile( LPCWSTR filepath );				// called when file is dropped
 		void		Scroll( int dx, int dy );				// called on scroll messages
 static	void		HandleReset();							// handle render device reset; used to repaint map's render target
 		BOOL		Update();
 		void		Draw();
-static	void		ErrorMessage( char* msg );				// error message box
+static	void		ErrorMessage( LPCWSTR msg );				// error message box
 
 		// utils
 		int			GetMouseX();

@@ -101,7 +101,6 @@ ssize_t cDizDebug::PrologRead(char *buffer, size_t size)
 		if(pos)
 		{
 			D9_LogBuf(LOGDBG, buffer, pos);
-
 			E9_AppSetCallback(E9_APP_ONPAINT, pnt);
 			return pos;
 		}
@@ -162,9 +161,9 @@ bool cDizDebug::Init()
 	D9_LogSetCallback( Con_LogCallback );
 
 	//log
-	dlog(LOGAPP,"%s v%s\n",GAME_NAME,GAME_VERSION);
+	dlog(LOGAPP, L"%S v%S\n",GAME_NAME,GAME_VERSION);
 	R9_LogCfg(R9_GetCfg(),R9_GetApi());
-	if(m_developer) dlog(LOGAPP,"Developer mode on.\n");
+	if(m_developer) dlog(LOGAPP, L"Developer mode on.\n");
 
 	return true;
 	unguard();
@@ -210,7 +209,7 @@ bool cDizDebug::Update()
 	{
 		g_game.m_drawmode++;
 		if(g_game.m_drawmode>=DRAWMODE_MAX) g_game.m_drawmode=0;
-		dlog( LOGAPP, "draw mode %i\n", g_game.m_drawmode );
+		dlog( LOGAPP, L"draw mode %i\n", g_game.m_drawmode );
 	}
 
 	// map reload full WARNING: all items are reloaded too, so your inventory...
@@ -447,7 +446,7 @@ void cDizDebug::ConsoleDraw()
 	unguard();
 }
 
-void cDizDebug::ConsolePush( int ch, const char* msg )
+void cDizDebug::ConsolePush( int ch, LPCWSTR msg )
 {
 	guard(cDizDebug::ConsolePush);
 	if(msg==NULL) return;
@@ -491,7 +490,7 @@ void cDizDebug::ConsolePush( int ch, const char* msg )
 	unguard();
 }
 
-void cDizDebug::Con_LogCallback( int ch, const char* msg )
+void cDizDebug::Con_LogCallback( int ch, LPCWSTR msg )
 {
 	guard(cDizDebug::Con_LogCallback);
 	if(g_dizdebug.m_con_lines==NULL) return; // not yet
@@ -712,7 +711,7 @@ void cDizDebug::InputExecute()
 	catch(PlException const & e)
 	{
 		PlException ee(e);
-		dlog("PlException: %s", static_cast<LPCSTR>(ee));
+		dlog(L"PlException: %s", static_cast<LPCWSTR>(ee));
 	}
 
 	// clear cmd

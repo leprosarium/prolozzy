@@ -222,6 +222,9 @@ map:brushNew.
 brush:set(110,[x=596,y=283,w=21,h=21,tile=2401,x2=64,y2=64,shader=1,scale=33,type=1,id=516,draw=1,disable=1,delay=3,anim=2]).
 map:brushNew.
 brush:set(111,[x=635,y=286,w=10,h=10,tile=2401,x2=64,y2=64,shader=1,scale=17,type=1,id=518,draw=1,disable=1,delay=3,anim=2]).
+roomNames:reset(false).
+roomNames:set(1,1,[name-'ROOM 1']).
+roomNames:set(2,1,[name-'ROOM 2']).
 map:resize(1200,542).
 edi:setCamX(600).
 edi:setCamY(271).

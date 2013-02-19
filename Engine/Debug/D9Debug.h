@@ -29,9 +29,9 @@
 	E9_OpenChannels( openlog );														\
 	D9_GuardInit();																	\
 	D9_MemoryInit();																\
-	dlog( LOGDBG, "------------------------------------------\n" );					\
-	dlog( LOGDBG, "| RENE DEBUG INIT ( %s )           |\n", D9_BUILDMODE );			\
-	dlog( LOGDBG, "------------------------------------------\n" );					\
+	dlog( LOGDBG, L"------------------------------------------\n" );					\
+	dlog( LOGDBG, L"| RENE DEBUG INIT ( %S )           |\n", D9_BUILDMODE );			\
+	dlog( LOGDBG, L"------------------------------------------\n" );					\
 	guard(main);
 
 // must be placed at the end of main function
@@ -41,17 +41,17 @@
 	D9_MemoryReport(TRUE);															\
 	D9_MemoryDone();																\
 	D9_MemoryDebugReport();															\
-	dlog( LOGDBG, "------------------------------------------\n" );					\
-	dlog( LOGDBG, "| RENE DEBUG DONE                        |\n" );					\
-	dlog( LOGDBG, "------------------------------------------\n" );					\
+	dlog( LOGDBG, L"------------------------------------------\n" );					\
+	dlog( LOGDBG, L"| RENE DEBUG DONE                        |\n" );					\
+	dlog( LOGDBG, L"------------------------------------------\n" );					\
 	unguardmain(																	\
 		D9_GuardReport();															\
 		D9_Shutdown();																\
 		D9_GuardDone();																\
 		D9_MemoryDone();															\
-		dlog( LOGDBG, "------------------------------------------\n" );				\
-		dlog( LOGDBG, "| RENE DEBUG EXCEPTION                   |\n" );				\
-		dlog( LOGDBG, "------------------------------------------\n" );				\
+		dlog( LOGDBG, L"------------------------------------------\n" );				\
+		dlog( LOGDBG, L"| RENE DEBUG EXCEPTION                   |\n" );				\
+		dlog( LOGDBG, L"------------------------------------------\n" );				\
 		);
 
 #endif

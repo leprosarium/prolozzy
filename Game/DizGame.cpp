@@ -443,11 +443,11 @@ bool cDizGame::CheckVersion()
 	if(strlen(reqv)>=3) // enough digits
 	{
 		if( reqv[0]==engv[0] && reqv[1]==engv[1] && reqv[2]==engv[2] ) return true; // match
-		sys_msgbox( E9_GetHWND(), sprint("This game was made with DizzyAGE v%s\nBut, you are running it with DizzyAGE v%s\nIf you experience malfunctions, contact the author.",reqv,engv), "WARNING",MB_OK );
+		sys_msgbox( E9_GetHWND(), swprint(L"This game was made with DizzyAGE v%S\nBut, you are running it with DizzyAGE v%S\nIf you experience malfunctions, contact the author.",reqv,engv), L"WARNING",MB_OK );
 	}
 	else
 	{
-		sys_msgbox( E9_GetHWND(), sprint("This game doesn't specify the version of DizzyAGE it was made for.\nYou are running it with DizzyAGE v%s\nIf you experience malfunctions, contact the author.",engv), "WARNING",MB_OK );
+		sys_msgbox( E9_GetHWND(), swprint(L"This game doesn't specify the version of DizzyAGE it was made for.\nYou are running it with DizzyAGE v%S\nIf you experience malfunctions, contact the author.",engv), L"WARNING",MB_OK );
 	}
 	return true;
 	unguard()

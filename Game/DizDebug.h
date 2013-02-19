@@ -49,8 +49,8 @@ public:
 		iRect	ConsoleGetRect();
 		void	ConsoleUpdate();
 		void	ConsoleDraw();
-		void	ConsolePush( int ch, const char* msg );
-static	void	Con_LogCallback( int ch, const char* msg );
+		void	ConsolePush( int ch, LPCWSTR msg );
+static	void	Con_LogCallback( int ch, LPCWSTR msg );
 		char*	m_con_lines;								// messages lines storage
 		int		m_con_pagetop;								// current visible line
 		int		m_con_nextline;								// next free line (loops from beginning when full)

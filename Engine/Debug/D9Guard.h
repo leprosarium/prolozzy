@@ -64,13 +64,13 @@ static	_se_translator_function m_oldtranslator;
 	catch(d9Exception e)							\
 	{												\
 		D9_LogStore(TRUE);							\
-		dlog(LOGSYS, "%s < ", __FUNC__);			\
+		dlog(LOGSYS, L"%S < ", __FUNC__);			\
 		throw e;									\
 	}												\
 	catch(...)										\
 	{												\
 		D9_LogStore(TRUE);							\
-		dlog(LOGSYS,"Unknown exception caught in function %s", __FUNC__); \
+		dlog(LOGSYS, L"Unknown exception caught in function %S", __FUNC__); \
 		throw d9Exception();						\
 	}												\
 }													
@@ -80,7 +80,7 @@ static	_se_translator_function m_oldtranslator;
 	catch(...)										\
 	{												\
 		D9_LogStore(TRUE);							\
-		dlog(LOGSYS, "%s\n", __FUNC__);				\
+		dlog(LOGSYS, L"%S\n", __FUNC__);				\
 		code;										\
 	}												\
 }

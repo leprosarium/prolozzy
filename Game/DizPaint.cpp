@@ -133,7 +133,7 @@ void cDizPaint::Done()
 bool cDizPaint::Reacquire()
 {
 	guard(cDizPaint::Reacquire);
-	dlog(LOGAPP,"Paint reaquire.\n");
+	dlog(LOGAPP, L"Paint reaquire.\n");
 	bool ok=true;
 	for(Tiles::iterator i = tiles.begin(), e = tiles.end(); i != e; ++i) 
 	{
@@ -141,7 +141,7 @@ bool cDizPaint::Reacquire()
 		tile->m_tex = R9_TextureLoad(tile->m_name);
 		if(tile->m_tex==NULL)
 		{
-			dlog(LOGSYS,"error reacquireing tile %s.\n",tile->m_name);
+			dlog(LOGSYS, L"error reacquireing tile %S.\n",tile->m_name);
 			ok = false;
 		}
 	}
@@ -152,7 +152,7 @@ bool cDizPaint::Reacquire()
 void cDizPaint::Unacquire()
 {
 	guard(cDizPaint::Unacquire);
-	dlog(LOGAPP,"Paint unaquire.\n");
+	dlog(LOGAPP, L"Paint unaquire.\n");
 	int i;
 	for(Tiles::iterator i = tiles.begin(), e = tiles.end(); i != e; ++i) 
 	{
@@ -221,7 +221,7 @@ bool Tiles::LoadFile( const char* filepath, int group )
 	if(ret==0 || id==-1) 
 	{ 
 		gstile_fail++; 
-		dlog(LOGSYS, "! %s (bad name)\n", filepath); 
+		dlog(LOGSYS, L"! %S (bad name)\n", filepath); 
 		return false; 
 	}
 	if(frames<1) frames=1;
@@ -233,7 +233,7 @@ bool Tiles::LoadFile( const char* filepath, int group )
 	{
 		gstile_fail++;
 		gstile_duplicates++;
-		dlog(LOGSYS, "! %s (duplicate id)\n", filepath, id);
+		dlog(LOGSYS, L"! %S (duplicate id)\n", filepath, id);
 		return false;
 	}
 
@@ -242,7 +242,7 @@ bool Tiles::LoadFile( const char* filepath, int group )
 	if(!R9_ImgLoadFile(filepath,&img))
 	{
 		gstile_fail++;
-		dlog(LOGSYS, "! %s (load failed)\n", filepath);
+		dlog(LOGSYS, L"! %S (load failed)\n", filepath);
 		return false;
 	}
 
@@ -255,7 +255,7 @@ bool Tiles::LoadFile( const char* filepath, int group )
 		!R9_ImgBitBltSafe(&img,0,0,img.m_width,img.m_height,&imga,0,0) ) 
 	{
 		gstile_fail++;
-		dlog(LOGSYS, "! %s (alpha failed)\n", filepath);
+		dlog(LOGSYS, L"! %S (alpha failed)\n", filepath);
 		R9_ImgDestroy(&img);
 		return false;
 	}
@@ -271,7 +271,7 @@ bool Tiles::LoadFile( const char* filepath, int group )
 	else 
 	{
 		gstile_fail++;
-		dlog(LOGSYS, "! %s (texture failed)\n", filepath);
+		dlog(LOGSYS, L"! %S (texture failed)\n", filepath);
 		return false;
 	}
 
@@ -288,7 +288,7 @@ bool Tiles::LoadFile( const char* filepath, int group )
 	R9_ImgDestroy(&img);
 
 	if(IS_DEVELOPER()) // log for developers
-		dlog(LOGAPP, "  %s [%i]\n", filepath, frames );
+		dlog(LOGAPP, L"  %S [%i]\n", filepath, frames );
 	
 	return true;
 	unguard()
@@ -309,7 +309,7 @@ bool Tiles::Load( char* path, int group )
 	int szlen = (int)strlen(path);
 	if(path[szlen-1]!='\\') strcat(path,"\\");
 	_strlwr(path);
-	dlog(LOGAPP,"Loading tiles from \"%s\" (group=%i)\n", path, group);
+	dlog(LOGAPP, L"Loading tiles from \"%S\" (group=%i)\n", path, group);
 
 	// init
 	gstile_total		= 0;
@@ -336,7 +336,7 @@ bool Tiles::Load( char* path, int group )
 	}
 
 	// report
-	dlog(LOGAPP, "Tiles report: total=%i, failed=%i (duplicates=%i)\n\n", gstile_total, gstile_fail, gstile_duplicates );
+	dlog(LOGAPP, L"Tiles report: total=%i, failed=%i (duplicates=%i)\n\n", gstile_total, gstile_fail, gstile_duplicates );
 
 	return true;
 	unguard()
@@ -1005,7 +1005,7 @@ bool cDizPaint::FontLoadFile( const char* filepath, int group )
 	if(ret==0 || id==-1) 
 	{ 
 		gsfont_fail++; 
-		dlog(LOGSYS, "! %s (bad name)\n", filepath); 
+		dlog(LOGSYS, L"! %S (bad name)\n", filepath); 
 		return false; 
 	}
 	
@@ -1015,7 +1015,7 @@ bool cDizPaint::FontLoadFile( const char* filepath, int group )
 	{
 		gsfont_fail++;
 		gsfont_duplicates++;
-		dlog(LOGSYS, "! %s (duplicate id)\n", filepath, id);
+		dlog(LOGSYS, L"! %S (duplicate id)\n", filepath, id);
 		return false;
 	}
 
@@ -1028,14 +1028,14 @@ bool cDizPaint::FontLoadFile( const char* filepath, int group )
 	if(!font->m_font->Create(filepath))
 	{
 		gsfont_fail++;
-		dlog(LOGSYS, "! %s (failed to load)\n", filepath);
+		dlog(LOGSYS, L"! %S (failed to load)\n", filepath);
 		sdelete(font);
 		return false;
 	}
 	m_font.Add(font);
 
 	if(IS_DEVELOPER()) // log for developers
-		dlog(LOGAPP, "  %s\n", filepath );
+		dlog(LOGAPP, L"  %S\n", filepath );
 	
 	return true;
 	unguard()
@@ -1056,7 +1056,7 @@ bool cDizPaint::FontLoad( char* path, int group )
 	int szlen = (int)strlen(path);
 	if(path[szlen-1]!='\\') strcat(path,"\\");
 	_strlwr(path);
-	dlog(LOGAPP,"Loading fonts from \"%s\" (group=%i)\n", path, group);
+	dlog(LOGAPP, L"Loading fonts from \"%S\" (group=%i)\n", path, group);
 
 	// init
 	gsfont_total		= 0;
@@ -1083,7 +1083,7 @@ bool cDizPaint::FontLoad( char* path, int group )
 	}
 
 	// report
-	dlog(LOGAPP, "Fonts report: total=%i, failed=%i (duplicates=%i)\n\n", gsfont_total, gsfont_fail, gsfont_duplicates );
+	dlog(LOGAPP, L"Fonts report: total=%i, failed=%i (duplicates=%i)\n\n", gsfont_total, gsfont_fail, gsfont_duplicates );
 
 	return true;
 	unguard()

@@ -79,7 +79,7 @@ void e9App::Done()
 void e9App::Run()
 {
 	guard(e9App::Run);
-	dlog(LOGAPP, "Main loop start.\n\n" );
+	dlog(LOGAPP, L"Main loop start.\n\n" );
 
 	MSG	msg;
 	BOOL finished = FALSE;
@@ -117,7 +117,7 @@ void e9App::Run()
 			Sleep(1); // STUPID HARDWARE (cpu cool)
 	}
 
-	dlog(LOGAPP, "\nMain loop finished.\n");
+	dlog(LOGAPP, L"\nMain loop finished.\n");
 	unguard();
 }
 
@@ -249,7 +249,7 @@ int e9App::InitWindow()
 	wcex.lpszClassName	= E9_APP_CLASSNAME;
 	wcex.hIconSm		= NULL;	// use small icon from default icon
 	ok = RegisterClassEx(&wcex);
-	if(!ok) { dlog(LOGERR, "APP: failed to register main window class.\n"); return FALSE; }
+	if(!ok) { dlog(LOGERR, L"APP: failed to register main window class.\n"); return FALSE; }
 
 	// create window
 	int style = (WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN ) & ~(WS_MAXIMIZEBOX|WS_SIZEBOX); // WS_POPUP
@@ -266,7 +266,7 @@ int e9App::InitWindow()
 								rec.left, rec.top, rec.right-rec.left, rec.bottom-rec.top, 
 								NULL, NULL, m_hinstance, 
 								NULL );
-	if(m_hwnd==NULL) { dlog(LOGERR, "APP: failed to create main window.\n"); return FALSE; }
+	if(m_hwnd==NULL) { dlog(LOGERR, L"APP: failed to create main window.\n"); return FALSE; }
 
 	return TRUE;
 	unguard();
@@ -319,7 +319,7 @@ LRESULT	CALLBACK e9App::WndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 			BOOL changed = (m_active!=active);
 			m_active = active;
 			m_minimized = FALSE;
-			if(changed) dlog(LOGAPP,"APP: activate %s\n",m_active?"on":"off");
+			if(changed) dlog(LOGAPP, L"APP: activate %S\n",m_active?"on":"off");
 			if(changed && m_callback[E9_APP_ONACTIVATE]) m_callback[E9_APP_ONACTIVATE]();
 			break;
 		}
@@ -330,7 +330,7 @@ LRESULT	CALLBACK e9App::WndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 			BOOL changed = (m_active!=active);
 			m_active = active;
 			m_minimized = (HIWORD(wParam)!=0);
-			if(changed) dlog(LOGAPP,"APP: activate %s\n",m_active?"on":"off");
+			if(changed) dlog(LOGAPP, L"APP: activate %S\n",m_active?"on":"off");
 			if(changed && m_callback[E9_APP_ONACTIVATE]) m_callback[E9_APP_ONACTIVATE]();
 			break;
 		}

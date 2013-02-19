@@ -244,41 +244,41 @@ fileNewDo :-
 fileOpen :-
 	edi:toolReset,
 	dlgInfo:mapFile(CurFile),
-	gui:winDlgOpenFile(CurFile, ActFile, "map", 0),
+	gui:winDlgOpenFile(CurFile, ActFile, map, 0),
 	dlgInfo:setMapFile(ActFile),
 	edi:waitCursor(1),
 	(   fileio:mapLoad(ActFile)
 	->  edi:waitCursor(0)
 	;   edi:waitCursor(0),
-	    gui:msgBoxOk("Error", "File open failed.\nFile might be incorrect or damaged.", icon_error)).
+	    gui:msgBoxOk('Error', 'File open failed.\nFile might be incorrect or damaged.', icon_error)).
 fileOpen.
 
 
 fileOpen2 :-
 	edi:toolReset,
 	dlgInfo:mapFile(CurFile),
-	gui:winDlgOpenFile(CurFile, ActFile, "pmp", 0),
+	gui:winDlgOpenFile(CurFile, ActFile, pmp, 0),
 	dlgInfo:setMapFile(ActFile),
 	edi:waitCursor(1),
 	(   fileio:mapLoad2(ActFile)
 	->  edi:waitCursor(0)
 	;   edi:waitCursor(0),
-	    gui:msgBoxOk("Error", "File open failed.\nFile might be incorrect or damaged.", icon_error)).
+	    gui:msgBoxOk('Error', 'File open failed.\nFile might be incorrect or damaged.', icon_error)).
 fileOpen2.
 
 
 fileSave(Silent) :-
 	dlgInfo:defName(DefName),
 	dlgInfo:mapFile(CurFile),
-	(   (   (\+ Silent; CurFile==DefName), gui:winDlgOpenFile(CurFile, ActFile, "pmp", 1))
+	(   (   (\+ Silent; CurFile==DefName), gui:winDlgOpenFile(CurFile, ActFile, pmp, 1))
 	;   Silent, CurFile \= DefName, ActFile = CurFile),
 	dlgInfo:setMapFile(ActFile),
 	edi:waitCursor(1),
 	(   fileio:mapSave(ActFile)
 	->  edi:waitCursor(0),
-	    gui:msgBoxOk("Message", "File save successful.", icon_info)
+	    gui:msgBoxOk('Message', 'File save successful.', icon_info)
 	;   edi:waitCursor(0),
-	    gui:msgBoxOk("Error", "File save failed.", icon_error)), !.
+	    gui:msgBoxOk('Error', 'File save failed.', icon_error)), !.
 fileSave(_).
 
 fileInfo :-

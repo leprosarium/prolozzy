@@ -127,22 +127,6 @@
     <ClInclude Include="Render\R9RenderGL.h" />
     <ClInclude Include="Render\R9Resources.h" />
     <ClInclude Include="Render\R9TexturePool.h" />
-    <ClInclude Include="Gs\gs.h" />
-    <ClInclude Include="Gs\gsasm.h" />
-    <ClInclude Include="Gs\gscfg.h" />
-    <ClInclude Include="Gs\gscompiler.h" />
-    <ClInclude Include="Gs\gsenv.h" />
-    <ClInclude Include="Gs\gserror.h" />
-    <ClInclude Include="Gs\gslexer.h" />
-    <ClInclude Include="Gs\gslexerdef.h" />
-    <ClInclude Include="Gs\gslib_default.h" />
-    <ClInclude Include="Gs\gslib_file.h" />
-    <ClInclude Include="Gs\gslib_math.h" />
-    <ClInclude Include="Gs\gslib_win.h" />
-    <ClInclude Include="Gs\gsnode.h" />
-    <ClInclude Include="Gs\gsparser.h" />
-    <ClInclude Include="Gs\gsutil.h" />
-    <ClInclude Include="Gs\gsvm.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
@@ -188,21 +172,6 @@
     <ClCompile Include="Render\R9RenderDX.cpp" />
     <ClCompile Include="Render\R9RenderGL.cpp" />
     <ClCompile Include="Render\R9TexturePool.cpp" />
-    <ClCompile Include="Gs\gs.cpp" />
-    <ClCompile Include="Gs\gsasm.cpp" />
-    <ClCompile Include="Gs\gscfg.cpp" />
-    <ClCompile Include="Gs\gscompiler.cpp" />
-    <ClCompile Include="Gs\gsenv.cpp" />
-    <ClCompile Include="Gs\gserror.cpp" />
-    <ClCompile Include="Gs\gslexer.cpp" />
-    <ClCompile Include="Gs\gslib_default.cpp" />
-    <ClCompile Include="Gs\gslib_file.cpp" />
-    <ClCompile Include="Gs\gslib_math.cpp" />
-    <ClCompile Include="Gs\gslib_win.cpp" />
-    <ClCompile Include="Gs\gsnode.cpp" />
-    <ClCompile Include="Gs\gsparser.cpp" />
-    <ClCompile Include="Gs\gsutil.cpp" />
-    <ClCompile Include="Gs\gsvm.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

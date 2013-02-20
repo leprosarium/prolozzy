@@ -236,9 +236,7 @@ fileNew :-
 
 fileNewDo :-
 	map:reset,
-%	RoomNamesReset(0);
-%	RoomTextsReset(0);
-%	RoomPropsReset(0);
+	roomNames:reset(false),
 	fileInfo.
 
 fileOpen :-

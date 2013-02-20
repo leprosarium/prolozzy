@@ -161,11 +161,9 @@ mapResize(MapW, MapH, RoomW, RoomH) :-
 	edi:setRoomH(RoomH),
 	core:ini('editor.ini', 'editor', 'options_roomw', RoomW),
 	core:ini('editor.ini', 'editor', 'options_roomh', RoomH),
-	update.
-%	RoomNamesReset(1);
-%	RoomTextsReset(1);
-%	RoomPropsReset(1);
-%
+	update,
+	roomNames:reset(true).
+
 
 
 

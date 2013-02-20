@@ -36,6 +36,7 @@
 		dlgMoveToMouse/0,
 		dlgDockUp/0,
 		dlgMoveInBound/0,
+		dlgMove/2,
 		dlgSelect/1,
 		dlgSetTitle/1,
 		select/1]).

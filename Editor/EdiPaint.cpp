@@ -2,7 +2,6 @@
 // EdiPaint.cpp
 //////////////////////////////////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
-#include "gs.h"
 #include "EdiPaint.h"
 
 cEdiPaint g_paint;
@@ -101,7 +100,7 @@ BOOL cEdiPaint::TileLoadFile( const char* filepath )
 
 	// create new tile
 	idx = TileAdd(id);
-	cTile* tile = TileGet(idx); gsassert(tile!=NULL);
+	cTile* tile = TileGet(idx); sassert(tile!=NULL);
 	tile->m_tex = R9_TextureCreate(&img);
 	if(tile->m_tex==NULL)
 	{
@@ -181,7 +180,7 @@ BOOL cEdiPaint::TileLoad( const char* path )
 	m_hash.Init(64,0);
 	for(i=0;i<TileCount();i++)
 	{
-		cTile* tile = g_paint.TileGet(i); gsassert(tile!=NULL);
+		cTile* tile = g_paint.TileGet(i); sassert(tile!=NULL);
 		m_hash.Add( tile->m_id, i );
 	}
 

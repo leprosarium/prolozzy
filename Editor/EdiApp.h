@@ -11,8 +11,6 @@
 #include "EdiPaint.h"
 #include "EdiTool.h"
 
-#define ERRORMESSAGE( msg )				cEdiApp::ErrorMessage( msg )
-
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // defines
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -133,9 +131,6 @@ inline	int			LayerActive			()							{ for(int i=LAYER_MAX-1;i>=0;i--) if(m_layer
 		BOOL		Undo				();
 		void		UndoSet				( int op, int idx=-1, tBrush* brush=NULL );
 inline	void		UndoReset			()					{ UndoSet(UNDOOP_NONE); }
-
-		// scripting
-		void		ScriptRegister();						// additional registerings
 
 protected:
 		void		DrawStats			();					// draw stats info

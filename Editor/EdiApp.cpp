@@ -12,7 +12,6 @@
 
 #include "SWI-cpp-m.h"
 
-#include "gs.h"
 #include "EdiMap.h"
 #include "Gui.h"
 #include "GuiTile.h"
@@ -116,21 +115,15 @@ BOOL cEdiApp::Init()
 	dlog(LOGAPP, L"App init.\n");
 
 	// engine
-	if(!InitApp())	 { ERRORMESSAGE(L"Init app error.");   return FALSE; }
-	if(!InitFiles()) { ERRORMESSAGE(L"Init files error."); return FALSE; }
-	if(!InitInput()) { ERRORMESSAGE(L"Init input device error."); return FALSE; }
-	if(!InitVideo()) { ERRORMESSAGE(L"Init video device error."); return FALSE; }
+	if(!InitApp())	 { ErrorMessage(L"Init app error.");   return FALSE; }
+	if(!InitFiles()) { ErrorMessage(L"Init files error."); return FALSE; }
+	if(!InitInput()) { ErrorMessage(L"Init input device error."); return FALSE; }
+	if(!InitVideo()) { ErrorMessage(L"Init video device error."); return FALSE; }
 
 	// editor
 	g_paint.Init();
 	g_map.Init();
 	BOOL ret = GUIInit();
-	ScriptRegister(); // register additional
-	if(!g_gui->ScriptCompile("Editor\\Scripts\\editor.gs")) 
-	{ 
-		ERRORMESSAGE(L"Script compiling error."); 
-		return FALSE; 
-	}
 	g_gui->ScriptPrologDo("editor:init");
 
 	// tools
@@ -497,13 +490,6 @@ int cEdiApp::GetMouseY()
 	unguard()
 }
 
-PREDICATE_M(edi, waitCursor, 1)
-{
-	E9_AppSetCursor(static_cast<int>(A1) ? E9_CURSOR_WAIT : E9_CURSOR_ARROW );
-	return true;
-}
-
-
 void cEdiApp::WaitCursor( BOOL on )
 {
 	guard(cEdiApp::WaitCursor)
@@ -562,7 +548,6 @@ void cEdiApp::UndoSet( int op, int idx, tBrush* brush )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // SCRIPTING
 //////////////////////////////////////////////////////////////////////////////////////////////////
-#define GS_ERROR( p1,p2,desc )	gs_error( vm, GSE_USER, p1, p2, desc );
 
 // tiles ...................................................................................
 
@@ -574,30 +559,11 @@ PREDICATE_M(edi, tileFind, 2)
 	return A2 = idx; 
 }
 
-
-int gsTileFind( gsVM* vm ) 
-{
-	guard(gsTileFind)
-	if(!gs_cktype(vm,0,GS_INT)) GS_RETURNINT(vm,-1);
-	int idx = g_paint.TileFind(gs_toint(vm,0)); 
-	gs_pushint(vm,idx);
-	return 1;
-	unguard()
-}
-
 PREDICATE_M(edi, tileCount, 1) 
 {
 	return A1 = g_paint.TileCount();
 }
 
-
-int gsTileCount( gsVM* vm )  
-{
-	guard(gsTileCount)
-	gs_pushint(vm,g_paint.TileCount());
-	return 1;
-	unguard()
-}
 
 cTile *TileGet(PlTerm idx)
 {
@@ -633,29 +599,6 @@ PREDICATE_M(edi, tileGetName, 2)
 	return A2 = t->m_name ? t->m_name : ""; 
 }
 
-int gsTileGet( gsVM* vm ) 
-{
-	guard(gsTileGet)
-	if(!gs_ckparams(vm,2))		GS_RETURNINT(vm,0);
-	if(!gs_cktype(vm,0,GS_INT)) GS_RETURNINT(vm,0);
-	if(!gs_cktype(vm,1,GS_INT)) GS_RETURNINT(vm,0);
-	int idx = gs_toint(vm,0);
-	cTile* tile = g_paint.TileGet(idx); 
-	if(!tile) { GS_ERROR(idx,g_paint.TileCount(),"invalid tile index"); GS_RETURNINT(vm,0); }
-	int ret = 0;
-	switch( gs_toint(vm,1) )
-	{
-		case TILE_ID:		ret = tile->m_id; break;
-		case TILE_W:		ret = tile->GetWidth(); break;
-		case TILE_H:		ret = tile->GetHeight(); break;
-		case TILE_FRAMES:	ret = tile->m_frames; break;
-		case TILE_NAME:		gs_pushstr(vm,tile->m_name?tile->m_name:""); return 1;
-	}
-	gs_pushint(vm,ret);
-	return 1;
-	unguard()
-}
-
 PREDICATE_M(edi, tileReload, 0)
 {
 	dlog(LOGAPP, L"Reload tiles ...\n");
@@ -677,30 +620,6 @@ PREDICATE_M(edi, tileReload, 0)
 	return loads > 0;
 }
 
-
-int gsTileReload( gsVM* vm )
-{
-	guard(gsTileReload)
-	dlog(LOGAPP, L"Reload tiles ...\n");
-
-	// clear old
-	g_paint.TileUnload();
-
-	// load from 2 ini dirs
-	BOOL ok = TRUE;
-	int loads = 0;
-	static char tilepath[256];
-	
-	if(ini_getstr( file_getfullpath(USER_INIFILE), "editor", "options_tiledir", tilepath, 256 )) 
-	{
-		if(g_paint.TileLoad(tilepath)) loads++;
-	}
-	else dlog(LOGAPP, L"TileDir not specified in editor.ini\n");
-
-	gs_pushint(vm,loads>0);
-	return 1;
-	unguard()
-}
 
 PREDICATE_M(edi, getTool, 1)
 {
@@ -829,45 +748,6 @@ PREDICATE_M(edi, getColorMap, 1)
 	return A1 = static_cast<int64>(EdiApp()->GetColor(EDI_COLORMAP));
 }
 
-// edi .....................................................................................
-int gsEdiGet( gsVM* vm ) 
-{
-	guard(gsEdiGet)
-	if(!gs_ckparams(vm,1))		GS_RETURNINT(vm,0);
-	if(!gs_cktype(vm,0,GS_INT)) GS_RETURNINT(vm,0);
-	int ret = 0;
-	int var = gs_toint(vm,0);
-	switch(var)
-	{
-		case EDI_TOOL:			ret = EdiApp()->m_toolcrt; break;
-		case EDI_AXES:			ret = EdiApp()->m_axes; break;
-		case EDI_SNAP:			ret = EdiApp()->m_snap; break;
-		case EDI_GRID:			ret = EdiApp()->m_grid; break;
-		case EDI_GRIDSIZE:		ret = EdiApp()->m_gridsize; break;
-		case EDI_SCRW:			ret = EdiApp()->GetScrW(); break;
-		case EDI_SCRH:			ret = EdiApp()->GetScrH(); break;
-		case EDI_MAPW:			ret = g_map.m_mapw; break;
-		case EDI_MAPH:			ret = g_map.m_maph; break;
-		case EDI_ROOMW:			ret = g_map.m_roomw; break;
-		case EDI_ROOMH:			ret = g_map.m_roomh; break;
-		case EDI_ROOMGRID:		ret = g_map.m_roomgrid; break;
-		case EDI_CAMX:			ret = g_map.m_camx; break;
-		case EDI_CAMY:			ret = g_map.m_camy; break;
-		case EDI_AXEX:			ret = EdiApp()->GetAxeX(); break;
-		case EDI_AXEY:			ret = EdiApp()->GetAxeY(); break;
-		case EDI_ZOOM:			ret = g_map.m_camz; break;
-		case EDI_SELECT:		ret = g_map.m_selectcount; break;
-		case EDI_BRUSHRECT:		ret = g_paint.m_brushrect; break;
-	}
-
-	if( var>=EDI_COLOR && var<=EDI_COLORMAX )
-		ret = EdiApp()->m_color[var-EDI_COLOR];
-
-	gs_pushint(vm,ret);
-	return 1;
-	unguard()
-}
-
 PREDICATE_M(edi, setTool, 1)
 {
 	EdiApp()->ToolSet(A1);
@@ -990,64 +870,16 @@ PREDICATE_M(edi, setColorMap, 1)
 	return true;
 }
 
-int gsEdiSet( gsVM* vm ) 
-{
-	guard(gsEdiSet)
-	if(!gs_ckparams(vm,2))		return 0;
-	if(!gs_cktype(vm,0,GS_INT)) return 0;
-
-	int val=0;
-	char* szval=NULL;
-	if(gs_type(vm,1)==GS_INT) val = gs_toint(vm,1);
-	if(gs_type(vm,1)==GS_STR) szval = gs_tostr(vm,1);
-
-	int var = gs_toint(vm,0);
-	
-	switch(var)
-	{
-		case EDI_TOOL:		EdiApp()->ToolSet(val); break;
-		case EDI_AXES:		EdiApp()->m_axes = val; break;
-		case EDI_SNAP:		EdiApp()->m_snap = val; break;
-		case EDI_GRID:		EdiApp()->m_grid = val; break;
-		case EDI_GRIDSIZE:	EdiApp()->m_gridsize = val; break;
-		case EDI_ROOMW:		g_map.m_roomw = val; break;
-		case EDI_ROOMH:		g_map.m_roomh = val; break;
-		case EDI_ROOMGRID:	g_map.m_roomgrid = val; break;
-		case EDI_CAMX:		g_map.m_camx = val; break;
-		case EDI_CAMY:		g_map.m_camy = val; break;
-		case EDI_ZOOM:		g_map.m_camz = val; break;
-		case EDI_SELECT:	g_map.m_selectcount = val; break;
-		case EDI_BRUSHRECT:	g_paint.m_brushrect = val; break;
-	}
-
-	if( var>=EDI_COLOR && var<=EDI_COLORMAX )
-		EdiApp()->m_color[var-EDI_COLOR] = val;
-	
-	return 0;
-	unguard()
-}
-
 PREDICATE_M(edi, exit, 0)
 {
 	EdiApp()->m_exit=1;
 	return true;
 }
 
-int gsEdiExit( gsVM* vm )
+PREDICATE_M(edi, waitCursor, 1)
 {
-	guard(gsEdiExit)
-	EdiApp()->m_exit=1;
-	return 0;
-	unguard()
-}
-
-int gsWaitCursor(gsVM* vm )
-{
-	guard(gsWaitCursor)
-	if(!gs_cktype(vm,0,GS_INT)) return 0;
-	EdiApp()->WaitCursor(gs_toint(vm,0));
-	return 0;
-	unguard()
+	EdiApp()->WaitCursor(A1);
+	return true;
 }
 
 // layers ..................................................................................
@@ -1075,17 +907,6 @@ PREDICATE_M(edi, layerActive, 1)
 }
 
 // tool brush ..............................................................................
-int gsToolBrushGet( gsVM* vm ) 
-{
-	guard(gsToolBrushGet)
-	if(!gs_cktype(vm,0,GS_INT)) GS_RETURNINT(vm,0);
-	tBrush& brush = EdiApp()->m_brush;
-	int idx = gs_toint(vm,0);
-	if(idx<0 || idx>=BRUSH_MAX) { GS_ERROR(idx,BRUSH_MAX,"invalid brush variable"); GS_RETURNINT(vm,0); }
-	gs_pushint(vm, brush.m_data[idx]);
-	return 1;
-	unguard()
-}
 
 #define TOOL_BRUSH_PROP(Prop, PROP)\
 GET_TOOL_BRUSH_PROP(Prop, PROP)\
@@ -1213,32 +1034,10 @@ PREDICATE_M(edi, toolBrushGet, 2)
 	return A2 = EdiApp()->m_brush.m_data[idx];
 }
 
-
-int gsToolBrushSet( gsVM* vm ) 
-{
-	guard(gsToolBrushSet)
-	if(!gs_cktype(vm,0,GS_INT)) return 0;
-	if(!gs_cktype(vm,1,GS_INT)) return 0;
-	tBrush& brush = EdiApp()->m_brush;
-	int idx = gs_toint(vm,0);
-	if(idx<0 || idx>=BRUSH_MAX) { GS_ERROR(idx,BRUSH_MAX,"invalid brush variable"); return 0; }
-	brush.m_data[idx] = gs_toint(vm,1);
-	return 0;
-	unguard()
-}
-
 PREDICATE_M(edi, toolReset, 0)
 {
 	EdiApp()->m_tool[EdiApp()->m_toolcrt]->Reset(); 
 	return true; 
-}
-
-int gsToolReset( gsVM* vm )
-{
-	guard(gsToolReset)
-	EdiApp()->m_tool[EdiApp()->m_toolcrt]->Reset(); 
-	return 0; 
-	unguard()
 }
 
 PREDICATE_M(edi, toolCommand, 1)
@@ -1247,32 +1046,18 @@ PREDICATE_M(edi, toolCommand, 1)
 	return true; 
 }
 
-int gsToolCommand( gsVM* vm )
-{
-	guard(gsToolCommand)
-	if(!gs_cktype(vm,0,GS_INT)) return 0;
-	EdiApp()->m_tool[EdiApp()->m_toolcrt]->Command( gs_toint(vm,0) ); 
-	return 0; 
-	unguard()
-}
-
 PREDICATE_M(map, load, 1)
 {
 	return g_map.Load(WideStringToMultiByte(A1));
 }
 
+
+
+// map brush ................................................................................
+
 PREDICATE_M(map, brushCount, 1)
 {
 	return A1 = g_map.m_brushcount;
-}
-
-// map brush ................................................................................
-int gsMapBrushCount( gsVM* vm ) 
-{
-	guard(gsMapBrushCount)
-	gs_pushint(vm, g_map.m_brushcount);
-	return 1;
-	unguard()
 }
 
 #define MAP_BRUSH_PROP(Prop, PROP)\
@@ -1339,29 +1124,12 @@ PREDICATE_M(map, brushGet, 3)
 	return A3 = brush.m_data[idx];
 }
 
-
-int gsMapBrushGet( gsVM* vm ) 
-{
-	guard(gsMapBrushGet)
-	if(!gs_cktype(vm,0,GS_INT)) GS_RETURNINT(vm,0);
-	if(!gs_cktype(vm,1,GS_INT)) GS_RETURNINT(vm,0);
-	int bi = gs_toint(vm,0);
-	if(bi<0 || bi>=g_map.m_brushcount) { GS_ERROR(bi,g_map.m_brushcount,"invalid map brush index"); GS_RETURNINT(vm,0); }
-	tBrush& brush = g_map.m_brush[bi];
-	int idx = gs_toint(vm,1);
-	if(idx<0 || idx>=BRUSH_MAX) { GS_ERROR(idx,BRUSH_MAX,"invalid brush variable"); GS_RETURNINT(vm,0); }
-	gs_pushint(vm, brush.m_data[idx]);
-	return 1;
-	unguard()
-}
-
 PREDICATE_M(map, brushSetColor , 2) 
 {
 	int64 color = A2;
 	g_map.GetBrush(A1).m_data[BRUSH_COLOR] = color;
 	return true;
 }
-
 
 PREDICATE_M(map, brushSet , 3) 
 {
@@ -1382,44 +1150,18 @@ PREDICATE_M(map, brushSet , 3)
 }
 
 
-int gsMapBrushSet( gsVM* vm ) 
-{
-	guard(gsMapBrushSet)
-	if(!gs_cktype(vm,0,GS_INT)) return 0;
-	if(!gs_cktype(vm,1,GS_INT)) return 0;
-	if(!gs_cktype(vm,2,GS_INT)) return 0;
-	int bi = gs_toint(vm,0);
-	if(bi<0 || bi>=g_map.m_brushcount) { GS_ERROR(bi,g_map.m_brushcount,"invalid map brush index"); return 0; }
-	tBrush& brush = g_map.m_brush[bi];
-	int idx = gs_toint(vm,1);
-	if(idx<0 || idx>=BRUSH_MAX) { GS_ERROR(idx,BRUSH_MAX,"invalid brush variable"); return 0; }
-	brush.m_data[idx] = gs_toint(vm,2);
-	return 0;
-	unguard()
-}
-
 PREDICATE_M(map, brushNew, 0)
 {
 	g_map.BrushNew();
 	EdiApp()->UndoReset();
 	return true;
 }
+
 PREDICATE_M(map, brushNew, 1)
 {
 	int idx = g_map.BrushNew();
 	EdiApp()->UndoReset();
 	return A1 = idx;
-}
-
-
-int gsMapBrushNew( gsVM* vm )
-{
-	guard(gsMapBrushNew)
-	int idx = g_map.BrushNew();
-	gs_pushint(vm,idx);
-	EdiApp()->UndoReset();
-	return 1;
-	unguard()
 }
 
 PREDICATE_M(map, brushDel, 1)
@@ -1429,45 +1171,16 @@ PREDICATE_M(map, brushDel, 1)
 	return 0;
 }
 
-
-int gsMapBrushDel( gsVM* vm )
-{
-	guard(gsMapBrushDel)
-	if(!gs_cktype(vm,0,GS_INT)) return 0;
-	int idx = gs_toint(vm,0);
-	g_map.BrushDel(idx);
-	EdiApp()->UndoReset();
-	return 0;
-	unguard()
-}
-
 PREDICATE_M(map, repartition, 0)
 {
 	return g_map.PartitionRepartition();
 }
 
 
-int gsMapRepartition( gsVM* vm )
-{
-	guard(gsMapRepartition)
-	BOOL ok = g_map.PartitionRepartition();
-	gs_pushint(vm,ok);
-	return 1;
-	unguard()
-}
-
 PREDICATE_M(map, refresh, 0) 
 {
 	g_map.m_refresh = TRUE;
 	return true;
-}
-
-int gsMapRefresh( gsVM* vm ) 
-{
-	guard(gsMapRefresh)
-	g_map.m_refresh = TRUE;
-	return 0;
-	unguard()
 }
 
 PREDICATE_M(map, reset, 0)
@@ -1477,14 +1190,6 @@ PREDICATE_M(map, reset, 0)
 	return true;
 }
 
-int gsMapReset( gsVM* vm )
-{
-	guard(gsMapReset)
-	g_map.Reset();
-	EdiApp()->UndoReset();
-	return 0;
-	unguard()
-}
 
 PREDICATE_M(map, resize, 2)
 {
@@ -1493,110 +1198,11 @@ PREDICATE_M(map, resize, 2)
 	return ret; 
 }
 
-int gsMapResize( gsVM* vm )
-{
-	guard(gsMapReset)
-	if(!gs_cktype(vm,0,GS_INT)) return 0;
-	if(!gs_cktype(vm,1,GS_INT)) return 0;
-	int ret=g_map.Resize(gs_toint(vm,0), gs_toint(vm,1)); 
-	EdiApp()->UndoReset();
-	gs_pushint(vm,ret); 
-	return 1;
-	unguard()
-}
-
-// markers ....................................................................................
-int gsMarkerCount( gsVM* vm )
-{
-	guard(gsMarkerCount)
-	gs_pushint(vm, g_map.m_marker.Size());
-	return 1;
-	unguard()
-}
-
-int gsMarkerX( gsVM* vm )
-{
-	guard(gsMarkerX)
-	if(!gs_cktype(vm,0,GS_INT)) GS_RETURNINT(vm,0);
-	int idx = gs_toint(vm,0);
-	gs_pushint(vm, g_map.m_marker.Get(idx).x);
-	return 1;
-	unguard()
-}
-
-int gsMarkerY( gsVM* vm )
-{
-	guard(gsMarkerY)
-	if(!gs_cktype(vm,0,GS_INT)) GS_RETURNINT(vm,0);
-	int idx = gs_toint(vm,0);
-	gs_pushint(vm, g_map.m_marker.Get(idx).y);
-	return 1;
-	unguard()
-}
-
-int gsMarkerZ( gsVM* vm )
-{
-	guard(gsMarkerZ)
-	if(!gs_cktype(vm,0,GS_INT)) GS_RETURNINT(vm,0);
-	int idx = gs_toint(vm,0);
-	gs_pushint(vm, g_map.m_marker.Get(idx).z);
-	return 1;
-	unguard()
-}
-
-int gsMarkerAdd( gsVM* vm )
-{
-	guard(gsMarkerAdd)
-	if(!gs_cktype(vm,0,GS_INT)) return 0;
-	if(!gs_cktype(vm,1,GS_INT)) return 0;
-	if(!gs_cktype(vm,2,GS_INT)) return 0;
-	g_map.m_marker.Add( tMarker(gs_toint(vm,0),gs_toint(vm,1),gs_toint(vm,2)) );
-	return 0;
-	unguard()
-}
-
-int gsMarkerToggle( gsVM* vm )
-{
-	guard(gsMarkerToggle)
-	if(!gs_cktype(vm,0,GS_INT)) return 0;
-	if(!gs_cktype(vm,1,GS_INT)) return 0;
-	g_map.MarkerToggle(gs_toint(vm,0),gs_toint(vm,1));
-	return 0;
-	unguard()
-}
-
-int gsMarkerGoto( gsVM* vm )
-{
-	guard(gsMarkerGoto)
-	if(!gs_cktype(vm,0,GS_INT)) return 0;
-	int dir = gs_toint(vm,0);
-	g_map.MarkerGoto(dir);
-	return 0;
-	unguard()
-}
-
-int gsMarkerClear( gsVM* vm )
-{
-	guard(gsMarkerClear)
-	g_map.MarkerClear();
-	return 0;
-	unguard()
-}
 
 PREDICATE_M(selection, goto, 1)
 {
 	g_map.SelectionGoto(A1);
 	return true;
-}
-
-int gsSelectionGoto( gsVM* vm )
-{
-	guard(gsSelectionGoto)
-	if(!gs_cktype(vm,0,GS_INT)) return 0;
-	int dir = gs_toint(vm,0);
-	g_map.SelectionGoto(dir);
-	return 0;
-	unguard()
 }
 
 PREDICATE_M(selection, refresh, 0)
@@ -1605,145 +1211,11 @@ PREDICATE_M(selection, refresh, 0)
 	return 0;
 }
 
-int gsSelectionRefresh( gsVM* vm )
+PREDICATE_M(map, saveImage, 1)
 {
-	guard(gsSelectionRefresh)
-	g_map.SelectionRefresh();
-	return 0;
-	unguard()
-}
-
-int gsSaveMapImage( gsVM* vm )
-{
-	guard(gsSaveMapImage)
-	if(!gs_cktype(vm,0,GS_STR)) GS_RETURNINT(vm,0);
-	BOOL ret = g_map.SaveMapImage(gs_tostr(vm,0));
+	BOOL ret = g_map.SaveMapImage(A1);
 	g_map.m_refresh = TRUE;
-	gs_pushint(vm,ret);
-	return 1;
-	unguard()
-}
-
-// register ...................................................................................
-#define GS_REGCONST( c )	gs_regint( vm, #c, c );
-
-void cEdiApp::ScriptRegister()
-{
-	guard(cEdiApp::ScriptRegister)
-	gsVM *vm = g_gui->m_vm;
-//	gs_setdebug(vm,GSDBG_HIGH);
-
-	gs_regfn( vm, "TileFind",			gsTileFind );				// int(id) > int(idx/-1)
-	gs_regfn( vm, "TileCount",			gsTileCount );				// > int(count)
-	gs_regfn( vm, "TileGet",			gsTileGet );				// int(idx), int(data) > int(val/0)
-	gs_regfn( vm, "TileReload",			gsTileReload );				// > int(1/0)
-
-	gs_regfn( vm, "EdiGet",				gsEdiGet );					// int(data) > int(val)
-	gs_regfn( vm, "EdiSet",				gsEdiSet );					// int(data), int(val)
-	gs_regfn( vm, "EdiExit",			gsEdiExit );				// 
-	gs_regfn( vm, "WaitCursor",			gsWaitCursor );				// int(1/0)
-
-	gs_regfn( vm, "ToolBrushGet",		gsToolBrushGet );			// int(data) > int(val/0)
-	gs_regfn( vm, "ToolBrushSet",		gsToolBrushSet );			// int(data), int(val)
-	gs_regfn( vm, "ToolReset",			gsToolReset );				//
-	gs_regfn( vm, "ToolCommand",		gsToolCommand );			// int(cmd)
-
-	gs_regfn( vm, "MapBrushCount",		gsMapBrushCount );			// > int(count)
-	gs_regfn( vm, "MapBrushGet",		gsMapBrushGet );			// int(idx), int(data) > int(val/0)
-	gs_regfn( vm, "MapBrushSet",		gsMapBrushSet );			// int(idx), int(data), int(val)
-	gs_regfn( vm, "MapBrushNew",		gsMapBrushNew );			// > int(idx)
-	gs_regfn( vm, "MapBrushDel",		gsMapBrushDel );			// int(idx)
-	gs_regfn( vm, "MapRepartition",		gsMapRepartition );			// > int(1/0)
-	gs_regfn( vm, "MapRefresh",			gsMapRefresh );				//
-	gs_regfn( vm, "MapReset",			gsMapReset );				//
-	gs_regfn( vm, "MapResize",			gsMapResize );				// int(w), int(h) > int(0=crop,1=no crop)
-
-	gs_regfn( vm, "MarkerCount",		gsMarkerCount );			// > int(count)
-	gs_regfn( vm, "MarkerX",			gsMarkerX );				// int(idx) > int(x)
-	gs_regfn( vm, "MarkerY",			gsMarkerY );				// int(idx) > int(y)
-	gs_regfn( vm, "MarkerZ",			gsMarkerZ );				// int(idx) > int(z)
-	gs_regfn( vm, "MarkerAdd",			gsMarkerAdd );				// int(x), int(y), int(z)
-	gs_regfn( vm, "MarkerToggle",		gsMarkerToggle );			// int(x), int(y)
-	gs_regfn( vm, "MarkerGoto",			gsMarkerGoto );				// int(direction -1/1)
-	gs_regfn( vm, "MarkerClear",		gsMarkerClear );			//
-	gs_regfn( vm, "SelectionGoto",		gsSelectionGoto );			// int(direction -1/1)
-	gs_regfn( vm, "SelectionRefresh",	gsSelectionRefresh );		//
-
-	gs_regfn( vm, "SaveMapImage",		gsSaveMapImage );			// str(filename) > int(1/0)
-
-	// gui constant item variables
-	GS_REGCONST( IV_GUITILE_SCALE		);
-	GS_REGCONST( IV_GUITILE_SHRINK		);
-	GS_REGCONST( IV_GUITILEMAP_SCALE	);
-	GS_REGCONST( IV_GUITILEMAP_SNAP		);
-	GS_REGCONST( IV_GUITILEMAP_GRID		);
-	GS_REGCONST( IV_GUITILEMAP_AXES		);
-	GS_REGCONST( IV_GUITILEMAP_MAP		);
-
-	// edi data
-	GS_REGCONST( EDI_TOOL				);
-	GS_REGCONST( EDI_AXES				);
-	GS_REGCONST( EDI_SNAP				);
-	GS_REGCONST( EDI_GRID				);
-	GS_REGCONST( EDI_GRIDSIZE			);
-	GS_REGCONST( EDI_SCRW				);
-	GS_REGCONST( EDI_SCRH				);
-	GS_REGCONST( EDI_MAPW				);
-	GS_REGCONST( EDI_MAPH				);
-	GS_REGCONST( EDI_ROOMW				);
-	GS_REGCONST( EDI_ROOMH				);
-	GS_REGCONST( EDI_ROOMGRID			);
-	GS_REGCONST( EDI_CAMX				);
-	GS_REGCONST( EDI_CAMY				);
-	GS_REGCONST( EDI_AXEX				);
-	GS_REGCONST( EDI_AXEY				);
-	GS_REGCONST( EDI_ZOOM				);
-	GS_REGCONST( EDI_SELECT				);
-	GS_REGCONST( EDI_BRUSHRECT			);
-	
-	GS_REGCONST( EDI_COLOR				);
-	GS_REGCONST( EDI_COLORBACK1			);
-	GS_REGCONST( EDI_COLORBACK2			);
-	GS_REGCONST( EDI_COLORGRID1			);
-	GS_REGCONST( EDI_COLORGRID2			);
-	GS_REGCONST( EDI_COLORGRID3			);
-	GS_REGCONST( EDI_COLORMAP			);
-	GS_REGCONST( EDI_COLORMAX			);
-
-	// tile data
-	GS_REGCONST( TILE_ID		);
-	GS_REGCONST( TILE_W			);
-	GS_REGCONST( TILE_H			);
-	GS_REGCONST( TILE_FRAMES	);
-	GS_REGCONST( TILE_NAME		);
-
-	// brush data
-	GS_REGCONST( BRUSH_LAYER	);
-	GS_REGCONST( BRUSH_X		);
-	GS_REGCONST( BRUSH_Y		);
-	GS_REGCONST( BRUSH_W		);
-	GS_REGCONST( BRUSH_H		);
-	GS_REGCONST( BRUSH_TILE		);
-	GS_REGCONST( BRUSH_FRAME	);
-	GS_REGCONST( BRUSH_MAP		);
-	GS_REGCONST( BRUSH_FLIP		);
-	GS_REGCONST( BRUSH_COLOR	);
-	GS_REGCONST( BRUSH_SHADER	);
-	GS_REGCONST( BRUSH_SCALE	);
-	GS_REGCONST( BRUSH_SELECT	);
-	GS_REGCONST( BRUSH_CUSTOM	);
-	GS_REGCONST( BRUSH_MAX		);
-
-	// editor
-	GS_REGCONST( LAYER_MAX			);
-	GS_REGCONST( TOOL_MAX			);
-	GS_REGCONST( TOOLCMD_PICKBRUSH	);
-	GS_REGCONST( TOOLCMD_PICKCOLOR	);
-	GS_REGCONST( TOOLCMD_TOFRONT	);
-	GS_REGCONST( TOOLCMD_TOBACK		);
-	GS_REGCONST( TOOLCMD_DELETE		);
-
-	unguard();
+	return ret;
 }
 
 void cEdiApp::ErrorMessage( LPCWSTR msg )

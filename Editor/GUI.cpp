@@ -24,7 +24,6 @@ cGUI::cGUI()
 	m_mousex		= 0;
 	m_mousey		= 0;
 	m_font			= NULL;
-	m_vm			= NULL;
 	m_lastdlg		= -1;
 	m_lastitem		= NULL;
 	m_capture		= NULL;	
@@ -57,9 +56,6 @@ BOOL cGUI::Init()
 	m_font->SetTexture(tex);
 	m_font->SetSpace(4); // !
 	
-	// script
-	ok = ScriptInit();
-
 	// mouse
 	POINT pt;
 	GetCursorPos(&pt);
@@ -76,7 +72,6 @@ void cGUI::Done()
 	guard(cGUI::Done)
 	m_dlg.Done();
 	m_capture = NULL;
-	ScriptDone();
 	if(m_font) 
 	{
 		R9_TextureDestroy(m_font->GetTexture());
@@ -270,30 +265,6 @@ int cGUI::DlgFind( cGUIDlg *dlg )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // Script
 //////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL cGUI::ScriptInit()
-{
-	guard(cGUI::ScriptInit)
-	m_vm = gs_init();
-	gslib_file(m_vm);
-	gslib_win(m_vm);
-	ScriptRegister();
-	return TRUE;
-	unguard()
-}
-
-void cGUI::ScriptDone()
-{
-	guard(cGUI::ScriptDone)
-	gs_done(m_vm);
-	unguard()
-}
-
-void cGUI::ScriptDo( char* szcmd )
-{
-	guard(cGUI::ScriptDo)
-	if(szcmd) gs_dostring(m_vm,szcmd);
-	unguard()
-}
 
 bool cGUI::ScriptPrologDo(const std::string & pred)
 {
@@ -310,29 +281,6 @@ bool cGUI::ScriptPrologDo(const std::string & pred)
 	return false;
 }
 
-
-int	cGUI::ScriptCallback( int fid )
-{
-	guard(cGUI::ScriptCallback)
-	gs_runfn(m_vm,fid,0);
-	int ret=0;
-	if( gs_top(m_vm)>0 )
-	{
-		ret = gs_toint(m_vm,gs_top(m_vm)-1);
-		gs_pop(m_vm);
-	}
-	return ret;	
-	unguard()
-}
-
-BOOL cGUI::ScriptCompile( char* file )
-{
-	guard(cGUI::ScriptCompile)
-	if(!file) return TRUE;
-	int ret = gs_compilefile(m_vm,file); 
-	return (ret==GS_OK);
-	unguard()
-}
 
 cGUIDlg * cGUI::GetLastDlg()
 {
@@ -352,85 +300,12 @@ cGUIItem * cGUI::GetLastItem()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // GUI EXPORT
 //////////////////////////////////////////////////////////////////////////////////////////////////
-#define GS_ERROR( p1,p2,desc )	gs_error( vm, GSE_USER, p1, p2, desc );
-
-#define GET_DLG()																\
-	cGUIDlg* dlg=g_gui->DlgGet(g_gui->m_lastdlg);								\
-	if(!dlg) { GS_ERROR(0,0,"no selected dialog"); return 0; }
-	
-#define GET_ITEM()																\
-	GET_DLG();																	\
-	cGUIItem* item=dlg->ItemGet(g_gui->m_lastitem);								\
-	if(!item) { GS_ERROR(0,0,"no selected item"); return 0; }
-
-int gsGuiGetInt( gsVM* vm )
-{
-	guard(gsGuiGetInt)
-	if(!gs_cktype(vm,0,GS_INT)) GS_RETURNINT(vm,0);
-	int var = gs_toint(vm, 0);
-	if(var<0 || var>=GV_MAX) { GS_ERROR(var,GV_MAX,"invalid gui variable"); GS_RETURNINT(vm,0); }
-	gs_pushint( vm, g_gui->GetInt( var ) );
-	return 1;
-	unguard()
-}
-
-int gsGuiSetInt( gsVM* vm )
-{
-	guard(gsGuiSetInt)
-	if(!gs_cktype(vm,0,GS_INT)) return 0;
-	int var = gs_toint(vm, 0);
-	if(var<0 || var>=GV_MAX) { GS_ERROR(var,GV_MAX,"invalid gui variable"); return 0; }
-	for(int i=1;i<gs_params(vm);i++)
-	{
-		if(gs_cktype(vm,i,GS_INT))
-			g_gui->SetInt(var+i-1, gs_toint(vm,i));
-	}
-	return 0;
-	unguard()
-}
-
-int gsGuiGetTxt( gsVM* vm )
-{
-	guard(gsGuiGetTxt)
-	if(!gs_cktype(vm,0,GS_INT)) GS_RETURNSTR(vm,"");
-	int var = gs_toint(vm, 0);
-	if(var<0 || var>=GV_MAX) { GS_ERROR(var,GV_MAX,"invalid gui variable"); GS_RETURNSTR(vm,""); }
-	gs_pushstr( vm, g_gui->GetTxt( var ) );
-	return 1;
-	unguard()
-}
-
-int gsGuiSetTxt( gsVM* vm )
-{
-	guard(gsGuiSetTxt)
-	if(!gs_cktype(vm,0,GS_INT)) return 0;
-	int var = gs_toint(vm, 0);
-	if(var<0 || var>=GV_MAX) { GS_ERROR(var,GV_MAX,"invalid gui variable"); return 0; }
-	for(int i=1;i<gs_params(vm);i++)
-	{
-		if(gs_cktype(vm,i,GS_STR))
-			g_gui->SetTxt(var+i-1, gs_tostr(vm,i));
-	}
-	return 0;
-	unguard()
-}
 
 
 PREDICATE_M(dlg, find, 2)
 {
 	return A2 = g_gui->DlgFind(A1);
 }
-
-int gsDlgFind( gsVM* vm )
-{
-	guard(gsDlgFind)
-	if(!gs_cktype(vm,0,GS_INT)) GS_RETURNINT(vm,-1);
-	int idx = g_gui->DlgFind(gs_toint(vm,0));
-	gs_pushint(vm, idx);
-	return 1;
-	unguard()
-}
-
 
 PREDICATE_M(gui, itemFind, 2)
 {
@@ -440,18 +315,6 @@ PREDICATE_M(gui, itemFind, 2)
 	return A2 = idx;
 }
 
-int gsItemFind( gsVM* vm )
-{
-	guard(gsItemFind)
-	if(!gs_cktype(vm,0,GS_INT)) GS_RETURNINT(vm,-1);
-	GET_DLG();
-	int idx = -1;
-	if(dlg!=NULL)
-		idx = dlg->ItemFind(gs_toint(vm,0));
-	gs_pushint(vm, idx);
-	return 1;
-	unguard()
-}
 
 PREDICATE_M(gui, imgLoad, 2)
 {
@@ -459,16 +322,6 @@ PREDICATE_M(gui, imgLoad, 2)
 	if (img == -1)
 		return false;
 	return A2 = img;
-}
-
-int gsImgLoad( gsVM* vm )
-{
-	guard(gsImgLoad)
-	if(!gs_cktype(vm,0,GS_STR)) GS_RETURNINT(vm,-1);
-	int img = g_gui->ImgLoad(gs_tostr(vm,0));
-	gs_pushint(vm,img);
-	return 1;
-	unguard()
 }
 
 PREDICATE_M(gui, imgFind, 2)
@@ -479,27 +332,10 @@ PREDICATE_M(gui, imgFind, 2)
 	return A2 = img;
 }
 
-int gsImgFind( gsVM* vm )
-{
-	guard(gsImgFind)
-	if(!gs_cktype(vm,0,GS_STR)) GS_RETURNINT(vm,-1);
-	int img = g_gui->ImgFind(gs_tostr(vm,0));
-	gs_pushint(vm,img);
-	return 1;
-	unguard()
-}
 
 PREDICATE_M(gui, mouseX, 1)
 {
 	return A1 = g_gui->m_mousex;
-}
-
-int gsMouseX( gsVM* vm )
-{
-	guard(gsMouseX)
-	gs_pushint( vm, g_gui->m_mousex); 
-	return 1;
-	unguard()
 }
 
 PREDICATE_M(gui, mouseY, 1)
@@ -507,43 +343,26 @@ PREDICATE_M(gui, mouseY, 1)
 	return A1 = g_gui->m_mousey;
 }
 
-int gsMouseY( gsVM* vm )
-{
-	guard(gsMouseY)
-	gs_pushint( vm, g_gui->m_mousey); 
-	return 1;
-	unguard()
-}
 
-int gsScrW( gsVM* vm )
+
+PREDICATE_M(gui, scrW, 1)
 {
-	guard(gsScrW)
 	RECT rc;
 	GetClientRect(E9_GetHWND(), &rc); 
-	gs_pushint( vm, rc.right - rc.left ); 
-	return 1;
-	unguard()
+	return A1 = rc.right - rc.left; 
 }
 
-int gsScrH( gsVM* vm )
+PREDICATE_M(gui, scrH, 1)
 {
-	guard(gsScrH)
 	RECT rc;
 	GetClientRect(E9_GetHWND(), &rc); 
-	gs_pushint( vm, rc.bottom - rc.top ); 
-	return 1;
-	unguard()
+	return A1 = rc.bottom - rc.top; 
 }
 
-
-
-int gsFontH( gsVM* vm )
+PREDICATE_M(gui, fontH, 1)
 {
-	guard(gsFontH)
-	if(!g_gui->m_font) GS_RETURNINT(vm,0);
-	gs_pushint( vm, (int)g_gui->m_font->GetSize());
-	return 1;
-	unguard()
+	if(!g_gui->m_font) return false;
+	return A1 = static_cast<int>(g_gui->m_font->GetSize());
 }
 
 PREDICATE_M(gui, textW, 2)
@@ -555,38 +374,12 @@ PREDICATE_M(gui, textW, 2)
 
 }
 
-
-int gsTextW( gsVM* vm )
-{
-	guard(gsTextW)
-	if(!gs_cktype(vm,0,GS_STR)) GS_RETURNINT(vm,0);
-	if(!g_gui->m_font)			GS_RETURNINT(vm,0);
-	float w,h;
-	g_gui->m_font->GetTextBox(gs_tostr(vm,0),w,h);
-	gs_pushint(vm,(int)w);
-	return 1;
-	unguard()
-}
-
 PREDICATE_M(gui, textH, 2)
 {
 	if(!g_gui->m_font) return A2 = 0;
 	float w, h;
 	g_gui->m_font->GetTextBox(A1, w, h);
 	return A2 = static_cast<int>(h);
-}
-
-
-int gsTextH( gsVM* vm )
-{
-	guard(gsTextH)
-	if(!gs_cktype(vm,0,GS_STR)) GS_RETURNINT(vm,0);
-	if(!g_gui->m_font)			GS_RETURNINT(vm,0);
-	float w,h;
-	g_gui->m_font->GetTextBox(gs_tostr(vm,0),w,h);
-	gs_pushint(vm,(int)h);
-	return 1;
-	unguard()
 }
 
 PREDICATE_M(gui, winDlgOpenFile, 4)
@@ -596,12 +389,7 @@ PREDICATE_M(gui, winDlgOpenFile, 4)
 	wcscpy(filename, A1);
 	
 	if(WinDlgOpenFile( filename, A3, A4))
-	{
-		//for(char * c = filename; *c; ++c)
-		//	if(*c == '\\')
-		//		*c = '/';
 		return A2 = filename;
-	}
 	return false;	
 }
 
@@ -610,13 +398,8 @@ PREDICATE_M(gui, winDlgOpenFolder, 2)
 	static WCHAR foldername[256];
 	foldername[0]=0;
 	wcscpy(foldername, A1);
-	BOOL ok = WinDlgOpenFolder( foldername );
-	if(ok) {
-		//for(WCHAR * c = foldername; *c; ++c)
-		//if( *c == L'\\')
-		//	*c = L'/';
+	if(WinDlgOpenFolder( foldername ))
 		return A2 = foldername;
-	}
 	return false;
 }
 
@@ -627,22 +410,6 @@ PREDICATE_M(gui, winDlgOpenColor, 2)
 		return A2 = static_cast<int64>(c);
 	return false;
 }
-
-
-int gsWinDlgOpenColor( gsVM* vm )
-{
-	guard(gsWinDlgOpenColor)
-	if(!gs_cktype(vm,0,GS_REF))		GS_RETURNINT(vm,0);
-	if(!gs_ckreftype(vm,0,GS_INT))	GS_RETURNINT(vm,0);
-	gsObj* obj = gs_toref(vm,0);
-	dword color = obj->i;
-	BOOL ret = WinDlgOpenColor(&color, TRUE);
-	if(ret)	obj->i = color;
-	gs_pushint(vm,ret);
-	return 1;
-	unguard()
-}
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // GUIDlg EXPORT
@@ -665,26 +432,6 @@ PREDICATE_M(dlg, new, 2)
 	return A1 = g_gui->makeDlg(A2);
 }
 
-int gsDlgNew( gsVM* vm )
-{
-	guard(gsDlgNew)
-	char dlgclass[64];
-	strcpy(dlgclass,"cGUIDlg");
-	if(gs_params(vm)==1 && gs_isstr(vm,0) && gs_tostr(vm,0)!=NULL )
-	{
-		strncpy(dlgclass,gs_tostr(vm,0),63);
-		dlgclass[63]=0;
-	}
-
-	cGUIDlg* dlg = (cGUIDlg*)GUICreateClass(dlgclass);
-	if(!dlg) { GS_ERROR(0,0,"dialog creation failure"); GS_RETURNINT(vm,-1); }
-	
-	g_gui->m_lastdlg = g_gui->DlgAdd(dlg); 
-	gs_pushint(vm, g_gui->m_lastdlg);
-	return 1;
-	unguard()
-}
-
 
 PREDICATE_M(dlg, select, 1)
 {
@@ -696,23 +443,9 @@ PREDICATE_M(dlg, select, 1)
 	return true;
 }
 
-int gsDlgSelect( gsVM* vm )
+PREDICATE_M(dlg, getSelect, 1)
 {
-	guard(gsDlgSelect)
-	int idx = gs_toint(vm,0);
-	if(idx<0 || idx>=g_gui->DlgCount()) { GS_ERROR(idx,g_gui->DlgCount(),"invalid dialog index"); return 0; }
-	g_gui->m_lastdlg = idx;
-	g_gui->m_lastitem = -1;
-	return 0;
-	unguard()
-}
-
-int gsDlgGetSelect( gsVM* vm )
-{
-	guard(gsDlgGetSelect)
-	gs_pushint(vm, g_gui->m_lastdlg);
-	return 1;
-	unguard()
+	return A1 = g_gui->m_lastdlg;
 }
 
 PREDICATE_M(gui, dlgClose, 0)
@@ -725,17 +458,6 @@ PREDICATE_M(gui, dlgClose, 1)
 {
 	g_gui->GetLastDlg()->Close(A1);
 	return true;
-}
-
-int gsDlgClose( gsVM* vm )
-{
-	guard(gsDlgClose)
-	GET_DLG();
-	int ret = 0;
-	if(gs_params(vm)==1) ret = gs_toint(vm,0);
-	dlg->Close(ret);
-	return 0;	
-	unguard()
 }
 
 PREDICATE_M(dlg, getRect, 4)
@@ -762,18 +484,6 @@ PREDICATE_M(dlg, getPos2, 2)
 	bool a1 = A1 = dlg->GetInt(DV_X2);
 	bool a2 = A2 = dlg->GetInt(DV_Y2);
 	return a1 && a2;
-}
-
-int gsDlgGetInt( gsVM* vm )
-{
-	guard(gsDlgGetInt)
-	GET_DLG(); 
-	if(!gs_cktype(vm,0,GS_INT)) GS_RETURNINT(vm,0);
-	int var = gs_toint(vm, 0);
-	if(var<0 || var>=DV_MAX) { GS_ERROR(var,DV_MAX,"invalid dialog variable"); GS_RETURNINT(vm,0); }
-	gs_pushint( vm, dlg->GetInt( var ) );
-	return 1;
-	unguard()
 }
 
 PREDICATE_M(dlg, setID, 1)
@@ -819,7 +529,6 @@ PREDICATE_M(dlg, setUser, 2)
 	return true;
 }
 
-
 PREDICATE_M(dlg, setRect, 4)
 {
 	cGUIDlg * dlg = g_gui->GetLastDlg();
@@ -830,76 +539,16 @@ PREDICATE_M(dlg, setRect, 4)
 	return true;
 }
 
-int gsDlgSetInt( gsVM* vm )
-{
-	guard(gsDlgSetInt)
-	GET_DLG();
-	if(!gs_cktype(vm,0,GS_INT)) return 0;
-	int var = gs_toint(vm, 0);
-	if(var<0 || var>=DV_MAX) { GS_ERROR(var,DV_MAX,"invalid dialog variable"); return 0; }
-	for(int i=1;i<gs_params(vm);i++)
-	{
-		if(gs_cktype(vm,i,GS_INT))
-			dlg->SetInt(var+i-1, gs_toint(vm,i));
-	}
-	return 0;
-	unguard()
-}
-
-int gsDlgGetTxt( gsVM* vm )
-{
-	guard(gsDlgGetTxt)
-	GET_DLG(); 
-	if(!gs_cktype(vm,0,GS_INT)) GS_RETURNSTR(vm,"");
-	int var = gs_toint(vm, 0);
-	if(var<0 || var>=DV_MAX) { GS_ERROR(var,DV_MAX,"invalid dialog variable"); GS_RETURNSTR(vm,""); }
-	gs_pushstr( vm, dlg->GetTxt( var ) );
-	return 1;
-	unguard()
-}
-
-int gsDlgSetTxt( gsVM* vm )
-{
-	guard(gsDlgSetTxt)
-	GET_DLG();
-	if(!gs_cktype(vm,0,GS_INT)) return 0;
-	int var = gs_toint(vm, 0);
-	if(var<0 || var>=DV_MAX) { GS_ERROR(var,DV_MAX,"invalid dialog variable"); return 0; }
-	for(int i=1;i<gs_params(vm);i++)
-	{
-		if(gs_cktype(vm,i,GS_STR))
-			dlg->SetTxt(var+i-1, gs_tostr(vm,i));
-	}
-	return 0;
-	unguard()
-}
-
 PREDICATE_M(dlg, addKey, 3)
 {
 	g_gui->GetLastDlg()->AddKey(A1, A2, A3);
 	return true;
 }
 
-int gsDlgAddKey( gsVM* vm)
+PREDICATE_M(dlg, count, 1)
 {
-	guard(gsDlgAddKey)
-	GET_DLG();
-	if(!gs_cktype(vm,0,GS_INT)) return 0;
-	if(!gs_cktype(vm,1,GS_INT)) return 0;
-	if(!gs_cktype(vm,2,GS_STR)) return 0;
-	dlg->AddKey( gs_toint(vm, 0), static_cast<byte>(gs_toint(vm, 1)), gs_tostr(vm, 2));
-	return 0;
-	unguard()
+	return A1 = g_gui->DlgCount();  
 }
-
-int gsDlgCount( gsVM* vm)
-{
-	guard(gsDlgCount)
-	gs_pushint( vm, g_gui->DlgCount());  
-	return 1;
-	unguard()
-}
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // GUIItem EXPORT
@@ -926,29 +575,6 @@ PREDICATE_M(gui, itemNew, 2)
 	return A1 = g_gui->makeItem(A2);
 }
 
-int gsItemNew( gsVM* vm )
-{
-	guard(gsItemNew)
-	GET_DLG();
-	if(dlg->ItemCount()>=MAX_GUIITEMS) { GS_ERROR(0,0,"too many items in a dialog"); GS_RETURNINT(vm,-1); }
-
-	char itemclass[64];
-	strcpy(itemclass,"cGUIItem");
-	if(gs_params(vm)==1 && gs_isstr(vm,0) && gs_tostr(vm,0)!=NULL )
-	{
-		strncpy(itemclass,gs_tostr(vm,0),63);
-		itemclass[63]=0;
-	}
-
-	cGUIItem* item = (cGUIItem*)GUICreateClass(itemclass);
-	if(!item) { GS_ERROR(0,0,"item creation failure"); GS_RETURNINT(vm,-1); }
-
-	g_gui->m_lastitem = dlg->ItemAdd(item);
-	gs_pushint(vm,g_gui->m_lastitem);
-	return 1;
-	unguard()
-}
-
 PREDICATE_M(gui, itemSelect, 1)
 {
 	cGUIDlg * dlg = g_gui->GetLastDlg();
@@ -960,40 +586,15 @@ PREDICATE_M(gui, itemSelect, 1)
 	return true;
 }
 
-
-int gsItemSelect( gsVM* vm )
+PREDICATE_M(gui, itemGetSelect, 1)
 {
-	guard(gsItemSelect)
-	GET_DLG();
-	int idx = gs_toint(vm,0);
-	if(idx<0 || idx>=dlg->ItemCount()) { GS_ERROR(idx,dlg->ItemCount(),"invalid item index"); return 0; }
-	sassert(dlg->ItemGet(idx)); // safety
-	g_gui->m_lastitem = idx;
-	return 0;
-	unguard()
-}
-
-int gsItemGetSelect( gsVM* vm )
-{
-	guard(gsItemGetSelect)
-	gs_pushint(vm, g_gui->m_lastitem); 
-	return 1;
-	unguard()
+	return A1 = g_gui->m_lastitem; 
 }
 
 PREDICATE_M(gui, itemBuild, 0)
 {
 	g_gui->GetLastItem()->Build();
 	return true;
-}
-
-int gsItemBuild( gsVM* vm )
-{
-	guard(gsItemBuild)
-	GET_ITEM(); 
-	item->Build();
-	return 0;
-	unguard()
 }
 
 PREDICATE_M(gui, itemGetX, 1)
@@ -1044,17 +645,6 @@ PREDICATE_M(gui, itemGetColor, 1)
 	return A1 = static_cast<int64>(g_gui->GetLastItem()->GetInt(IV_COLOR));
 }
 
-int gsItemGetInt( gsVM* vm )
-{
-	guard(gsItemGetInt)
-	GET_ITEM(); 
-	if(!gs_cktype(vm,0,GS_INT)) GS_RETURNINT(vm,0);
-	int var = gs_toint(vm, 0);
-	if(var<0 || var>=IV_MAX) { GS_ERROR(var,IV_MAX,"invalid item variable"); GS_RETURNINT(vm,0); }
-	gs_pushint( vm, item->GetInt( var ) );
-	return 1;
-	unguard()
-}
 
 PREDICATE_M(gui, itemSetID, 1)
 {
@@ -1131,7 +721,6 @@ PREDICATE_M(gui, itemSetTxtAlign, 1)
 	return true;
 }
 
-
 PREDICATE_M(gui, itemSetToolTip, 1)
 {
 	g_gui->GetLastItem()->SetTxt(IV_TOOLTIP,  A1);
@@ -1161,7 +750,6 @@ PREDICATE_M(gui, itemSetCmdActionParam, 1)
 	g_gui->GetLastItem()->SetInt(IV_CMDACTIONPARAM,  A1);
 	return true;
 }
-
 
 PREDICATE_M(gui, itemSetHidden, 1)
 {
@@ -1257,191 +845,9 @@ PREDICATE_M(gui, itemGetGuiTileMapMap, 4)
 }
 
 
-int gsItemSetInt( gsVM* vm )
+PREDICATE_M(gui, itemCount, 1)
 {
-	guard(gsItemSetInt)
-	GET_ITEM();
-	if(!gs_cktype(vm,0,GS_INT)) return 0;
-	int var = gs_toint(vm, 0);
-	if(var<0 || var>=IV_MAX) { GS_ERROR(var,IV_MAX,"invalid item variable"); return 0; }
-	for(int i=1;i<gs_params(vm);i++)
-	{
-		if(gs_cktype(vm,i,GS_INT))
-			item->SetInt(var+i-1, gs_toint(vm,i));
-	}
-	return 0;
-	unguard()
-}
-
-int gsItemGetTxt( gsVM* vm )
-{
-	guard(gsItemGetTxt)
-	GET_ITEM(); 
-	if(!gs_cktype(vm,0,GS_INT)) GS_RETURNSTR(vm,"");
-	int var = gs_toint(vm, 0);
-	if(var<0 || var>=IV_MAX) { GS_ERROR(var,IV_MAX,"invalid item variable"); GS_RETURNSTR(vm,""); }
-	gs_pushstr( vm, item->GetTxt( var ) );
-	return 1;
-	unguard()
-}
-
-int gsItemSetTxt( gsVM* vm )
-{
-	guard(gsItemSetTxt)
-	GET_ITEM();
-	if(!gs_cktype(vm,0,GS_INT)) return 0;
-	int var = gs_toint(vm, 0);
-	if(var<0 || var>=IV_MAX) { GS_ERROR(var,IV_MAX,"invalid item variable"); return 0; }
-	for(int i=1;i<gs_params(vm);i++)
-	{
-		if(gs_cktype(vm,i,GS_STR))
-			item->SetTxt(var+i-1, gs_tostr(vm,i));
-	}
-	return 0;
-	unguard()
-}
-
-int gsItemCount( gsVM* vm )
-{
-	guard(gsItemCount)
-	GET_DLG();
-	gs_pushint( vm, dlg->ItemCount());  
-	return 1;
-	unguard()
-}
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// GUI REGISTER
-//////////////////////////////////////////////////////////////////////////////////////////////////
-#define GS_REGCONST( c )	gs_regint( m_vm, #c, c );
-
-void cGUI::ScriptRegister()
-{
-	guard(cGUI::ScriptRegister)
-
-	// GUI
-	gs_regfn( m_vm, "DlgFind",			gsDlgFind  );				// int(id) > int(dlg/-1)
-	gs_regfn( m_vm, "ItemFind",			gsItemFind );				// int(id) > int(item)
-	gs_regfn( m_vm, "ImgLoad",			gsImgLoad );				// str(file) > int(idx/-1)
-	gs_regfn( m_vm, "ImgFind",			gsImgFind );				// str(file) > int(idx/-1)
-	gs_regfn( m_vm, "GuiGetInt",		gsGuiGetInt );				// int(idx) > int(val/0)
-	gs_regfn( m_vm, "GuiSetInt",		gsGuiSetInt );				// int(idx), int, ...
-	gs_regfn( m_vm, "GuiGetTxt",		gsGuiGetTxt );				// int(idx) > str(val/"")
-	gs_regfn( m_vm, "GuiSetTxt",		gsGuiSetTxt );				// int(idx), str, ...
-
-	// utils
-	gs_regfn( m_vm, "MouseX",			gsMouseX );					// > int(mouseposx)
-	gs_regfn( m_vm, "MouseY",			gsMouseY );					// > int(mouseposy)
-	gs_regfn( m_vm, "ScrW",				gsScrW );					// > int(screen width)
-	gs_regfn( m_vm, "ScrH",				gsScrH );					// > int(screen height)
-	gs_regfn( m_vm, "FontH",			gsFontH );					// > int(font height/0)
-	gs_regfn( m_vm, "TextW",			gsTextW );					// str(text) > int(text width/0)
-	gs_regfn( m_vm, "TextH",			gsTextH );					// str(text) > int(text height/0)
-	gs_regfn( m_vm, "WinDlgOpenColor",	gsWinDlgOpenColor );		// retint(color) > int(1/0)
-		
-	// GUIDlg													
-	gs_regfn( m_vm, "DlgNew",			gsDlgNew );					// [str(class)="cGUIItem"] > int(dlg/-1)
-	gs_regfn( m_vm, "DlgSelect",		gsDlgSelect );				// int(dlg)
-	gs_regfn( m_vm, "DlgGetSelect",		gsDlgGetSelect );			// > int(dlg)
-	gs_regfn( m_vm, "DlgClose",			gsDlgClose );				// [int(ret)=0]
-	gs_regfn( m_vm, "DlgGetInt",		gsDlgGetInt );				// int(var) > int(val/-1)
-	gs_regfn( m_vm, "DlgSetInt",		gsDlgSetInt );				// int(var), [int...]
-	gs_regfn( m_vm, "DlgGetTxt",		gsDlgGetTxt );				// int(var) > str(val/"")
-	gs_regfn( m_vm, "DlgSetTxt",		gsDlgSetTxt );				// int(var), [str...] 
-	gs_regfn( m_vm, "DlgAddKey",		gsDlgAddKey );				// int(key), int(flag), str(cmd) 
-
-	gs_regfn( m_vm, "DlgCount",			gsDlgCount );				// > int(dlg)
-	
-	// GUIItem
-	gs_regfn( m_vm, "ItemNew",			gsItemNew );				// [str(class)] > int(item/-1)
-	gs_regfn( m_vm, "ItemSelect",		gsItemSelect );				// int(item)
-	gs_regfn( m_vm, "ItemGetSelect",	gsItemGetSelect );			// > int(item)
-	gs_regfn( m_vm, "ItemBuild",		gsItemBuild );
-	gs_regfn( m_vm, "ItemGetInt",		gsItemGetInt );				// int(var) > int(val/0)
-	gs_regfn( m_vm, "ItemSetInt",		gsItemSetInt );				// int(var), [int...]
-	gs_regfn( m_vm, "ItemGetTxt",		gsItemGetTxt );				// int(var) > str(val/"")
-	gs_regfn( m_vm, "ItemSetTxt",		gsItemSetTxt );				// int(var), [str...]
-
-	gs_regfn( m_vm, "ItemCount",		gsItemCount );				// > int(items)
-
-	// aligns
-	GS_REGCONST( GUIALIGN_NONE			);
-	GS_REGCONST( GUIALIGN_LEFT			);
-	GS_REGCONST( GUIALIGN_RIGHT			);
-	GS_REGCONST( GUIALIGN_CENTERX		);
-	GS_REGCONST( GUIALIGN_TOP			);
-	GS_REGCONST( GUIALIGN_BOTTOM		);
-	GS_REGCONST( GUIALIGN_CENTERY		);
-	GS_REGCONST( GUIALIGN_CENTERXY		);
-
-	// styles
-	GS_REGCONST( GUISTYLE_NONE			);
-	GS_REGCONST( GUISTYLE_BACKGR		);
-	GS_REGCONST( GUISTYLE_GRADIENT		);
-	GS_REGCONST( GUISTYLE_BORDER		);
-	GS_REGCONST( GUISTYLE_BORDER3D		);
-	GS_REGCONST( GUISTYLE_PRESSED		);
-
-	// key flags
-	GS_REGCONST( GUIKEYFLAG_NONE		);
-	GS_REGCONST( GUIKEYFLAG_SHIFT		);
-	GS_REGCONST( GUIKEYFLAG_CTRL		);
-	GS_REGCONST( GUIKEYFLAG_ALT			);
-
-	// constant item variables
-	GS_REGCONST( IV_ID					);
-	GS_REGCONST( IV_STYLE				);
-	GS_REGCONST( IV_HIDDEN				);	
-	GS_REGCONST( IV_DISABLE				);
-	GS_REGCONST( IV_RECT				);
-	GS_REGCONST( IV_POS					);
-	GS_REGCONST( IV_X					);	
-	GS_REGCONST( IV_Y					);	
-	GS_REGCONST( IV_POS2				);
-	GS_REGCONST( IV_X2					);
-	GS_REGCONST( IV_Y2					);
-	GS_REGCONST( IV_TXT					);
-	GS_REGCONST( IV_TXTALIGN			);
-	GS_REGCONST( IV_TXTCOLOR			);
-	GS_REGCONST( IV_TXTOFFSET			);
-	GS_REGCONST( IV_COLOR				);
-	GS_REGCONST( IV_IMG					);
-	GS_REGCONST( IV_IMGCOLOR			);
-	GS_REGCONST( IV_IMGALIGN			);
-	GS_REGCONST( IV_MODE				);
-	GS_REGCONST( IV_CMDACTION			);
-	GS_REGCONST( IV_CMDACTIONPARAM		);
-	GS_REGCONST( IV_VALUE				);
-	GS_REGCONST( IV_GROUP				);	
-	GS_REGCONST( IV_TOOLTIP				);	
-	GS_REGCONST( IV_USER				);	
-	GS_REGCONST( IV_MAX					);	
-
-	// constant dialog variables
-	GS_REGCONST( DV_ID					);
-	GS_REGCONST( DV_HIDDEN				);
-	GS_REGCONST( DV_DISABLE				);
-	GS_REGCONST( DV_RECT				);
-	GS_REGCONST( DV_POS					);
-	GS_REGCONST( DV_POS2				);
-	GS_REGCONST( DV_X					);
-	GS_REGCONST( DV_Y					);
-	GS_REGCONST( DV_X2					);
-	GS_REGCONST( DV_Y2					);
-	GS_REGCONST( DV_MODAL				);
-	GS_REGCONST( DV_TESTKEY				);
-	GS_REGCONST( DV_CLOSEOUT			);
-	GS_REGCONST( DV_CLOSERET			);
-	GS_REGCONST( DV_CLOSECMD			);
-	GS_REGCONST( DV_USER				);
-	GS_REGCONST( DV_MAX					);
-
-	// constant gui variables
-	GS_REGCONST( GV_USER				);
-	GS_REGCONST( GV_MAX					);
-
-	unguard()
+	return A1 = g_gui->GetLastDlg()->ItemCount();  
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

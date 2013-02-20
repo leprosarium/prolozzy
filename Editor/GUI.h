@@ -7,9 +7,6 @@
 #include "E9System.h"
 #include "E9Math.h"
 #include "E9List.h"
-#include "gs.h"
-#include "gslib_file.h"
-#include "gslib_win.h"
 #include "GUIUtil.h"
 #include "GUIDlg.h"
 
@@ -84,17 +81,10 @@ virtual	int				DlgFind( cGUIDlg* dlg );		// return idx
 		BOOL			m_isbusy;						// if gi is busy (there is at least one modal dialog or is in a capture)
 				
 		// script
-		gsVM*			m_vm;
 		int				m_lastdlg;						// last (selected) dlg index
 		int				m_lastitem;						// last (selected) item index
 	
-		BOOL			ScriptInit();					// init script
-		void			ScriptDone();					// finish script
-		void			ScriptDo( char* szcmd );		// do command
 		bool			ScriptPrologDo(const std::string & pred);
-		int				ScriptCallback( int fid );		// call a script function by function id
-		BOOL			ScriptCompile( char* file );	// compile a file
-		void			ScriptRegister();				// register script functions
 };
 
 // gui replicators (cGUIItem, cGUIDlg)

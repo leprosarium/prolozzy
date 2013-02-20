@@ -47,7 +47,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(ProgramFiles)\pl\include;..\Engine;..\Engine\Common;..\Engine\Debug;..\Engine\Files;..\Engine\Input;..\Engine\Sound;..\Engine\App;..\Engine\Render;..\Engine\Gs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProgramFiles)\pl\include;..\Engine;..\Engine\Common;..\Engine\Debug;..\Engine\Files;..\Engine\Input;..\Engine\Sound;..\Engine\App;..\Engine\Render;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -79,7 +79,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <Optimization>MinSpace</Optimization>
-      <AdditionalIncludeDirectories>$(ProgramFiles)\pl\include;..\Engine;..\Engine\Common;..\Engine\Debug;..\Engine\Files;..\Engine\Input;..\Engine\Sound;..\Engine\App;..\Engine\Render;..\Engine\Gs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProgramFiles)\pl\include;..\Engine;..\Engine\Common;..\Engine\Debug;..\Engine\Files;..\Engine\Input;..\Engine\Sound;..\Engine\App;..\Engine\Render;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>

@@ -311,14 +311,9 @@ void cEdiApp::DropFile( LPCWSTR filepath )
 	if(g_gui->m_isbusy) { BEEP_ERROR; return ; } // gui busy (modal dialog)
 	if(!wcsstr(filepath, L".pmp")) { BEEP_ERROR; return ; } // not map
 	
-//	for(const WCHAR * c = filepath; *c; ++c)
-//		if(*c == L'\\')
-//			*c = L'/';
-
 	try
 	{
-		PlAtom arg = filepath;
-		PlCall("editor", "load", PlTermv(PlTerm(arg)));
+		PlCall("editor", "load", PlTermv(PlTerm(PlAtom(filepath))));
 	}
 	catch(PlException const & e)
 	{

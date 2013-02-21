@@ -89,7 +89,7 @@ drawCoins(Fontid) :-
 
 drawTitle(Fontid) :-
 	game:roomPos(Xr, Yr),
-	map:roomName(Xr, Yr, Name),
+	roomNames:get(Xr, Yr, name, Name),
 	core:hudGetTextWidth(Name, W),
 	X is 128 - W // 2,
 	core:hudDrawText(Fontid, rect(X, 29, W, 8), Name, 0 ), !.

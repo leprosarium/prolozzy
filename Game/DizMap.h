@@ -12,36 +12,20 @@
 #include <hash_map> 
 #include <algorithm>
 
-#define MAP_ID							"dizzymap"
-#define MAP_CHUNKID						0x11111111
-#define MAP_CHUNKINFO					0x22222222	// obsolete
-#define MAP_CHUNKINFO2					0x22222223
-#define MAP_CHUNKMARKERS				0x33333333	// obsolete
-#define MAP_CHUNKMARKERS2				0x33333334
-#define MAP_CHUNKBRUSHES				0x88888888	// obsolete
-#define MAP_CHUNKBRUSHES2				0x88888889
-
+#define MAP_SIZEMIN		128
+#define MAP_SIZEMAX		100000
 
 class Room
 {
 public:
-	static const int PropsNum = 8;		// number of room properties
 	static int Width;
 	static int Height;
 	static const int Border = 16;
 private:
-	std::string _Name;
-	int _Props[PropsNum];
 	std::vector<int> _Brushes;
 public:
-	std::string Name() const { return _Name; }
-	void Name(const std::string & name) { _Name = name; std::transform(_Name.begin(), _Name.end(), _Name.begin(), ::toupper); }
-
-	int Prop(size_t i) const { return _Props[i]; }
-	void Prop(size_t i, int v) { _Props[i] = v; }
 	void AddBrush(int idx) { _Brushes.push_back(idx); }
 	const std::vector<int> & Brushes() const { return _Brushes; }
-	static bool InvalidProp(int idx) { return idx < 0 || idx >= PropsNum; }
 	static int PosX2Room(int x) { return x >= 0  ?  x / Room::Width : (x + 1) / Room::Width - 1; }
 	static int PosY2Room(int y) { return y >= 0  ?  y / Room::Height : (y + 1) / Room::Height - 1; }
 };
@@ -50,7 +34,7 @@ class Object : public tBrush
 {
 	std::string _Name;
 public:
-//	Object() {}
+	Object() : tBrush() {}
 	Object(int (&data)[BRUSH_MAX], const PlAtom & id) : tBrush(data, id) {}
 	std::string Name() const { return _Name; }
 	void Name(const std::string & name) { _Name = name; std::transform(_Name.begin(), _Name.end(), _Name.begin(), ::toupper);  }
@@ -70,17 +54,12 @@ class cDizMap
 		std::vector<Object>	Objects;								// objects list (dynamic brushes)
 		IntIndex			ObjIndex;							// objects hash
 		std::vector<Room> Rooms;
-		char			m_filename[128];	// map file name (kept for reloads)
-
-		bool			LoadMap				();								// load brushes and stuff
 
 public:
 						cDizMap				();
-
+		void			Resize				( int width, int height );	// resize map; return true if no crop occured
 		void			Reset				();								// reset when start game; clears map brushes
 
-		// load
-		bool			Load				( const char* filename );				// load map data; map and objects should be empty before load map
 
 		bool			Reload				();								// reload map for debug purposes
 
@@ -92,10 +71,6 @@ public:
 		Room &			GetRoom(int rx, int ry) { return GetRoom(RoomIdx(rx, ry)); }
 		int			    RoomIdx(int rx, int ry) const { return rx + ry * Width(); }
 		bool			InvalidRoomCoord(int rx, int ry)	{ return rx < 0 || rx >= Width() || ry < 0 || ry >= Height(); }
-		int				GetRoomProp			( int rx, int ry, int idx );
-		void			SetRoomProp			( int rx, int ry, int idx, int value );
-		std::string		GetRoomName			( int rx, int ry );
-		void			SetRoomName			( int rx, int ry, const std::string & name );
 
 inline	void			MakeRoomBBW			( int rx, int ry, int &x1, int &y1, int &x2, int &y2, int border=0 )	{ x1=rx*Room::Width-border; y1=ry*Room::Height-border; x2=(rx+1)*Room::Width+border; y2=(ry+1)*Room::Height+border; }
 
@@ -104,6 +79,7 @@ inline	void			MakeRoomBBW			( int rx, int ry, int &x1, int &y1, int &x2, int &y2
 
 		// brushes
 		bool			InvalidBrushIndex(int idx) { return idx < 0 || idx >= BrushCount(); }
+		int			    BrushNew		();
 inline	int				BrushCount		()					{ return Brushes.size(); }
 inline	tBrush &		BrushGet		( int idx )			{ return Brushes[idx]; }
 inline	int				BrushFind		( atom_t id )		{ IntIndex::iterator i = BrushIndex.find(id); if(i != BrushIndex.end()) return i->second; return -1; }
@@ -111,6 +87,7 @@ inline	int				BrushFind		( atom_t id )		{ IntIndex::iterator i = BrushIndex.find
 
 		// objects
 		bool			InvalidObjIndex(int idx) { return idx < 0 || idx >= ObjCount(); }
+		int			    ObjNew		();
 inline	int					ObjCount		()					{ return Objects.size(); }
 inline	Object &			ObjGet			( int idx )			{ return Objects[idx]; }
 inline	int					ObjFind			( int id )			{ IntIndex::iterator i = ObjIndex.find(id); if(i != ObjIndex.end()) return i->second; return -1; }

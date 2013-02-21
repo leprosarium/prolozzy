@@ -16,13 +16,6 @@ cDizMap	g_map;
 int Room::Width = GAME_ROOMW;
 int Room::Height = GAME_ROOMH;
 
-
-PREDICATE_M(map, load, 1)
-{
-	g_map.Reset();
-	return g_map.Load(A1);
-}
-
 PREDICATE_M(map, brushCount, 1)
 {
 	return A1 = g_map.BrushCount();
@@ -49,6 +42,50 @@ PREDICATE_M(map, brushVar, 3)
 	if(val.type() == PL_VARIABLE)
 		return A3 = brush.Get(var);
 	brush.Set(var, val);
+	return true;
+}
+
+PREDICATE_M(map, brushSet , 3) 
+{
+	int idx = A1;
+	if(g_map.InvalidBrushIndex(idx))
+		throw PlException("invalid brush index");
+	int var = A2;
+	if(tBrush::InvalidProp(var)) 
+		throw PlException("invalid brush variable");
+	tBrush & brush = g_map.BrushGet(idx);
+
+	if(var == BRUSH_COLOR)
+	{
+		int64 color = A3;
+		brush.Set(var, color);
+	} 
+	else 
+	{
+		brush.Set(var, A3);
+	}
+	return true;
+}
+
+PREDICATE_M(map, objSet , 3) 
+{
+	int idx = A1;
+	if(g_map.InvalidObjIndex(idx)) 
+		throw PlException("invalid object index");
+	int var = A2;
+	if(Object::InvalidProp(var)) 
+		throw PlException("invalid object variable"); 
+
+	tBrush & obj = g_map.ObjGet(idx);
+	if(var == BRUSH_COLOR)
+	{
+		int64 color = A3;
+		obj.Set(var, color);
+	} 
+	else 
+	{
+		obj.Set(var, A3);
+	}
 	return true;
 }
 
@@ -95,46 +132,59 @@ PREDICATE_M(map, objName, 2)
 	return true;
 }
 
-PREDICATE_M(map, roomProp, 4)
+PREDICATE_M(map, brushNew, 1)
 {
-	int rx = A1;
-	int ry = A2;
-	int idx = A3;
-	if(g_map.InvalidRoomCoord(rx, ry))
-		throw PlException("invalid room coordinates");
-	if(idx < 0 || idx >= Room::PropsNum)
-		throw PlException("invalid room property");
-	PlTerm val = A4;
-	if(val.type() == PL_VARIABLE)
-		return A4 = g_map.GetRoomProp( rx, ry, idx );
-	int64 v;
-	if(!PL_get_int64(val, &v))
-		return false;
-	g_map.SetRoomProp( rx, ry, idx, v);
+	int idx = g_map.BrushNew();
+	return A1 = idx;
+}
+
+PREDICATE_M(map, objNew, 1)
+{
+	int idx = g_map.ObjNew();
+	return A1 = idx;
+}
+
+PREDICATE_M(map, resize, 2)
+{
+	g_map.Resize(A1, A2); 
+	return true; 
+}
+
+PREDICATE_M(map, setCamX, 1)
+{
 	return true;
 }
 
-PREDICATE_M(map, roomName, 3)
+PREDICATE_M(map, setCamY, 1)
 {
-	int rx = A1;
-	int ry = A2;
-	if(g_map.InvalidRoomCoord(rx, ry)) 
-		throw PlException("invalid room coordinates");
-	PlTerm val = A3;
-	if(val.type() == PL_VARIABLE)
-		return val = g_map.GetRoomName( rx, ry ).c_str();
-	g_map.SetRoomName( rx, ry, std::string(val) );
 	return true;
-
 }
+
+PREDICATE_M(map, setRoomW, 1)
+{
+	Room::Width = A1;
+	return true;
+}
+
+PREDICATE_M(map, setRoomH, 1)
+{
+	Room::Height = A1;
+	return true;
+}
+
+PREDICATE_M(map, reset, 0)
+{
+	g_map.Reset();
+	return true;
+}
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // INIT
 //////////////////////////////////////////////////////////////////////////////////////////////////
 cDizMap::cDizMap() : m_mapw(), m_maph()
 {
 	guard(cDizMap::cDizMap)
-	m_filename[0]=0;
-
 	unguard()
 }
 
@@ -153,174 +203,22 @@ void cDizMap::Reset()
 }
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// LOAD
-//////////////////////////////////////////////////////////////////////////////////////////////////
-bool cDizMap::Load( const char* filename )
+int	cDizMap::BrushNew()
 {
-	guard(cDizMap::Load)
-	if(!filename || !filename[0]) return false; // invalid file
-	strcpy(m_filename,filename);
-	_strlwr(m_filename);
-	dlog(LOGAPP, L"Loading map \"%S\"\n",m_filename);
-
-	if(!LoadMap()) { dlog(LOGERR, L"Loading map FAILED!\n\n"); return false; }
-	dlog(LOGAPP, L"Loading map SUCCESSFUL!\n\n");
-
-	PartitionMake();
-
-	g_game.MatMapAlloc();
-	g_game.mapW(Width());
-	g_game.mapH(Height());
-	g_game.roomW(Room::Width);
-	g_game.roomH(Room::Height);
-	g_game.SetRoom(g_game.roomX(),g_game.roomY()); // updates materialmap and re-gather objects
-
-	return true;
-	unguard()
+	Brushes.push_back(tBrush());
+	return Brushes.size() - 1;
 }
 
-#define ERROR_CHUNK( info )	{ F9_FileClose(file); dlog(LOGAPP, L"brocken chunk (%S)\n", info); return false; }
-bool cDizMap::LoadMap()
+int	cDizMap::ObjNew()
 {
-	guard(cDizMap::LoadMap)
-
-	// open file
-	F9FILE file = F9_FileOpen(m_filename);
-	if(!file) { dlog(LOGAPP, L"  map file not found.\n"); return false; }
-	F9_FileSeek(file,0,2);
-	int filesize = F9_FileTell(file);
-	F9_FileSeek(file,0,0);
-
-	// read chunks
-	int size;
-	int chunkid=0;
-	int chunksize=0;
-	int chunkcount=0;
-	int count_brush = 0;
-	int count_obj = 0;
-	int dummy;
-	char* buffer;
-
-	while(true)
-	{
-		if( F9_FileRead(&chunkid,4,file)!=4 )		{ ERROR_CHUNK("header"); }
-		if( F9_FileRead(&chunksize,4,file)!=4 )	{ ERROR_CHUNK("header"); }
-		
-		switch(chunkid)
-		{
-			case MAP_CHUNKID:
-			{
-				if( chunksize!=strlen(MAP_ID) )	{ ERROR_CHUNK("size"); }
-				buffer = (char*)smalloc(chunksize);
-				size = 0;
-				size += F9_FileRead(buffer, chunksize, file);
-				if(size!=chunksize) { sfree(buffer);  ERROR_CHUNK("size"); }
-
-				if(memcmp(buffer,MAP_ID,chunksize)!=0) { dlog(LOGAPP, L"invalid map id: '%S' (current version: '%S')\n", buffer, MAP_ID); sfree(buffer); F9_FileClose(file); return false; }
-				sfree(buffer);
-				break;
-			}
-
-			case MAP_CHUNKINFO2:
-			{
-				if( chunksize!= 6*4 ) { ERROR_CHUNK("size"); }
-				size = 0;
-				size += F9_FileRead(&m_mapw, 4, file);
-				size += F9_FileRead(&m_maph, 4, file);
-				size += F9_FileRead(&Room::Width, 4, file);
-				size += F9_FileRead(&Room::Height, 4, file);
-				size += F9_FileRead(&dummy, 4, file);
-				size += F9_FileRead(&dummy, 4, file);
-				if( size!=chunksize ) { ERROR_CHUNK("size"); }
-				
-				if(Room::Width<32 || Room::Width>1024) { ERROR_CHUNK("bad room width"); }
-				if(Room::Height<32 || Room::Height>1024) { ERROR_CHUNK("bad room height"); }
-				m_mapw = m_mapw / Room::Width;
-				m_maph = m_maph / Room::Height;
-				break;
-			}
-
-			case MAP_CHUNKMARKERS2:
-			{
-				F9_FileSeek(file,chunksize,1); // skip
-				break;
-			}
-
-			case MAP_CHUNKBRUSHES2:
-			{
-				if(chunksize%(BRUSH_MAX*4)!=0) { ERROR_CHUNK("size"); }
-				int data[BRUSH_MAX];
-				size = 0;
-				while(size<chunksize)
-				{
-					int ret = F9_FileRead(data, BRUSH_MAX*4, file);
-					if(ret!=BRUSH_MAX*4) { ERROR_CHUNK("size"); }
-					size += ret;
-
-					int type = data[BRUSH_TYPE];
-					std::stringstream id;
-					id << "id" << data[BRUSH_ID];
-					PlAtom aid(id.str().c_str());
-					if(type==0) 
-					{
-						
-						// new brush
-						Brushes.push_back(tBrush(data, aid));
-						tBrush & brush = Brushes.back();
-						count_brush++;
-
-						// add tracker to hash
-						if(int id = brush.Get(BRUSH_ID))
-							BrushIndex.insert(IntIndex::value_type(aid, Brushes.size() - 1));
-
-					}
-					else
-					if(type==1) 
-					{
-						// new object
-						Objects.push_back(Object(data, aid));
-						Object & obj = Objects.back();
-						obj.Set(BRUSH_COLLISION,0);
-						count_obj++;
-
-						// add tracker to hash
-						if(int id = obj.Get(BRUSH_ID))
-							ObjIndex.insert(IntIndex::value_type(aid, Objects.size() - 1));
-					}
-				}
-				break;
-			}
-			
-			default:
-			{
-				dlog(LOGAPP, L"  unknown chunk: id=%x size=%i\n", chunkid, chunksize);
-				if(chunksize>0) F9_FileSeek(file,chunksize,1);
-			}
-		}
-		if( F9_FileTell(file)>=filesize) break;
-
-	}
-
-	F9_FileClose(file);
-	dlog(LOGAPP, L"  map=%ix%i, room=%ix%i, brushes=%i, objects=%i\n", Width(), Height(), Room::Width, Room::Height, count_brush, count_obj );
-
-	int count = Width() * Height();
-	if(count<=0) return false; // validate size
-
-	// init roomprops
-	Rooms.resize(count);
-
-	return true;
-	unguard()
+	Objects.push_back(Object());
+	return Objects.size() - 1;
 }
-
 
 bool cDizMap::Reload()
 {
 	guard(cDizMap::Reload)
 	Reset();
-	if(!Load(m_filename)) return false;
 	g_script.reloadMap();
 	return true;
 	unguard()
@@ -410,42 +308,6 @@ void cDizMap::DrawRoom( int rx, int ry, int layer, int mode, int ofsx, int ofsy 
 	unguard()
 }
 
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// DATA
-//////////////////////////////////////////////////////////////////////////////////////////////////
-int cDizMap::GetRoomProp( int rx, int ry, int idx )
-{
-	guard(cDizMap::GetRoomProp)
-	if(Rooms.empty() || InvalidRoomCoord(rx, ry) || Room::InvalidProp(idx)) return 0;
-	return GetRoom(rx, ry).Prop(idx);
-	unguard()
-}
-				
-void cDizMap::SetRoomProp( int rx, int ry, int idx, int value )	
-{
-	guard(cDizMap::SetRoomProp)
-	if(Rooms.empty() || InvalidRoomCoord(rx, ry) || Room::InvalidProp(idx)) return;
-	GetRoom(rx, ry).Prop(idx, value);
-	unguard()
-}
-
-std::string cDizMap::GetRoomName( int rx, int ry )
-{
-	guard(cDizMap::GetRoomName)
-	if(Rooms.empty() || InvalidRoomCoord(rx ,ry)) return 0;
-	return GetRoom(rx, ry).Name();
-	unguard()
-}
-				
-void cDizMap::SetRoomName( int rx, int ry, const std::string & name )	
-{
-	guard(cDizMap::SetRoomName)
-	if(Rooms.empty() || InvalidRoomCoord(rx, ry))  return;
-	GetRoom(rx, ry).Name(name);
-	unguard()
-}
-
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // PARTITIONS
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -480,6 +342,54 @@ void cDizMap::PartitionMake()
 		PartitionAdd(i);
 	unguard()
 }
+
+void cDizMap::Resize( int width, int height )
+{
+	if(width<MAP_SIZEMIN)	width = MAP_SIZEMIN;	// too small
+	if(height<MAP_SIZEMIN)	height = MAP_SIZEMIN;	// too small
+	if(width>MAP_SIZEMAX)	width = MAP_SIZEMAX;	// too big
+	if(height>MAP_SIZEMAX)	height = MAP_SIZEMAX;	// too big
+	m_mapw = width / Room::Width;
+	m_maph = height / Room::Height;
+
+	int count = Width() * Height();
+	Rooms.clear();
+	Rooms.resize(count);
+	PartitionMake();
+
+	ObjIndex.clear();
+	BrushIndex.clear();
+	for(size_t i = 0, e = Objects.size(); i != e; ++i) {
+		Object & o = ObjGet(i);
+		if(int id = o.Get(BRUSH_ID))
+		{
+			std::stringstream sid;
+			sid << "id" << id;
+			PlAtom aid(sid.str().c_str());
+			o.id(aid);
+			ObjIndex.insert(IntIndex::value_type(aid, i));
+		}
+	}
+	for(size_t i = 0, e = Brushes.size(); i != e; ++i) {
+		tBrush & b = BrushGet(i);
+		if(int id = b.Get(BRUSH_ID))
+		{
+			std::stringstream sid;
+			sid << "id" << id;
+			PlAtom aid(sid.str().c_str());
+			b.id(aid);
+			BrushIndex.insert(IntIndex::value_type(aid, i));
+		}
+	}
+	g_game.MatMapAlloc();
+	g_game.mapW(Width());
+	g_game.mapH(Height());
+	g_game.roomW(Room::Width);
+	g_game.roomH(Room::Height);
+	g_game.SetRoom(g_game.roomX(),g_game.roomY()); // updates materialmap and re-gather objects
+}
+
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////

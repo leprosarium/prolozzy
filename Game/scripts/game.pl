@@ -8,8 +8,6 @@
 		 closeRoom/2,
 		 outRoom/2,
 		 collideObject/2,
-		 roomsSetNames/0,
-		 roomSetCustomText/4,
 		 objectsSetNames/0,
 		 beginNewGame/0,
 		 roomPos/2,
@@ -23,7 +21,6 @@
 		 deathMessage/2]).
 
 :- use_module(def).
-:- use_module(roomprops).
 :- use_module(gamedef).
 
 
@@ -131,15 +128,6 @@ outRoom(X, Y) :-
 collideObject(100, 1) :-
 	update:register(player, player:playStun),
 	core:debugData(9, coll(100, 1)).
-
-roomsSetNames :-
-	roomNamesFile(Filename),
-	roomsLoadNames(Filename),
-	core:dlog('roomsSetNames\n').
-
-
-roomSetCustomText(X, Y, Idx, Txt) :-
-	core:dlog(roomSetCustomText(X, Y, Idx, Txt)).
 
 
 objectsSetNames :-

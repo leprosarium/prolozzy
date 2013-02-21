@@ -103,10 +103,10 @@ cropString([_|No], Nr, Max) :-
 
 
 update :-
-	edi:getMapW(MapW), setVal(item, MapW),
-	edi:getMapH(MapH), setVal(item(1), MapH),
-	edi:getRoomW(RoomW), setVal(item(2), RoomW),
-	edi:getRoomH(RoomH), setVal(item(3), RoomH),
+	map:getMapW(MapW), setVal(item, MapW),
+	map:getMapH(MapH), setVal(item(1), MapH),
+	map:getRoomW(RoomW), setVal(item(2), RoomW),
+	map:getRoomH(RoomH), setVal(item(3), RoomH),
 	mapFile(Name),
 	atom_chars(Name, Chars),
 	cropString(Chars, NM, 280),
@@ -157,8 +157,8 @@ mapResize(MapW, MapH, RoomW, RoomH) :-
 	(   \+ map:resize(MapW, MapH)
 	->  gui:msgBoxOk("Warning", "Some brushes have been cropped \nand left out of the current map area.", icon_warning)
 	;   true),
-	edi:setRoomW(RoomW),
-	edi:setRoomH(RoomH),
+	map:setRoomW(RoomW),
+	map:setRoomH(RoomH),
 	core:ini('editor.ini', 'editor', 'options_roomw', RoomW),
 	core:ini('editor.ini', 'editor', 'options_roomh', RoomH),
 	update,

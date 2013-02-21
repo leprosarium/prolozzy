@@ -37,7 +37,6 @@ saveGameToStream(S) :-
 	saveUpdate(player, S),
 	saveState(S).
 
-	%saveRoomProperties(S),
 	%saveUserData(S).
 
 saveOk :-

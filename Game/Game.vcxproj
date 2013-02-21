@@ -91,7 +91,7 @@
       <Outputs>$(OutDir)$(ProjectName).prc</Outputs>
     </CustomBuild>
     <CustomBuild>
-      <AdditionalInputs>scripts\action.pl;scripts\ai.pl;scripts\brush.pl;scripts\def.pl;scripts\dialog.pl;scripts\file.pl;scripts\game.pl;scripts\gamedef.pl;scripts\handlers.pl;scripts\inventory.pl;scripts\menu.pl;scripts\message.pl;scripts\movement.pl;scripts\obj.pl;scripts\player.pl;scripts\roomprops.pl;scripts\sound.pl;scripts\start.pl;scripts\update.pl;scripts\util.pl</AdditionalInputs>
+      <AdditionalInputs>scripts\action.pl;scripts\ai.pl;scripts\brush.pl;scripts\def.pl;scripts\dialog.pl;scripts\file.pl;scripts\game.pl;scripts\gamedef.pl;scripts\handlers.pl;scripts\inventory.pl;scripts\menu.pl;scripts\message.pl;scripts\movement.pl;scripts\obj.pl;scripts\player.pl;scripts\roomNames.pl;scripts\sound.pl;scripts\start.pl;scripts\update.pl;scripts\util.pl</AdditionalInputs>
       <Message>Build Prolog State</Message>
     </CustomBuild>
   </ItemDefinitionGroup>
@@ -122,7 +122,7 @@
     <CustomBuild>
       <Message>Build Prolog State</Message>
       <Outputs>$(OutDir)$(ProjectName).prc</Outputs>
-      <AdditionalInputs>scripts\action.pl;scripts\ai.pl;scripts\brush.pl;scripts\def.pl;scripts\dialog.pl;scripts\file.pl;scripts\game.pl;scripts\gamedef.pl;scripts\handlers.pl;scripts\inventory.pl;scripts\menu.pl;scripts\message.pl;scripts\movement.pl;scripts\obj.pl;scripts\player.pl;scripts\roomprops.pl;scripts\sound.pl;scripts\start.pl;scripts\update.pl;scripts\util.pl</AdditionalInputs>
+      <AdditionalInputs>scripts\action.pl;scripts\ai.pl;scripts\brush.pl;scripts\def.pl;scripts\dialog.pl;scripts\file.pl;scripts\game.pl;scripts\gamedef.pl;scripts\handlers.pl;scripts\inventory.pl;scripts\menu.pl;scripts\message.pl;scripts\movement.pl;scripts\obj.pl;scripts\player.pl;scripts\roomNames.pl;scripts\sound.pl;scripts\start.pl;scripts\update.pl;scripts\util.pl</AdditionalInputs>
       <Command>"$(ProgramFiles)\pl\bin\swipl.exe" -q --stand_alone=true  -o $(OutDir)$(ProjectName).prc -c %(RelativeDir)%(Filename)%(Extension)</Command>
     </CustomBuild>
   </ItemDefinitionGroup>
@@ -176,7 +176,7 @@
     <None Include="scripts\movement.pl" />
     <None Include="scripts\obj.pl" />
     <None Include="scripts\player.pl" />
-    <None Include="scripts\roomprops.pl" />
+    <None Include="scripts\roomNames.pl" />
     <None Include="scripts\sound.pl" />
     <None Include="scripts\start.pl" />
     <None Include="scripts\test.pl" />

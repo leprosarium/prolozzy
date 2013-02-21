@@ -656,40 +656,6 @@ PREDICATE_M(edi, getScrH, 1)
 	return A1 = EdiApp()->GetScrH();
 }
 
-PREDICATE_M(edi, getMapW, 1)
-{
-	return A1 = g_map.m_mapw;
-}
-
-PREDICATE_M(edi, getMapH, 1)
-{
-	return A1 = g_map.m_maph;
-}
-
-PREDICATE_M(edi, getRoomW, 1)
-{
-	return A1 = g_map.m_roomw;
-}
-
-PREDICATE_M(edi, getRoomH, 1)
-{
-	return A1 = g_map.m_roomh;
-}
-
-PREDICATE_M(edi, getRoomGrid, 1)
-{
-	return A1 = g_map.m_roomgrid;
-}
-
-PREDICATE_M(edi, getCamX, 1)
-{
-	return A1 = g_map.m_camx;
-}
-
-PREDICATE_M(edi, getCamY, 1)
-{
-	return A1 = g_map.m_camy;
-}
 
 PREDICATE_M(edi, getAxeX, 1)
 {
@@ -701,22 +667,10 @@ PREDICATE_M(edi, getAxeY, 1)
 	return A1 = EdiApp()->GetAxeY();
 }
 
-PREDICATE_M(edi, getZoom, 1)
-{
-	return  A1 = g_map.m_camz;
-}
-
-PREDICATE_M(edi, getSelect, 1)
-{
-	return A1 = g_map.m_selectcount;
-}
-
-
 PREDICATE_M(edi, getBrushRect, 1)
 {
 	return A1 = g_paint.m_brushrect;
 }
-
 
 PREDICATE_M(edi, getColorBack1, 1)
 {
@@ -778,47 +732,6 @@ PREDICATE_M(edi, setGridSize, 1)
 	return true;
 }
 
-PREDICATE_M(edi, setRoomW, 1)
-{
-	g_map.m_roomw = A1;
-	return true;
-}
-
-PREDICATE_M(edi, setRoomH, 1)
-{
-	g_map.m_roomh = A1;
-	return true;
-}
-
-PREDICATE_M(edi, setRoomGrid, 1)
-{
-	g_map.m_roomgrid = A1;
-	return true;
-}
-
-PREDICATE_M(edi, setCamX, 1)
-{
-	g_map.m_camx = A1;
-	return true;
-}
-
-PREDICATE_M(edi, setCamY, 1)
-{
-	g_map.m_camy = A1;
-	return true;
-}
-
-PREDICATE_M(edi, setZoom, 1)
-{
-	g_map.m_camz = A1;
-	return true;
-}
-
-PREDICATE_M(edi, setSelect, 1)
-{
-	g_map.m_selectcount = A1;
-	return true;
-}
 
 
 PREDICATE_M(edi, setBrushRect, 1)
@@ -1046,177 +959,6 @@ PREDICATE_M(edi, toolCommand, 1)
 	return true; 
 }
 
-PREDICATE_M(map, load, 1)
-{
-	return g_map.Load(WideStringToMultiByte(A1));
-}
-
-
-
-// map brush ................................................................................
-
-PREDICATE_M(map, brushCount, 1)
-{
-	return A1 = g_map.m_brushcount;
-}
-
-#define MAP_BRUSH_PROP(Prop, PROP)\
-GET_MAP_BRUSH_PROP(Prop, PROP)\
-SET_MAP_BRUSH_PROP(Prop, PROP)
-
-#define GET_MAP_BRUSH_PROP(Prop, PROP) PREDICATE_M(map, brushGet##Prop, 2)\
-{\
-	return A2 = g_map.GetBrush(A1).m_data[BRUSH_##PROP];\
-}
-
-#define SET_MAP_BRUSH_PROP(Prop, PROP) PREDICATE_M(map, brushSet##Prop, 2)\
-{\
-	g_map.GetBrush(A1).m_data[BRUSH_##PROP] = A2; \
-	return true;\
-}
-
-MAP_BRUSH_PROP(Layer, LAYER)
-MAP_BRUSH_PROP(X, X)
-MAP_BRUSH_PROP(Y, Y)
-MAP_BRUSH_PROP(W, W)
-MAP_BRUSH_PROP(H, H)
-MAP_BRUSH_PROP(Tile, TILE)
-MAP_BRUSH_PROP(Frame, FRAME)
-MAP_BRUSH_PROP(MapX1, MAP)
-MAP_BRUSH_PROP(MapY1, MAP+1)
-MAP_BRUSH_PROP(MapX2, MAP+2)
-MAP_BRUSH_PROP(MapY2, MAP+3)
-MAP_BRUSH_PROP(Flip, FLIP)
-MAP_BRUSH_PROP(Shader, SHADER)
-MAP_BRUSH_PROP(Scale, SCALE)
-MAP_BRUSH_PROP(Select, SELECT)
-
-MAP_BRUSH_PROP(Type, TYPE)
-MAP_BRUSH_PROP(ID, ID)
-MAP_BRUSH_PROP(Material, MATERIAL)
-MAP_BRUSH_PROP(Draw, DRAW)
-MAP_BRUSH_PROP(Disable, DISABLE)
-MAP_BRUSH_PROP(Delay, DELAY)
-MAP_BRUSH_PROP(Anim, ANIM)
-MAP_BRUSH_PROP(Collider, COLLIDER)
-MAP_BRUSH_PROP(Class, CLASS)
-MAP_BRUSH_PROP(Status, STATUS)
-MAP_BRUSH_PROP(Target, TARGET)
-MAP_BRUSH_PROP(Death, DEATH)
-
-PREDICATE_M(map, brushGetColor, 2) 
-{
-	int64 color = static_cast<unsigned>(g_map.GetBrush(A1).m_data[BRUSH_COLOR]);
-	return A2 = color;
-}
-
-
-PREDICATE_M(map, brushGet, 3) 
-{
-	tBrush & brush = g_map.GetBrush(A1);
-	int idx = A2;
-	if(idx < 0 || idx >= BRUSH_MAX) 
-		throw PlDomainError("invalid brush variable", A2);
-	if(idx == BRUSH_COLOR) {
-		int64 color = static_cast<unsigned>(brush.m_data[idx]);
-		return A3 = color;
-	}
-	return A3 = brush.m_data[idx];
-}
-
-PREDICATE_M(map, brushSetColor , 2) 
-{
-	int64 color = A2;
-	g_map.GetBrush(A1).m_data[BRUSH_COLOR] = color;
-	return true;
-}
-
-PREDICATE_M(map, brushSet , 3) 
-{
-	tBrush & brush = g_map.GetBrush(A1);
-	int idx = A2;
-	if(idx < 0 || idx >= BRUSH_MAX) 
-		throw PlDomainError("invalid brush variable", A2);
-	if(idx == BRUSH_COLOR)
-	{
-		int64 color = A3;
-		brush.m_data[idx] = color;
-	} 
-	else 
-	{
-		brush.m_data[idx] = A3;
-	}
-	return true;
-}
-
-
-PREDICATE_M(map, brushNew, 0)
-{
-	g_map.BrushNew();
-	EdiApp()->UndoReset();
-	return true;
-}
-
-PREDICATE_M(map, brushNew, 1)
-{
-	int idx = g_map.BrushNew();
-	EdiApp()->UndoReset();
-	return A1 = idx;
-}
-
-PREDICATE_M(map, brushDel, 1)
-{
-	g_map.BrushDel(A1);
-	EdiApp()->UndoReset();
-	return 0;
-}
-
-PREDICATE_M(map, repartition, 0)
-{
-	return g_map.PartitionRepartition();
-}
-
-
-PREDICATE_M(map, refresh, 0) 
-{
-	g_map.m_refresh = TRUE;
-	return true;
-}
-
-PREDICATE_M(map, reset, 0)
-{
-	g_map.Reset();
-	EdiApp()->UndoReset();
-	return true;
-}
-
-
-PREDICATE_M(map, resize, 2)
-{
-	int ret = g_map.Resize(A1, A2); 
-	EdiApp()->UndoReset();
-	return ret; 
-}
-
-
-PREDICATE_M(selection, goto, 1)
-{
-	g_map.SelectionGoto(A1);
-	return true;
-}
-
-PREDICATE_M(selection, refresh, 0)
-{
-	g_map.SelectionRefresh();
-	return 0;
-}
-
-PREDICATE_M(map, saveImage, 1)
-{
-	BOOL ret = g_map.SaveMapImage(A1);
-	g_map.m_refresh = TRUE;
-	return ret;
-}
 
 void cEdiApp::ErrorMessage( LPCWSTR msg )
 {

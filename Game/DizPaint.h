@@ -115,7 +115,7 @@ struct tBrush
 	int		m_data[BRUSH_MAX];
 	PlAtom _id;
 public:
-//	tBrush() {}
+	tBrush() : _id("0") { 	memset(m_data, 0, sizeof(m_data)); Set(BRUSH_TILE, -1); Set(BRUSH_COLOR, 0xffffffff); }
 	tBrush(int (&data)[BRUSH_MAX], const PlAtom &_id) : _id(_id) { memcpy(m_data, data, sizeof(m_data)); }
 	PlAtom id() const { return _id;}
 	void id(const PlAtom &id) { _id = id; }

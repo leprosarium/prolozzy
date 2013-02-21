@@ -25,10 +25,10 @@ load :-
 	edi:setAxes(Axes),
 	edi:setGrid(Grid),
 	edi:setSnap(Snap),
-	edi:setRoomGrid(Roomgrid),
+	map:setRoomGrid(Roomgrid),
 	edi:setBrushRect(Brushrect),
-	edi:setRoomW(Roomw),
-	edi:setRoomH(Roomh),
+	map:setRoomW(Roomw),
+	map:setRoomH(Roomh),
 	edi:setColorMap(Color),
 	def:setColorTheme(Theme).
 
@@ -94,7 +94,7 @@ createBox1(X0, Y0, DDX, DDY) :-
 	gui:createText(XX1, Y2, 100, "snap to grid" ),
 	Y3 is Y2 + DDY,
 	% room grid
-	edi:getRoomGrid(RoomGrid),
+	map:getRoomGrid(RoomGrid),
 	gui:createCheck(X, Y3, RoomGrid),
 	def:dlg(item(3), ID3),
 	gui:itemSetID(ID3),
@@ -310,7 +310,7 @@ close :-
 	editor:param(options_snap, Snap),
 
 	getValue(3, RoomGrid),
-	edi:setRoomGrid(RoomGrid),
+	map:setRoomGrid(RoomGrid),
 	editor:param(options_roomgrid, RoomGrid),
 
 	getValue(4, BrushRect),
@@ -341,10 +341,10 @@ save :-
 	edi:getAxes(Axes),
 	edi:getGrid(Grid),
 	edi:getSnap(Snap),
-	edi:getRoomGrid(RoomGrid),
+	map:getRoomGrid(RoomGrid),
 	edi:getBrushRect(BrushRect),
-	edi:getRoomW(RoomW),
-	edi:getRoomH(RoomH),
+	map:getRoomW(RoomW),
+	map:getRoomH(RoomH),
 	edi:getColorMap(ColorMap),
 
 	editor:param(options_axes, Axes),

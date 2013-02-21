@@ -328,9 +328,9 @@ colorWin :-
 
 
 zoomSet(Step) :-
-	edi:getZoom(CurZoom),
+	map:getZoom(CurZoom),
 	NewZoom is min(max(CurZoom + Step, 1), 4),
-	edi:setZoom(NewZoom),
+	map:setZoom(NewZoom),
 	map:refresh.
 
 search :-
@@ -412,8 +412,8 @@ roomProps :-
 	edi:getTool(1);
 	edi:toolBrushGetX(X),
 	edi:toolBrushGetY(Y),
-	edi:getRoomW(W),
-	edi:getRoomH(H),
+	map:getRoomW(W),
+	map:getRoomH(H),
 	RX is X // W,
 	RY is Y // H,
 	dlgRoomProps:create(RX, RY).

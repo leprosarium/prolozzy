@@ -31,7 +31,7 @@ cover :-
 	game:state(cover),
 	player:setDisable(true),
 	game:roomPos(X, Y),
-	map:roomName(X, Y, 'PRESS ACTION TO START'),
+	roomNames:set(X, Y, name, 'PRESS ACTION TO START'),
 	coverLoop.
 
 coverLoop :-
@@ -57,7 +57,7 @@ attract :-
 	gamedef:playerMainMenuY(MMY),
 	player:setPos(MMX, MMY),
 	player:setDisable(false),
-	game:roomPos(X, Y), map:roomName(X, Y, '...ATTRACT MODE...'),
+	game:roomPos(X, Y), roomNames:set(X, Y, name, '...ATTRACT MODE...'),
 	attractLoop.
 
 attractLoop :-

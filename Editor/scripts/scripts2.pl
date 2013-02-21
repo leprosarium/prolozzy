@@ -12,7 +12,7 @@ checkTile :-
 	map:brushCount(BC),
 	checkTile(0, BC, 0, Select),
 	edi:waitCursor(0),
-	edi:setSelect(Select),
+	map:setSelect(Select),
 	(   Select == 0
 	->  Msg = 'All brush tiles are valid.'
 	;   format(string(Msg), 'There are ~d missing tiles.', [Select])
@@ -39,7 +39,7 @@ checkId :-
 	checkIdCollect(Ids),
 	checkIdProcess(Ids, Count),
 	edi:waitCursor(0),
-	edi:setSelect(Count),
+	map:setSelect(Count),
 	(   Count == 0
 	->  gui:msgBoxOk('Message', 'No dulicate ids', icon_info)
 	;   format(string(Msg), '~d duplicate ids', [Count]),
@@ -80,7 +80,7 @@ checkOverlapping :-
 	checkOverCollect(Ids),
 	checkOverProcess(Ids, Count),
 	edi:waitCursor(0),
-	edi:setSelect(Count),
+	map:setSelect(Count),
 	(   Count == 0
 	->  gui:msgBoxOk('Message', 'No overlapping brushes found.', icon_info)
 	;   format(string(Msg), '~d overlapping brushes found.', [Count]),
@@ -126,7 +126,7 @@ checkDynamicBrushId :-
 	checkDynamicBrushId(0, BC, 0, Count),
 	edi:waitCursor(0),
 
-	edi:setSelect(Count),
+	map:setSelect(Count),
 	(   Count =\= 0
 	->  format(string(Msg), 'There are ~d dynamic brushes without ids.\nThey will not be accessible in script.\nSet them ids or make them static brushes.', [Count]),
 	    gui:msgBoxOk('Warning', Msg, icon_warning)
@@ -153,7 +153,7 @@ checkStaticBrushId :-
 	checkStaticBrushId(0, BC, 0, Count),
 	edi:waitCursor(0),
 
-	edi:setSelect(Count),
+	map:setSelect(Count),
 	(   Count =\= 0
 	->  format(string(Msg), 'There are ~d static brushes with ids.\nMake sure they need ids indeed.', [Count]),
 	    gui:msgBoxOk('Warning', Msg, icon_warning)
@@ -176,8 +176,8 @@ countRooms :-
 
 countRoomsApply :-
 	edi:waitCursor(1),
-	edi:getRoomW(RW),
-	edi:getRoomH(RH),
+	map:getRoomW(RW),
+	map:getRoomH(RH),
 	Params = params(32, RW, RH),
 	countRoomsCollect(Params, Rooms),
 	countRoomsMark(Rooms, Count, Params),

@@ -6,7 +6,7 @@
 :- use_module(game, []).
 :- use_module(player, []).
 :- use_module(update, []).
-:- use_module(roomprops, []).
+:- use_module(roomNames, []).
 :- use_module(dialog, []).
 :- use_module(message, []).
 :- use_module(menu, []).

@@ -66,14 +66,11 @@ restart :-
 
 
 reloadMap:-
-	map:load("data\\map\\dizzy.map"),
-	game:roomsSetNames,
+	File = "data\\map\\dizzy.pmp",
+	map:reset,
+	setup_call_cleanup(
+	    catch(open(File, read, S), Ex, (core:dl(Ex), fail)), file:loadTerms(S), close(S)),
 	game:objectsSetNames,
-	roomprops:roomTextsFile(TextFilename),
-	roomprops:roomsLoadTexts(TextFilename),
-	roomprops:roomPropsFile(PropFilename),
-	roomprops:roomsLoadProps(PropFilename),
-
 	menu:main.
 
 	% INTRO

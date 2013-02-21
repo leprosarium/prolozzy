@@ -29,7 +29,7 @@ loadTerms(Term, S) :-
 	loadTerms(S), !.
 
 mapSave(File) :-
-%	core:dl(save(File)),
+	core:dl(save(File)),
 	setup_call_cleanup(open(File, write, S),
 			   saveMapToStream(S),
 			   close(S)).
@@ -40,31 +40,31 @@ saveMapToStream(S) :-
 	saveMapCtl(S).
 
 saveMapCtl(S):-
-	edi:getMapW(MapW),
-	edi:getMapH(MapH),
-	edi:getCamX(CamX),
-	edi:getCamY(CamY),
-	edi:getRoomW(RoomW),
-	edi:getRoomH(RoomH),
-	writet(S, map:resize(MapW,MapH)),
-	writet(S, edi:setCamX(CamX)),
-	writet(S, edi:setCamY(CamY)),
-	writet(S, edi:setRoomW(RoomW)),
-	writet(S, edi:setRoomH(RoomH)).
+	map:getMapW(MapW),
+	map:getMapH(MapH),
+	map:getCamX(CamX),
+	map:getCamY(CamY),
+	map:getRoomW(RoomW),
+	map:getRoomH(RoomH),
+	writet(S, map:setCamX(CamX)),
+	writet(S, map:setCamY(CamY)),
+	writet(S, map:setRoomW(RoomW)),
+	writet(S, map:setRoomH(RoomH)),
+	writet(S, map:resize(MapW,MapH)).
 
 saveBrsh(Count, Count, _).
 saveBrsh(I, Count, S) :-
-	writet(S, map:brushNew),
-	forall(brush:get(I, Props), writet(S, brush:set(I, Props))),
+	brush:getProps(I, Props),
+	writet(S, brush:new(Props)),
 	II is I + 1,
 	saveBrsh(II, Count, S).
 
 
 saveRooms(S) :-
-	edi:getMapW(MapW),
-	edi:getMapH(MapH),
-	edi:getRoomW(RoomW),
-	edi:getRoomH(RoomH),
+	map:getMapW(MapW),
+	map:getMapH(MapH),
+	map:getRoomW(RoomW),
+	map:getRoomH(RoomH),
 	W is (MapW // RoomW) - 1,
 	H is (MapH // RoomH) - 1,
 	writet(S, roomNames:reset(false)),

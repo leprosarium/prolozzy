@@ -244,7 +244,7 @@ selectByIdxApply :-
 	    ;	format(string(Msg), 'brush #~d selected.', [IdxO]),
 		map:brushSetSelect(IdxO, 1),
 		selection:goto(1),
-		edi:setSelect(1)),
+		map:setSelect(1)),
 	    map:refresh,
 	    gui:dlgClose,
 	    gui:msgBoxOk('Message', Msg, icon_info).
@@ -309,7 +309,7 @@ brushKeepTopmost(Br, T) :-
 
 
 brushGroupIds :-
-	edi:getSelect(0)
+	map:getSelect(0)
 	-> gui:msgBoxOk('Message', 'No selected brushes.', icon_info);
 	gui:dlgTitleH(TitleH),
 	W is 8 + 132,

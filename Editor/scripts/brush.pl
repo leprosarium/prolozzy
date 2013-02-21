@@ -1,5 +1,6 @@
-:-module(brush, [varDef/3, set/2, set/3, get/3, get/2]).
+:-module(brush, [varDef/3, set/2, set/3, get/3, getProps/2]).
 
+varDef(type,	16, 0).
 varDef(layer,	0, 0).
 varDef(x,	1, 0).
 varDef(y,	2, 0).
@@ -15,7 +16,6 @@ varDef(flip,	11, 0).
 varDef(color,	12, 0xffffffff).
 varDef(shader,	13, 0).
 varDef(scale,	14, 0).
-varDef(type,	16, 0).
 varDef(id,	17, 0).
 varDef(material, 18, 0).
 varDef(draw,	19, 0).
@@ -61,11 +61,12 @@ set(ObjIdx, [Var=Val|Props]) :-
 	set(ObjIdx, Var, Val),
 	set(ObjIdx, Props).
 
-get(ObjIdx, Props) :-
+getProps(ObjIdx, Props) :-
 	findall(Var=Val, (get(ObjIdx, Var, Val), varDef(Var, _, Def), Val =\= Def), Props).
 
-
-
+new(Props):-
+	map:brushNew(Idx),
+	set(Idx, Props).
 
 
 

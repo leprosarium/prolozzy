@@ -209,7 +209,7 @@ userUpdate(0) :-
 	updateRoomInfo(X, Y).
 
 userUpdate(1) :-
-	edi:getSelect(Select),
+	map:getSelect(Select),
 	format(string(Bar1), '  selected ~d', [Select]),
 	dlgStatusBar:set(1, Bar1),
 	dlgStatusBar:set(3, ''),
@@ -223,8 +223,8 @@ formatID(ID, Text) :-
 
 
 updateRoomInfo(X, Y) :-
-	edi:getRoomW(RoomW),
-	edi:getRoomH(RoomH),
+	map:getRoomW(RoomW),
+	map:getRoomH(RoomH),
 	RX is X // RoomW,
 	RY is Y // RoomH,
 	roomInfo(RX, RY, Info),

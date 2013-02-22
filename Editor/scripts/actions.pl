@@ -22,8 +22,8 @@
 		   layer/1,
 		   fileNew/0,
 		   fileNewDo/0,
+		   fileOpenMap/0,
 		   fileOpen/0,
-		   fileOpen2/0,
 		   fileSave/1,
 		   fileInfo/0,
 		   tile/0,
@@ -51,8 +51,8 @@ menu :-
 	Data = [
 	item(file-"File", "", []),
 	item(new-" new",       (gui:dlgClose, actions:fileNew), [key(n), tooltip("new map [N]")]),
-	item(open-" open",     (gui:dlgClose, actions:fileOpen), [key(o), tooltip("open map [O]")]),
-	item(open2-" open2",   (gui:dlgClose, actions:fileOpen2), [key(shift+o), tooltip("open map 2 [Shift+O]")]),
+	item(imap-" open map",     (gui:dlgClose, actions:fileOpenMap), [key(o), tooltip("open map [O]")]),
+	item(open-" open",   (gui:dlgClose, actions:fileOpen), [key(shift+o), tooltip("open map 2 [Shift+O]")]),
 	item(save-" save as",  (gui:dlgClose, actions:fileSave(false)), [key(s), tooltip("save map [S]")]),
 	item(export-" export", (gui:dlgClose, actions:fileExport), [key(e), tooltip("export map as image [E]")]),
 	item(info-" info",     (gui:dlgClose, actions:fileInfo), [key(i), tooltip("info about current map [I]")]),
@@ -239,20 +239,24 @@ fileNewDo :-
 	roomNames:reset(false),
 	fileInfo.
 
-fileOpen :-
+fileOpenMap :-
 	edi:toolReset,
 	dlgInfo:mapFile(CurFile),
-	gui:winDlgOpenFile(CurFile, ActFile, map, 0),
-	dlgInfo:setMapFile(ActFile),
+	fileio:fixExt(CurFile, MapFile, map),
+	gui:winDlgOpenFile(MapFile, ActFile, map, 0),
+	fileio:fixExt(ActFile, NamFile, nam),
+	fileio:fixExt(ActFile, PMPFile, pmp),
+	dlgInfo:setMapFile(PMPFile),
 	edi:waitCursor(1),
-	(   fileio:mapLoad(ActFile)
+	(   fileio:mapLoad(ActFile),
+	    fileio:roomsLoadNames(NamFile)
 	->  edi:waitCursor(0)
 	;   edi:waitCursor(0),
 	    gui:msgBoxOk('Error', 'File open failed.\nFile might be incorrect or damaged.', icon_error)).
-fileOpen.
+fileOpenMap.
 
 
-fileOpen2 :-
+fileOpen :-
 	edi:toolReset,
 	dlgInfo:mapFile(CurFile),
 	gui:winDlgOpenFile(CurFile, ActFile, pmp, 0),
@@ -262,8 +266,7 @@ fileOpen2 :-
 	->  edi:waitCursor(0)
 	;   edi:waitCursor(0),
 	    gui:msgBoxOk('Error', 'File open failed.\nFile might be incorrect or damaged.', icon_error)).
-fileOpen2.
-
+fileOpen.
 
 fileSave(Silent) :-
 	dlgInfo:defName(DefName),

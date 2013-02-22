@@ -23,7 +23,7 @@ create :-
 		minus > actions:zoomSet(-1),
 		add > actions:zoomSet(1), % on numpad
 		subtract > actions:zoomSet(-1), % on numpad
-		o+ctrl > actions:fileOpen2,
+		o+ctrl > actions:fileOpen,
 		s+ctrl > actions:fileSave(true),
 		f1 > actHelp,
 		f3 > selection:goto(1),

@@ -1045,6 +1045,8 @@ BOOL cEdiMap::PartitionAdd( int brushidx )
 			ok = TRUE;
 		}
 	}
+	if(!ok)
+		dlog(LOGAPP, L"Brush # %d (%d, %d)-(%d, %d) out of bounds\n", brushidx, br.x1, br.y1, br.x2, br.y2);
 	return ok;
 	unguard()
 }

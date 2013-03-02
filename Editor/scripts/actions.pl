@@ -26,6 +26,7 @@
 		   fileOpen/0,
 		   fileSave/1,
 		   fileInfo/0,
+		   fileExport/0,
 		   tile/0,
 		   tileBrowseSet/1,
 		   mapping/0,
@@ -420,3 +421,22 @@ roomProps :-
 	RX is X // W,
 	RY is Y // H,
 	dlgRoomProps:create(RX, RY).
+
+
+fileExport :-
+	gui:msgBox('Question', 'Do you want to export a huge image with all the map ?\nIt may take a while. Make sure you have your map saved.', icon_question, [btn('YES', actions:fileExportDo), btn('NO', true)]).
+
+
+fileExportDo :-
+	edi:toolReset,
+	dlgInfo:mapFile(CurFile),
+	(   gui:winDlgOpenFile(CurFile, ActFile, png, 1)
+	->  edi:waitCursor(1),
+	    (   map:saveImage(ActFile)
+	    ->  edi:waitCursor(0),
+		gui:msgBoxOk('Message', 'Export map image successful.', icon_info)
+	    ;   edi:waitCursor(0),
+		gui:msgBoxOk('Error', 'Export map image failed.', icon_error))
+	;   true).
+
+

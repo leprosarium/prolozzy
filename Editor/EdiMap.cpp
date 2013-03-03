@@ -262,7 +262,7 @@ PREDICATE_M(selection, refresh, 0)
 
 PREDICATE_M(map, saveImage, 1)
 {
-	BOOL ret = g_map.SaveMapImage(A1);
+	BOOL ret = g_map.SaveMapImage(WideStringToMultiByte(A1));
 	g_map.m_refresh = TRUE;
 	return ret;
 }
@@ -1399,7 +1399,7 @@ void cEdiMap::CheckMapView()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // SAVE MAP IMAGE
 //////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL cEdiMap::SaveMapImage( char* filename )
+BOOL cEdiMap::SaveMapImage(const std::string & filename )
 {
 	guard(cEdiMap::SaveMapImage)
 	if(!m_target) return FALSE;
@@ -1463,7 +1463,7 @@ BOOL cEdiMap::SaveMapImage( char* filename )
 		y+=h;
 	}
 
-	BOOL ok = R9_ImgSaveFile(filename,&imghuge);
+	BOOL ok = R9_ImgSaveFile(filename.c_str(), &imghuge);
 	R9_ImgDestroy(&imghuge);
 	return ok;
 	unguard()

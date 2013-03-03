@@ -176,7 +176,7 @@ inline	int			PartitionCountH		()							{ return (m_maph+PARTITION_CELSIZE-1) / P
 		int			m_count_brushcheck;
 
 		// save map image
-		BOOL		SaveMapImage( char* filename );					// save huge map image, rendering in the target texture each 256x256 cel
+		BOOL		SaveMapImage(const std::string & filename );					// save huge map image, rendering in the target texture each 256x256 cel
 		bool		Load( const std::string & filename );
 		bool		LoadMap(const std::string & filename );
 };				

@@ -7,17 +7,11 @@ usedMax(14).
 
 init :-
 	usedMax(Max),
-	gen(Colors, 0xffffffff, Max),
-	recorda(colorUsed, Colors),
+	forall(between(1, Max, _), recorda(colorUsed, 0xffffffff)),
 	recorda(pal, 0).
 
-gen([], _, 0).
-gen([V|Y], V, N) :-
-	Ns is N - 1,
-	gen(Y, V, Ns).
-
 colors(Colors) :-
-	recorded(colorUsed, Colors).
+	bagof(C, recorded(colorUsed, C), Colors).
 
 create(X, Y, Act, Color) :-
 	Space = 8,
@@ -110,7 +104,18 @@ pick(Act, C) :-
 	gui:dlgClose(1).
 
 
-push(_C).
+push(C) :-
+	(recorded(colorUsed, C, Ref); recorded(colorUsed, _, Ref)), !,
+	erase(Ref),
+	recordz(colorUsed, C).
+
+
+
+
+
+
+
+
 
 
 

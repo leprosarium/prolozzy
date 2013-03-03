@@ -248,12 +248,8 @@ fileOpenMap :-
 	fileio:fixExt(ActFile, NamFile, nam),
 	fileio:fixExt(ActFile, PMPFile, pmp),
 	dlgInfo:setMapFile(PMPFile),
-	edi:waitCursor(1),
-	(   fileio:mapLoad(ActFile),
-	    fileio:roomsLoadNames(NamFile)
-	->  edi:waitCursor(0)
-	;   edi:waitCursor(0),
-	    gui:msgBoxOk('Error', 'File open failed.\nFile might be incorrect or damaged.', icon_error)).
+	(   \+ gui:waitCall((fileio:mapLoad(ActFile), fileio:roomsLoadNames(NamFile)))
+	->  gui:msgBoxOk('Error', 'File open failed.\nFile might be incorrect or damaged.', icon_error)).
 fileOpenMap.
 
 
@@ -262,11 +258,8 @@ fileOpen :-
 	dlgInfo:mapFile(CurFile),
 	gui:winDlgOpenFile(CurFile, ActFile, pmp, 0),
 	dlgInfo:setMapFile(ActFile),
-	edi:waitCursor(1),
-	(   fileio:mapLoad2(ActFile)
-	->  edi:waitCursor(0)
-	;   edi:waitCursor(0),
-	    gui:msgBoxOk('Error', 'File open failed.\nFile might be incorrect or damaged.', icon_error)).
+	(   \+ gui:waitCall(fileio:mapLoad2(ActFile))
+	->  gui:msgBoxOk('Error', 'File open failed.\nFile might be incorrect or damaged.', icon_error)).
 fileOpen.
 
 fileSave(Silent) :-
@@ -275,12 +268,9 @@ fileSave(Silent) :-
 	(   (   (\+ Silent; CurFile==DefName), gui:winDlgOpenFile(CurFile, ActFile, pmp, 1))
 	;   Silent, CurFile \= DefName, ActFile = CurFile),
 	dlgInfo:setMapFile(ActFile),
-	edi:waitCursor(1),
-	(   fileio:mapSave(ActFile)
-	->  edi:waitCursor(0),
-	    gui:msgBoxOk('Message', 'File save successful.', icon_info)
-	;   edi:waitCursor(0),
-	    gui:msgBoxOk('Error', 'File save failed.', icon_error)), !.
+	(   gui:waitCall(fileio:mapSave(ActFile))
+	->  gui:msgBoxOk('Message', 'File save successful.', icon_info)
+	;   gui:msgBoxOk('Error', 'File save failed.', icon_error)), !.
 fileSave(_).
 
 fileInfo :-
@@ -430,13 +420,11 @@ fileExport :-
 fileExportDo :-
 	edi:toolReset,
 	dlgInfo:mapFile(CurFile),
-	(   gui:winDlgOpenFile(CurFile, ActFile, png, 1)
-	->  edi:waitCursor(1),
-	    (   map:saveImage(ActFile)
-	    ->  edi:waitCursor(0),
-		gui:msgBoxOk('Message', 'Export map image successful.', icon_info)
-	    ;   edi:waitCursor(0),
-		gui:msgBoxOk('Error', 'Export map image failed.', icon_error))
-	;   true).
+	fileio:fixExt(CurFile, PngFile, png),
+	gui:winDlgOpenFile(PngFile, ActFile, png, 1),
+	(   gui:waitCall(map:saveImage(ActFile))
+	->  gui:msgBoxOk('Message', 'Export map image successful.', icon_info)
+	;   gui:msgBoxOk('Error', 'Export map image failed.', icon_error)).
+fileExportDo.
 
 

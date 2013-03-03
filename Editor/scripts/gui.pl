@@ -39,7 +39,10 @@
 		dlgMove/2,
 		dlgSelect/1,
 		dlgSetTitle/1,
-		select/1]).
+		select/1,
+		waitCall/1]).
+
+:-meta_predicate waitCall(0).
 
 dlgTitleH(20).
 
@@ -515,7 +518,8 @@ dlgSetTitle(Text) :-
 	->  gui:itemSetTxt(Text);
 	true).
 
-
+waitCall(Goal) :-
+	setup_call_cleanup(edi:waitCursor(1), Goal, edi:waitCursor(0)).
 
 
 

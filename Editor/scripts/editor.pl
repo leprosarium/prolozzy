@@ -1,7 +1,6 @@
 :- module(editor, [init/0,
 		   close/0,
 		   done/0,
-		   load/1,
 		   param/3,
 		   param/2]).
 
@@ -73,11 +72,5 @@ done :-
 	dlgOptions:save,
 	core:dl('editor done.').
 
-load(FileName) :-
-	core:dl('loading map'(FileName)),
-	edi:toolReset,
-	edi:waitCursor(1),
-	(   fileio:mapLoad2(FileName)
-	->  edi:waitCursor(0)
-	;   edi:waitCursor(0),
-	    gui:msgBoxOk('Error', 'File open failed.\nFile might be incorrect or damaged.', icon_error)).
+
+

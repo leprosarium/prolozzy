@@ -6,6 +6,8 @@
 		    brushKeepTopmost/0,
 		    brushGroupIds/0]).
 
+:-use_module(gui, [waitCall/1]).
+
 brushSearch :-
 	dlgProps:create(search),
 	gui:dlgSetTitle('Brush Search'),
@@ -179,10 +181,8 @@ brushMove(Br, 1, DX, DY):- !,
 
 
 forallBrush(Action, C) :-
-	edi:waitCursor(1),
 	map:brushCount(BC),
-	forallBrush(0, BC, Action, 0, C),
-	edi:waitCursor(0).
+	waitCall(forallBrush(0, BC, Action, 0, C)).
 
 forallBrush(N, N, _, C, C).
 forallBrush(Br, BC, Action, C, Count) :-
@@ -235,10 +235,9 @@ selectByIdxApply :-
 	->  gui:dlgClose,
 	    gui:msgBoxOk('Message', 'nothing to select.', icon_info)
 	;   selectByIdxApplyParams(Mode, Idx),
-	    edi:waitCursor(1),
-	    selectByIdxApply(Mode, Idx, IdxO),
-	    deselectAll,
-	    edi:waitCursor(0),
+	    waitCall(
+		(selectByIdxApply(Mode, Idx, IdxO),
+		 deselectAll)),
 	    (	IdxO == -1
 	    ->	Msg = 'nothing to select.'
 	    ;	format(string(Msg), 'brush #~d selected.', [IdxO]),
@@ -289,15 +288,14 @@ selectByIdxApply(Br, BC, Type, C, IdxI, IdxO) :-
 
 
 brushKeepTopmost :-
-	edi:waitCursor(1),
 	map:brushCount(BC),
 	BC1 is BC - 1,
+	waitCall((
 	(   brushKeepTopmost(BC1, Topmost)
 	->  Mx is Topmost - 1,
 	    forall(between(0, Mx, Br), map:brushSetSelect(Br, 0)),
 	    gui:msgBoxOk('Message', 'Topmost brush selected.', icon_info)
-	;   true),
-	edi:waitCursor(0),
+	;   true))),
 	selection:refresh,
 	map:refresh.
 
@@ -352,9 +350,7 @@ brushGroupIdsApply :-
 	(   ID0 == 0
 	->  gui:msgBoxOk('Message', 'Choose a valid starting id (non zero).', icon_info)
 	;   map:brushCount(BC),
-	    edi:waitCursor(1),
-	    brushGroupIdsApply(ID0, 0, BC, ID),
-	    edi:waitCursor(0),
+	    waitCall(brushGroupIdsApply(ID0, 0, BC, ID)),
 	    map:refresh,
 	    gui:dlgClose,
 	    format(string(Msg), 'Done.\nIds set from ~d to ~d.', [ID0, ID]),

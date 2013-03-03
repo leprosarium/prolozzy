@@ -5,13 +5,13 @@
 		    checkStaticBrushId/0,
 		    countRooms/0]).
 
+
+:-use_module(gui, [waitCall/1]).
+
 checkTile :-
 	core:dl('Check Brush Tile:'),
-	select = 0;
-	edi:waitCursor(1),
 	map:brushCount(BC),
-	checkTile(0, BC, 0, Select),
-	edi:waitCursor(0),
+	waitCall(checkTile(0, BC, 0, Select)),
 	map:setSelect(Select),
 	(   Select == 0
 	->  Msg = 'All brush tiles are valid.'
@@ -35,16 +35,13 @@ checkTile(Br, BC, C, S) :-
 checkId :-
 
 	core:dl('Check Brush Id:'),
-	edi:waitCursor(1),
-	checkIdCollect(Ids),
-	checkIdProcess(Ids, Count),
-	edi:waitCursor(0),
+	waitCall((checkIdCollect(Ids),
+		  checkIdProcess(Ids, Count))),
 	map:setSelect(Count),
 	(   Count == 0
 	->  gui:msgBoxOk('Message', 'No dulicate ids', icon_info)
 	;   format(string(Msg), '~d duplicate ids', [Count]),
 	    gui:msgBoxOk('Warning', Msg, icon_warning )).
-
 
 
 checkIdCollect(Ids) :-
@@ -76,10 +73,9 @@ checkIdProcess(Id, Idxs, C) :-
 
 checkOverlapping :-
 	core:dl('Check Brush Overlapping:'),
-	edi:waitCursor(1),
-	checkOverCollect(Ids),
-	checkOverProcess(Ids, Count),
-	edi:waitCursor(0),
+	waitCall(
+		(checkOverCollect(Ids),
+		 checkOverProcess(Ids, Count))),
 	map:setSelect(Count),
 	(   Count == 0
 	->  gui:msgBoxOk('Message', 'No overlapping brushes found.', icon_info)
@@ -121,11 +117,8 @@ checkOverProcess(Key, Idxs, C) :-
 
 checkDynamicBrushId :-
 	core:dl('Check Dynamic Brush Id:'),
-	edi:waitCursor(1),
 	map:brushCount(BC),
-	checkDynamicBrushId(0, BC, 0, Count),
-	edi:waitCursor(0),
-
+	waitCall(checkDynamicBrushId(0, BC, 0, Count)),
 	map:setSelect(Count),
 	(   Count =\= 0
 	->  format(string(Msg), 'There are ~d dynamic brushes without ids.\nThey will not be accessible in script.\nSet them ids or make them static brushes.', [Count]),
@@ -148,11 +141,8 @@ checkDynamicBrushId(Br, BC, Cnt, Total) :-
 
 checkStaticBrushId :-
 	core:dl('Check Static Brush Id:'),
-	edi:waitCursor(1),
 	map:brushCount(BC),
-	checkStaticBrushId(0, BC, 0, Count),
-	edi:waitCursor(0),
-
+	waitCall(checkStaticBrushId(0, BC, 0, Count)),
 	map:setSelect(Count),
 	(   Count =\= 0
 	->  format(string(Msg), 'There are ~d static brushes with ids.\nMake sure they need ids indeed.', [Count]),
@@ -175,13 +165,12 @@ countRooms :-
 	gui:msgBox('Question', 'Count rooms with brush content.\n\nWARNING\nSave your map BEFORE this operation!\nGuide green brushes are going to be inserted\nto help you verify the counting.\nProceed?\n', icon_question, [btn('YES', scripts2:countRoomsApply), btn('NO', true)]).
 
 countRoomsApply :-
-	edi:waitCursor(1),
 	map:getRoomW(RW),
 	map:getRoomH(RH),
 	Params = params(32, RW, RH),
+	waitCall((
 	countRoomsCollect(Params, Rooms),
-	countRoomsMark(Rooms, Count, Params),
-	edi:waitCursor(0),
+	countRoomsMark(Rooms, Count, Params))),
 	format(string(Msg), '~d rooms found with content.\nMap has been altered with guide green brushes.\nCheck the counting, but DON\'T save the map.', [Count]),
 	gui:msgBoxOk('Message', Msg, icon_info),
 	map:repartition,

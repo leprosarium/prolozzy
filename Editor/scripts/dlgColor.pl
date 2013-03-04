@@ -7,11 +7,17 @@ usedMax(14).
 
 init :-
 	usedMax(Max),
-	forall(between(1, Max, _), recorda(colorUsed, 0xffffffff)),
+	genColors(Max, 0xffffffff, Colors),
+	recorda(colorUsed, Colors),
 	recorda(pal, 0).
 
+genColors(0, _, []).
+genColors(N, C, [C|Cs]) :-
+	NN is N - 1,
+	genColors(NN, C, Cs).
+
 colors(Colors) :-
-	bagof(C, recorded(colorUsed, C), Colors).
+	recorded(colorUsed, Colors).
 
 create(X, Y, Act, Color) :-
 	Space = 8,
@@ -105,9 +111,12 @@ pick(Act, C) :-
 
 
 push(C) :-
-	(recorded(colorUsed, C, Ref); recorded(colorUsed, _, Ref)), !,
+	recorded(colorUsed, Colors, Ref),
 	erase(Ref),
-	recordz(colorUsed, C).
+	(select(C, Colors, Other);
+	 append(Other, [_], Colors)),
+	recorda(colorUsed, [C | Other]).
+
 
 
 

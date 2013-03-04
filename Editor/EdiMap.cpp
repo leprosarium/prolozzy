@@ -1478,9 +1478,7 @@ bool cEdiMap::Load( const std::string & filename )
 
 	if(!LoadMap(filename)) { dlog(LOGERR, L"Loading map FAILED!\n\n"); return false; }
 	dlog(LOGAPP, L"Loading map SUCCESSFUL!\n\n");
-
 	return true;
-	unguard()
 }
 
 
@@ -1580,5 +1578,4 @@ bool cEdiMap::LoadMap(const std::string &filename)
 	EdiApp()->UndoReset();
 
 	return true;
-	unguard()
 }

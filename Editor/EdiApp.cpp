@@ -296,6 +296,7 @@ void cEdiApp::Close()
 	m_tool[m_toolcrt]->Reset();
 	g_gui->ScriptPrologDo("editor:close");
 	g_gui->m_isbusy = TRUE; // avoid tools problems
+	unguard()
 }
 
 void cEdiApp::DropFile( LPCWSTR filepath )

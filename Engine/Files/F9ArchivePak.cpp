@@ -7,6 +7,8 @@
 #include "F9FilePak.h"
 #include "F9FilePakZ.h"
 
+#include <algorithm>
+
 f9ArchivePak::f9ArchivePak()
 {
 	guard(f9ArchivePak::f9ArchivePak);
@@ -33,7 +35,6 @@ int f9ArchivePak::Open( const char *name, int mode, const char* password )
 
 	f9Archive::Open( name, mode, password );
 	m_fat.Init(1024,128);
-	m_hash.Init(256,1);
 
 	if( !ReadHeader() ) { Close(); return F9_FAIL; }
 	if( !ReadFAT() )	{ Close(); return F9_FAIL; }
@@ -46,7 +47,7 @@ int f9ArchivePak::Close()
 {
 	guard(f9ArchivePak::Close);
 	if(!IsOpen()) return F9_FAIL;
-	m_hash.Done();
+	index.clear();
 	m_fat.Done();
 	f9Archive::Close();	
 	return F9_OK;
@@ -105,15 +106,14 @@ int f9ArchivePak::FileClose(f9File* file)
 int f9ArchivePak::FileFind( const char* name )
 {
 	guard(f9ArchivePak::FileFind);
-	if(name==NULL) return -1;
-	char* sz = sstrdup(name);
-	_strlwr(sz);
-	void* data;
-	BOOL ok = m_hash.Find(sz,data);
-	sfree(sz);
-	if(!ok) return -1;
-	int idx=(int)(intptr)(data);
-	return idx;
+
+	std::string nm(name);
+	std::transform(nm.begin(), nm.end(), nm.begin(), ::tolower);
+
+	Hash::iterator i = index.find(nm);
+	if(i==index.end())
+		return -1;
+	return i->second;
 	unguard();
 }
 
@@ -203,7 +203,7 @@ BOOL f9ArchivePak::ReadFAT()
 		int idx = m_fat.Add(fi);
 
 		// add to hash
-		m_hash.Add( fi->m_name.m_data, (void*)(intptr)idx );
+		index.insert(Hash::value_type(fi->m_name.m_data, idx));
 	}
 	sassert(files!=m_header.m_fatfiles); // check
 	

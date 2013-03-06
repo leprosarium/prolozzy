@@ -7,6 +7,8 @@
 #include "R9Font.h"
 #include "EdiDef.h"
 
+#include <hash_map>
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // DEFINES
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -102,11 +104,11 @@ public:
 		void			Done			();
 
 		// Tiles
-inline	int				TileCount		()					{ return m_tile.Size(); }
-inline	cTile*			TileGet			( int idx )			{ if(0<=idx && idx<m_tile.Size()) return m_tile.Get(idx); else return NULL; }
+		int				TileCount		()					{ return m_tile.Size(); }
+		cTile*			TileGet			( int idx )			{ if(0<=idx && idx<m_tile.Size()) return m_tile.Get(idx); else return NULL; }
 		int				TileAdd			( int id );			// add a new empty tile; id must be unique
 		void			TileDel			( int idx );		// delete tile by index
-inline	int				TileFind		( int id )			{ int data; if( m_hash.Find(id, data) ) return data; else return -1; }
+		int				TileFind		( int id )			{ Hash::iterator i = index.find(id); if(i == index.end()) return -1; return i->second; }
 		BOOL			TileLoad		( const char* path );		// load tiles from a path
 		BOOL			TileLoadFile	( const char* filepath );	// load a tile file
 		void			TileUnload		();					// unload load tiles (destroy)
@@ -120,9 +122,11 @@ inline	int				TileFind		( int id )			{ int data; if( m_hash.Find(id, data) ) ret
 		// utils
 		dword			GetFlashingColorBW();
 
+
+		typedef std::hash_map<int, int> Hash;
 		// tiles
 		cPList<cTile>	m_tile;			// tiles list
-		cHash			m_hash;			// hash for tiles (id,idx)
+		Hash			index;			// hash for tiles (id,idx)
 		char			m_tilepath[256];// path to tiles (obtained from the tilefile at load)
 
 		// Others

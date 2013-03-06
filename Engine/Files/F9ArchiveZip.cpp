@@ -5,6 +5,7 @@
 #include "E9Math.h"
 #include "F9ArchiveZip.h"
 #include "F9FileZip.h"
+#include <algorithm>
 
 f9ArchiveZip::f9ArchiveZip()
 {
@@ -28,7 +29,6 @@ int f9ArchiveZip::Open( const char *name, int mode, const char* password )
 
 	f9Archive::Open( name, mode, password );
 	m_fat.Init(1024,128);
-	m_hash.Init(256,1);
 	if( !ReadFAT() ) { Close(); return F9_FAIL; }
 	
 	return F9_OK;
@@ -39,7 +39,7 @@ int f9ArchiveZip::Close()
 {
 	guard(f9ArchiveZip::Close);
 	if(!IsOpen()) return F9_FAIL;
-	m_hash.Done();
+	index.clear();
 	m_fat.Done();
 	f9Archive::Close();	
 	return F9_OK;
@@ -87,15 +87,14 @@ int f9ArchiveZip::FileClose(f9File* file)
 int f9ArchiveZip::FileFind( const char* name )
 {
 	guard(f9ArchiveZip::FileFind);
-	if(name==NULL) return -1;
-	char* sz = sstrdup(name);
-	_strlwr(sz);
-	void* data;
-	BOOL ok=m_hash.Find(sz,data);
-	sfree(sz);
-	if(!ok) return -1;
-	int idx=(int)(intptr)(data);
-	return idx;
+
+	std::string nm(name);
+	std::transform(nm.begin(), nm.end(), nm.begin(), ::tolower);
+
+	Hash::iterator i = index.find(nm);
+	if (i == index.end())
+		return -1;
+	return i->second;
 	unguard();
 }
 
@@ -195,7 +194,7 @@ BOOL f9ArchiveZip::ReadFAT()
 		int idx = m_fat.Add( fi );	sassert(idx!=-1);
 
 		// add to hash
-		m_hash.Add( fi->m_name.m_data, (void*)(intptr)idx );
+		index.insert(Hash::value_type(fi->m_name.m_data, idx));
 	}
 		
 	sfree( cebuff );

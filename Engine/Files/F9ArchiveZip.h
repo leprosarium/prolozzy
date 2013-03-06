@@ -6,10 +6,11 @@
 #define __F9ARCHIVEZIP_H__
 
 #include "E9List.h"
-#include "E9Hash.h"
 #include "F9Archive.h"
 #include "F9FileDisk.h"
 #include "..\\Libs\\zlib\\zlib.h"
+
+#include <hash_map>
 
 struct f9ZipFileInfo
 {
@@ -40,7 +41,8 @@ private:
 		BOOL			ReadFAT			();
 
 	cPList<f9ZipFileInfo>	m_fat;		// file allocation table
-	cHash					m_hash;		// hash for FAT (name,idx)
+	typedef std::hash_map<std::string, int> Hash;
+	Hash					index;		// hash for FAT (name,idx)
 };
 
 #endif

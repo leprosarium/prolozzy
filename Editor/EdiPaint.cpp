@@ -31,7 +31,6 @@ BOOL cEdiPaint::Init()
 	guard(cEdiPaint::Init)
 	// tiles
 	m_tile.Init(64);
-	m_hash.Init(64,0);
 	return TRUE;
 	unguard()
 }
@@ -41,7 +40,7 @@ void cEdiPaint::Done()
 	guard(cEdiPaint::Done)
 	// tiles
 	TileUnload();
-	m_hash.Done();
+	index.clear();
 	m_tile.Done();
 	unguard()
 }
@@ -176,12 +175,11 @@ BOOL cEdiPaint::TileLoad( const char* path )
 	while(!ok);
 
 	// rehash after reordering
-	m_hash.Done();
-	m_hash.Init(64,0);
+	index.clear();
 	for(i=0;i<TileCount();i++)
 	{
 		cTile* tile = g_paint.TileGet(i); sassert(tile!=NULL);
-		m_hash.Add( tile->m_id, i );
+		index.insert(Hash::value_type(tile->m_id, i));
 	}
 
 	return TRUE;
@@ -192,7 +190,7 @@ void cEdiPaint::TileUnload()
 {
 	guard(cEdiPaint::TileUnload)
 	// done
-	m_hash.Done();
+	index.clear();
 	for(int i=0; i<m_tile.Size();i++) 
 	{
 		R9_TextureDestroy(m_tile.Get(i)->m_tex);
@@ -201,7 +199,6 @@ void cEdiPaint::TileUnload()
 	m_tile.Done();
 	// init
 	m_tile.Init(64);
-	m_hash.Init(64,0);
 	unguard()
 }
 
@@ -219,7 +216,7 @@ int cEdiPaint::TileAdd( int id )
 	int idx = m_tile.Add(tile); sassert(idx!=-1);
 
 	// add tracker to hash
-	m_hash.Add( tile->m_id, idx );
+	index.insert(Hash::value_type(tile->m_id, idx));
 	return idx;
 	unguard()
 }
@@ -229,7 +226,7 @@ void cEdiPaint::TileDel( int idx )
 	guard(cEdiPaint::TileDel)
 	cTile* tile = TileGet(idx); 
 	if(tile==NULL) return;
-	m_hash.Del(tile->m_id);
+	index.erase(tile->m_id);
 	m_tile.Del(idx);
 	unguard()
 }

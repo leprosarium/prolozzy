@@ -56,8 +56,8 @@ inline	void			SetTooltip( char* text )		{ if(text) strncpy(m_tooltip,text,255); 
 		void			ReadInput();					// read input ( CALL IT BEFORE UPDATE ! )
 
 		// images
-		int				ImgLoad( char* image );
-		int				ImgFind( char* image );
+		int				ImgLoad( const std::string & image ) { return m_texturepool.Load(image); }
+		int				ImgFind( const std::string & image ) { return m_texturepool.Find(image); }
 		r9TexturePool	m_texturepool;					// textures
 				
 		// inheritance

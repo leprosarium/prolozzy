@@ -161,7 +161,7 @@ void GUIDrawImg( int x1, int y1, int x2, int y2, int img, dword color, int align
 	guard(GUIDrawImg)
 	if(img==-1) return;
 	if(color==0) return;
-	R9TEXTURE tex = g_gui->m_texturepool.GetTexture(img);
+	R9TEXTURE tex = g_gui->m_texturepool.Get(img);
 	if(!tex) return;
 
 	int w = R9_TextureGetWidth(tex);

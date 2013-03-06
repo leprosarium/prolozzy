@@ -45,9 +45,6 @@ BOOL cGUI::Init()
 	
 	GUIInitResources();
 
-	// texture pool
-	m_texturepool.Init();
-
 	// fonts
 	BOOL ok;
 	m_font = snew r9Font(); 
@@ -215,25 +212,6 @@ void cGUI::ReadInput()
 	m_key[GUIKEY_SHIFT]	= I9_GetKeyValue(I9K_LSHIFT) || I9_GetKeyValue(I9K_RSHIFT);
 	m_key[GUIKEY_ALT]	= I9_GetKeyValue(I9K_LALT) || I9_GetKeyValue(I9K_RALT);
 
-	unguard()
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// Images
-//////////////////////////////////////////////////////////////////////////////////////////////////
-int cGUI::ImgLoad( char* image )
-{
-	guard(cGUI::ImgLoad)
-	if(image==NULL) return -1;
-	return m_texturepool.Load(image);
-	unguard()
-}
-
-int	cGUI::ImgFind( char* image )
-{
-	guard(cGUI::ImgFind)
-	if(image==NULL) return -1;
-	return m_texturepool.Find(image);
 	unguard()
 }
 

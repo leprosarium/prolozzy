@@ -6,33 +6,23 @@
 #define __R9TEXTUREPOOL_H__
 
 #include "R9Render.h"
-#include "E9Array.h"
-#include "E9Hash.h"
 
-class r9TexturePool
-{
-struct tEntry
-{
-	R9TEXTURE	m_texture;
-	char*		m_name;
-	tEntry()	{ m_texture=NULL; m_name=NULL; }
-};
+#include <vector>
+#include <hash_map>
 
+class r9TexturePool : private std::vector<R9TEXTURE>
+{
 public:
 					r9TexturePool()									{};
-		void		Init();
 		void		Done();
 
-inline	int			Size()											{ return m_array.Size(); }
-		int			Add( R9TEXTURE texture, const char* name );		// add a specific texture, return index
-		int			Load( const char* name, BOOL noduplicate=TRUE );// load a texture by file; if noduplicate and texture already in pool, the same index is returned
-		int			Find( const char* name );						// search for a texture; return index
-		void		Del( int idx );									// delete a texture
-inline	R9TEXTURE	GetTexture( int idx )							{ if(0<=idx && idx<Size()) return m_array[idx].m_texture; else return NULL; }
-inline	char*		GetName( int idx )								{ if(0<=idx && idx<Size()) return m_array[idx].m_name; else return NULL; }
+		int			Add( R9TEXTURE texture, const std::string & name );		// add a specific texture, return index
+		int			Load( const std::string & name, bool noduplicate = true );// load a texture by file; if noduplicate and texture already in pool, the same index is returned
+		int			Find( const std::string & name );						// search for a texture; return index
+		R9TEXTURE	Get( int idx )							{ if(idx >= 0 && static_cast<size_type>(idx) < size()) return (*this)[idx]; return 0; }
 
-		cArray<tEntry>	m_array;
-		cHash			m_hash;
+		typedef std::hash_map<std::string, int> Hash;
+		Hash index;
 };
 
 #endif

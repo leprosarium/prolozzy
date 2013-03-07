@@ -112,9 +112,6 @@ bool cDizPaint::Init()
 	// screen
 	Layout();
 
-	// fonts
-	m_font.Init(8);
-
 	return ok;
 	unguard()
 }
@@ -125,7 +122,8 @@ void cDizPaint::Done()
 
 	tiles.Done();
 	// fonts
-	m_font.Done();
+	for(;!m_font.empty(); m_font.pop_back()) sdelete(m_font.back());
+	m_font.clear();
 
 	unguard()
 }
@@ -160,10 +158,10 @@ void cDizPaint::Unacquire()
 		R9_TextureDestroy(tile->m_tex);
 		tile->m_tex = 0;
 	}
-	for(i=0; i<m_font.Size(); i++)
+	for(i=0; i<m_font.size(); i++)
 	{
-		if(m_font.Get(i)->m_font)
-			m_font.Get(i)->m_font->SetTexture(NULL); // safe
+		if(m_font[i]->m_font)
+			m_font[i]->m_font->SetTexture(NULL); // safe
 	}
 	unguard();
 }
@@ -976,9 +974,10 @@ void cDizPaint::HudClipping( iRect& dst )
 void cDizPaint::FontDel( int idx )
 {
 	guard(cDizPaint::FontDel);
-	cFont* font = FontGet(idx); 
-	if(font==NULL) return;
-	m_font.Del(idx);
+	if(cFont* font = FontGet(idx)) {
+		sdelete (font);
+		m_font.erase(m_font.begin() + idx);
+	}
 	unguard();
 }
 
@@ -1032,7 +1031,7 @@ bool cDizPaint::FontLoadFile( const char* filepath, int group )
 		sdelete(font);
 		return false;
 	}
-	m_font.Add(font);
+	m_font.push_back(font);
 
 	if(IS_DEVELOPER()) // log for developers
 		dlog(LOGAPP, L"  %S\n", filepath );
@@ -1093,7 +1092,7 @@ void cDizPaint::FontUnload( int group )
 {
 	guard(cDizPaint::FontUnload)
 	int i;
-	for(i=0;i<m_font.Size();i++)
+	for(i=0;i<m_font.size();i++)
 	{
 		if(m_font[i]->m_group==group)
 		{

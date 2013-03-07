@@ -34,7 +34,6 @@ int f9ArchivePak::Open( const char *name, int mode, const char* password )
 	if(!F9_ISREADONLY(mode)) return F9_FAIL; // readonly
 
 	f9Archive::Open( name, mode, password );
-	m_fat.Init(1024,128);
 
 	if( !ReadHeader() ) { Close(); return F9_FAIL; }
 	if( !ReadFAT() )	{ Close(); return F9_FAIL; }
@@ -48,7 +47,8 @@ int f9ArchivePak::Close()
 	guard(f9ArchivePak::Close);
 	if(!IsOpen()) return F9_FAIL;
 	index.clear();
-	m_fat.Done();
+	for(InfoList::iterator i = m_fat.begin(), e = m_fat.end(); i != e; ++i) sdelete(*i);
+	m_fat.clear();
 	f9Archive::Close();	
 	return F9_OK;
 	unguard();
@@ -69,17 +69,17 @@ f9File* f9ArchivePak::FileOpen( const char* name, int mode )
 
 	f9File* file = NULL;
 	
-	if( m_fat.Get(i)->m_flags & F9_PAK_COMPRESSED )
+	if( m_fat[i]->m_flags & F9_PAK_COMPRESSED )
 	{
 		file = snew f9FilePakZ();
 		((f9FilePakZ*)file)->m_arcname = m_name;
-		((f9FilePakZ*)file)->m_fileinfo = m_fat.Get(i);
+		((f9FilePakZ*)file)->m_fileinfo = m_fat[i];
 	}
 	else
 	{
 		file = snew f9FilePak();
 		((f9FilePak*)file)->m_arcname = m_name;
-		((f9FilePak*)file)->m_fileinfo = m_fat.Get(i);
+		((f9FilePak*)file)->m_fileinfo = m_fat[i];
 	}
 
 	if( file->Open(name, m_mode)!=F9_OK )
@@ -120,15 +120,17 @@ int f9ArchivePak::FileFind( const char* name )
 char* f9ArchivePak::FileGetName( int idx )
 {
 	guard(f9ArchivePak::FileGetName);
-	if(m_fat.Get(idx)) return m_fat.Get(idx)->m_name;
-	return NULL;
+	if(idx >= 0 && idx < m_fat.size())
+		return m_fat[idx]->m_name;	
+	return 0;
 	unguard();
 }
 
 dword f9ArchivePak::FileGetSize( int idx )
 {
 	guard(f9ArchivePak::FileGetSize);
-	if(m_fat.Get(idx)) return m_fat.Get(idx)->m_size;
+	if(idx >= 0 && idx < m_fat.size())
+		return m_fat[idx]->m_size;
 	return 0;
 	unguard();
 }
@@ -200,7 +202,8 @@ BOOL f9ArchivePak::ReadFAT()
 		pos += 16 + fi->m_name.Len() + 1;
 		
 		// add file info
-		int idx = m_fat.Add(fi);
+		int idx = m_fat.size();
+		m_fat.push_back(fi);
 
 		// add to hash
 		index.insert(Hash::value_type(fi->m_name.m_data, idx));

@@ -29,8 +29,6 @@ cEdiPaint::~cEdiPaint()
 BOOL cEdiPaint::Init()
 {
 	guard(cEdiPaint::Init)
-	// tiles
-	m_tile.Init(64);
 	return TRUE;
 	unguard()
 }
@@ -38,10 +36,8 @@ BOOL cEdiPaint::Init()
 void cEdiPaint::Done()
 {
 	guard(cEdiPaint::Done)
-	// tiles
 	TileUnload();
 	index.clear();
-	m_tile.Done();
 	unguard()
 }
 
@@ -163,12 +159,10 @@ BOOL cEdiPaint::TileLoad( const char* path )
 		ok=TRUE;
 		for(i=1;i<TileCount();i++)
 		{
-			if(m_tile.Get(i-1)->m_id > m_tile.Get(i)->m_id)
+			if(m_tile[i-1]->m_id > m_tile[i]->m_id)
 			{
 				ok = FALSE;
-				cTile* temp = m_tile.Get(i-1);
-				m_tile.m_list[i-1] = m_tile.Get(i);
-				m_tile.m_list[i] = temp;
+				std::swap(m_tile[i-1], m_tile[i]);
 			}
 		}
 	}
@@ -191,14 +185,13 @@ void cEdiPaint::TileUnload()
 	guard(cEdiPaint::TileUnload)
 	// done
 	index.clear();
-	for(int i=0; i<m_tile.Size();i++) 
+	for(int i=0; i<m_tile.size();i++) 
 	{
-		R9_TextureDestroy(m_tile.Get(i)->m_tex);
-		if(m_tile.Get(i)->m_name) sfree(m_tile.Get(i)->m_name);
+		R9_TextureDestroy(m_tile[i]->m_tex);
+		if(m_tile[i]->m_name) sfree(m_tile[i]->m_name);
+		sdelete(m_tile[i]);
 	}
-	m_tile.Done();
-	// init
-	m_tile.Init(64);
+	m_tile.clear();
 	unguard()
 }
 
@@ -213,7 +206,8 @@ int cEdiPaint::TileAdd( int id )
 	// add new tile to list
 	cTile* tile = snew cTile();
 	tile->m_id = id;
-	int idx = m_tile.Add(tile); sassert(idx!=-1);
+	int idx = m_tile.size();
+	m_tile.push_back(tile);
 
 	// add tracker to hash
 	index.insert(Hash::value_type(tile->m_id, idx));
@@ -224,10 +218,11 @@ int cEdiPaint::TileAdd( int id )
 void cEdiPaint::TileDel( int idx )
 {
 	guard(cEdiPaint::TileDel)
-	cTile* tile = TileGet(idx); 
-	if(tile==NULL) return;
-	index.erase(tile->m_id);
-	m_tile.Del(idx);
+	if(cTile* tile = TileGet(idx)) {
+		index.erase(tile->m_id);
+		sdelete(tile);
+		m_tile.erase(m_tile.begin() + idx);
+	}
 	unguard()
 }
 

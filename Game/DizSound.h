@@ -5,7 +5,6 @@
 #define __DIZSOUND_H__
 
 #include "E9System.h"
-#include "E9List.h"
 #include "D9Debug.h"
 #include "A9Audio.h"
 
@@ -62,10 +61,10 @@ public:
 		void				SampleStop			( int voiceidx );				// stop a voice
 		void				SampleStopAll		( PlAtom id = all);				// stop all voices of a sample id, or all voices if id is -1
 		void				SampleVolume		( int volume );					// set samples volume
-inline	int					SampleFind			( PlAtom id )						{ for(int i=0;i<m_sampleproto.Size();i++) if(m_sampleproto[i]->m_id==id) return i; return -1; }
+inline	int					SampleFind			( PlAtom id )						{ for(int i=0;i<m_sampleproto.size();i++) if(m_sampleproto[i]->m_id==id) return i; return -1; }
 
 		A9BUFFER			m_voice[SOUND_VOICES];								// list with voices buffers
-		cPList<tSoundProto>	m_sampleproto;										// list with loaded samples
+		std::vector<tSoundProto *> m_sampleproto;								// list with loaded samples
 		int					m_voicecount;										// playing voices (debug info)
 
 		int					m_sample_total;										// status report on total samples declared (load+failed)
@@ -85,7 +84,7 @@ inline	int					SampleFind			( PlAtom id )						{ for(int i=0;i<m_sampleproto.Siz
 		void				MusicPause			( bool pause );					// music pause; stop, but remember where it was
 		void				MusicUpdate			( float dtime );				// deals with the play, stop and volume management
 		void				MusicVolume			( int volume );					// set music volume
-inline	int					MusicFind			( PlAtom id )						{ for(int i=0;i<m_musicproto.Size();i++) if(m_musicproto[i]->m_id==id) return i; return -1; }
+inline	int					MusicFind			( PlAtom id )						{ for(int i=0;i<m_musicproto.size();i++) if(m_musicproto[i]->m_id==id) return i; return -1; }
 
 		A9STREAM			m_music;											// music stream
 		int					m_musicidx;											// current playing music index in proto list (-1 if none)
@@ -96,7 +95,7 @@ inline	int					MusicFind			( PlAtom id )						{ for(int i=0;i<m_musicproto.Size(
 		int					m_musicpos;											// current music position (used to know when music ends) in samples
 		bool				m_musicpaused;										// music paused
 		float				m_musicvol;											// current playing music volume factor [0..1] (used for fades)
-		cPList<tMusicProto>	m_musicproto;										// list with loaded musics
+		std::vector<tMusicProto *> m_musicproto;								// list with loaded musics
 
 		int					m_music_total;										// status report on total musics declared (load+failed)
 		int					m_music_fail;										// status report on musics failed to load

@@ -104,8 +104,8 @@ public:
 		void			Done			();
 
 		// Tiles
-		int				TileCount		()					{ return m_tile.Size(); }
-		cTile*			TileGet			( int idx )			{ if(0<=idx && idx<m_tile.Size()) return m_tile.Get(idx); else return NULL; }
+		int				TileCount		()					{ return m_tile.size(); }
+		cTile*			TileGet			( int idx )			{ if(0<=idx && idx<m_tile.size()) return m_tile[idx]; return 0; }
 		int				TileAdd			( int id );			// add a new empty tile; id must be unique
 		void			TileDel			( int idx );		// delete tile by index
 		int				TileFind		( int id )			{ Hash::iterator i = index.find(id); if(i == index.end()) return -1; return i->second; }
@@ -125,7 +125,7 @@ public:
 
 		typedef std::hash_map<int, int> Hash;
 		// tiles
-		cPList<cTile>	m_tile;			// tiles list
+		std::vector<cTile *> m_tile;	// tiles list
 		Hash			index;			// hash for tiles (id,idx)
 		char			m_tilepath[256];// path to tiles (obtained from the tilefile at load)
 

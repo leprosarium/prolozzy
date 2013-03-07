@@ -5,7 +5,6 @@
 #ifndef __F9ARCHIVEPAK_H__
 #define __F9ARCHIVEPAK_H__
 
-#include "E9List.h"
 #include "F9Archive.h"
 #include "F9FileDisk.h"
 #include <hash_map>
@@ -47,18 +46,19 @@ virtual	int				Close			();
 						
 virtual	f9File*	 		FileOpen		( const char* name, int mode = F9_READ );
 virtual	int				FileClose		( f9File* file );
-virtual	int				FileCount		()									{ return m_fat.Size(); }
+virtual	int				FileCount		()									{ return m_fat.size(); }
 virtual	int				FileFind		( const char* name );
 virtual	char*			FileGetName		( int idx );
 virtual	dword			FileGetSize		( int idx );
-inline	f9PakFileInfo*	FileGetInfo		( int idx )							{ return m_fat.Get(idx); }
+inline	f9PakFileInfo*	FileGetInfo		( int idx )							{ return idx >= 0 && idx < m_fat.size() ? m_fat[idx] : 0; }
 
 private:
 		BOOL			ReadHeader		();
 		BOOL			ReadFAT			();
 
 	f9PakHeader				m_header;	// archive header
-	cPList<f9PakFileInfo>	m_fat;		// file allocation table
+	typedef std::vector<f9PakFileInfo*> InfoList;
+	InfoList m_fat;		// file allocation table
 	typedef std::hash_map<std::string, int>	Hash;
 	Hash					index;		// hash for FAT (name,idx)
 };

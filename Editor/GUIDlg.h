@@ -65,20 +65,20 @@ virtual	void			SetRect				( int idx, RECT rect );
 virtual	RECT			GetRect				( int idx );
 
 		// inheritance
-inline	int				ItemCount			()					{ return m_item.Size(); }
-inline	cGUIItem*		ItemGet				(int idx)			{ if(0<=idx && idx<ItemCount()) return m_item.Get(idx); else return NULL; }
-inline	int				ItemAdd				( cGUIItem* item )	{ if(item) { item->m_dlg=this; return m_item.Add(item); } else return -1; }
-inline	void			ItemDel				( int idx )			{ if(0<=idx && idx<ItemCount()) m_item.Del(idx); }
+inline	int				ItemCount			()					{ return m_item.size(); }
+inline	cGUIItem*		ItemGet				(int idx)			{ if(0<=idx && idx<ItemCount()) return m_item[idx]; return 0; }
+inline	int				ItemAdd				( cGUIItem* item )	{ if(item) { item->m_dlg=this; int idx = m_item.size(); m_item.push_back(item); return idx; } return -1; }
+inline	void			ItemDel				( int idx )			{ if(0<=idx && idx<ItemCount()) { sdelete(m_item[idx]); m_item.erase(m_item.begin() + idx); } }
 virtual	int				ItemFind			( int id );		
 virtual	int				ItemFind			( cGUIItem* item );
 
 		// data
 		tGuiVar				m_var[DV_MAX];						// variable zone
-		cPList<cGUIItem>	m_item;								// cGUIItem list
+		std::vector<cGUIItem *> m_item;							// cGUIItem list
 		BOOL				m_mustclose;						// closing marker
 		BOOL				m_mousein;
 
-		cPList<tDlgKey>		m_keys;										// key list
+		std::vector<tDlgKey> m_keys;							// key list
 		void				AddKey(int key, int flags, const std::string & cmd);
 		void				TestKey				();
 					

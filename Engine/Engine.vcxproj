@@ -81,7 +81,6 @@
   <ItemGroup>
     <ClInclude Include="Common\E9Config.h" />
     <ClInclude Include="Common\E9Engine.h" />
-    <ClInclude Include="Common\E9List.h" />
     <ClInclude Include="Common\E9Math.h" />
     <ClInclude Include="Common\E9String.h" />
     <ClInclude Include="Common\E9System.h" />

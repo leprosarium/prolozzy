@@ -67,7 +67,8 @@ BOOL cGUI::Init()
 void cGUI::Done()
 {
 	guard(cGUI::Done)
-	m_dlg.Done();
+	for(; !m_dlg.empty(); m_dlg.pop_back()) sdelete(m_dlg.back());
+	m_dlg.clear();
 	m_capture = NULL;
 	if(m_font) 
 	{
@@ -93,11 +94,11 @@ void cGUI::Update()
 	else
 	{
 		// serach top most modal
-		for(i=m_dlg.Size()-1; i>=0 ;i--)
+		for(i=m_dlg.size()-1; i>=0 ;i--)
 		{
-			if(m_dlg.Get(i)->GetInt(DV_MODAL))
+			if(m_dlg[i]->GetInt(DV_MODAL))
 			{
-				m_dlg.Get(i)->Update();
+				m_dlg[i]->Update();
 				m_isbusy = TRUE;
 				break;
 			}
@@ -105,18 +106,19 @@ void cGUI::Update()
 		// no modal -> update all
 		if(i<0)
 		{
-			for(i=0;i<m_dlg.Size();i++)
+			for(i=0;i<m_dlg.size();i++)
 			{
-				m_dlg.Get(i)->Update();
+				m_dlg[i]->Update();
 			}
 		}
 	}
 	// delete mustclose dialogs
-	for(i=0;i<m_dlg.Size();i++)
-		if(m_dlg.Get(i)->m_mustclose)
+	for(i=0;i<m_dlg.size();i++)
+		if(m_dlg[i]->m_mustclose)
 		{
 			m_capture = NULL; // clear captrure (colud be int the dying dialog)
-			m_dlg.Del(i);
+			sdelete(m_dlg[i]);
+			m_dlg.erase(m_dlg.begin() + i);
 			if(m_lastdlg==i) m_lastdlg=-1; else
 			if(m_lastdlg>i) m_lastdlg--; // fix index
 			i--;
@@ -129,11 +131,11 @@ void cGUI::Draw()
 	guard(cGUI::Draw)
 	R9_SetState(R9_STATE_BLEND,R9_BLEND_ALPHA);
 
-	for(int i=0;i<m_dlg.Size();i++)
+	for(int i=0;i<m_dlg.size();i++)
 	{
-		// if(m_dlg.Get(i)->GetInt(DV_MODAL))
+		// if(m_dlg[i]->GetInt(DV_MODAL))
 		//	R9_DrawBar(fRect(0,0,R9_GetWidth(),R9_GetHeight()),0x60000000); 
-		m_dlg.Get(i)->Draw();
+		m_dlg[i]->Draw();
 	}
 	
 	// tooltip
@@ -223,8 +225,8 @@ void cGUI::ReadInput()
 int cGUI::DlgFind( int id )
 {
 	guard(cGUI::DlgFind)
-	for(int i=0;i<m_dlg.Size();i++)
-		if(m_dlg.Get(i)->GetInt(DV_ID) == id)
+	for(int i=0;i<m_dlg.size();i++)
+		if(m_dlg[i]->GetInt(DV_ID) == id)
 			return i;
 	return -1;
 	unguard()
@@ -233,12 +235,23 @@ int cGUI::DlgFind( int id )
 int cGUI::DlgFind( cGUIDlg *dlg )
 {
 	guard(cGUI::DlgFind)
-	for(int i=0;i<m_dlg.Size();i++)
-		if(m_dlg.Get(i) == dlg)
+	for(int i=0;i<m_dlg.size();i++)
+		if(m_dlg[i] == dlg)
 			return i;
 	return -1;
 	unguard()
 }
+
+
+void cGUI::DlgDel( int idx ) 
+{
+	if(0<=idx && idx<DlgCount()) 
+	{ 
+		sdelete(m_dlg[idx]); 
+		m_dlg.erase(m_dlg.begin() + idx); 
+	} 
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // Script

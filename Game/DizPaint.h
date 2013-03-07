@@ -205,14 +205,14 @@ public:
 		int				m_scale;		// scale factor
 
 		// fonts
-		cFont*			FontGet			( int idx )						{ if(0<=idx && idx<m_font.Size()) return m_font.Get(idx); else return NULL; }
+		cFont*			FontGet			( int idx )						{ if(0<=idx && idx<m_font.size()) return m_font[idx]; else return 0; }
 		void			FontDel			( int idx );
 		bool			FontLoad		( char* path, int group=0 );	// load fonts from a path and set the specified group
 		bool			FontLoadFile	( const char* filepath, int group=0 );// load a font file
 		void			FontUnload		( int group=0 );				// unload fonts (destroy) from the specified group
-		int				FontFind		( int id )						{ for(int i=0;i<m_font.Size();i++) if(m_font[i]->m_id==id) return i; return -1; }
+		int				FontFind		( int id )						{ for(int i=0;i<m_font.size();i++) if(m_font[i]->m_id==id) return i; return -1; }
 
-		cPList<cFont>	m_font;			// fonts list
+		std::vector<cFont*> m_font;			// fonts list
 		Tiles tiles;
 };
 

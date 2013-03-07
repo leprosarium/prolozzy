@@ -815,10 +815,10 @@ void cEdiMap::BrushDrawExtra( iRect& view )
 	for( int p=0; p<partitioncount; p++ )
 	{
 		int pidx = partition[p];
-		int brushcount = m_partition.Get(pidx)->m_count;
+		int brushcount = m_partition[pidx]->m_count;
 		for( i=0; i<brushcount; i++ )
 		{
-			int idx = m_partition.Get(pidx)->m_data[i];
+			int idx = m_partition[pidx]->m_data[i];
 			sassert(0<=idx && idx<m_brushcount);
 			m_count_brushcheck++;
 
@@ -1004,21 +1004,19 @@ void cEdiMap::BrushClear()
 void cEdiMap::PartitionInit()
 {
 	guard(cEdiMap::PartitionInit)
-	m_partition.Done(); // safety
+	PartitionDone();// safety
 	int pcountw = PartitionCountW();
 	int pcounth = PartitionCountH();
 	for(int i=0;i<pcountw*pcounth;i++)
-	{
-		cPartitionCel* partition = snew cPartitionCel();
-		m_partition.Add(partition);
-	}
+		m_partition.push_back(snew cPartitionCel());
 	unguard()
 }
 
 void cEdiMap::PartitionDone()
 {
 	guard(cEdiMap::PartitionDone)
-	m_partition.Done();
+	for(; !m_partition.empty(); m_partition.pop_back()) sdelete(m_partition.back());
+	m_partition.clear(); 
 	unguard()
 }
 
@@ -1032,7 +1030,7 @@ BOOL cEdiMap::PartitionAdd( int brushidx )
 	br.x2 = br.x1 + m_brush[brushidx].m_data[BRUSH_W];
 	br.y2 = br.y1 + m_brush[brushidx].m_data[BRUSH_H];
 	BOOL ok=FALSE;
-	for(int i=0; i<m_partition.Size(); i++)
+	for(int i=0; i<m_partition.size(); i++)
 	{
 		iRect pr;
 		pr.x1 = (i%pcountw) * PARTITION_CELSIZE;
@@ -1041,7 +1039,7 @@ BOOL cEdiMap::PartitionAdd( int brushidx )
 		pr.y2 = pr.y1 + PARTITION_CELSIZE;
 		if( RECT2RECT(br,pr) )
 		{	
-			m_partition.Get(i)->Add(brushidx);
+			m_partition[i]->Add(brushidx);
 			ok = TRUE;
 		}
 	}
@@ -1060,7 +1058,7 @@ void cEdiMap::PartitionDel( int brushidx )
 	br.y1 = m_brush[brushidx].m_data[BRUSH_Y];
 	br.x2 = br.x1 + m_brush[brushidx].m_data[BRUSH_W];
 	br.y2 = br.y1 + m_brush[brushidx].m_data[BRUSH_H];
-	for(int i=0; i<m_partition.Size(); i++)
+	for(int i=0; i<m_partition.size(); i++)
 	{
 		iRect pr;
 		pr.x1 = (i%pcountw) * PARTITION_CELSIZE;
@@ -1068,7 +1066,7 @@ void cEdiMap::PartitionDel( int brushidx )
 		pr.x2 = pr.x1 + PARTITION_CELSIZE;
 		pr.y2 = pr.y1 + PARTITION_CELSIZE;
 		if( RECT2RECT(br,pr) )
-			m_partition.Get(i)->Sub(brushidx);
+			m_partition[i]->Sub(brushidx);
 	}
 	unguard()
 }
@@ -1080,7 +1078,7 @@ int	cEdiMap::PartitionGet( iRect& rect, int* buffer, int buffersize )
 	sassert(buffersize>0);
 	int pcountw = PartitionCountW();
 	int count = 0;
-	for(int i=0; i<m_partition.Size(); i++)
+	for(int i=0; i<m_partition.size(); i++)
 	{
 		iRect pr;
 		pr.x1 = (i%pcountw) * PARTITION_CELSIZE;
@@ -1101,9 +1099,9 @@ int	cEdiMap::PartitionGet( iRect& rect, int* buffer, int buffersize )
 void cEdiMap::PartitionFix( int brushidx1, int brushidx2, int delta )
 {
 	guard(cEdiMap::PartitionFix)
-	for(int i=0; i<m_partition.Size(); i++)
+	for(int i=0; i<m_partition.size(); i++)
 	{
-		cPartitionCel* pcel = m_partition.Get(i);
+		cPartitionCel* pcel = m_partition[i];
 		for(int j=0; j<pcel->m_count; j++)
 		{
 			if( pcel->m_data[j]>=brushidx1 && pcel->m_data[j]<=brushidx2 )
@@ -1118,8 +1116,8 @@ BOOL cEdiMap::PartitionRepartition()
 	guard(cEdiMap::PartitionRepartition)
 	int i;
 	// force all clean
-	for(i=0; i<m_partition.Size(); i++)
-		m_partition.Get(i)->m_count = 0;
+	for(i=0; i<m_partition.size(); i++)
+		m_partition[i]->m_count = 0;
 	// repartition all brushes
 	BOOL ok = TRUE;
 	for(i=0; i<m_brushcount; i++)

@@ -6,7 +6,6 @@
 
 #include "E9System.h"
 #include "E9Math.h"
-#include "E9List.h"
 #include "GUIUtil.h"
 #include "GUIDlg.h"
 
@@ -61,10 +60,10 @@ inline	void			SetTooltip( char* text )		{ if(text) strncpy(m_tooltip,text,255); 
 		r9TexturePool	m_texturepool;					// textures
 				
 		// inheritance
-inline	int				DlgCount()						{ return m_dlg.Size(); }
-inline	cGUIDlg*		DlgGet( int idx )				{ if(0<=idx && idx<DlgCount()) return m_dlg.Get(idx); else return NULL; }
-inline	int				DlgAdd( cGUIDlg* dlg )			{ if(dlg) return m_dlg.Add(dlg); else return -1; }
-inline	void			DlgDel( int idx )				{ if(0<=idx && idx<DlgCount()) m_dlg.Del(idx); }
+inline	int				DlgCount()						{ return m_dlg.size(); }
+inline	cGUIDlg*		DlgGet( int idx )				{ if(0<=idx && idx<DlgCount()) return m_dlg[idx]; return 0; }
+inline	int				DlgAdd( cGUIDlg* dlg )			{ if(dlg) { int idx = m_dlg.size(); m_dlg.push_back(dlg); return idx; } return -1; }
+		void			DlgDel( int idx );
 virtual	int				DlgFind( int id );				// return idx
 virtual	int				DlgFind( cGUIDlg* dlg );		// return idx
 
@@ -74,7 +73,7 @@ virtual	int				DlgFind( cGUIDlg* dlg );		// return idx
 	cGUIItem * GetLastItem(); 	
 
 		// data
-		cPList<cGUIDlg>	m_dlg;							// cGUIDlg list
+	std::vector<cGUIDlg *> m_dlg;						// cGUIDlg list
 		r9Font*			m_font;
 
 		cGUIItem*		m_capture;						// pointer to capturing item

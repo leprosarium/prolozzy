@@ -5,7 +5,6 @@
 #ifndef __F9ARCHIVEZIP_H__
 #define __F9ARCHIVEZIP_H__
 
-#include "E9List.h"
 #include "F9Archive.h"
 #include "F9FileDisk.h"
 #include "..\\Libs\\zlib\\zlib.h"
@@ -31,18 +30,18 @@ virtual	int				Close			();
 						
 virtual	f9File*	 		FileOpen		( const char* name, int mode = F9_READ );
 virtual	int				FileClose		( f9File* file );
-virtual	int				FileCount		()									{ return m_fat.Size(); }
+virtual	int				FileCount		()									{ return m_fat.size(); }
 virtual	int				FileFind		( const char* name );
 virtual	char*			FileGetName		( int idx );
 virtual	dword			FileGetSize		( int idx );
-inline	f9ZipFileInfo*	FileGetInfo		( int idx )							{ return m_fat.Get(idx); }
+inline	f9ZipFileInfo*	FileGetInfo		( int idx )							{ return idx >= 0 && idx < m_fat.size() ? m_fat[idx] : 0; }
 
 private:
 		BOOL			ReadFAT			();
-
-	cPList<f9ZipFileInfo>	m_fat;		// file allocation table
-	typedef std::hash_map<std::string, int> Hash;
-	Hash					index;		// hash for FAT (name,idx)
+		typedef std::vector<f9ZipFileInfo *> InfoList;
+		InfoList m_fat;		// file allocation table
+		typedef std::hash_map<std::string, int> Hash;
+		Hash					index;		// hash for FAT (name,idx)
 };
 
 #endif

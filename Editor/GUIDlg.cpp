@@ -22,10 +22,12 @@ cGUIDlg::~cGUIDlg()
 {
 	guard(cGUIDlg::~cGUIDlg)
 	SetTxt(DV_CLOSECMD,NULL);
-	for(int i=0;i<m_item.Size();i++)
-		m_item.Get(i)->m_dlg = NULL;
-	m_item.Done();
-	m_keys.Done();
+	for(; !m_item.empty(); m_item.pop_back()) {
+		m_item.back()->m_dlg = NULL;
+		sdelete(m_item.back());
+	}
+	m_item.clear();
+	m_keys.clear();
 	unguard()
 }
 
@@ -38,9 +40,9 @@ void cGUIDlg::Update()
 	m_mousein = INRECT( g_gui->m_mousex, g_gui->m_mousey, rc);
 
 	// update children
-	for(int i=0;i<m_item.Size();i++)
+	for(int i=0;i<m_item.size();i++)
 	{
-		cGUIItem* item = m_item.Get(i);
+		cGUIItem* item = m_item[i];
 		if(!item->GetInt(IV_DISABLE))
 		{
 			item->Update();
@@ -67,10 +69,10 @@ void cGUIDlg::Update()
 void cGUIDlg::Draw()
 {
 	guard(cGUIDlg::Draw)
-	for(int i=0;i<m_item.Size();i++)
+	for(int i=0;i<m_item.size();i++)
 	{
-		if(!m_item.Get(i)->GetInt(IV_HIDDEN))
-			m_item.Get(i)->Draw();
+		if(!m_item[i]->GetInt(IV_HIDDEN))
+			m_item[i]->Draw();
 	}
 	unguard()
 }
@@ -182,8 +184,8 @@ RECT cGUIDlg::GetRect( int idx )
 int cGUIDlg::ItemFind( int id )
 {
 	guard(cGUIDlg::ItemFind)
-	for(int i=0;i<m_item.Size();i++)
-		if(m_item.Get(i)->GetInt(IV_ID) == id)
+	for(int i=0;i<m_item.size();i++)
+		if(m_item[i]->GetInt(IV_ID) == id)
 			return i;
 	return -1;
 	unguard()
@@ -192,8 +194,8 @@ int cGUIDlg::ItemFind( int id )
 int cGUIDlg::ItemFind( cGUIItem* item )
 {
 	guard(cGUIDlg::ItemFind)
-	for(int i=0;i<m_item.Size();i++)
-		if(m_item.Get(i) == item)
+	for(int i=0;i<m_item.size();i++)
+		if(m_item[i] == item)
 			return i;
 	return -1;
 	unguard()
@@ -201,18 +203,18 @@ int cGUIDlg::ItemFind( cGUIItem* item )
 
 void cGUIDlg::AddKey( int key, int flags, const std::string & cmd )
 {
-	m_keys.Add(snew tDlgKey(key, flags, cmd));
+	m_keys.push_back(tDlgKey(key, flags, cmd));
 }
 
 void cGUIDlg::TestKey()
 {
 	guard(cGUIDlg::TestKey)
 
-	for(int i=0;i<m_keys.Size();i++)
+	for(std::vector<tDlgKey>::const_iterator k = m_keys.begin(), e = m_keys.end(); k != e; ++k)
 	{
-		if(I9_GetKeyDown(m_keys.Get(i)->m_key))
+		if(I9_GetKeyDown(k->m_key))
 		{
-			int keyflags = m_keys.Get(i)->m_flags;
+			int keyflags = k->m_flags;
 			int flags = 0;
 			if( I9_GetKeyValue(I9K_LSHIFT) || I9_GetKeyValue(I9K_RSHIFT) )		flags |= GUIKEYFLAG_SHIFT;
 			if( I9_GetKeyValue(I9K_LCONTROL) || I9_GetKeyValue(I9K_RCONTROL) )	flags |= GUIKEYFLAG_CTRL;
@@ -223,7 +225,7 @@ void cGUIDlg::TestKey()
 				// select this dialog when we call OnKey command
 				g_gui->m_lastdlg = g_gui->DlgFind(this);
 				g_gui->m_lastitem = -1;
-				g_gui->ScriptPrologDo(m_keys.Get(i)->cmd);	
+				g_gui->ScriptPrologDo(k->cmd);	
 				return;
 			}
 		}

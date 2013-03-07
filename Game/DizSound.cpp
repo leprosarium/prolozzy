@@ -56,8 +56,6 @@ cDizSound::~cDizSound()
 bool cDizSound::Init()
 {
 	guard(cDizSound::Init)
-	m_sampleproto.Init(32,16);
-	m_musicproto.Init(8,8);
 	return true;
 	unguard()
 }
@@ -67,8 +65,10 @@ void cDizSound::Done()
 	guard(cDizSound::Done)
 	SampleStopAll();
 	MusicStop();
-	m_sampleproto.Done();
-	m_musicproto.Done();
+	for(; !m_sampleproto.empty(); m_sampleproto.pop_back()) sdelete(m_sampleproto.back());
+	m_sampleproto.clear();
+	for(; !m_musicproto.empty(); m_musicproto.pop_back()) sdelete(m_musicproto.back());
+	m_musicproto.clear();
 	unguard()
 }
 
@@ -156,7 +156,7 @@ bool cDizSound::SampleLoadFile( const char* filepath, int group )
 
 	// add to list
 	tSoundProto* proto = snew tSoundProto(id, group, instances, bufferproto);
-	m_sampleproto.Add(proto);
+	m_sampleproto.push_back(proto);
 
 	if(IS_DEVELOPER()) // log for developers
 		dlog(LOGAPP, L"  %S [%i]\n", filepath, instances );
@@ -222,12 +222,13 @@ void cDizSound::SampleUnload( int group )
 {
 	guard(cDizSound::SampleUnload)
 	int i;
-	for(i=0;i<m_sampleproto.Size();i++)
+	for(i=0;i<m_sampleproto.size();i++)
 	{
 		if(m_sampleproto[i]->m_group == group)
 		{
 			SampleStopAll(m_sampleproto[i]->m_id);
-			m_sampleproto.Del(i);
+			sdelete(m_sampleproto[i]);
+			m_sampleproto.erase(m_sampleproto.begin() + i);
 			i--;
 		}
 	}
@@ -240,7 +241,7 @@ int	cDizSound::SamplePlay( PlAtom id, int loop )
 	int i;
 	int protoidx = SampleFind(id);
 	if(protoidx==-1) return -1; // invalid id
-	tSoundProto* proto = m_sampleproto.Get(protoidx); sassert(proto);
+	tSoundProto* proto = m_sampleproto[protoidx];
 	if( proto->m_bufferproto == NULL ) return -1; // invalid proto
 
 	// find instances and free voice
@@ -360,7 +361,7 @@ bool cDizSound::MusicLoadFile( const char* filepath, int group )
 
 	// add to list
 	tMusicProto* proto = snew tMusicProto(id, group, stream);
-	m_musicproto.Add(proto);
+	m_musicproto.push_back(proto);
 
 	if(IS_DEVELOPER()) // log for developers
 		dlog(LOGAPP, L"  %S\n", filepath );
@@ -426,13 +427,14 @@ void cDizSound::MusicUnload( int group )
 {
 	guard(cDizSound::MusicUnload)
 	int i;
-	for(i=0;i<m_musicproto.Size();i++)
+	for(i=0;i<m_musicproto.size();i++)
 	{
 		if(m_musicproto[i]->m_group == group)
 		{
 			if(i==m_musicidx) MusicStop(); // stop if current
 			if(m_musicnext==i) m_musicnext=-1; // clear if next
-			m_musicproto.Del(i);
+			sdelete(m_musicproto[i]);
+			m_musicproto.erase(m_musicproto.begin() + i);
 			i--;
 		}
 	}

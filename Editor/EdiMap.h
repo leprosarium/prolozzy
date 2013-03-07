@@ -144,7 +144,7 @@ inline	int			PartitionCountH		()							{ return (m_maph+PARTITION_CELSIZE-1) / P
 		int			PartitionGet		( iRect& rect, int* buffer, int buffersize );	// retrive all partitions that intersect a specified area
 		void		PartitionFix		( int brushidx1, int brushidx2, int delta ); // adjust all indices in interval (including) by delta
 		BOOL		PartitionRepartition();							// remove and reenter all brushes; ret ok (or false if some failures)
-		cPList<cPartitionCel> m_partition;							// partitions cels list
+		std::vector<cPartitionCel *> m_partition;					// partitions cels list
 
 		// markers
 		void		MarkerToggle		( int x, int y );			// add/remove marker at a given pos

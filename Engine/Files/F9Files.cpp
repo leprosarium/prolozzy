@@ -24,15 +24,14 @@ f9Files::~f9Files()
 void f9Files::Init()
 {
 	guard(f9Files::Init);
-	m_archives.Init(16);
 	unguard();
 }
 
 void f9Files::Done()
 {
 	guard(f9Files::Done);
-	for(int i=0;i<m_archives.Size();i++) ArchiveClose(i);
-	m_archives.Done();
+	for(int i=0;i<m_archives.size();i++) ArchiveClose(i);
+	m_archives.clear();
 	unguard();
 }
 
@@ -62,7 +61,8 @@ int f9Files::ArchiveOpen( const char* name, int mode, const char* password )
 		return -1;
 	}
 
-	idx = m_archives.Add(arc); sassert(idx!=-1);
+	idx = m_archives.size();
+	m_archives.push_back(arc);
 	return idx;
 	unguard();
 }
@@ -70,24 +70,29 @@ int f9Files::ArchiveOpen( const char* name, int mode, const char* password )
 void f9Files::ArchiveClose( int idx )
 {
 	guard(f9Files::ArchiveClose);
-	if(!m_archives.Get(idx)) return;
-	m_archives.Get(idx)->Close();
-	m_archives.Del(idx);
+	if(idx < 0 || idx >= m_archives.size()) return;
+	Array::iterator it = m_archives.begin() + idx;
+	Array::value_type arc = *it;
+	if(!arc) return;
+	arc->Close();
+	sdelete(arc);
+	m_archives.erase(it);
 	unguard();
 }
 
 f9Archive* f9Files::ArchiveGet( int idx )
 {
 	guard(f9Files::ArchiveGet);
-	return m_archives.Get(idx);
+	if(idx < 0 || idx >= m_archives.size()) return 0;
+	return m_archives[idx];
 	unguard();
 }
 
 int f9Files::ArchiveFind( const char* name )
 {
 	guard(f9Files::ArchiveFind);
-	for(int i=0; i<m_archives.Size(); i++)
-		if(m_archives.Get(i) && 0==stricmp(m_archives.Get(i)->m_name, name) ) 
+	for(int i=0; i<m_archives.size(); i++)
+		if(m_archives[i] && 0==stricmp(m_archives[i]->m_name, name) ) 
 			return i;
 	return -1;
 	unguard();
@@ -96,9 +101,8 @@ int f9Files::ArchiveFind( const char* name )
 int f9Files::ArchiveFindContaining( const char* filename )
 {
 	guard(f9Files::GetArchiveContaining);
-	if(m_archives.Size()==0) return -1;
-	for(int i=0; i<m_archives.Size(); i++)
-		if( m_archives.Get(i) && m_archives.Get(i)->FileFind( filename ) != -1 )	
+	for(int i=0; i<m_archives.size(); i++)
+		if( m_archives[i] && m_archives[i]->FileFind( filename ) != -1 )	
 			return i;
 	return -1;
 	unguard();
@@ -107,14 +111,14 @@ int f9Files::ArchiveFindContaining( const char* filename )
 int f9Files::ArchiveFindContainingEx( const char* path )
 {
 	guard(f9Files::ArchiveFindContainingEx);
-	if(m_archives.Size()==0) return -1;
+	if(m_archives.size()==0) return -1;
 
 	int i,j,k;
 	k = (int)strlen(path);
-	for(i=0; i<m_archives.Size(); i++)
+	for(i=0; i<m_archives.size(); i++)
 	{
-		if(m_archives.Get(i)==NULL) continue;
-		char* arcname = m_archives.Get(i)->m_name;	sassert(arcname);
+		if(!m_archives[i]) continue;
+		char* arcname = m_archives[i]->m_name;	sassert(arcname);
 		const char* sz = file_path2file( arcname );		sassert(sz);
 		int ap =(int)(sz - arcname);
 		if( ap >= k ) continue; // file path is smaller than archive dir !
@@ -124,7 +128,7 @@ int f9Files::ArchiveFindContainingEx( const char* path )
 
 		if( j<ap ) continue; // archive dir not at the begining of file dir !
 
-		if( m_archives.Get(i)->FileFind( path+ap ) != -1 )	return i;
+		if( m_archives[i]->FileFind( path+ap ) != -1 )	return i;
 	}
 
 	return -1;
@@ -134,16 +138,18 @@ int f9Files::ArchiveFindContainingEx( const char* path )
 int	f9Files::ArchiveGetFileCount( int idx )
 {
 	guard(f9Files::ArchiveGetFileCount);
-	f9Archive* archive = m_archives.Get(idx);		
-	if(!archive) return 0;
-	return archive->FileCount();
+	if(idx < 0 || idx >= m_archives.size()) return 0;
+	if(f9Archive* archive = m_archives[idx])
+		return archive->FileCount();
+	return 0;
 	unguard();
 }
 
 char* f9Files::ArchiveGetFileName( int idx, int fileidx )
 {
 	guard(f9Files::ArchiveGetFileName);
-	f9Archive* archive = m_archives.Get(idx);		
+	if(idx < 0 || idx >= m_archives.size()) return 0;
+	f9Archive* archive = m_archives[idx];		
 	if(!archive) return NULL;
 	if(idx<0 || idx>=archive->FileCount()) return NULL;
 	return archive->FileGetName(fileidx);
@@ -164,8 +170,7 @@ f9File* f9Files::FileOpen( const char* name, int mode )
 		int idx = ArchiveFindContainingEx( name );
 		if(idx!=-1)
 		{
-			f9Archive* arc;
-			arc = ArchiveGet(idx); sassert(arc);
+			f9Archive* arc = ArchiveGet(idx); sassert(arc);
 			const char* sz = file_path2file(arc->m_name); sassert(sz);
 			int ap = (int)( sz - arc->m_name );
 			return arc->FileOpen( name+ap, mode ); // we open the path from inside the archive

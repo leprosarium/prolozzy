@@ -16,7 +16,8 @@
 #ifndef __F9FILES_H__
 #define __F9FILES_H__
 
-#include "E9Array.h"
+#include <vector>
+
 #include "F9Archive.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -48,8 +49,9 @@ inline	void		ResourcesClose			()										{ m_resources=0; } // close resources 
 		f9File*		FileOpen		( const char* name, int mode = F9_READ );		// open a file; with search in archives and other tricks
 		int			FileClose		( f9File* file );								// closes a file
 	
-public:
-		cPArray<f9Archive>	m_archives;
+private:
+		typedef std::vector<f9Archive *> Array;
+		Array	m_archives;
 		int					m_resources;	// 1 to search resources
 };
 

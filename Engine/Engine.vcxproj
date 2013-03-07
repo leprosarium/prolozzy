@@ -79,7 +79,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Common\E9Array.h" />
     <ClInclude Include="Common\E9Config.h" />
     <ClInclude Include="Common\E9Engine.h" />
     <ClInclude Include="Common\E9List.h" />

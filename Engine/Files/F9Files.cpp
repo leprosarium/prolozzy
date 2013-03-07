@@ -145,7 +145,7 @@ int	f9Files::ArchiveGetFileCount( int idx )
 	unguard();
 }
 
-char* f9Files::ArchiveGetFileName( int idx, int fileidx )
+std::string f9Files::ArchiveGetFileName( int idx, int fileidx )
 {
 	guard(f9Files::ArchiveGetFileName);
 	if(idx < 0 || idx >= m_archives.size()) return 0;

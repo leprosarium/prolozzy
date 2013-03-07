@@ -25,7 +25,7 @@ virtual	f9File*			FileOpen		( const char* name, int mode = F9_READ )	{ return NU
 virtual	int				FileClose		( f9File* file )					{ return F9_FAIL; }
 virtual	int				FileCount		()									{ return 0; }
 virtual	int				FileFind		( const char* name )				{ return -1; }		// get arc file's index in the archive
-virtual	char*			FileGetName		( int idx )							{ return NULL; }	// get arc file's name
+virtual	std::string		FileGetName		( int idx ) = 0;										// get arc file's name
 virtual	dword			FileGetSize		( int idx )							{ return 0; }		// get arc file's size
 
 public:

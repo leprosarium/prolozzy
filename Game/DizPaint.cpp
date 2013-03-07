@@ -325,10 +325,10 @@ bool Tiles::Load( char* path, int group )
 	{
 		for(int i=0;i<archivefiles;i++)
 		{
-			char* filename = F9_ArchiveGetFileName(0,i);
-			if(strstr(filename,path)==filename)
+			std::string filename = F9_ArchiveGetFileName(0,i);
+			if(strstr(filename.c_str(),path)==filename)
 			{
-				FFCallback_Tile(filename,false);
+				FFCallback_Tile(filename.c_str(),false);
 			}
 		}
 	}
@@ -1073,10 +1073,10 @@ bool cDizPaint::FontLoad( char* path, int group )
 	{
 		for(int i=0;i<archivefiles;i++)
 		{
-			char* filename = F9_ArchiveGetFileName(0,i);
-			if(strstr(filename,path)==filename)
+			std::string filename = F9_ArchiveGetFileName(0,i);
+			if(strstr(filename.c_str(),path)==filename)
 			{
-				FFCallback_Font(filename,false);
+				FFCallback_Font(filename.c_str(),false);
 			}
 		}
 	}

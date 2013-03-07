@@ -15,7 +15,7 @@ struct f9ZipFileInfo
 {
 	dword	m_offset;
 	dword	m_size;
-	cStr	m_name;
+	std::string	m_name;
 };
 
 class f9ArchiveZip : public f9Archive
@@ -32,7 +32,7 @@ virtual	f9File*	 		FileOpen		( const char* name, int mode = F9_READ );
 virtual	int				FileClose		( f9File* file );
 virtual	int				FileCount		()									{ return m_fat.size(); }
 virtual	int				FileFind		( const char* name );
-virtual	char*			FileGetName		( int idx );
+virtual	std::string		FileGetName		( int idx );
 virtual	dword			FileGetSize		( int idx );
 inline	f9ZipFileInfo*	FileGetInfo		( int idx )							{ return idx >= 0 && idx < m_fat.size() ? m_fat[idx] : 0; }
 

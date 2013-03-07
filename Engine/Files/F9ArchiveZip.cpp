@@ -98,12 +98,12 @@ int f9ArchiveZip::FileFind( const char* name )
 	unguard();
 }
 
-char* f9ArchiveZip::FileGetName( int idx )
+std::string f9ArchiveZip::FileGetName( int idx )
 {
 	guard(f9ArchiveZip::FileGetName);
 	if(idx >= 0 && idx < m_fat.size()) 
 		return m_fat[idx]->m_name;
-	return 0;
+	return std::string();
 	unguard();
 }
 
@@ -197,7 +197,7 @@ BOOL f9ArchiveZip::ReadFAT()
 		m_fat.push_back(fi);
 
 		// add to hash
-		index.insert(Hash::value_type(fi->m_name.m_data, idx));
+		index.insert(Hash::value_type(fi->m_name, idx));
 	}
 		
 	sfree( cebuff );

@@ -31,7 +31,7 @@ struct f9PakFileInfo
 	dword	m_offset;			// start offset (in archive)
 	dword	m_sizec;			// compressed size (in archive)
 	dword	m_size;				// uncompressed size
-	cStr	m_name;				// file name
+	std::string	m_name;			// file name
 };
 
 class f9ArchivePak : public f9Archive
@@ -48,7 +48,7 @@ virtual	f9File*	 		FileOpen		( const char* name, int mode = F9_READ );
 virtual	int				FileClose		( f9File* file );
 virtual	int				FileCount		()									{ return m_fat.size(); }
 virtual	int				FileFind		( const char* name );
-virtual	char*			FileGetName		( int idx );
+virtual	std::string		FileGetName		( int idx );
 virtual	dword			FileGetSize		( int idx );
 inline	f9PakFileInfo*	FileGetInfo		( int idx )							{ return idx >= 0 && idx < m_fat.size() ? m_fat[idx] : 0; }
 

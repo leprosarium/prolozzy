@@ -117,12 +117,12 @@ int f9ArchivePak::FileFind( const char* name )
 	unguard();
 }
 
-char* f9ArchivePak::FileGetName( int idx )
+std::string f9ArchivePak::FileGetName( int idx )
 {
 	guard(f9ArchivePak::FileGetName);
 	if(idx >= 0 && idx < m_fat.size())
 		return m_fat[idx]->m_name;	
-	return 0;
+	return std::string();
 	unguard();
 }
 
@@ -199,14 +199,14 @@ BOOL f9ArchivePak::ReadFAT()
 		fi->m_sizec	= *(dword*)(buffer+pos+8);
 		fi->m_size	= *(dword*)(buffer+pos+12);
 		fi->m_name	= (char*)(buffer+pos+16);
-		pos += 16 + fi->m_name.Len() + 1;
+		pos += 16 + fi->m_name.size() + 1;
 		
 		// add file info
 		int idx = m_fat.size();
 		m_fat.push_back(fi);
 
 		// add to hash
-		index.insert(Hash::value_type(fi->m_name.m_data, idx));
+		index.insert(Hash::value_type(fi->m_name, idx));
 	}
 	sassert(files!=m_header.m_fatfiles); // check
 	

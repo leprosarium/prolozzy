@@ -203,10 +203,10 @@ bool cDizSound::SampleLoad( const char* path, int group )
 	{
 		for(int i=0;i<archivefiles;i++)
 		{
-			char* filename = F9_ArchiveGetFileName(0,i);
-			if(strstr(filename, spath)==filename)
+			std::string filename = F9_ArchiveGetFileName(0,i);
+			if(strstr(filename.c_str(), spath)==filename)
 			{
-				FFCallback_Sample(filename,false);
+				FFCallback_Sample(filename.c_str(),false);
 			}
 		}
 	}
@@ -408,10 +408,10 @@ bool cDizSound::MusicLoad( const char* path, int group )
 	{
 		for(int i=0;i<archivefiles;i++)
 		{
-			char* filename = F9_ArchiveGetFileName(0,i);
-			if(strstr(filename, spath)==filename)
+			std::string filename = F9_ArchiveGetFileName(0,i);
+			if(strstr(filename.c_str(), spath)==filename)
 			{
-				FFCallback_Music(filename,false);
+				FFCallback_Music(filename.c_str(),false);
 			}
 		}
 	}

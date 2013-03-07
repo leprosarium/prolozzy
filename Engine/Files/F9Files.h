@@ -39,7 +39,7 @@ virtual				~f9Files		();
 		int			ArchiveFindContaining	( const char* filename );									// strictly look for the file name
 		int			ArchiveFindContainingEx	( const char* path );										// try to fit path with the archive path and look for the rest
 		int			ArchiveGetFileCount		( int idx );												// return number of files in an archive
-		char*		ArchiveGetFileName		( int idx, int fileidx );									// return a file's name in an archive
+		std::string	ArchiveGetFileName		( int idx, int fileidx );									// return a file's name in an archive
 
 // resource serve
 inline	void		ResourcesOpen			()										{ m_resources=1; } // open resources (files will be searched in resources)
@@ -66,7 +66,7 @@ inline	BOOL	F9_IsReady()																	{ return f9_files!=NULL; }
 inline	int		F9_ArchiveOpen			( const char* name, int mode=F9_READ, const char* password=NULL )	{ guardfast(F9_ArchiveOpen);	sassert(f9_files); return f9_files->ArchiveOpen(name,mode,password); unguardfast(); }
 inline	void	F9_ArchiveClose			( int idx )												{ guardfast(F9_ArchiveClose);	sassert(f9_files); f9_files->ArchiveClose(idx); unguardfast(); }
 inline	int		F9_ArchiveGetFileCount	( int idx )												{ guardfast(F9_ArchiveClose);	sassert(f9_files); return f9_files->ArchiveGetFileCount(idx); unguardfast(); }
-inline	char*	F9_ArchiveGetFileName	( int idx, int fileidx )								{ guardfast(F9_ArchiveClose);	sassert(f9_files); return f9_files->ArchiveGetFileName(idx,fileidx); unguardfast(); }
+inline	std::string	F9_ArchiveGetFileName	( int idx, int fileidx )								{ guardfast(F9_ArchiveClose);	sassert(f9_files); return f9_files->ArchiveGetFileName(idx,fileidx); unguardfast(); }
 inline	void	F9_ResourcesOpen		()														{ guardfast(F9_ResourcesOpen);	sassert(f9_files); f9_files->ResourcesOpen(); unguardfast(); }
 inline	void	F9_ResourcesClose		()														{ guardfast(F9_ResourcesClose);	sassert(f9_files); f9_files->ResourcesClose(); unguardfast(); }
 inline	F9FILE	F9_FileOpen				( const char* name, int mode=F9_READ )					{ guardfast(F9_FileOpen);		sassert(f9_files); return f9_files->FileOpen(name, mode); unguardfast(); }

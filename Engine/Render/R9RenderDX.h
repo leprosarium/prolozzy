@@ -8,8 +8,9 @@
 #define __R9RENDERDX_H__
 
 #include <d3d9.h>
+#include <vector>
 #include "R9Render.h"
-#include "E9List.h"
+
 
 #define R9_BATCHSIZE_DX		(3*64)	// number of vertices in the batch buffer
 
@@ -94,7 +95,7 @@ static	r9PFInfo*			D3D_PFInfo( D3DFORMAT d3dpf );							// return a r9PFInfo fro
 		LPDIRECT3DSURFACE9	m_d3dtarget;					// temporary render target (kept during begin-end scene)
 		int					m_targetwidth;					// render target width
 		int					m_targetheight;					// render target height
-		cList<R9TEXTURE>	m_targetlist;					// management list with textures created with render target support (these are not managed by DX, when device is lost)
+		std::vector<R9TEXTURE> m_targetlist;					// management list with textures created with render target support (these are not managed by DX, when device is lost)
 		void				TT_Add(R9TEXTURE texture);		// add a render target texture
 		void				TT_Del(R9TEXTURE texture);		// del a render target texture
 		void				TT_Release();

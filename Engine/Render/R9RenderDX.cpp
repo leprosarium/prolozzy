@@ -42,15 +42,13 @@ r9RenderDX::r9RenderDX()
 	m_targetwidth	= 0;
 	m_targetheight	= 0;
 
-	m_targetlist.Init(8,4);
-
 	unguard();
 }
 
 r9RenderDX::~r9RenderDX()
 {
 	guard(r9RenderDX::~r9RenderDX);
-	m_targetlist.Done();
+	m_targetlist.clear();
 	unguard();
 }
 
@@ -1119,17 +1117,17 @@ r9PFInfo* r9RenderDX::D3D_PFInfo( D3DFORMAT d3dpf )
 void r9RenderDX::TT_Add(R9TEXTURE texture)
 {
 	guardfast(r9RenderDX::TT_Add);
-	m_targetlist.Add(texture);
+	m_targetlist.push_back(texture);
 	unguardfast();
 }
 void r9RenderDX::TT_Del(R9TEXTURE texture)
 {
 	guardfast(r9RenderDX::TT_Del);
-	for(int i=0;i<m_targetlist.Size();i++)
+	for(int i=0;i<m_targetlist.size();i++)
 	{
 		if(m_targetlist[i]==texture)
 		{
-			m_targetlist.Del(i);
+			m_targetlist.erase(m_targetlist.begin() + i);
 			return;
 		}
 	}
@@ -1139,7 +1137,7 @@ void r9RenderDX::TT_Del(R9TEXTURE texture)
 void r9RenderDX::TT_Release()
 {
 	guard(r9RenderDX::TT_Release);
-	for(int i=0;i<m_targetlist.Size();i++)
+	for(int i=0;i<m_targetlist.size();i++)
 	{
 		LPDIRECT3DTEXTURE9 d3dtex = (LPDIRECT3DTEXTURE9)(m_targetlist[i]->m_handler);
 		LPDIRECT3DSURFACE9 d3dsrf = (LPDIRECT3DSURFACE9)(m_targetlist[i]->m_handlerex);
@@ -1154,7 +1152,7 @@ void r9RenderDX::TT_Release()
 void r9RenderDX::TT_Recreate()
 {
 	guard(r9RenderDX::TT_Recreate);
-	for(int i=0;i<m_targetlist.Size();i++)
+	for(int i=0;i<m_targetlist.size();i++)
 	{
 		// manareli...
 		// create new temporary tex (will add it in targetlist too!)
@@ -1163,8 +1161,8 @@ void r9RenderDX::TT_Recreate()
 		// force content into the old tex pointer (that was cleared before reset)
 		*m_targetlist[i] = *ttex;
 		// remove last entry in targetlist (the temporary new tex)
-		sverify(m_targetlist[m_targetlist.Size()-1]==ttex);
-		m_targetlist.Del(m_targetlist.Size()-1);
+		sverify(m_targetlist[m_targetlist.size()-1]==ttex);
+		m_targetlist.pop_back();
 		// delete temporary new tex pointer
 		sdelete(ttex);
 	}

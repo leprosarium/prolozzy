@@ -1139,11 +1139,11 @@ void cEdiMap::MarkerToggle( int x, int y )
 	int mark = MarkerClosest( m_camx, m_camy, dist );
 	if(mark!=-1 && dist==0) // remove existing mark
 	{
-		m_marker.Del(mark);
+		m_marker.erase(m_marker.begin() + mark);
 	}
 	else // add mark
 	{
-		m_marker.Add( tMarker(x,y,m_camz) );
+		m_marker.push_back(tMarker(x,y,m_camz));
 	}
 	unguard()
 }
@@ -1156,12 +1156,12 @@ void cEdiMap::MarkerGoto( int dir )
 	if(dist==0) // select next
 	{
 		mark = mark+dir;
-		if(mark<0) mark = m_marker.Size()-1;
-		if(mark>m_marker.Size()-1) mark = 0;
+		if(mark<0) mark = m_marker.size()-1;
+		if(mark>m_marker.size()-1) mark = 0;
 	}
-	m_camx = m_marker.Get(mark).x;
-	m_camy = m_marker.Get(mark).y;
-	m_camz = m_marker.Get(mark).z;
+	m_camx = m_marker[mark].x;
+	m_camy = m_marker[mark].y;
+	m_camz = m_marker[mark].z;
 	m_refresh = TRUE;
 	unguard()
 }
@@ -1171,10 +1171,10 @@ int	cEdiMap::MarkerClosest( int x, int y, int &dist )
 	guard(cEdiMap::MarkerClosest)
 	int mark=-1;
 	int mind = -1;
-	for(int i=0;i<m_marker.Size();i++)
+	for(int i=0;i<m_marker.size();i++)
 	{
-		int mx = m_marker.Get(i).x;
-		int my = m_marker.Get(i).y;
+		int mx = m_marker[i].x;
+		int my = m_marker[i].y;
 		double d = (double)(x-mx)*(double)(x-mx)+(double)(y-my)*(double)(y-my);
 		d=sqrt(d);
 		if(mind==-1 || (int)d<mind)
@@ -1191,7 +1191,7 @@ int	cEdiMap::MarkerClosest( int x, int y, int &dist )
 void cEdiMap::MarkerClear()
 {
 	guard(cEdiMap::MarkerClear)
-	m_marker.Done();
+	m_marker.clear();
 	unguard()
 }
 
@@ -1199,11 +1199,11 @@ void cEdiMap::MarkerResize()
 {
 	guard(cEdiMap::MarkerResize)
 	// remove markers out of the new map size
-	for(int i=0;i<m_marker.Size();i++)
+	for(int i=0;i<m_marker.size();i++)
 	{
 		if(!MarkerTest(i))	
 		{
-			m_marker.Del(i);
+			m_marker.erase(m_marker.begin() + i);
 			i--;
 		}
 	}
@@ -1213,7 +1213,7 @@ void cEdiMap::MarkerResize()
 BOOL cEdiMap::MarkerTest( int idx )
 {
 	guard(cEdiMap::MarkerTest);
-	if(idx<0 || idx>=m_marker.Size()) return FALSE;
+	if(idx<0 || idx>=m_marker.size()) return FALSE;
 	int camx = m_marker[idx].x;
 	int camy = m_marker[idx].y;
 	int camz = m_marker[idx].z;

@@ -103,8 +103,6 @@ int	a9AudioDX::Init( HWND hwnd )
 	m_hw = (m_voices>0);
 
 	// playing streams list
-	m_playingstreams.Init(16,8);
-
 	#ifdef A9_STREAMTHREAD
 
 	// create semaphore
@@ -148,7 +146,7 @@ void a9AudioDX::Done()
 	#endif
 
 	// playing streams list
-	m_playingstreams.Done();
+	m_playingstreams.clear();
 
 	if(m_dslistener)	{ srelease(m_dslistener); m_dslistener = NULL; }
 	if(m_dsbuffer)		{ m_dsbuffer->SetVolume(m_volumedefault); srelease(m_dsbuffer); m_dsbuffer = NULL; }
@@ -571,7 +569,7 @@ void a9AudioDX::StreamDestroy( A9STREAM _stream )
 	
 	// remove from playingstrams list, if found there
 	int i = StreamFind(stream);
-	if(i!=-1) m_playingstreams.Del(i);
+	if(i!=-1) m_playingstreams.erase(m_playingstreams.begin() + i);
 	
 	// stop and destroy buffer
 	if(stream->m_buffer)
@@ -613,7 +611,7 @@ int a9AudioDX::StreamPlay( A9STREAM _stream, BOOL loop )
 	stream->m_status = 1;
 	// we add it to the playingstreams list, for the thread to consider it (if not already there)
 	if( StreamFind(stream)==-1 )
-		m_playingstreams.Add(stream);
+		m_playingstreams.push_back(stream);
 	
 	#ifdef A9_STREAMTHREAD
 	sys_releasesemaphore(m_semaphore);
@@ -843,14 +841,14 @@ int	a9AudioDX::StreamUpdateAll()
 {
 	guard(a9AudioDX::StreamUpdateAll);
 	int ret = A9_OK;
-	for(int i=0;i<m_playingstreams.Size();i++)
+	for(int i=0;i<m_playingstreams.size();i++)
 	{
 		a9StreamDX* stream = m_playingstreams[i];
 		if(StreamUpdate(stream)!=A9_OK) ret = A9_FAIL;
 		// if not playing, remove from list
 		if(stream->m_status==0) 
 		{
-			m_playingstreams.Del(i);
+			m_playingstreams.erase(m_playingstreams.begin() + i);
 			i--;
 		}
 	}
@@ -865,7 +863,7 @@ int	a9AudioDX::StreamStopAll()
 	sys_waitsemaphore(m_semaphore,2000); // protect
 	#endif
 
-	for(int i=0;i<m_playingstreams.Size();i++)
+	for(int i=0;i<m_playingstreams.size();i++)
 	{
 		a9StreamDX* stream = m_playingstreams[i];
 		// stop buffer if playing, no matter what status stream has

@@ -153,7 +153,7 @@ inline	int			PartitionCountH		()							{ return (m_maph+PARTITION_CELSIZE-1) / P
 		void		MarkerClear			();							// clear all markers
 		void		MarkerResize		();							// remove out markers after map is resized (private)
 		BOOL		MarkerTest			( int idx );				// test if a marker is inside map (private)
-		cList<tMarker> m_marker;									// markers list
+		std::vector<tMarker> m_marker;								// markers list
 
 		// selection
 		void		SelectionRefresh	();							// recount selection

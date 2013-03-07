@@ -79,7 +79,7 @@ virtual	void			StreamSetPosition( A9STREAM stream, int pos );
 		void			StreamFill( A9STREAM stream );									// fill a stream with more data from codec (on thread)
 		int				StreamUpdateAll();												// update all playing streams (on thread)
 		int				StreamStopAll();												// stop all playing streams now! (off thread)
-inline	int				StreamFind( A9STREAM stream )									{ for(int i=0;i<m_playingstreams.Size();i++) { if(m_playingstreams[i]==stream) return i; } return -1; }
+inline	int				StreamFind( A9STREAM stream )									{ for(int i=0;i<m_playingstreams.size();i++) { if(m_playingstreams[i]==stream) return i; } return -1; }
 
 #ifdef A9_STREAMTHREAD
 static DWORD WINAPI 	ThreadUpdate( LPVOID lpParameter );
@@ -99,7 +99,7 @@ volatile BOOL		m_thread_kill;		// thread kill request
 #endif
 
 protected:
-			cList<a9StreamDX*>		m_playingstreams;				// streams that are playing
+		std::vector<a9StreamDX*> m_playingstreams;				// streams that are playing
 };
 
 #endif

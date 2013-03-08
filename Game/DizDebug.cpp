@@ -169,6 +169,7 @@ void cDizDebug::Done()
 {
 	// console
 	if(m_con_lines) free(m_con_lines);
+	m_con_lines = 0;
 }
 
 bool cDizDebug::Update()

@@ -398,6 +398,9 @@ respawn :-
 	util:musicRestore.
 
 update :-
+%	player:makeBB(X, Y, _, _),
+%	core:materialDensityRead(X, Y, 32, 32, D),
+%	core:debugData(1, D),
 	updateCostume,
 	checkWind,
 	checkClouds,

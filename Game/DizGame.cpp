@@ -351,7 +351,6 @@ cDizGame::cDizGame() : 	_void("void"),	soft("soft"), hard("hard"), jump("jump"),
 	m_screen_h		= GAME_SCRH;
 
 	m_gameframe		= 0;
-	m_matmap		= NULL;
 	m_viewx			= 0;
 	m_viewy			= 0;
 	m_drawmode		= DRAWMODE_NORMAL;
@@ -388,7 +387,6 @@ void cDizGame::Done()
 {
 	m_obj.clear();
 	m_collider.clear();
-	if(m_matmap)	{ free(m_matmap); m_matmap=NULL; }
 	//m_dlg.Done();
 }
 
@@ -733,18 +731,30 @@ void cDizGame::SetRoom( int x, int y )
 	ObjGather();
 }
 
-void cDizGame::MatMapAlloc()
+void MatMap::SetSize(int w, int h)
 {
-	if(m_matmap) free(m_matmap);
-	m_matmap = (byte*)malloc(9*Room::Width*Room::Height);
+	W = w;
+	H = h;
+	X1 = -W;
+	X2 = 2 * W;
+	Y1 = -H;
+	Y2 = 2 * H;
+	W3 = W * 3;
+	H3 = H * 3;
+	Size = W3 * H3;
+
+}
+void MatMap::Alloc(int w, int h)
+{
+	SetSize(w, h);
+	delete [] map;
+	map = new byte[Size];
 }
 
-void cDizGame::MatMapUpdate()
+void MatMap::Update(int roomX, int roomY, bool full)
 {
-	if(!m_matmap) return; // not allocated yet
-	
 	// clear
-	memset(m_matmap,0,9*Room::Width*Room::Height);
+	memset(map, 0, Size);
 	
 	// prepare coordinates
 	int scrx = g_paint.m_scrx;
@@ -760,33 +770,35 @@ void cDizGame::MatMapUpdate()
 	// prepare for software rendering
 	g_paint.m_drawtilesoft = true;
 	g_paint.m_imgtarget.m_pf = R9_PF_A;
-	g_paint.m_imgtarget.m_width = 3*Room::Width;
-	g_paint.m_imgtarget.m_height = 3*Room::Height;
-	g_paint.m_imgtarget.m_size = 9*Room::Width*Room::Height;
-	g_paint.m_imgtarget.m_data = m_matmap;
+	g_paint.m_imgtarget.m_width = W3;
+	g_paint.m_imgtarget.m_height = H3;
+	g_paint.m_imgtarget.m_size = Size;
+	g_paint.m_imgtarget.m_data = map;
 
 	// draw room
 	for(int layer=0; layer<GAME_LAYERS; layer++)
 	{
 		// room
-		if( fullMaterialMap() )
+		if( full )
 		{
 			// full matmap 3x3 rooms
 			for( int ry=0; ry<3; ry++ )
 			{
+				int ryH = ry * H;
 				for( int rx=0; rx<3; rx++ )
 				{
+					int rxW = rx * W;
 					// clip here to avoid duplicate draw (brushes shared in neighbour rooms)
-					R9_SetClipping( fRect(rx*Room::Width,ry*Room::Height,rx*Room::Width+Room::Width,ry*Room::Height+Room::Height) );
-					g_map.DrawRoom( roomX()+rx-1, roomY()+ry-1, layer, DRAWMODE_MATERIAL, rx*Room::Width, ry*Room::Height );
+					R9_SetClipping(fRect(rxW, ryH, rxW + W, ryH + H));
+					g_map.DrawRoom(roomX + rx - 1, roomY + ry - 1, layer, DRAWMODE_MATERIAL, rxW, ryH);
 				}
 			}
 		}
 		else
 		{
 			// classic style
-			R9_SetClipping( fRect(Room::Width-Room::Border,Room::Height-Room::Border,2*Room::Width+Room::Border,2*Room::Height+Room::Border) );
-			g_map.DrawRoom( roomX(), roomY(), layer, DRAWMODE_MATERIAL, Room::Width, Room::Height);
+			R9_SetClipping( fRect(W - Room::Border, H - Room::Border, X2 + Room::Border, Y2 + Room::Border) );
+			g_map.DrawRoom( roomX, roomY, layer, DRAWMODE_MATERIAL, W, H);
 		}
 	}
 

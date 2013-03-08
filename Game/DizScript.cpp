@@ -15,9 +15,7 @@
 
 #include <string>
 #include <iostream>
-
-
-
+#include <set>
 
 static ssize_t Log_write(void *handle, char *buffer, size_t size)
 { 
@@ -130,10 +128,10 @@ PREDICATE_M(core, materialColor, 2)
 	if(mat<0 || mat>=MAT_MAX)
 		throw PlDomainError("material number", A1);
 	if(A2.type() == PL_VARIABLE)
-		return A2 = g_game.m_matcolor[mat];
+		return A2 = g_game.materials[mat].color;
 	int64 l;
 	if(PL_get_int64(A2, &l))
-		g_game.m_matcolor[mat] = l;
+		g_game.materials[mat].color = l;
 	return true;
 }
 
@@ -159,23 +157,20 @@ PREDICATE_M(core, materialRead, 5)
 
 PREDICATE_M(core, materialDensityRead, 5)
 {
-
+	std::set<PlAtom> dens; 
 	int x1 = A1;
 	int y1 = A2;
 	int w = A3;
 	int h = A4;
 	int x2 = x1 + w;
 	int y2 = y1 + h;
-	int density = 0;
 	for(int y=y1;y<y2;y++)
-	{
 		for(int x=x1;x<x2;x++)
-		{
-			density |= (1<<(g_game.m_matdensity[g_game.MatMap(x,y)]));
-		}
-	}
-	A5 = density;
-	return true;
+			dens.insert(g_game.DensMap(x, y));
+	PlTail l(A5);
+	for(std::set<PlAtom>::const_iterator i = dens.begin(), e = dens.end(); i != e; ++i)
+		l.append(*i);
+	return l.close();
 }
 
 

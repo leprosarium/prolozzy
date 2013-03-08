@@ -151,7 +151,7 @@ bool cDizDebug::Init()
 
 	// console
 	m_console = false;
-	m_con_lines = (char*)malloc(CON_LINES*CON_LINESIZE);
+	m_con_lines = new char[CON_LINES*CON_LINESIZE];
 	memset(m_con_lines,0,sizeof(CON_LINES*CON_LINESIZE));
 	m_con_pagetop = 0;
 	m_con_nextline = 0;
@@ -168,7 +168,7 @@ bool cDizDebug::Init()
 void cDizDebug::Done()
 {
 	// console
-	if(m_con_lines) free(m_con_lines);
+	delete [] m_con_lines;
 	m_con_lines = 0;
 }
 

@@ -38,7 +38,7 @@ public:
 	int		m_rumble;						// rumble
 	int		m_deadzone[2];					// joystick dead zones x, y
 	int		m_joy[6];						// joystick mapping 4 keys and 2 axes
-	char*	m_info;							// info file
+	char *	m_info;							// info file
 };
 
 extern	cDizCfg		g_cfg;

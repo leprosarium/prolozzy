@@ -74,7 +74,7 @@ cDizCfg::cDizCfg()
 	m_joy[4]				= 0;
 	m_joy[5]				= 1;
 
-	m_info					= NULL;
+	m_info					= 0;
 
 }
 
@@ -86,14 +86,14 @@ void cDizCfg::Init()
 	if(!f) { dlog(LOGAPP, L"dizzy.inf not found\n"); return; }
 	int size = F9_FileSize(f);
 	if(size==0) { F9_FileClose(f); return; }
-	m_info = (char*)malloc(size+1); m_info[size]=0;
+	m_info = new char[size+1]; m_info[size]=0;
 	F9_FileRead(m_info,size,f);
 	F9_FileClose(f);
 }
 
 void cDizCfg::Done()
 {
-	if(m_info) free(m_info);
+	delete [] m_info;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -216,8 +216,8 @@ const char* cDizCfg::GetInfoValue( const char* name )
 	const char* sz;
 	static char szret[128];
 	szret[0]=0;
-	if(m_info==NULL) return szret;
-	if(name==NULL || name[0]==0) return szret;
+	if(!m_info) return szret;
+	if(!name || !name[0]) return szret;
 
 	sz = parser_skiptotoken(m_info,name,p);
 	if(!sz) return szret;

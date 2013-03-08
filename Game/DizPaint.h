@@ -48,10 +48,10 @@ public:
 		int			fy;
 		R9TEXTURE	m_tex;						// texture
 		r9Img		m_img;						// img alpha mask
-		char*		m_name;						// tile name
+		std::string	m_name;						// tile name
 		
-					cTile(int m_id) : m_id(m_id), m_group(), m_frames(1), fx(1), fy(1), m_tex(NULL), m_name(NULL) { }
-					~cTile() { if(m_tex)  R9_TextureDestroy(m_tex);  R9_ImgDestroy(&m_img); if(m_name) free(m_name); }
+					cTile(int m_id) : m_id(m_id), m_group(), m_frames(1), fx(1), fy(1), m_tex(NULL) { }
+					~cTile() { if(m_tex)  R9_TextureDestroy(m_tex);  R9_ImgDestroy(&m_img); }
 		int         GetFx(int frame) const		{ return frame % fx; }
 		int         GetFy(int frame) const		{ return frame / fx; }
 		int			GetWidth()					{ return fx > 0 ? R9_TextureGetWidth(m_tex) / fx : R9_TextureGetWidth(m_tex); }

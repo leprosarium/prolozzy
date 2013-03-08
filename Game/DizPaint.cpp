@@ -73,7 +73,7 @@ PREDICATE_M(tile, frames, 2)
 PREDICATE_M(tile, name, 2) 
 {
 	if(cTile* tile = g_paint.tiles.Get(A1))
-		return A2 = tile->m_name?tile->m_name:"";
+		return A2 = tile->m_name.c_str();
 	throw PlDomainError("invalid tile index", A1); 
 }
 
@@ -127,10 +127,10 @@ bool cDizPaint::Reacquire()
 	for(Tiles::iterator i = tiles.begin(), e = tiles.end(); i != e; ++i) 
 	{
 		cTile * tile = *i;
-		tile->m_tex = R9_TextureLoad(tile->m_name);
+		tile->m_tex = R9_TextureLoad(tile->m_name.c_str());
 		if(tile->m_tex==NULL)
 		{
-			dlog(LOGSYS, L"error reacquireing tile %S.\n",tile->m_name);
+			dlog(LOGSYS, L"error reacquireing tile %S.\n",tile->m_name.c_str());
 			ok = false;
 		}
 	}

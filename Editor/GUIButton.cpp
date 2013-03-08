@@ -11,19 +11,14 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 cGUIButton::cGUIButton()
 {
-	guard(cGUIButton::cGUIButton)
-	unguard()
 }
 
 cGUIButton::~cGUIButton()
 {
-	guard(cGUIButton::~cGUIButton)
-	unguard()
 }
 
 void cGUIButton::Update()
 {
-	guard(cGUIButton::Update)
 	RECT rc;
 	GetScrRect(rc);
 	m_mousein = INRECT( g_gui->m_mousex, g_gui->m_mousey, rc);
@@ -60,12 +55,10 @@ void cGUIButton::Update()
 		style &= ~GUISTYLE_PRESSED;
 	SetInt(IV_STYLE,style);
 
-	unguard()
 }
 
 void cGUIButton::Draw()
 {
-	guard(cGUIButton::Draw)
 	RECT rc; 
 	GetScrRect(rc);
 
@@ -92,7 +85,6 @@ void cGUIButton::Draw()
 	if( style & GUISTYLE_BORDER3D )
 		GUIDrawRect3D( rc.left, rc.top, rc.right, rc.bottom, GetInt(IV_COLOR+2), style & GUISTYLE_PRESSED );
 
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -100,19 +92,14 @@ void cGUIButton::Draw()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 cGUICheck::cGUICheck()
 {
-	guard(cGUICheck::cGUICheck)
-	unguard()
 }
 
 cGUICheck::~cGUICheck()
 {
-	guard(cGUICheck::~cGUICheck)
-	unguard()
 }
 
 void cGUICheck::Update()
 {
-	guard(cGUICheck::Update)
 	cGUIButton::Update();
 	int style = GetInt(IV_STYLE);
 	if(GetInt(IV_VALUE))
@@ -120,15 +107,12 @@ void cGUICheck::Update()
 	else
 		style &= ~GUISTYLE_PRESSED;
 	SetInt(IV_STYLE,style);
-	unguard()
 }
 
 void cGUICheck::Action()
 {
-	guard(cGUICheck::Action)
 	SetInt( IV_VALUE, (GetInt(IV_VALUE)?0:1) );
 	cGUIItem::Action();		
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -136,19 +120,14 @@ void cGUICheck::Action()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 cGUIRadio::cGUIRadio()
 {
-	guard(cGUIRadio::cGUIRadio)
-	unguard()
 }
 
 cGUIRadio::~cGUIRadio()
 {
-	guard(cGUIRadio::~cGUIRadio)
-	unguard()
 }
 
 void cGUIRadio::Update()
 {
-	guard(cGUIRadio::Update)
 	cGUIButton::Update();
 	int style = GetInt(IV_STYLE);
 	if(GetInt(IV_VALUE))
@@ -156,13 +135,11 @@ void cGUIRadio::Update()
 	else
 		style &= ~GUISTYLE_PRESSED;
 	SetInt(IV_STYLE,style);
-	unguard()
 }
 
 void cGUIRadio::Action()
 {
-	guard(cGUIRadio::Action)
-	sassert(m_dlg!=NULL);
+	assert(m_dlg!=NULL);
 	int group = GetInt(IV_GROUP);
 	if(group!=0)
 	{
@@ -174,7 +151,6 @@ void cGUIRadio::Action()
 	}
 	SetInt( IV_VALUE, 1 );
 	cGUIItem::Action();		
-	unguard()
 }
 
 

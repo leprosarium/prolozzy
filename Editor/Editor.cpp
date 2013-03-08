@@ -18,63 +18,50 @@ static cEdiApp* g_ediapp = NULL;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 int AppOnInit()
 {
-	guard(AppOnInit);
-	sassert(g_ediapp==NULL);
-	g_ediapp = snew cEdiApp();
+	assert(g_ediapp==NULL);
+	g_ediapp = new cEdiApp();
 	return g_ediapp->Init();
-	unguard();
 }
 
 int AppOnDone()
 {
-	guard(AppOnDone);
-	sassert(g_ediapp!=NULL);
+	assert(g_ediapp!=NULL);
 	g_ediapp->Done();
-	sdelete(g_ediapp);
+	delete g_ediapp;
 	return 0;
-	unguard();
 }
 
 int AppOnActivate()
 {
-	guard(AppOnActivate);
-	sassert(g_ediapp!=NULL);
+	assert(g_ediapp!=NULL);
 	g_ediapp->Activate( E9_AppGetInt(E9_APP_ACTIVE) );
 	return 0;
-	unguard();
 }
 
 int AppOnClose()
 {
-	guard(AppOnClose);
-	sassert(g_ediapp!=NULL);
+	assert(g_ediapp!=NULL);
 	g_ediapp->Close();
 	return 0; // always refuese close
-	unguard();
 }
 
 int AppOnRun()
 {
-	guard(AppOnRun);
-	sassert(g_ediapp!=NULL);
+	assert(g_ediapp!=NULL);
 	if(!g_ediapp->Update()) return 0; // exit
 	g_ediapp->Draw();
 	return 1;
-	unguard();
 }
 
 int AppOnPaint()
 {
-	guard(AppOnPaint);
-	sassert(g_ediapp!=NULL);
+	assert(g_ediapp!=NULL);
 	g_ediapp->Draw();
 	return 0;
-	unguard();
 }
 
 int AppOnMsg()
 {
-	guard(AppOnMsg);
 	if(g_ediapp==NULL) return 0;
 	UINT msg		= (UINT)(intptr)E9_AppGetVoid(E9_APP_PARAM+0);
 	WPARAM wparam	= (WPARAM)E9_AppGetVoid(E9_APP_PARAM+1);
@@ -119,7 +106,6 @@ int AppOnMsg()
 	};
 	
 	return 0;
-	unguard();
 }
 
 int APIENTRY WinMain(HINSTANCE hInstance,

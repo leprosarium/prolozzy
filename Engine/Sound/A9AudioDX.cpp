@@ -10,7 +10,6 @@
 
 a9StreamDX::a9StreamDX()
 {
-	guard(a9StreamDX::a9StreamDX);
 	m_buffer		= NULL; 
 	m_codec			= NULL;
 	m_loop			= 0;
@@ -23,7 +22,6 @@ a9StreamDX::a9StreamDX()
 
 	m_filemem		= NULL;
 	m_filesize		= 0;
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -31,7 +29,6 @@ a9StreamDX::a9StreamDX()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 a9AudioDX::a9AudioDX()
 {
-	guard(a9AudioDX::a9AudioDX);
 	m_ds = NULL;
 	m_dsbuffer = NULL;
 	m_dslistener = NULL;
@@ -44,18 +41,14 @@ a9AudioDX::a9AudioDX()
 	m_thread_kill		= FALSE;
 	#endif
 
-	unguard();
 }
 
 a9AudioDX::~a9AudioDX()
 {
-	guard(a9AudioDX::a9AudioDX);
-	unguard();
 }
 
 int	a9AudioDX::Init( HWND hwnd )
 {
-	guard(a9AudioDX::Init);
 
 	A9_CodecInitAll();
 	a9Audio::Init(hwnd);
@@ -123,12 +116,10 @@ int	a9AudioDX::Init( HWND hwnd )
 	error:
 	Done();
 	return A9_FAIL;
-	unguard();
 }
 
 void a9AudioDX::Done()
 {
-	guard(a9AudioDX::Done);
 
 	// stop all playing streams
 	StreamStopAll();
@@ -148,16 +139,14 @@ void a9AudioDX::Done()
 	// playing streams list
 	m_playingstreams.clear();
 
-	if(m_dslistener)	{ srelease(m_dslistener); m_dslistener = NULL; }
-	if(m_dsbuffer)		{ m_dsbuffer->SetVolume(m_volumedefault); srelease(m_dsbuffer); m_dsbuffer = NULL; }
-	if(m_ds)			{ srelease(m_ds); m_ds = NULL; }
+	if(m_dslistener)	{ if(m_dslistener) m_dslistener->Release(); m_dslistener = NULL; }
+	if(m_dsbuffer)		{ m_dsbuffer->SetVolume(m_volumedefault); if(m_dsbuffer) m_dsbuffer->Release(); m_dsbuffer = NULL; }
+	if(m_ds)			{ if(m_ds) m_ds->Release(); m_ds = NULL; }
 	A9_CodecDoneAll();
-	unguard();
 }
 
 int	a9AudioDX::Get( int prop )
 {
-	guard(a9AudioDX::Get);
 	long volume=0;
 	switch(prop)
 	{
@@ -165,28 +154,23 @@ int	a9AudioDX::Get( int prop )
 		default:				return a9Audio::Get(prop);
 	}
 	return 0;
-	unguard();
 }
 
 void a9AudioDX::Set( int prop, int val )
 {
-	guard(a9AudioDX::Set);
 	switch(prop)
 	{
 		case A9_MASTERVOLUME:	m_dsbuffer->SetVolume(val); return;
 		default:				a9Audio::Get(prop); return;
 	}
-	unguard();
 }
 
 void a9AudioDX::Update()
 {
-	guard(a9AudioDX::Update);
 	#ifndef A9_STREAMTHREAD
 	// if thread is not used, user should call update as often as possible
 	StreamUpdateAll();
 	#endif
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -199,7 +183,6 @@ void a9AudioDX::Update()
 
 const char* a9AudioDX::ErrorDesc( HRESULT hr )
 {
-	guard(a9AudioDX::ErrorDesc);
 	switch(hr)
 	{
 		CASE_DSERR(	DS_OK,						"The method succeeded");
@@ -228,7 +211,6 @@ const char* a9AudioDX::ErrorDesc( HRESULT hr )
 		CASE_DSERR(	CO_E_NOTINITIALIZED,		"COM not initialized");
 		default: return "Unknown error";
 	}
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -236,11 +218,10 @@ const char* a9AudioDX::ErrorDesc( HRESULT hr )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 A9BUFFER a9AudioDX::BufferCreate( a9Info* info, int flags )
 {
-	guard(a9AudioDX::BufferCreate);
-	sassert(info!=NULL);
-	sassert(m_ds!=NULL);
+	assert(info!=NULL);
+	assert(m_ds!=NULL);
 	HRESULT hr;
-	a9BufferDX* buffer = snew a9BufferDX();
+	a9BufferDX* buffer = new a9BufferDX();
 	buffer->m_info = *info;
 	buffer->m_flags = flags;
 
@@ -277,51 +258,45 @@ A9BUFFER a9AudioDX::BufferCreate( a9Info* info, int flags )
 	if(FAILED(hr)) 
 	{
 		if(buffer->m_dsbuffer) buffer->m_dsbuffer->Release(); // ds safety !?
-		sdelete(buffer);
+		delete buffer;
 		return NULL;
 	}
 
     return buffer; 
-	unguard();
 }
 
 byte* a9AudioDX::BufferLock( A9BUFFER _buffer )
 {
-	guard(a9AudioDX::BufferLock);
 	a9BufferDX* buffer = (a9BufferDX*)_buffer;
-	sassert(buffer);
-	sassert(buffer->m_dsbuffer!=NULL);
-	sassert(buffer->m_lockdata==NULL); // already locked
+	assert(buffer);
+	assert(buffer->m_dsbuffer!=NULL);
+	assert(buffer->m_lockdata==NULL); // already locked
 
 	void *data1, *data2;
 	unsigned long size1, size2;
 	HRESULT hr = buffer->m_dsbuffer->Lock( 0, 0, &data1, &size1, &data2, &size2, DSBLOCK_ENTIREBUFFER );
 	if(FAILED(hr)) return NULL; // may be lost, but what can I do...
 
-	sassert(data1!=NULL);
-	sassert(buffer->m_info.DataSize()==(int)size1); // must match
+	assert(data1!=NULL);
+	assert(buffer->m_info.DataSize()==(int)size1); // must match
 	buffer->m_lockdata = (byte*)data1;
 	return buffer->m_lockdata;
-	unguard();
 }
 
 void a9AudioDX::BufferUnlock( A9BUFFER _buffer )
 {
-	guard(a9AudioDX::BufferUnlock);
 	a9BufferDX* buffer = (a9BufferDX*)_buffer;
-	sassert(buffer);
-	sassert(buffer->m_dsbuffer!=NULL);
+	assert(buffer);
+	assert(buffer->m_dsbuffer!=NULL);
 	if(!BufferIsLocked(buffer)) return; // not locked
 	HRESULT hr = buffer->m_dsbuffer->Unlock( buffer->m_lockdata, buffer->m_info.DataSize(), NULL, 0 );
 	if(FAILED(hr)) return;
 	buffer->m_lockdata = NULL;
-	unguard();
 }
 
 A9BUFFER a9AudioDX::BufferCreate( const char* filename, int flags )
 {
-	guard(a9AudioDX::BufferCreate);
-	sassert(filename!=NULL);	
+	assert(filename!=NULL);	
 	int ret;
 	a9BufferDX* buffer = NULL;
 	a9Info* info;
@@ -359,13 +334,11 @@ A9BUFFER a9AudioDX::BufferCreate( const char* filename, int flags )
 	if(buffer) BufferDestroy(buffer);
 	if(codec) { A9_CodecEndRender(codec); A9_CodecClose(codec); A9_CodecDestroy(codec); }
 	return NULL;
-	unguard();
 }
 
 A9BUFFER a9AudioDX::BufferCreateFromMemory( a9Info* info, void* audiodata, int flags )
 {
-	guard(a9AudioDX::BufferCreateFromMemory);
-	sassert(info && audiodata);
+	assert(info && audiodata);
 	a9BufferDX* buffer = (a9BufferDX*)BufferCreate(info, flags); 
 	if(buffer==NULL) return NULL;
 	byte* data = BufferLock(buffer); 
@@ -373,54 +346,46 @@ A9BUFFER a9AudioDX::BufferCreateFromMemory( a9Info* info, void* audiodata, int f
 	memcpy(data,audiodata,info->DataSize());
 	BufferUnlock(buffer);
 	return buffer;
-	unguard();
 }
 
 void a9AudioDX::BufferDestroy( A9BUFFER _buffer )
 {
-	guard(a9AudioDX::BufferDestroy);
 	a9BufferDX* buffer = (a9BufferDX*)_buffer;
-	sassert(buffer);
+	assert(buffer);
 	if(BufferIsLocked(buffer))
 		BufferUnlock(buffer);
 	if(BufferIsPlaying(buffer))
 		BufferStop(buffer);
 	if(buffer->m_dsbuffer)
 		buffer->m_dsbuffer->Release();
-	sdelete(buffer);
-	unguard();
+	delete buffer;
 }
 
 int a9AudioDX::BufferPlay( A9BUFFER _buffer, BOOL loop )
 {
-	guard(a9AudioDX::BufferPlay);
 	a9BufferDX* buffer = (a9BufferDX*)_buffer;
-	sassert(buffer);
-	sassert(buffer->m_dsbuffer!=NULL);
+	assert(buffer);
+	assert(buffer->m_dsbuffer!=NULL);
 	HRESULT hr = buffer->m_dsbuffer->Play( 0, 0, loop?DSBPLAY_LOOPING:0 );
 	if(FAILED(hr)) return A9_FAIL;
 	return A9_OK;
-	unguard();
 }
 
 int a9AudioDX::BufferStop( A9BUFFER _buffer )
 {
-	guard(a9AudioDX::BufferStop);
 	a9BufferDX* buffer = (a9BufferDX*)_buffer;
-	sassert(buffer);
-	sassert(buffer->m_dsbuffer!=NULL);
+	assert(buffer);
+	assert(buffer->m_dsbuffer!=NULL);
 	HRESULT hr = buffer->m_dsbuffer->Stop();
 	if(FAILED(hr)) return A9_FAIL;
 	return A9_OK;
-	unguard();
 }
 
 int a9AudioDX::BufferGet( A9BUFFER _buffer, int prop )
 {
-	guard(a9AudioDX::BufferGet);
 	a9BufferDX* buffer = (a9BufferDX*)_buffer;
-	sassert(buffer);
-	sassert(buffer->m_dsbuffer!=NULL);
+	assert(buffer);
+	assert(buffer->m_dsbuffer!=NULL);
 	DWORD status = 0;
 	long temp=0;
 	switch(prop)
@@ -436,45 +401,38 @@ int a9AudioDX::BufferGet( A9BUFFER _buffer, int prop )
 		case A9_USER:			return buffer->m_user;
 	}
 	return 0;
-	unguard();
 }
 
 void a9AudioDX::BufferSet( A9BUFFER _buffer, int prop, int val )
 {
-	guard(a9AudioDX::BufferSet);
 	a9BufferDX* buffer = (a9BufferDX*)_buffer;
-	sassert(buffer);
-	sassert(buffer->m_dsbuffer!=NULL);
+	assert(buffer);
+	assert(buffer->m_dsbuffer!=NULL);
 	switch(prop)
 	{
 		case A9_VOLUME:			buffer->m_dsbuffer->SetVolume(val); return;
 		case A9_PAN:			buffer->m_dsbuffer->SetPan(val); return;
 		case A9_USER:			buffer->m_user = val; return;
 	}
-	unguard();
 }
 
 int	a9AudioDX::BufferGetPosition( A9BUFFER _buffer )
 {
-	guard(a9AudioDX::BufferGetPosition);
 	a9BufferDX* buffer = (a9BufferDX*)_buffer;
-	sassert(buffer);
-	sassert(buffer->m_dsbuffer!=NULL);
+	assert(buffer);
+	assert(buffer->m_dsbuffer!=NULL);
 	unsigned long playpos = 0;
 	unsigned long writepos = 0;
 	buffer->m_dsbuffer->GetCurrentPosition( &playpos, &writepos ); 
 	return playpos / buffer->m_info.SampleSize();	
-	unguard();
 }
 
 void a9AudioDX::BufferSetPosition( A9BUFFER _buffer, int pos )
 {
-	guard(a9AudioDX::BufferSetPosition);
 	a9BufferDX* buffer = (a9BufferDX*)_buffer;
-	sassert(buffer);
-	sassert(buffer->m_dsbuffer!=NULL);
+	assert(buffer);
+	assert(buffer->m_dsbuffer!=NULL);
 	buffer->m_dsbuffer->SetCurrentPosition( (DWORD)pos*buffer->m_info.SampleSize() );
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -482,9 +440,8 @@ void a9AudioDX::BufferSetPosition( A9BUFFER _buffer, int pos )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 int a9AudioDX::StreamPrecache( const char* filename, A9STREAM _stream )
 {
-	guard(a9AudioDX::StreamPrecache);
 	a9StreamDX* stream = (a9StreamDX*)_stream;
-	sassert(stream);
+	assert(stream);
 	
 	// check format
 	int ret;
@@ -500,26 +457,24 @@ int a9AudioDX::StreamPrecache( const char* filename, A9STREAM _stream )
 		stream->m_filesize = F9_FileTell(f);
 		// @TODO: test size if necessary ...
 		F9_FileSeek(f,0,0);
-		stream->m_filemem = (byte*)smalloc(stream->m_filesize );
+		stream->m_filemem = (byte*)malloc(stream->m_filesize );
 		if(stream->m_filemem==NULL) { F9_FileClose(f); return A9_FAIL; }
 		ret = F9_FileRead(stream->m_filemem,stream->m_filesize ,f);
 		F9_FileClose(f);
-		if(ret!=stream->m_filesize) { sfree(stream->m_filemem); stream->m_filemem=NULL; return A9_FAIL; }
+		if(ret!=stream->m_filesize) { free(stream->m_filemem); stream->m_filemem=NULL; return A9_FAIL; }
 	}
 
 	return A9_OK;
-	unguard();
 }
 
 A9STREAM a9AudioDX::StreamCreate( const char* filename, int flags )
 {
-	guard(a9AudioDX::StreamCreate);
-	sassert(filename!=NULL);
+	assert(filename!=NULL);
 	int ret;
 	a9Info info;
 
 	// create stream
-	a9StreamDX* stream = snew a9StreamDX();
+	a9StreamDX* stream = new a9StreamDX();
 
 	// precache (small music files)
 	#ifdef A9_STREAMPRECACHE
@@ -527,7 +482,7 @@ A9STREAM a9AudioDX::StreamCreate( const char* filename, int flags )
 	if(ret==A9_OK && stream->m_filemem)
 	{
 		// change the filename to point to the memory buffer
-		const char* name = file_path2file(filename); sassert(name);
+		const char* name = file_path2file(filename); assert(name);
 		filename = F9_MakeFileName(name, stream->m_filemem, stream->m_filesize );
 		if(filename==NULL) goto error; // fail
 	}
@@ -551,17 +506,15 @@ A9STREAM a9AudioDX::StreamCreate( const char* filename, int flags )
 	error:
 	if(stream->m_buffer) BufferDestroy(stream->m_buffer);
 	if(stream->m_codec)	{ A9_CodecClose(stream->m_codec); A9_CodecDestroy(stream->m_codec); }
-	if(stream->m_filemem) sfree(stream->m_filemem);
-	sdelete(stream);
+	if(stream->m_filemem) free(stream->m_filemem);
+	delete stream;
 	return NULL;
-	unguard();
 }
 
 void a9AudioDX::StreamDestroy( A9STREAM _stream )
 {
-	guard(a9AudioDX::StreamDestroy);
 	a9StreamDX* stream = (a9StreamDX*)_stream;
-	sassert(stream);
+	assert(stream);
 
 	#ifdef A9_STREAMTHREAD
 	sys_waitsemaphore(m_semaphore,2000); // protect
@@ -585,22 +538,20 @@ void a9AudioDX::StreamDestroy( A9STREAM _stream )
 
 	// destroy cache
 	if(stream->m_filemem)
-		sfree(stream->m_filemem);
+		free(stream->m_filemem);
 
-	sdelete(stream);
+	delete stream;
 
 	#ifdef A9_STREAMTHREAD
 	sys_releasesemaphore(m_semaphore);
 	#endif
 
-	unguard();
 }
 
 int a9AudioDX::StreamPlay( A9STREAM _stream, BOOL loop )
 {
-	guard(a9AudioDX::StreamPlay);
 	a9StreamDX* stream = (a9StreamDX*)_stream;
-	sassert(stream);
+	assert(stream);
 	
 	#ifdef A9_STREAMTHREAD
 	sys_waitsemaphore(m_semaphore,2000);
@@ -618,14 +569,12 @@ int a9AudioDX::StreamPlay( A9STREAM _stream, BOOL loop )
 	#endif
 	
 	return A9_OK;
-	unguard();
 }
 
 int a9AudioDX::StreamStop( A9STREAM _stream )
 {
-	guard(a9AudioDX::StreamStop);
 	a9StreamDX* stream = (a9StreamDX*)_stream;
-	sassert(stream);
+	assert(stream);
 
 	#ifdef A9_STREAMTHREAD
 	sys_waitsemaphore(m_semaphore,2000);
@@ -640,14 +589,12 @@ int a9AudioDX::StreamStop( A9STREAM _stream )
 	#endif
 
 	return A9_OK;
-	unguard();
 }
 
 int a9AudioDX::StreamGet( A9STREAM _stream, int prop )
 {
-	guard(a9AudioDX::StreamGet);
 	a9StreamDX* stream = (a9StreamDX*)_stream;
-	sassert(stream);
+	assert(stream);
 	switch(prop)
 	{
 		case A9_SIZE:			return stream->m_codec->m_info.m_size;
@@ -655,36 +602,30 @@ int a9AudioDX::StreamGet( A9STREAM _stream, int prop )
 		case A9_STATUS:			return stream->m_status; // the requested play status, not the real one
 		default:				return BufferGet(stream->m_buffer,prop);
 	}
-	unguard();
 }
 
 void a9AudioDX::StreamSet( A9STREAM _stream, int prop, int val )
 {
-	guard(a9AudioDX::StreamSet);
 	a9StreamDX* stream = (a9StreamDX*)_stream;
-	sassert(stream);
+	assert(stream);
 	switch(prop)
 	{
 		case A9_USER:			stream->m_user = val; return;
 		default:				BufferSet(stream->m_buffer,prop,val);
 	}
-	unguard();
 }
 
 int a9AudioDX::StreamGetPosition( A9STREAM _stream )
 {
-	guard(a9AudioDX::StreamGetPosition);
 	a9StreamDX* stream = (a9StreamDX*)_stream;
-	sassert(stream);
+	assert(stream);
 	return stream->m_position;
-	unguard();
 }
 
 void a9AudioDX::StreamSetPosition( A9STREAM _stream, int pos )
 {
-	guard(a9AudioDX::StreamSetPosition);
 	a9StreamDX* stream = (a9StreamDX*)_stream;
-	sassert(stream);
+	assert(stream);
 
 	#ifdef A9_STREAMTHREAD
 	sys_waitsemaphore(m_semaphore,2000);
@@ -696,12 +637,10 @@ void a9AudioDX::StreamSetPosition( A9STREAM _stream, int pos )
 	#ifdef A9_STREAMTHREAD
 	sys_releasesemaphore(m_semaphore);
 	#endif
-	unguard();
 }
 
 int a9AudioDX::StreamUpdate( A9STREAM _stream )
 {
-	guard(a9AudioDX::StreamUpdate);
 	a9StreamDX* stream = (a9StreamDX*)_stream;
 	if( a9_audio==NULL || stream==NULL || stream->m_codec==NULL || stream->m_buffer==NULL ) return A9_FAIL; // safety
 
@@ -791,12 +730,10 @@ int a9AudioDX::StreamUpdate( A9STREAM _stream )
 	}
 
 	return A9_OK;
-	unguard();
 }
 
 void a9AudioDX::StreamFill( A9STREAM _stream )
 {
-	guard(a9AudioDX::StreamFill);
 	a9StreamDX* stream = (a9StreamDX*)_stream;
 	a9BufferDX* buffer = stream->m_buffer;
 	a9Info& info = buffer->m_info;
@@ -834,12 +771,10 @@ void a9AudioDX::StreamFill( A9STREAM _stream )
 
 	// dlog(LOGSND,"filled pac %i\n",stream->m_paccount);
 	stream->m_paccount++;
-	unguard();
 }
 
 int	a9AudioDX::StreamUpdateAll()
 {
-	guard(a9AudioDX::StreamUpdateAll);
 	int ret = A9_OK;
 	for(int i=0;i<m_playingstreams.size();i++)
 	{
@@ -853,12 +788,10 @@ int	a9AudioDX::StreamUpdateAll()
 		}
 	}
 	return ret;
-	unguard();
 }
 
 int	a9AudioDX::StreamStopAll()
 {
-	guard(a9AudioDX::StreamStopAll);
 	#ifdef A9_STREAMTHREAD
 	sys_waitsemaphore(m_semaphore,2000); // protect
 	#endif
@@ -882,13 +815,11 @@ int	a9AudioDX::StreamStopAll()
 	sys_releasesemaphore(m_semaphore);
 	#endif
 	return A9_OK;
-	unguard();
 }
 
 #ifdef A9_STREAMTHREAD
 DWORD WINAPI a9AudioDX::ThreadUpdate( LPVOID lpParameter )
 {
-	guard(a9AudioDX::StreamThreadUpdate);
 	a9AudioDX* audio = (a9AudioDX*)a9_audio;
 	if( audio==NULL ) { ExitThread(0); return 0; } // safety
 
@@ -909,7 +840,6 @@ DWORD WINAPI a9AudioDX::ThreadUpdate( LPVOID lpParameter )
 	audio->m_thread_running = FALSE;
 	ExitThread(0);
 	return 0;
-	unguard();
 }
 #endif
 

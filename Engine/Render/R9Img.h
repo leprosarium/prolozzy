@@ -107,7 +107,6 @@ inline	dword	R9_ImgGetColorRect	( r9Img* img, int x1, int y1, int x2, int y2 );	
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 inline dword R9_PFGetDWORD( void* src, int spp )
 {
-	guardfast(R9_PFGetDWORD);
 	switch(spp)
 	{
 		case 4:	return *(dword*)(src);
@@ -116,12 +115,10 @@ inline dword R9_PFGetDWORD( void* src, int spp )
 		case 1: return (dword)( *(byte*)(src) )<<24; // as alpha
 	}
 	return 0;
-	unguardfast();
 }
 
 inline void R9_PFSetDWORD( void* src, int spp, dword color )
 {
-	guardfast(R9_PFSetDWORD);
 	switch(spp)
 	{
 		case 4:	*(dword*)(src) = color; break;
@@ -129,30 +126,25 @@ inline void R9_PFSetDWORD( void* src, int spp, dword color )
 		case 2: *(word*)(src) = *( (word*)&color ); break;
 		case 1: *(byte*)(src) = *( (byte*)&color+3 ); break; // as alpha
 	}
-	unguardfast();
 }
 
 inline void R9_PFGetARGB( void* src, r9PFInfo* pfinfo, float* argb )
 {
-	guardfast(R9_PFGetARGB);
 	dword color = R9_PFGetDWORD(src,pfinfo->m_spp);
 	argb[0] = (pfinfo->m_channelbpp[0]) ? (float)((color & pfinfo->m_channelmask[0]) >> pfinfo->m_channelshift[0]) / (float)((2<<(pfinfo->m_channelbpp[0]-1))-1) : 0.0f;
 	argb[1] = (pfinfo->m_channelbpp[1]) ? (float)((color & pfinfo->m_channelmask[1]) >> pfinfo->m_channelshift[1]) / (float)((2<<(pfinfo->m_channelbpp[1]-1))-1) : 0.0f;
 	argb[2] = (pfinfo->m_channelbpp[2]) ? (float)((color & pfinfo->m_channelmask[2]) >> pfinfo->m_channelshift[2]) / (float)((2<<(pfinfo->m_channelbpp[2]-1))-1) : 0.0f;
 	argb[3] = (pfinfo->m_channelbpp[3]) ? (float)((color & pfinfo->m_channelmask[3]) >> pfinfo->m_channelshift[3]) / (float)((2<<(pfinfo->m_channelbpp[3]-1))-1) : 0.0f;
-	unguardfast();
 }
 
 inline void R9_PFSetARGB( void* dst, r9PFInfo* pfinfo, float* argb )
 {
-	guardfast(R9_PFSetARGB);
 	dword color = 0;
 	if(pfinfo->m_channelbpp[0])	color |= (dword)( argb[0] * (float)((2<<(pfinfo->m_channelbpp[0]-1))-1) ) << pfinfo->m_channelshift[0];
 	if(pfinfo->m_channelbpp[1])	color |= (dword)( argb[1] * (float)((2<<(pfinfo->m_channelbpp[1]-1))-1) ) << pfinfo->m_channelshift[1];
 	if(pfinfo->m_channelbpp[2])	color |= (dword)( argb[2] * (float)((2<<(pfinfo->m_channelbpp[2]-1))-1) ) << pfinfo->m_channelshift[2];
 	if(pfinfo->m_channelbpp[3])	color |= (dword)( argb[3] * (float)((2<<(pfinfo->m_channelbpp[3]-1))-1) ) << pfinfo->m_channelshift[3];
 	R9_PFSetDWORD(dst,pfinfo->m_spp,color);
-	unguardfast();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -160,42 +152,32 @@ inline void R9_PFSetARGB( void* dst, r9PFInfo* pfinfo, float* argb )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 inline dword R9_ImgGetColor( r9Img* img, int x, int y )
 {
-	guardfast(R9_ImgGetColor);
 	int spp = R9_PFSpp(img->m_pf);
 	return R9_PFGetDWORD( img->m_data+(y*img->m_width+x)*spp, spp );
-	unguardfast();
 }
 
 inline void R9_ImgSetColor( r9Img* img, int x, int y, dword color )
 {
-	guardfast(R9_ImgSetColor);
 	int spp = R9_PFSpp(img->m_pf);
 	R9_PFSetDWORD( img->m_data+(y*img->m_width+x)*spp, spp, color );
-	unguardfast();
 }
 
 inline dword R9_ImgGetColorSafe( r9Img* img, int x, int y )
 {
-	guardfast(R9_ImgGetColorSafe)
 	if( x<0 || x>=(int)img->m_width || y<0 || y>=(int)img->m_height ) return 0;
 	int spp = R9_PFSpp(img->m_pf);
 	return R9_PFGetDWORD( img->m_data+(y*img->m_width+x)*spp, spp );
-	unguardfast()
 }
 
 inline void R9_ImgSetColorSafe( r9Img* img, int x, int y, dword color )
 {
-	guardfast(R9_ImgSetColorSafe)
 	if( x<0 || x>=(int)img->m_width || y<0 || y>=(int)img->m_height ) return;
 	int spp = R9_PFSpp(img->m_pf);
 	R9_PFSetDWORD( img->m_data+(y*img->m_width+x)*spp, spp, color );
-	unguardfast()
 }
 
 inline dword R9_ImgGetColorRect( r9Img* img, int x1, int y1, int x2, int y2 )
 {
-	guardfast(R9_ImgGetColorRect)
-
 	int a, r, g, b;
 	int spp = R9_PFSpp(img->m_pf);
 	
@@ -228,8 +210,6 @@ inline dword R9_ImgGetColorRect( r9Img* img, int x1, int y1, int x2, int y2 )
 	g <<= 8;
 
 	return (a | r | g | b);
-
-	unguardfast();
 }
 
 #endif

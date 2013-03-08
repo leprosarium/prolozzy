@@ -196,7 +196,6 @@ virtual BOOL		CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect );		/
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 inline void r9Render::DrawLine( fV2& a, fV2& b, dword color )
 {
-	guardfast(r9Render::DrawLine);
 	if(GetTexture()!=NULL) SetTexture(NULL);
 
 	r9Vertex vx[2];
@@ -214,12 +213,10 @@ inline void r9Render::DrawLine( fV2& a, fV2& b, dword color )
 	vx[1].color = color;
 
 	Push(vx,2,R9_PRIMITIVE_LINE);
-	unguardfast();
 }
 
 inline void r9Render::DrawTriangle( fV2& a, fV2& b, fV2& c, fV2& ta, fV2& tb, fV2& tc, R9TEXTURE tex, dword color )
 {
-	guardfast(r9Render::DrawTriangle);
 	if(GetTexture()!=tex) SetTexture(tex);
 
 	r9Vertex vx[3];
@@ -243,12 +240,10 @@ inline void r9Render::DrawTriangle( fV2& a, fV2& b, fV2& c, fV2& ta, fV2& tb, fV
 	vx[2].color = color;
 
 	Push(vx,3,R9_PRIMITIVE_TRIANGLE);
-	unguardfast();
 }
 
 inline void r9Render::DrawQuad( fRect& dst, fRect& src, R9TEXTURE tex, dword color )
 {
-	guardfast(r9Render::DrawQuad);
 	if(GetTexture()!=tex) SetTexture(tex);
 
 	r9Vertex vx[6];
@@ -290,19 +285,15 @@ inline void r9Render::DrawQuad( fRect& dst, fRect& src, R9TEXTURE tex, dword col
 	vx[5].color = color;
 
 	Push(vx,6,R9_PRIMITIVE_TRIANGLE);
-	unguardfast();
 }
 
 inline void r9Render::DrawBar( fRect& dst, dword color )
 {
-	guardfast(r9Render::DrawBar);
 	DrawQuad(dst,fRect(0.0f,0.0f,1.0f,1.0f),NULL,color);
-	unguardfast();
 }
 
 inline void r9Render::ClipBar( fRect& dst )
 {
-	guardfast(r9Render::ClipBar);
 	if(!IsClipping()) return;
 	
 	if(dst.x1<m_cliprect.x1) dst.x1=m_cliprect.x1;	else
@@ -317,12 +308,10 @@ inline void r9Render::ClipBar( fRect& dst )
 	if(dst.y2>m_cliprect.y2) dst.y2=m_cliprect.y2;	else
 	if(dst.y2<m_cliprect.y1) dst.y2=m_cliprect.y1;
 
-	unguardfast();
 }
 
 inline void r9Render::ClipQuad( fRect& dst, fRect& src )
 {
-	guardfast(r9Render::ClipQuad);
 	if(!IsClipping()) return;
 	
 	float f;
@@ -349,12 +338,10 @@ inline void r9Render::ClipQuad( fRect& dst, fRect& src )
 	if(dsth>0.0f) f=(dst0.y2 - dst.y2)/dsth; else f=0.0f;
 	src.y2 -= srch*f;
 
-	unguardfast();
 }
 
 inline void r9Render::ClipSprite( fRect& dst, fRect& src, int flip )
 {
-	guardfast(r9Render::ClipSprite);
 	if(!IsClipping()) return;
 	if(flip & 1)
 	{
@@ -376,7 +363,6 @@ inline void r9Render::ClipSprite( fRect& dst, fRect& src, int flip )
 		if(dst.y1<m_cliprect.y1) { src.y1+=(m_cliprect.y1-dst.y1); dst.y1=m_cliprect.y1; }
 		if(dst.y2>m_cliprect.y2) { src.y2-=(dst.y2-m_cliprect.y2); dst.y2=m_cliprect.y2; }
 	}
-	unguardfast();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -392,63 +378,63 @@ extern r9Render* r9_render;
 
 		BOOL		R9_Init( HWND hwnd, r9Cfg* cfg, int api=R9_API_DEFAULT );
 		void		R9_Done();
-inline	BOOL		R9_IsReady()											{ guardfast(R9_IsReady);			return (r9_render && r9_render->IsReady()); unguardfast(); }
-inline	int			R9_GetWidth()											{ guardfast(R9_GetWidth);			sassert(r9_render); return r9_render->GetWidth(); unguardfast(); }
-inline	int			R9_GetHeight()											{ guardfast(R9_GetHeight);			sassert(r9_render); return r9_render->GetHeight(); unguardfast(); }
-inline	r9Cfg&		R9_GetCfg()												{ guardfast(R9_GetCfg);				sassert(r9_render); return r9_render->GetCfg(); unguardfast(); }
-inline	int			R9_GetApi()												{ guardfast(R9_GetApi);				sassert(r9_render); return r9_render->GetApi(); unguardfast(); }
-inline	void		R9_SetHandleReset( r9HandleReset callback )				{ guardfast(R9_OnReset);			sassert(r9_render); r9_render->m_handlereset = callback; unguardfast(); }
+inline	BOOL		R9_IsReady()											{ return (r9_render && r9_render->IsReady()); }
+inline	int			R9_GetWidth()											{ assert(r9_render); return r9_render->GetWidth(); }
+inline	int			R9_GetHeight()											{ assert(r9_render); return r9_render->GetHeight(); }
+inline	r9Cfg&		R9_GetCfg()												{ assert(r9_render); return r9_render->GetCfg(); }
+inline	int			R9_GetApi()												{ assert(r9_render); return r9_render->GetApi(); }
+inline	void		R9_SetHandleReset( r9HandleReset callback )				{ assert(r9_render); r9_render->m_handlereset = callback; }
 
-inline	R9TEXTURE	R9_TextureCreate( r9Img* img )							{ guardfast(R9_TextureCreate);		sassert(r9_render); return r9_render->TextureCreate(img); unguardfast(); }
-inline	R9TEXTURE	R9_TextureLoad( const char* filename )					{ guardfast(R9_TextureLoad);		sassert(r9_render); return r9_render->TextureLoad(filename); unguardfast(); }
-inline	R9TEXTURE	R9_TextureCreateTarget( int width, int height )			{ guardfast(R9_TextureCreateTarget);sassert(r9_render); return r9_render->TextureCreateTarget(width,height); unguardfast(); }
-inline	void		R9_TextureDestroy( R9TEXTURE tex )						{ guardfast(R9_TextureDestroy); 	sassert(r9_render); r9_render->TextureDestroy(tex); unguardfast(); }
+inline	R9TEXTURE	R9_TextureCreate( r9Img* img )							{ assert(r9_render); return r9_render->TextureCreate(img); }
+inline	R9TEXTURE	R9_TextureLoad( const char* filename )					{ assert(r9_render); return r9_render->TextureLoad(filename); }
+inline	R9TEXTURE	R9_TextureCreateTarget( int width, int height )			{ assert(r9_render); return r9_render->TextureCreateTarget(width,height); }
+inline	void		R9_TextureDestroy( R9TEXTURE tex )						{ assert(r9_render); r9_render->TextureDestroy(tex); }
 inline	BOOL		R9_TextureIsValid( R9TEXTURE tex )						{ return tex->m_handler!=NULL; }
 inline	int			R9_TextureGetWidth( R9TEXTURE tex )						{ return tex->m_width; }
 inline	int			R9_TextureGetHeight( R9TEXTURE tex )					{ return tex->m_height; }
 inline	int			R9_TextureGetRealWidth( R9TEXTURE tex )					{ return tex->m_realwidth; }
 inline	int			R9_TextureGetRealHeight( R9TEXTURE tex )				{ return tex->m_realheight; }
 
-inline	void		R9_SetTexture( R9TEXTURE tex )							{ guardfast(R9_SetTexture);			sassert(r9_render); r9_render->SetTexture(tex); unguardfast(); }
-inline	R9TEXTURE	R9_GetTexture()											{ guardfast(R9_GetTexture);			sassert(r9_render); return r9_render->GetTexture(); unguardfast(); }
-inline	void		R9_SetState( int state, int value )						{ guardfast(R9_SetState);			sassert(r9_render); r9_render->SetState(state,value); unguardfast(); }
-inline	int			R9_GetState( int state )								{ guardfast(R9_GetState);			sassert(r9_render); return r9_render->GetState(state); unguardfast(); }
-inline	void		R9_SetViewport( fRect& rect )							{ guardfast(R9_SetViewport);		sassert(r9_render); r9_render->SetViewport(rect); unguardfast(); }
-inline	fRect&		R9_GetViewport()										{ guardfast(R9_GetViewport);		sassert(r9_render); return r9_render->GetViewport(); unguardfast(); }
-inline	void		R9_SetView( int x, int y, dword flip )					{ guardfast(R9_SetView);			sassert(r9_render); r9_render->SetView(x,y,flip); unguardfast(); }
+inline	void		R9_SetTexture( R9TEXTURE tex )							{ assert(r9_render); r9_render->SetTexture(tex); }
+inline	R9TEXTURE	R9_GetTexture()											{ assert(r9_render); return r9_render->GetTexture(); }
+inline	void		R9_SetState( int state, int value )						{ assert(r9_render); r9_render->SetState(state,value); }
+inline	int			R9_GetState( int state )								{ assert(r9_render); return r9_render->GetState(state); }
+inline	void		R9_SetViewport( fRect& rect )							{ assert(r9_render); r9_render->SetViewport(rect); }
+inline	fRect&		R9_GetViewport()										{ assert(r9_render); return r9_render->GetViewport(); }
+inline	void		R9_SetView( int x, int y, dword flip )					{ assert(r9_render); r9_render->SetView(x,y,flip); }
 
-inline	void		R9_Clear( dword color )									{ guardfast(R9_Clear);				sassert(r9_render); r9_render->Clear(color); unguardfast(); }
-inline	BOOL		R9_BeginScene( R9TEXTURE target=NULL )					{ guardfast(R9_BeginScene);			sassert(r9_render); return r9_render->BeginScene( target ); unguardfast(); }
-inline	void		R9_EndScene()											{ guardfast(R9_EndScene);			sassert(r9_render); r9_render->EndScene(); unguardfast(); }
-inline	void		R9_Present()											{ guardfast(R9_Present);			sassert(r9_render); r9_render->Present(); unguardfast(); }
-inline	BOOL		R9_IsBeginEndScene()									{ guardfast(R9_IsBeginEndScene);	sassert(r9_render); return r9_render->IsBeginEndScene(); unguardfast(); }
-inline	BOOL		R9_CheckDevice()										{ guardfast(R9_CheckDevice);		sassert(r9_render); return r9_render->CheckDevice(); unguardfast(); }
-inline	BOOL		R9_ToggleVideoMode()									{ guardfast(R9_ToggleVideoMode);	sassert(r9_render); return r9_render->ToggleVideoMode(); unguardfast(); }
+inline	void		R9_Clear( dword color )									{ assert(r9_render); r9_render->Clear(color); }
+inline	BOOL		R9_BeginScene( R9TEXTURE target=NULL )					{ assert(r9_render); return r9_render->BeginScene( target ); }
+inline	void		R9_EndScene()											{ assert(r9_render); r9_render->EndScene(); }
+inline	void		R9_Present()											{ assert(r9_render); r9_render->Present(); }
+inline	BOOL		R9_IsBeginEndScene()									{ assert(r9_render); return r9_render->IsBeginEndScene(); }
+inline	BOOL		R9_CheckDevice()										{ assert(r9_render); return r9_render->CheckDevice(); }
+inline	BOOL		R9_ToggleVideoMode()									{ assert(r9_render); return r9_render->ToggleVideoMode(); }
 
-inline	void		R9_Push( r9Vertex* vx, int vxs, int primitive )			{ guardfast(R9_Push);		sassert(r9_render); r9_render->Push(vx,vxs,primitive); unguardfast(); }
-inline	void		R9_Flush()												{ guardfast(R9_Flush);		sassert(r9_render); r9_render->Flush(); unguardfast(); }
-inline	BOOL		R9_NeedFlush()											{ guardfast(R9_NeedFlush);	sassert(r9_render); return r9_render->NeedFlush(); unguardfast(); }
+inline	void		R9_Push( r9Vertex* vx, int vxs, int primitive )			{ assert(r9_render); r9_render->Push(vx,vxs,primitive); }
+inline	void		R9_Flush()												{ assert(r9_render); r9_render->Flush(); }
+inline	BOOL		R9_NeedFlush()											{ assert(r9_render); return r9_render->NeedFlush(); }
 
-inline	void		R9_DrawLine( fV2& a, fV2& b, dword color=0xffffffff )	{ guardfast(R9_DrawLine); sassert(r9_render); r9_render->DrawLine(a,b,color); unguardfast(); }
-inline	void		R9_DrawTriangle( fV2& a, fV2& b,fV2& c, fV2& ta, fV2& tb, fV2& tc, R9TEXTURE tex, dword color=0xffffffff ) { guardfast(R9_DrawTriangle); sassert(r9_render); r9_render->DrawTriangle(a,b,c,ta,tb,tc,tex,color); unguardfast(); }
-inline	void		R9_DrawBar( fRect& dst, dword color=0xffffffff ) { guardfast(R9_DrawBar); sassert(r9_render); r9_render->DrawBar(dst,color); unguardfast(); }
-inline	void		R9_DrawQuad( fRect& dst, fRect& src, R9TEXTURE tex, dword color=0xffffffff ) { guardfast(R9_DrawQuad); sassert(r9_render); r9_render->DrawQuad(dst,src,tex,color); unguardfast(); }
-inline	void		R9_DrawQuadRot( fV2& pos, fV2& size, fV2& center, float angle, fRect& src, R9TEXTURE tex, dword color=0xffffffff ) { guardfast(R9_DrawQuadRot); sassert(r9_render); r9_render->DrawQuadRot(pos,size,center,angle,src,tex,color); unguardfast(); }
-inline	void		R9_DrawSprite( fV2& pos, fRect& src, R9TEXTURE tex, dword color=0xffffffff, dword flip=0, float scale=1.0f ) { guardfast(R9_DrawSprite); sassert(r9_render); r9_render->DrawSprite(pos,src,tex,color,flip,scale); unguardfast(); }
+inline	void		R9_DrawLine( fV2& a, fV2& b, dword color=0xffffffff )	{ assert(r9_render); r9_render->DrawLine(a,b,color); }
+inline	void		R9_DrawTriangle( fV2& a, fV2& b,fV2& c, fV2& ta, fV2& tb, fV2& tc, R9TEXTURE tex, dword color=0xffffffff ) {  assert(r9_render); r9_render->DrawTriangle(a,b,c,ta,tb,tc,tex,color); }
+inline	void		R9_DrawBar( fRect& dst, dword color=0xffffffff ) {  assert(r9_render); r9_render->DrawBar(dst,color); }
+inline	void		R9_DrawQuad( fRect& dst, fRect& src, R9TEXTURE tex, dword color=0xffffffff ) {  assert(r9_render); r9_render->DrawQuad(dst,src,tex,color); }
+inline	void		R9_DrawQuadRot( fV2& pos, fV2& size, fV2& center, float angle, fRect& src, R9TEXTURE tex, dword color=0xffffffff ) {  assert(r9_render); r9_render->DrawQuadRot(pos,size,center,angle,src,tex,color); }
+inline	void		R9_DrawSprite( fV2& pos, fRect& src, R9TEXTURE tex, dword color=0xffffffff, dword flip=0, float scale=1.0f ) {  assert(r9_render); r9_render->DrawSprite(pos,src,tex,color,flip,scale); }
 		void		R9_DrawText( fV2& pos, const char* text, dword color=0xffffffff, float scale=1.0f );
 
-inline	BOOL		R9_IsClipping()											{ guardfast(R9_GetClipRect);	sassert(r9_render); return r9_render->IsClipping(); unguardfast(); }
-inline	void		R9_SetClipping( fRect& rect )							{ guardfast(R9_SetClipRect);	sassert(r9_render); r9_render->SetClipping(rect); unguardfast(); }
-inline	fRect&		R9_GetClipping()										{ guardfast(R9_GetClipRect);	sassert(r9_render); return r9_render->GetClipping(); unguardfast(); }
-inline	void		R9_ResetClipping()										{ guardfast(R9_SetClipRect);	sassert(r9_render); r9_render->SetClipping(frect_0); unguardfast(); }
-inline	void		R9_AddClipping( fRect& rect )							{ guardfast(R9_SetClipRect);	sassert(r9_render); if(!r9_render->IsClipping()) r9_render->SetClipping(rect); else r9_render->SetClipping(r9_render->GetClipping() * rect); unguardfast(); }
-inline 	void		R9_ClipBar( fRect& dst )								{ guardfast(R9_ClipBar);		sassert(r9_render); r9_render->ClipBar(dst); unguardfast(); }
-inline 	void		R9_ClipQuad( fRect& dst, fRect& src )					{ guardfast(R9_ClipQuad);		sassert(r9_render); r9_render->ClipQuad(dst,src); unguardfast(); }
-inline 	void		R9_ClipSprite( fRect& dst, fRect& src, int flip=0 )		{ guardfast(R9_ClipSprite);		sassert(r9_render); r9_render->ClipSprite(dst,src,flip); unguardfast(); }
+inline	BOOL		R9_IsClipping()											{ assert(r9_render); return r9_render->IsClipping(); }
+inline	void		R9_SetClipping( fRect& rect )							{ assert(r9_render); r9_render->SetClipping(rect); }
+inline	fRect&		R9_GetClipping()										{ assert(r9_render); return r9_render->GetClipping(); }
+inline	void		R9_ResetClipping()										{ assert(r9_render); r9_render->SetClipping(frect_0); }
+inline	void		R9_AddClipping( fRect& rect )							{ assert(r9_render); if(!r9_render->IsClipping()) r9_render->SetClipping(rect); else r9_render->SetClipping(r9_render->GetClipping() * rect); }
+inline 	void		R9_ClipBar( fRect& dst )								{ assert(r9_render); r9_render->ClipBar(dst); }
+inline 	void		R9_ClipQuad( fRect& dst, fRect& src )					{ assert(r9_render); r9_render->ClipQuad(dst,src); }
+inline 	void		R9_ClipSprite( fRect& dst, fRect& src, int flip=0 )		{ assert(r9_render); r9_render->ClipSprite(dst,src,flip); }
 
-inline	BOOL		R9_SaveScreenShot( fRect* rect=NULL, BOOL full=TRUE)				{ guardfast(R9_SaveScreenShot);	sassert(r9_render); return r9_render->SaveScreenShot(rect,full); unguardfast(); }
-inline	BOOL		R9_TakeScreenShot( r9Img* img, fRect* rect=NULL, BOOL full=TRUE )	{ guardfast(R9_TakeScreenShot);	sassert(r9_render); return r9_render->TakeScreenShot(img,rect,full); unguardfast(); }
-inline	BOOL		R9_CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )	{ guardfast(R9_CopyTargetToImage);	sassert(r9_render); return r9_render->CopyTargetToImage(target,img,rect); unguardfast(); }
+inline	BOOL		R9_SaveScreenShot( fRect* rect=NULL, BOOL full=TRUE)				{ assert(r9_render); return r9_render->SaveScreenShot(rect,full); }
+inline	BOOL		R9_TakeScreenShot( r9Img* img, fRect* rect=NULL, BOOL full=TRUE )	{ assert(r9_render); return r9_render->TakeScreenShot(img,rect,full); }
+inline	BOOL		R9_CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )	{ assert(r9_render); return r9_render->CopyTargetToImage(target,img,rect); }
 
 #endif
 ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -184,14 +184,11 @@ PREDICATE_M(map, reset, 0)
 //////////////////////////////////////////////////////////////////////////////////////////////////
 cDizMap::cDizMap() : m_mapw(), m_maph()
 {
-	guard(cDizMap::cDizMap)
-	unguard()
 }
 
 
 void cDizMap::Reset()
 {
-	guard(cDizMap::Reset)
 	Rooms.clear();
 	m_mapw = 0;
 	m_maph = 0;
@@ -199,7 +196,6 @@ void cDizMap::Reset()
 	BrushIndex.clear();
 	Objects.clear();
 	ObjIndex.clear();
-	unguard()
 }
 
 
@@ -217,11 +213,9 @@ int	cDizMap::ObjNew()
 
 bool cDizMap::Reload()
 {
-	guard(cDizMap::Reload)
 	Reset();
 	g_script.reloadMap();
 	return true;
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -229,7 +223,6 @@ bool cDizMap::Reload()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cDizMap::DrawRoom( int rx, int ry, int layer, int mode, int ofsx, int ofsy )
 {
-	guard(cDizMap::DrawRoom)
 	int color, shader;
 	if(InvalidRoomCoord(rx, ry)) return;
 
@@ -305,7 +298,6 @@ void cDizMap::DrawRoom( int rx, int ry, int layer, int mode, int ofsx, int ofsy 
 
 	R9_Flush(); // be sure!
 
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -314,7 +306,6 @@ void cDizMap::DrawRoom( int rx, int ry, int layer, int mode, int ofsx, int ofsy 
 
 void cDizMap::PartitionAdd( int brushidx )
 {
-	guard(cDizMap::PartitionAdd)
 	tBrush & brush = BrushGet(brushidx);
 	iRect rbrush;
 	brush.MakeBBW(rbrush.x1,rbrush.y1,rbrush.x2,rbrush.y2);
@@ -332,15 +323,12 @@ void cDizMap::PartitionAdd( int brushidx )
 			if( RECT2RECT(rbrush,rpartition) )
 				room->AddBrush(brushidx);
 		}
-	unguard()
 }
 
 void cDizMap::PartitionMake()
 {
-	guard(cDizMap::PartitionMake)
 	for(int i=0, e=BrushCount(); i < e; ++i)
 		PartitionAdd(i);
-	unguard()
 }
 
 void cDizMap::Resize( int width, int height )

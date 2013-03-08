@@ -16,67 +16,53 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 i9DeviceDX::i9DeviceDX()
 {
-	guard(i9DeviceDX::i9DeviceDX);
 	m_acquired	= FALSE;
 	m_idx		= 0;
 	m_ff		= NULL;
 	m_didevice	= NULL;
-	unguard();
 }
 
 i9DeviceDX::~i9DeviceDX()
 {
-	guard(i9DeviceDX:~i9DeviceDX);
-	unguard();
 }
 
 BOOL i9DeviceDX::Init( int idx, const GUID* guid )
 {
-	guard(i9DeviceDX::Init);
 	return TRUE;
-	unguard();
 }
 
 void i9DeviceDX::Done()
 {
-	guard(i9DeviceDX::Done);
-	if( m_ff ) { m_ff->Done(); sdelete(m_ff); m_ff=NULL; }
+	if( m_ff ) { m_ff->Done(); delete m_ff; m_ff=NULL; }
 	if( m_didevice ) { m_didevice->Release(); m_didevice = NULL; }
-	unguard();
 }
 
 BOOL i9DeviceDX::Acquire()
 {
-	guard(i9DeviceDX::Acquire);
-	sassert(m_didevice);
+	assert(m_didevice);
 	int err = m_didevice->Acquire();
 //	if(FAILED(err))	{ I9_LOGERROR( "InputDevice acquire failed" ); return FALSE; }
 	Clear();
 	m_acquired = TRUE;
 	return TRUE;
-	unguard();
 }
 
 BOOL i9DeviceDX::Unacquire()
 {
-	guard(i9DeviceDX::Unacquire);
-	sassert(m_didevice);
+	assert(m_didevice);
 	int err = m_didevice->Unacquire();
 	if(FAILED(err)) { I9_LOGERROR( "InputDevice unacquire failed" ); return FALSE; }
 	Clear();
 	m_acquired = FALSE;
 	return TRUE;
-	unguard();
 }
 
 /*
 void i9DeviceDX::DestroyFFFX( cFFFX* fffx )
 {
-	guard(i9DeviceDX::DestroyFFFX);
 	if(!fffx) return; 
 	fffx->Done(); 
-	sdelete(fffx); 
-	unguard();
+	delete fffx; 
 }
 */
 
@@ -85,26 +71,21 @@ void i9DeviceDX::DestroyFFFX( cFFFX* fffx )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 i9DeviceDXKeyboard::i9DeviceDXKeyboard()
 {
-	guard(i9DeviceDXKeyboard::i9DeviceDXKeyboard)
 	i9DeviceDX::i9DeviceDX();
-	unguard()
 }
 
 i9DeviceDXKeyboard::~i9DeviceDXKeyboard()
 {
-	guard(i9DeviceDXKeyboard::~i9DeviceDXKeyboard)
-	unguard()
 }
 
 BOOL i9DeviceDXKeyboard::Init( int idx, const GUID* guid )
 {
-	guard(i9DeviceDXKeyboard::Init);
 	// test the conversion table
-	sassert(sizeof(m_dxcode)==I9_KEYBOARD_KEYS*sizeof(int)); 
+	assert(sizeof(m_dxcode)==I9_KEYBOARD_KEYS*sizeof(int)); 
 	//for(int i=0;i<I9_KEYBOARD_KEYS;i++)
 	//	dlog("i9k=%x dik=%x %s\n",i,m_dxcode[i],I9_GetKeyName(i));
 
-	sassert(m_didevice==NULL);
+	assert(m_didevice==NULL);
 	int err;
 	m_idx = idx;
 
@@ -133,13 +114,11 @@ BOOL i9DeviceDXKeyboard::Init( int idx, const GUID* guid )
 error:
 	Done();
 	return FALSE;
-	unguard();
 }
 
 void i9DeviceDXKeyboard::Update()
 {
-	guard(i9DeviceDXKeyboard::Update);
-	sassert(m_didevice);
+	assert(m_didevice);
 	if( !m_acquired ) return;
 
 	// get data
@@ -163,15 +142,12 @@ void i9DeviceDXKeyboard::Update()
 		if( didod[i].dwData & 0x80 )	i9_input->PushKey( m_dxcode[didod[i].dwOfs], TRUE );
 		else							i9_input->PushKey( m_dxcode[didod[i].dwOfs], FALSE );
 	}
-	unguard();
 }
 
 void i9DeviceDXKeyboard::Clear()
 {
-	guard(i9DeviceDXKeyboard::Clear);
-	sassert(m_didevice);
+	assert(m_didevice);
 	memset( &(i9_input->m_key[I9_KEYBOARD_FIRSTKEY]), 0, I9_KEYBOARD_KEYS * sizeof(i9Key) );
-	unguard();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -179,21 +155,16 @@ void i9DeviceDXKeyboard::Clear()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 i9DeviceDXMouse::i9DeviceDXMouse()
 {
-	guard(i9DeviceDXMouse::i9DeviceDXMouse);
 	i9DeviceDX::i9DeviceDX();
-	unguard();
 }
 
 i9DeviceDXMouse::~i9DeviceDXMouse()
 {
-	guard(i9DeviceDXMouse::~i9DeviceDXMouse);
-	unguard();
 }
 
 BOOL i9DeviceDXMouse::Init( int idx, const GUID* guid )
 {
-	guard(i9DeviceDXMouse::Init);
-	sassert(m_didevice==NULL);
+	assert(m_didevice==NULL);
 	int err;
 	m_idx = idx;
 
@@ -222,13 +193,11 @@ BOOL i9DeviceDXMouse::Init( int idx, const GUID* guid )
 	error:
 	Done();
 	return FALSE;
-	unguard();
 }
 
 void i9DeviceDXMouse::Update()
 {
-	guard(i9DeviceDXMouse::Update);
-	sassert(m_didevice);
+	assert(m_didevice);
 	if( !m_acquired ) return;
 
 	// reset axes delta
@@ -329,13 +298,11 @@ void i9DeviceDXMouse::Update()
 	if( axez.m_value < axez.m_min ) axez.m_value = axez.m_min;	else
 	if( axez.m_value > axez.m_max ) axez.m_value = axez.m_max;
 
-	unguard();
 }
 
 
 void i9DeviceDXMouse::Clear()
 {
-	guard(i9DeviceDXMouse::Clear);
 	memset( &(i9_input->m_key[I9_MOUSE_FIRSTKEY]), 0, I9_MOUSE_KEYS * sizeof(i9Key) );
 	for(int i=I9_MOUSE_FIRSTAXE; i<I9_MOUSE_FIRSTAXE+I9_MOUSE_AXES; i++)
 	{
@@ -343,7 +310,6 @@ void i9DeviceDXMouse::Clear()
 		axe.m_value	= 0;
 		axe.m_delta	= 0;
 	}
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -353,25 +319,20 @@ BOOL CALLBACK EnumJoystickObjectsCallback( LPCDIDEVICEOBJECTINSTANCE dideviceoi,
 
 i9DeviceDXJoystick::i9DeviceDXJoystick()
 {
-	guard(i9DeviceDXJoystick::i9DeviceDXJoystick);
 	i9DeviceDX::i9DeviceDX();
 	m_hat = 0;
 	m_needpolling = 0;
 	memset(m_axeavail,0,sizeof(m_axeavail));
 	memset(m_keyavail,0,sizeof(m_keyavail));
-	unguard();
 }
 
 i9DeviceDXJoystick::~i9DeviceDXJoystick()
 {
-	guard(i9DeviceDXJoystick::~i9DeviceDXJoystick);
-	unguard();
 }
 
 BOOL i9DeviceDXJoystick::Init( int idx, const GUID* guid )
 {
-	guard(i9DeviceDXJoystick::Init);
-	sassert(m_didevice==NULL);
+	assert(m_didevice==NULL);
 	int err;
 	m_idx = idx;
 
@@ -410,13 +371,11 @@ BOOL i9DeviceDXJoystick::Init( int idx, const GUID* guid )
 	error:
 	Done();
 	return FALSE;
-	unguard();
 }
 
 void i9DeviceDXJoystick::Update()
 {
-	guard(i9DeviceDXJoystick::Update);
-	sassert(m_didevice);
+	assert(m_didevice);
 	if( !m_acquired ) return;
 
 	if( m_needpolling )
@@ -491,12 +450,10 @@ void i9DeviceDXJoystick::Update()
 		}
 	}
 
-	unguard();
 }
 
 void i9DeviceDXJoystick::Clear()
 {
-	guard(i9DeviceDXJoystick::Clear);
 	memset( &(i9_input->m_key[ I9_JOY_FIRSTKEY(m_idx) ]), 0, I9_JOY_KEYS * sizeof(i9Key) );
 	for(int i=I9_JOY_FIRSTAXE(m_idx); i<I9_JOY_FIRSTAXE(m_idx)+I9_JOY_AXES; i++)
 	{
@@ -506,12 +463,10 @@ void i9DeviceDXJoystick::Clear()
 	}
 
 	m_hat = 0;
-	unguard();
 }
 
 int i9DeviceDXJoystick::Filter( int value )
 {
-	guard(i9DeviceDXJoystick::Filter);
 	int tresh = (int)(I9_TRESHHOLD*1000.f);
 	
 	if( value<tresh && -value<tresh ) return 0;
@@ -522,23 +477,19 @@ int i9DeviceDXJoystick::Filter( int value )
 	value = value*1000/(1000-tresh);
 
 	return value;
-	unguard();
 }
 
 /*
 cFFFX* i9DeviceDXJoystick::CreateFFFX( int type )
 {
-	guard(i9DeviceDXJoystick::CreateFFFX);
-	cFFFX* fx = snew cFFFX();
-	if(!fx->Init(this, type)) { sdelete(fx); return NULL; }
+	cFFFX* fx = new cFFFX();
+	if(!fx->Init(this, type)) { delete fx; return NULL; }
 	return fx;
-	unguard();
 }
 */
 
 BOOL CALLBACK EnumJoystickObjectsCallback( LPCDIDEVICEOBJECTINSTANCE dideviceoi, LPVOID pvRef )
 {
-	guard(EnumJoystickObjectsCallback);
 	i9DeviceDXJoystick* _this = (i9DeviceDXJoystick*)pvRef;
 
 	int idx = DIDFT_GETINSTANCE(dideviceoi->dwType);
@@ -558,7 +509,6 @@ BOOL CALLBACK EnumJoystickObjectsCallback( LPCDIDEVICEOBJECTINSTANCE dideviceoi,
 
 	dlog(LOGINP, L"  DeviceObject: idx=%2d, name=%S, ofs=%d\n", idx, dideviceoi->tszName, dideviceoi->dwOfs);
 	return DIENUM_CONTINUE;
-	unguard();
 }
 
 

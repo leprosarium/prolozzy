@@ -63,20 +63,20 @@ extern	f9Files*	f9_files;			// global instance
 		BOOL	F9_Init();
 		void	F9_Done();
 inline	BOOL	F9_IsReady()																	{ return f9_files!=NULL; }
-inline	int		F9_ArchiveOpen			( const char* name, int mode=F9_READ, const char* password=NULL )	{ guardfast(F9_ArchiveOpen);	sassert(f9_files); return f9_files->ArchiveOpen(name,mode,password); unguardfast(); }
-inline	void	F9_ArchiveClose			( int idx )												{ guardfast(F9_ArchiveClose);	sassert(f9_files); f9_files->ArchiveClose(idx); unguardfast(); }
-inline	int		F9_ArchiveGetFileCount	( int idx )												{ guardfast(F9_ArchiveClose);	sassert(f9_files); return f9_files->ArchiveGetFileCount(idx); unguardfast(); }
-inline	std::string	F9_ArchiveGetFileName	( int idx, int fileidx )								{ guardfast(F9_ArchiveClose);	sassert(f9_files); return f9_files->ArchiveGetFileName(idx,fileidx); unguardfast(); }
-inline	void	F9_ResourcesOpen		()														{ guardfast(F9_ResourcesOpen);	sassert(f9_files); f9_files->ResourcesOpen(); unguardfast(); }
-inline	void	F9_ResourcesClose		()														{ guardfast(F9_ResourcesClose);	sassert(f9_files); f9_files->ResourcesClose(); unguardfast(); }
-inline	F9FILE	F9_FileOpen				( const char* name, int mode=F9_READ )					{ guardfast(F9_FileOpen);		sassert(f9_files); return f9_files->FileOpen(name, mode); unguardfast(); }
-inline	int		F9_FileClose			( F9FILE file )											{ guardfast(F9_FileClose);		sassert(f9_files); return f9_files->FileClose(file); unguardfast(); }
-inline	int		F9_FileRead				( void* buffer, int size, F9FILE file )					{ guardfast(F9_FileRead);		sassert(file); return (int)file->Read( buffer, size ); unguardfast(); }
-inline	int		F9_FileWrite			( void* buffer, int size, F9FILE file )					{ guardfast(F9_FileWrite);		sassert(file); return (int)file->Write( buffer, size ); unguardfast(); }
-inline	int		F9_FileSeek				( F9FILE file, int offset, int origin=F9_SEEK_SET )		{ guardfast(F9_FileSeek);		sassert(file); return file->Seek( offset, origin ); unguardfast(); }
-inline	int		F9_FileTell				( F9FILE file )											{ guardfast(F9_FileTell);		sassert(file); return (int)file->Tell(); unguardfast(); }
-inline	int		F9_FileEof				( F9FILE file )											{ guardfast(F9_FileEof);		sassert(file); return file->Eof(); unguardfast(); }
-inline	int		F9_FileSize				( F9FILE file )											{ guardfast(F9_FileSize);		sassert(file); return (int)file->Size(); unguardfast(); }
+inline	int		F9_ArchiveOpen			( const char* name, int mode=F9_READ, const char* password=NULL )	{ 	assert(f9_files); return f9_files->ArchiveOpen(name,mode,password);  }
+inline	void	F9_ArchiveClose			( int idx )												{ 	assert(f9_files); f9_files->ArchiveClose(idx);  }
+inline	int		F9_ArchiveGetFileCount	( int idx )												{ 	assert(f9_files); return f9_files->ArchiveGetFileCount(idx);  }
+inline	std::string	F9_ArchiveGetFileName	( int idx, int fileidx )							{ 	assert(f9_files); return f9_files->ArchiveGetFileName(idx,fileidx);  }
+inline	void	F9_ResourcesOpen		()														{ 	assert(f9_files); f9_files->ResourcesOpen();  }
+inline	void	F9_ResourcesClose		()														{ 	assert(f9_files); f9_files->ResourcesClose();  }
+inline	F9FILE	F9_FileOpen				( const char* name, int mode=F9_READ )					{ 	assert(f9_files); return f9_files->FileOpen(name, mode);  }
+inline	int		F9_FileClose			( F9FILE file )											{ 	assert(f9_files); return f9_files->FileClose(file);  }
+inline	int		F9_FileRead				( void* buffer, int size, F9FILE file )					{ 	assert(file); return (int)file->Read( buffer, size );  }
+inline	int		F9_FileWrite			( void* buffer, int size, F9FILE file )					{ 	assert(file); return (int)file->Write( buffer, size );  }
+inline	int		F9_FileSeek				( F9FILE file, int offset, int origin=F9_SEEK_SET )		{ 	assert(file); return file->Seek( offset, origin );  }
+inline	int		F9_FileTell				( F9FILE file )											{ 	assert(file); return (int)file->Tell();  }
+inline	int		F9_FileEof				( F9FILE file )											{ 	assert(file); return file->Eof();  }
+inline	int		F9_FileSize				( F9FILE file )											{ 	assert(file); return (int)file->Size();  }
 
 // helper for memory files ext must not exceed 5 characters but may be NULL - uses sprint!
 inline	char*	F9_MakeFileName		( const char* name, void* addr, int size )						{ return sprint("#%x#%x#%s",(dwordptr)addr,size,name?name:""); }

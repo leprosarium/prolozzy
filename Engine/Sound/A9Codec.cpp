@@ -18,8 +18,6 @@
 
 a9Codec::a9Codec()
 {
-	guard(a9Codec::a9Codec);
-
 	m_type				= A9_CODEC_UNKNOWN;
 	m_loop				= 0;
 	m_status			= A9_CODEC_CLOSED; 
@@ -29,8 +27,6 @@ a9Codec::a9Codec()
 	m_info.m_channels	= 0;
 	m_info.m_frequency	= 0;
 	m_info.m_size		= 0;
-
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -38,7 +34,6 @@ a9Codec::a9Codec()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 int A9_CodecFind( const char* filename )
 {
-	guard(A9_CodecFind);
 	if(filename==NULL) return A9_CODEC_UNKNOWN;
 	int len = (int)strlen(filename);
 	if(len<3) return A9_CODEC_UNKNOWN;
@@ -73,12 +68,10 @@ int A9_CodecFind( const char* filename )
 			return filesupport[i].codec;
 	
 	return A9_CODEC_UNKNOWN;
-	unguard();
 }
 
 int A9_CodecInit( int type )
 {
-	guard(A9_CodecInit);
 	switch(type)
 	{
 	#ifdef A9_ENABLE_WAV
@@ -95,12 +88,10 @@ int A9_CodecInit( int type )
 	#endif
 	}
 	return A9_FAIL;
-	unguard();
 }
 
 int A9_CodecDone( int type )
 {
-	guard(A9_CodecDone);
 	switch(type)
 	{
 	#ifdef A9_ENABLE_WAV
@@ -117,60 +108,50 @@ int A9_CodecDone( int type )
 	#endif
 	}
 	return A9_FAIL;
-	unguard();
 }
 
 void A9_CodecInitAll()
 {
-	guard(A9_CodecInitAll);
 	int codecs[4] = { A9_CODEC_WAV, A9_CODEC_OGG, A9_CODEC_DUMB, A9_CODEC_YM };
 	for(int i=0;i<4;i++)
 		A9_CodecInit(codecs[i]);
-	unguard();
 }
 
 void A9_CodecDoneAll()
 {
-	guard(A9_CodecDoneAll);
 	int codecs[4] = { A9_CODEC_WAV, A9_CODEC_OGG, A9_CODEC_DUMB, A9_CODEC_YM };
 	for(int i=0;i<4;i++)
 		A9_CodecDone(codecs[i]);
-	unguard();
 }
 
 A9CODEC	A9_CodecCreate( int type )
 {
-	guard(A9_CodecCreate);
 	switch(type)
 	{
 		#ifdef A9_ENABLE_WAV
-		case A9_CODEC_WAV:	return snew a9Codec_wav();
+		case A9_CODEC_WAV:	return new a9Codec_wav();
 		#endif
 		#ifdef A9_ENABLE_OGG
-		case A9_CODEC_OGG:	return snew a9Codec_ogg();
+		case A9_CODEC_OGG:	return new a9Codec_ogg();
 		#endif
 		#ifdef A9_ENABLE_DUMB
-		case A9_CODEC_DUMB:	return snew a9Codec_dumb();
+		case A9_CODEC_DUMB:	return new a9Codec_dumb();
 		#endif
 		#ifdef A9_ENABLE_YM
-		case A9_CODEC_YM:	return snew a9Codec_ym();
+		case A9_CODEC_YM:	return new a9Codec_ym();
 		#endif
 	}
 	return NULL;
-	unguard();
 }
 
 void A9_CodecDestroy( A9CODEC codec )
 {
-	guard(A9_CodecDestroy);
-	sassert(codec);
-	sdelete(codec);
-	unguard();
+	assert(codec);
+	delete codec;
 }
 
 int	A9_CodecDecodeToWave( A9CODEC codec, byte* buffer )
 {
-	guard(a9Codec::DecodeToWave);
 	if(codec->m_status!=A9_CODEC_OPENED) return A9_FAIL;
 	int ret;
 	int datasize = codec->m_info.DataSize();
@@ -214,12 +195,10 @@ int	A9_CodecDecodeToWave( A9CODEC codec, byte* buffer )
 	ret = codec->EndRender();
 
 	return A9_OK;
-	unguard();
 }
 
 int A9_CodecDecodeToWave( const char* filename, byte* &buffer, int& size )
 {
-	guard(A9_CodecDecodeToWave);
 	// load and decode file
 	if(!filename) return A9_FAIL;
 	int codectype = A9_CodecFind(filename);
@@ -232,18 +211,17 @@ int A9_CodecDecodeToWave( const char* filename, byte* &buffer, int& size )
 	
 	// alloc buffer
 	size = sizeof(a9WavHeader) + codec->m_info.DataSize();
-	buffer = (byte*)smalloc( size );
+	buffer = (byte*)malloc( size );
 	if(!buffer) { A9_CodecClose(codec); A9_CodecDestroy(codec); return A9_FAIL; }
 	
 	// write header and decoded data
 	ret = A9_CodecDecodeToWave(codec,buffer);
-	if(ret!=A9_OK) { sfree(buffer); A9_CodecClose(codec); A9_CodecDestroy(codec); return A9_FAIL; }
+	if(ret!=A9_OK) { free(buffer); A9_CodecClose(codec); A9_CodecDestroy(codec); return A9_FAIL; }
 
 	// close codec
 	A9_CodecClose(codec);
 	A9_CodecDestroy(codec);
 	return A9_OK;		
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -14,7 +14,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL CALLBACK DialogProcInfo( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam ) 
 {
-	guard(DialogProcInfo)
 	if( uMsg==WM_INITDIALOG ) 
 	{
 		// create info content
@@ -35,22 +34,18 @@ BOOL CALLBACK DialogProcInfo( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	if( uMsg==WM_CLOSE || (uMsg==WM_COMMAND && (LOWORD(wParam)==IDOK || LOWORD(wParam)==IDCANCEL) ) )
 	{ EndDialog(hwndDlg,0); return true; }
 	return false;
-	unguard()
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 cDizApp::cDizApp()
 {
-	guard(cDizApp::cDizApp);
 	m_gamefps = 0;
 	m_drawstats = 0;
 	m_musicwaspaused = false;
-	unguard();
 }
 
 bool cDizApp::Init()
 {
-	guard(cDizApp::Init);
 	dlog(LOGAPP, L"App init.\n");
 	
 	// engine
@@ -72,12 +67,10 @@ bool cDizApp::Init()
 	g_game.Start();
 
 	return true;
-	unguard();
 }
 
 bool cDizApp::InitApp()
 {
-	guard(cDizApp::InitApp);
 	E9_AppSetStr(E9_APP_NAME,GAME_NAME);
 	E9_AppSetStr(E9_APP_ICON,MAKEINTRESOURCE(IDI_ICON));
 
@@ -86,12 +79,10 @@ bool cDizApp::InitApp()
 	E9_AppSetInt(E9_APP_COOL,cool);
 	
 	return true;
-	unguard();
 }
 
 bool cDizApp::InitFiles()
 {
-	guard(cDizApp::InitFiles);
 	if(!F9_Init()) return false;
 	// add pak archive
 	const char* pakfile = GetPakFile();
@@ -101,12 +92,10 @@ bool cDizApp::InitFiles()
 	else
 		dlog(LOGAPP, L"Pak archive %S opened, data folder is ignored.\n",pakfile);
 	return true;
-	unguard();
 }
 
 bool cDizApp::InitInput()
 {
-	guard(cDizApp::InitInput);
 	char inifile[256];
 	strcpy( inifile, file_getfullpath(GetIniFile()) );
 
@@ -133,12 +122,10 @@ bool cDizApp::InitInput()
 		I9_DeviceFFInit(I9_DEVICE_JOYSTICK1);
 	
 	return true;
-	unguard();
 }
 
 bool cDizApp::InitAudio()
 {
-	guard(cDizApp::InitAudio);
 	char inifile[256];
 	strcpy( inifile, file_getfullpath(GetIniFile()) );
 
@@ -148,12 +135,10 @@ bool cDizApp::InitAudio()
 	
 	if(!A9_Init(E9_GetHWND(),A9_API_DEFAULT)) return false;
 	return true;	
-	unguard();
 }
 
 bool cDizApp::InitVideo()
 {
-	guard(cDizApp::InitVideo);
 	char inifile[256];
 	strcpy( inifile, file_getfullpath(GetIniFile()) );
 
@@ -177,12 +162,10 @@ bool cDizApp::InitVideo()
 	E9_AppSetInt(E9_APP_WINDOWED,cfg.m_windowed);
 
 	return true;
-	unguard();
 }
 
 void cDizApp::Done()
 {
-	guard(cDizApp::Done);
 	// must be able to destroy partial init too, in case Init has failed
 
 	// game
@@ -203,12 +186,10 @@ void cDizApp::Done()
 	F9_Done();
 
 	dlog(LOGAPP, L"App done.\n");
-	unguard();
 }
 
 void cDizApp::Activate( BOOL active )
 {
-	guard(cDizApp::Activate);
 	if(active)
 	{
 		if(I9_IsReady()) I9_Acquire();
@@ -221,12 +202,10 @@ void cDizApp::Activate( BOOL active )
 		m_musicwaspaused = g_sound.m_musicpaused;
 		if(!m_musicwaspaused) g_sound.MusicPause(true); // pause
 	}
-	unguard();
 }
 
 bool cDizApp::ToggleVideo()
 {
-	guard(cDizApp::ToggleVideo);
 	if(!R9_GetCfg().m_windowed) return false; // toggle only in windowed mode (not a hw restriction though)
 
 	dlog(LOGAPP, L"Toggle video.\n");
@@ -273,12 +252,10 @@ bool cDizApp::ToggleVideo()
 	g_paint.Layout();
 
 	return true;
-	unguard();
 }
 
 bool cDizApp::Update()
 {
-	guard(cDizApp::Update);
 
 	// timing
 	static int timergame = 0;	// timer for game
@@ -361,12 +338,10 @@ bool cDizApp::Update()
 	}
 
 	return true;
-	unguard();
 }
 
 void cDizApp::Draw()
 {
-	guard(cDizApp::Draw);
 	if(!R9_IsReady()) return; // avoid painting if render is not ready
 	R9_CheckDevice(); // check for lost device
 	if(R9_BeginScene())
@@ -385,12 +360,10 @@ void cDizApp::Draw()
 		R9_Present();
 	}
 
-	unguard();
 }
 
 void cDizApp::DrawStats()
 {
-	guard(cDizApp::DrawStats)
 	char sz[128];
 	sprintf(sz, "obj:%i, brs:%i, fps:%i/%i", g_game.m_obj.size(), g_game.m_visible_brushes, (int)m_gamefps, E9_AppGetInt(E9_APP_FPS));
 
@@ -402,7 +375,6 @@ void cDizApp::DrawStats()
 	R9_DrawText( fV2(x+2,y+2), sz, 0xffffff80 );
 	
 	R9_Flush();
-	unguard()
 }
 
 void cDizApp::ErrorMessage(LPCWSTR msg )

@@ -121,7 +121,6 @@ cDizDebug::cDizDebug()
 {
 	Soutput->functions->read = Log_read;
 
-	guard(cDizDebug::cDizDebug);
 	m_con_lines = 0;
 	m_con_pagetop = 0;
 	m_con_nextline = 0;
@@ -136,13 +135,11 @@ cDizDebug::cDizDebug()
 	m_renderw = 0;
 	m_renderh = 0;
 	m_console = false;
-	unguard();
 }
 
 
 bool cDizDebug::Init()
 {
-	guard(cDizDebug::Init);
 	Layout();
 	
 	// config
@@ -154,7 +151,7 @@ bool cDizDebug::Init()
 
 	// console
 	m_console = false;
-	m_con_lines = (char*)smalloc(CON_LINES*CON_LINESIZE);
+	m_con_lines = (char*)malloc(CON_LINES*CON_LINESIZE);
 	memset(m_con_lines,0,sizeof(CON_LINES*CON_LINESIZE));
 	m_con_pagetop = 0;
 	m_con_nextline = 0;
@@ -166,20 +163,16 @@ bool cDizDebug::Init()
 	if(m_developer) dlog(LOGAPP, L"Developer mode on.\n");
 
 	return true;
-	unguard();
 }
 
 void cDizDebug::Done()
 {
-	guard(cDizDebug::Done);
 	// console
-	if(m_con_lines) sfree(m_con_lines);
-	unguard();
+	if(m_con_lines) free(m_con_lines);
 }
 
 bool cDizDebug::Update()
 {
-	guard(cDizDebug::Update)
 	if(!I9_IsReady()) return true;
 
 	// debug developer hidden key
@@ -239,7 +232,6 @@ bool cDizDebug::Update()
 	}
 
 	return true;
-	unguard()
 }
 
 #ifdef _DEBUG
@@ -248,7 +240,6 @@ bool cDizDebug::Update()
 
 void cDizDebug::Draw()
 {
-	guard(cDizDebug::Draw)
 	if(!m_developer) return;
 	if(!m_console)
 	{
@@ -261,20 +252,16 @@ void cDizDebug::Draw()
 	SlotDraw();
 	InputDraw();
 
-	unguard()
 }
 
 void cDizDebug::Layout()
 {
-	guard(cDizDebug::Layout);
 	m_renderw = R9_GetWidth();
 	m_renderh = R9_GetHeight();
-	unguard();
 }
 
 bool cDizDebug::DeveloperKey()
 {
-	guard(cDizDebug::DeveloperKey);
 	// quick type D E V E L O P E R to toggle
 	static int tickold = 0;
 	static char keybuf[16] = {32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,0};
@@ -306,7 +293,6 @@ bool cDizDebug::DeveloperKey()
 		memset(keybuf,32,keycnt-1);
 	}
 	return false;
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -314,7 +300,6 @@ bool cDizDebug::DeveloperKey()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void cDizDebug::InfoDraw()
 {
-	guard(cDizDebug::InfoDraw);
 	float x = 0.0f;
 	float y = (float)m_renderh - INFO_LINES*R9_CHRH;
 	char sz[256]; sz[0]=0;
@@ -336,7 +321,6 @@ void cDizDebug::InfoDraw()
 	sprintf( sz, "rx=%i, ry=%i, px=%i, py=%i", g_game.roomX(), g_game.roomY(), g_player.x(), g_player.y() );
 	R9_DrawText( fV2(x, y), sz, COLOR_INFO); y+=R9_CHRH;
 
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -344,7 +328,6 @@ void cDizDebug::InfoDraw()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void cDizDebug::NavigationUpdate()
 {
-	guard(cDizDebug::NavigationUpdate);
 	bool ctrl  = I9_GetKeyValue(I9K_LCONTROL) || I9_GetKeyValue(I9K_RCONTROL);
 	bool shift = I9_GetKeyValue(I9K_LSHIFT) || I9_GetKeyValue(I9K_RSHIFT);
 
@@ -377,7 +360,6 @@ void cDizDebug::NavigationUpdate()
 	g_player.x(px);
 	g_player.y(py);
 	g_player.m_debug = (ctrl||shift);
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -385,7 +367,6 @@ void cDizDebug::NavigationUpdate()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 iRect cDizDebug::ConsoleGetRect()
 {
-	guard(cDizDebug::ConsoleGetRect);
 	int scrw = g_game.m_screen_w * g_paint.m_scale;
 	int scrh = g_game.m_screen_h * g_paint.m_scale;
 	iRect rect;
@@ -395,12 +376,10 @@ iRect cDizDebug::ConsoleGetRect()
 	rect.y2 = m_renderh - (INFO_LINES+1)*R9_CHRH;
 	if(rect.y1>rect.y2) rect.y1=rect.y2;
 	return rect;
-	unguard();
 }
 
 void cDizDebug::ConsoleUpdate()
 {
-	guard(cDizDebug::ConsoleUpdate);
 	if(I9_GetKeyDown(I9K_GRAVE) || I9_GetKeyDown(I9K_F2)) // show-hide
 	{
 		m_console=!m_console;
@@ -418,12 +397,10 @@ void cDizDebug::ConsoleUpdate()
 	// clamp
 	if(m_con_pagetop>m_con_nextline-pageh) m_con_pagetop=m_con_nextline-pageh;
 	if(m_con_pagetop<0) m_con_pagetop=0;
-	unguard();
 }
 
 void cDizDebug::ConsoleDraw()
 {
-	guard(cDizDebug::ConsoleDraw);
 	fRect rect = ConsoleGetRect();
 	fRect oldclip = R9_GetClipping();
 	R9_SetClipping(rect);
@@ -443,12 +420,10 @@ void cDizDebug::ConsoleDraw()
 		y += (float)R9_CHRH;
 	}
 	R9_SetClipping(oldclip);
-	unguard();
 }
 
 void cDizDebug::ConsolePush( int ch, LPCWSTR msg )
 {
-	guard(cDizDebug::ConsolePush);
 	if(msg==NULL) return;
 	char* szline = &m_con_lines[m_con_nextline*CON_LINESIZE];
 	if(szline[1]==0) szline[0] = ch; // set line channel for first messages on a line
@@ -487,15 +462,12 @@ void cDizDebug::ConsolePush( int ch, LPCWSTR msg )
 		}
 	}
 	szline[l] = 0; // eol
-	unguard();
 }
 
 void cDizDebug::Con_LogCallback( int ch, LPCWSTR msg )
 {
-	guard(cDizDebug::Con_LogCallback);
 	if(g_dizdebug.m_con_lines==NULL) return; // not yet
 	g_dizdebug.ConsolePush( ch, msg );
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -503,7 +475,6 @@ void cDizDebug::Con_LogCallback( int ch, LPCWSTR msg )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 iRect cDizDebug::SlotGetRect()
 {
-	guard(cDizDebug::SlotGetRect);
 	int scrw = g_game.m_screen_w*g_paint.m_scale;
 	int scrh = g_game.m_screen_h*g_paint.m_scale;
 	iRect rect;
@@ -514,12 +485,10 @@ iRect cDizDebug::SlotGetRect()
 	if(rect.x1>rect.x2) rect.x1=rect.x2;
 	if(rect.y1>rect.y2) rect.y1=rect.y2;
 	return rect;
-	unguard();
 }
 
 void cDizDebug::SlotDraw()
 {
-	guard(cDizDebug::SlotDraw);
 	fRect rect = SlotGetRect();
 	fRect oldclip = R9_GetClipping();
 	R9_SetClipping(rect);
@@ -527,16 +496,13 @@ void cDizDebug::SlotDraw()
 	for(int i=0;i<SLOT_COUNT;i++)
 		R9_DrawText(fV2(rect.x1+R9_CHRW,rect.y1+i*R9_CHRH),m_slot[i],0xff0040a0);
 	R9_SetClipping(oldclip);
-	unguard();
 }
 
 void cDizDebug::SlotSet( int slot, char* text )
 {
-	guard(cDizDebug::SlotSet);
 	if(slot<0 || slot>=SLOT_COUNT) return;
 	strncpy(m_slot[slot],text?text:"",SLOT_SIZE);
 	m_slot[slot][SLOT_SIZE-1]=0;
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -544,7 +510,6 @@ void cDizDebug::SlotSet( int slot, char* text )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void cDizDebug::InputUpdate()
 {
-	guard(cDizDebug::InputUpdate);
 	if(!m_console) return;
 	if(I9_GetKeyDown(I9K_INSERT) && !m_input_open) 
 	{ 
@@ -662,12 +627,10 @@ void cDizDebug::InputUpdate()
 	}
 
 	
-	unguard();
 }
 
 void cDizDebug::InputDraw()
 {
-	guard(cDizDebug::InputDraw);
 	if(!m_input_open) return;
 	fRect rect;
 	rect.x1 = 0.0f;
@@ -683,12 +646,10 @@ void cDizDebug::InputDraw()
 	//if(t<400) R9_DrawLine(fV2(crtx,rect.y2),fV2(crtx+R9_CHRW,rect.y2));
 	//if(t<500) R9_DrawBar(fRect(crtx,rect.y1-1,crtx+R9_CHRW,rect.y2+1),0xff808080);
 	R9_DrawText(fV2(rect.x1,rect.y1),m_input_cmd,COLOR_INPUT);
-	unguard();
 }
 
 void cDizDebug::InputExecute()
 {
-	guard(cDizDebug::InputExecute);
 	if(m_input_cmd[0]==0) return; // empty
 	// history
 	memmove(m_input_history[1],m_input_history[0],(INPUT_HISTORY-1)*INPUT_SIZE);
@@ -717,12 +678,10 @@ void cDizDebug::InputExecute()
 	// clear cmd
 	m_input_cmd[0]=0;
 	m_input_crt=0;
-	unguard();
 }
 
 void cDizDebug::InputSkipWord( int dir )
 {
-	guard(cDizDebug::InputSkipWord);
 	int len = (int)strlen(m_input_cmd);
 	int cnt = 0;
 	while( (dir<0 && 0<m_input_crt) || (dir>0 && m_input_crt<len) )
@@ -738,7 +697,6 @@ void cDizDebug::InputSkipWord( int dir )
 		if(m_input_crt<0) m_input_crt=0;
 		if(m_input_crt>len) m_input_crt=len;
 	}
-	unguard();
 }
 
 int common(const char *s1, const char *s2, int insensitive)
@@ -764,7 +722,6 @@ int common(const char *s1, const char *s2, int insensitive)
 
 void cDizDebug::InputAutoComplete()
 {
-	guard(cDizDebug::InputAutoComplete);
 	int i;
 
 	// find word begining and ending
@@ -837,18 +794,15 @@ found:
 		}
 	}
 	m_input_complete = 0;
-	unguard();
 }
 
 
 void cDizDebug::ConsumeInput()
 {
-	guard(cDizDebug::ConsumeInput);
 	// wait until latent keys are consummed
 	while(	I9_GetKeyValue(I9K_ESCAPE) ||
 			I9_GetKeyValue(I9K_RETURN) )
 			I9_Update(0);
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

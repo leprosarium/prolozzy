@@ -87,10 +87,7 @@
     <ClInclude Include="Debug\D9Breakpoint.h" />
     <ClInclude Include="Debug\D9Debug.h" />
     <ClInclude Include="Debug\D9DH.h" />
-    <ClInclude Include="Debug\D9Guard.h" />
     <ClInclude Include="Debug\D9Log.h" />
-    <ClInclude Include="Debug\D9Memory.h" />
-    <ClInclude Include="Debug\D9Shutdown.h" />
     <ClInclude Include="Files\F9Archive.h" />
     <ClInclude Include="Files\F9ArchivePak.h" />
     <ClInclude Include="Files\F9ArchiveZip.h" />
@@ -134,10 +131,7 @@
     <ClCompile Include="Debug\D9Breakpoint.cpp" />
     <ClCompile Include="Debug\D9Debug.cpp" />
     <ClCompile Include="Debug\D9DH.cpp" />
-    <ClCompile Include="Debug\D9Guard.cpp" />
     <ClCompile Include="Debug\D9Log.cpp" />
-    <ClCompile Include="Debug\D9Memory.cpp" />
-    <ClCompile Include="Debug\D9Shutdown.cpp" />
     <ClCompile Include="Files\F9Archive.cpp" />
     <ClCompile Include="Files\F9ArchivePak.cpp" />
     <ClCompile Include="Files\F9ArchiveZip.cpp" />

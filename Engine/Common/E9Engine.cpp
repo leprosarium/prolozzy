@@ -28,17 +28,13 @@ void E9_OpenChannels( BOOL open )
 
 BOOL E9_Init()
 {
-	guard(E9_Init);
 	if(FAILED(CoInitialize(NULL))) { dlog(LOGERR, L"ENGINE: failed to initialize COM.\n"); return FALSE; }
 	return TRUE;
-	unguard();
 }
 
 void E9_Done()
 {
-	guard(E9_Done);
 	CoUninitialize();
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

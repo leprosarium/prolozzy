@@ -13,21 +13,16 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 cGUITile::cGUITile()
 {
-	guard(cGUITile::cGUITile)
 	SetInt(IV_IMGALIGN,0);
-	unguard()
 }
 
 
 cGUITile::~cGUITile()
 {
-	guard(cGUITile::~cGUITile)
-	unguard()
 }
 
 void cGUITile::Draw()
 {
-	guard(cGUITile::Draw)
 	RECT rc;
 	GetScrRect(rc);
 
@@ -98,7 +93,6 @@ void cGUITile::Draw()
 	// clipping off
 	R9_SetClipping(oldclip);
 
-	unguard()
 }
 
 
@@ -107,22 +101,17 @@ void cGUITile::Draw()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 cGUITileMap::cGUITileMap()
 {
-	guard(cGUITileMap::cGUITileMap)
 	m_mode = 0;
 	m_movex = 0;
 	m_movey = 0;
-	unguard()
 }
 
 cGUITileMap::~cGUITileMap()
 {
-	guard(cGUITileMap::~cGUITileMap)
-	unguard()
 }
 
 void cGUITileMap::Update()
 {
-	guard(cGUITileMap::Update)
 
 	int selx = GetInt(IV_GUITILEMAP_MAP+0);
 	int sely = GetInt(IV_GUITILEMAP_MAP+1);
@@ -245,12 +234,10 @@ void cGUITileMap::Update()
 	SetInt(IV_GUITILEMAP_MAP+2, selx+selw);
 	SetInt(IV_GUITILEMAP_MAP+3, sely+selh);
 
-	unguard()
 }
 
 void cGUITileMap::Draw()
 {
-	guard(cGUITileMap::Draw)
 
 	RECT rect;
 	GetScrRect(rect);
@@ -325,16 +312,13 @@ void cGUITileMap::Draw()
 		g_gui->SetTooltip(sz);
 	}
 
-	unguard()
 }
 
 int cGUITileMap::Snap( int x )
 { 
-	guard(cGUITileMap::Snap)
 	if(!GetInt(IV_GUITILEMAP_SNAP)) return x;
 	return (x/8)*8 + (x%8>=4)*8; // snap closer
 	// return x = (x/8)*8; // snap under
-	unguard()
 }
 
 

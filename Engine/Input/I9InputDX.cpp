@@ -11,22 +11,17 @@ int i9InputDX::m_tjoyskip = 0;
 
 i9InputDX::i9InputDX()
 {
-	guard(i9InputDX::i9InputDX);
 	m_di = NULL;
 	for(int i=0;i<I9_DEVICES;i++)
 		m_device[i] = NULL;
-	unguard();
 }
 
 i9InputDX::~i9InputDX()
 {
-	guard(i9InputDX::~i9InputDX);
-	unguard();
 }
 
 BOOL i9InputDX::Init( HWND hwnd, HINSTANCE hinstance )
 {
-	guard(i9InputDX::Init);
 	i9Input::Init( hwnd, hinstance );
 
 	// direct input
@@ -38,53 +33,45 @@ BOOL i9InputDX::Init( HWND hwnd, HINSTANCE hinstance )
 	SetAxeSpeed( I9_MOUSE_Z, 1 );
 
 	return TRUE;
-	unguard();
 }
 
 void i9InputDX::Done()
 {
-	guard(i9InputDX::Done);
 	i9Input::Done();
 	if(m_di!=NULL) { m_di->Release(); m_di = NULL; }
-	unguard();
 }
 
 void i9InputDX::Acquire()
 {
-	guard(i9InputDX::Acquire);
 	i9Input::Acquire();
 	for(int i=0;i<I9_DEVICES;i++)
 		if(DeviceIsPresent(i))
 			m_device[i]->Acquire();
-	unguard();
 }
 
 void i9InputDX::Unacquire()
 {
-	guard(i9InputDX::Unacquire);
 	i9Input::Unacquire();
 	for(int i=0;i<I9_DEVICES;i++)
 		if(DeviceIsPresent(i))
 			m_device[i]->Unacquire();
-	unguard();
 }
 
 BOOL i9InputDX::DeviceInit( int device )
 {
-	guard(i9InputDX::DeviceInit);
-	sassert(0<=device && device<I9_DEVICES);
+	assert(0<=device && device<I9_DEVICES);
 	BOOL ok = FALSE;
 	
 	if(device==I9_DEVICE_KEYBOARD)
 	{
 		if(m_device[device]) return TRUE;
-		m_device[device] = snew i9DeviceDXKeyboard();
+		m_device[device] = new i9DeviceDXKeyboard();
 		ok = m_device[device]->Init(0, &GUID_SysKeyboard);
 		if(!ok)
 		{
 			dlog(LOGINP, L"Keyboard failed.\n");
 			m_device[device]->Done();
-			sdelete(m_device[device]);
+			delete m_device[device];
 			m_device[device]=NULL;
 			return FALSE;
 		}
@@ -95,13 +82,13 @@ BOOL i9InputDX::DeviceInit( int device )
 	if(device==I9_DEVICE_MOUSE)
 	{
 		if(m_device[device]) return TRUE;
-		m_device[device] = snew i9DeviceDXMouse();
+		m_device[device] = new i9DeviceDXMouse();
 		ok = m_device[device]->Init(0, &GUID_SysMouse);
 		if(!ok)
 		{
 			dlog(LOGINP, L"Mouse failed.\n");
 			m_device[device]->Done();
-			sdelete(m_device[device]);
+			delete m_device[device];
 			m_device[device]=NULL;
 			return FALSE;
 		}
@@ -132,117 +119,97 @@ BOOL i9InputDX::DeviceInit( int device )
 	}
 
 	return TRUE;
-	unguard();
 }
 
 void i9InputDX::DeviceDone( int device )
 {
-	guard(i9InputDX::DeviceDone);
-	sassert(0<=device && device<I9_DEVICES);
+	assert(0<=device && device<I9_DEVICES);
 	if(m_device[device]==NULL) return;
 	m_device[device]->Done();
-	sdelete(m_device[device]);
+	delete m_device[device];
 	m_device[device]=NULL;
-	unguard();
 }
 
 BOOL i9InputDX::DeviceIsPresent( int device )
 {
-	guard(i9InputDX::DeviceIsPresent);
-	sassert(0<=device && device<I9_DEVICES);
+	assert(0<=device && device<I9_DEVICES);
 	return m_device[device]!=NULL;
-	unguard();
 }
 
 void i9InputDX::DeviceUpdate( int device )
 {
-	guard(i9InputDX::DeviceUpdate);
-	sassert(0<=device && device<I9_DEVICES);
+	assert(0<=device && device<I9_DEVICES);
 	if(m_device[device]==NULL) return;
 	m_device[device]->Update();
-	unguard();
 }
 
 void i9InputDX::DeviceClear( int device )
 {
-	guard(i9InputDX::DeviceClear);
-	sassert(0<=device && device<I9_DEVICES);
+	assert(0<=device && device<I9_DEVICES);
 	if(m_device[device]==NULL) return;
 	m_device[device]->Clear();
-	unguard();
 }
 
 BOOL i9InputDX::DeviceFFInit( int device )
 {
-	guard(i9InputDX::DeviceFFInit);
-	sassert(0<=device && device<I9_DEVICES);
+	assert(0<=device && device<I9_DEVICES);
 	if(m_device[device]==NULL) return FALSE;
-	sassert(m_device[device]->m_didevice);
+	assert(m_device[device]->m_didevice);
 	if(m_device[device]->m_ff) return TRUE;
 
-	m_device[device]->m_ff = snew i9FFDX();
+	m_device[device]->m_ff = new i9FFDX();
 	BOOL ok = m_device[device]->m_ff->Init(m_device[device]->m_didevice, -1); // default type
 	if(!ok)
 	{
-		sdelete(m_device[device]->m_ff);
+		delete m_device[device]->m_ff;
 		m_device[device]->m_ff = NULL;
 		return FALSE;
 	}
 
 	return TRUE;
-	unguard();
 }
 
 void i9InputDX::DeviceFFSet( int device, int mag, int per )
 {
-	guard(i9InputDX::DeviceFFSet);
-	sassert(0<=device && device<I9_DEVICES);
+	assert(0<=device && device<I9_DEVICES);
 	if(m_device[device]==NULL) return;
 	if(m_device[device]->m_ff==NULL) return;
 	m_device[device]->m_ff->Set(mag,per);
-	unguard();
 }
 
 void i9InputDX::DeviceFFPlay( int device )
 {
-	guard(i9InputDX::DeviceFFPlay);
-	sassert(0<=device && device<I9_DEVICES);
+	assert(0<=device && device<I9_DEVICES);
 	if(m_device[device]==NULL) return;
 	if(m_device[device]->m_ff==NULL) return;
 	m_device[device]->m_ff->Play();
-	unguard();
 }
 
 void i9InputDX::DeviceFFStop( int device )
 {
-	guard(i9InputDX::DeviceFFStop);
-	sassert(0<=device && device<I9_DEVICES);
+	assert(0<=device && device<I9_DEVICES);
 	if(m_device[device]==NULL) return;
 	if(m_device[device]->m_ff==NULL) return;
 	m_device[device]->m_ff->Stop();
-	unguard();
 }
 
 BOOL i9InputDX::DeviceFFIsPlaying( int device )
 {
-	guard(i9InputDX::DeviceFFIsPlaying);
-	sassert(0<=device && device<I9_DEVICES);
+	assert(0<=device && device<I9_DEVICES);
 	if(m_device[device]==NULL) return FALSE;
 	if(m_device[device]->m_ff==NULL) return FALSE;
 	return m_device[device]->m_ff->IsPlaying();
-	unguard();
 }
 
 BOOL CALLBACK i9InputDX::EnumJoysticksCallback( const DIDEVICEINSTANCE* didevicei, void* user )
 {
-	guard(i9InputDX::EnumJoysticksCallback);
 	i9InputDX* _this = (i9InputDX*)user;
 	dlog(LOGINP, L"EnumJoystick: %S\n", didevicei->tszProductName);
-	i9DeviceDXJoystick* pdevice = snew i9DeviceDXJoystick();
+	i9DeviceDXJoystick* pdevice = new i9DeviceDXJoystick();
 	if( !pdevice->Init( m_tjoyidx, &didevicei->guidInstance ) )
 	{
 		pdevice->Done();
-		sdelete(pdevice);
+		delete pdevice;
 		return DIENUM_CONTINUE;
 	}
 
@@ -253,15 +220,13 @@ BOOL CALLBACK i9InputDX::EnumJoysticksCallback( const DIDEVICEINSTANCE* didevice
 	}
 
 	pdevice->Done();
-	sdelete(pdevice);
+	delete pdevice;
 	m_tjoyskip++;
 	return DIENUM_CONTINUE;
-	unguard();
 }
 
 const char* i9InputDX::ErrorDesc( int err )
 {
-	guard(i9InputDX::ErrorDesc);
 	switch( err )
 	{
 		case DIERR_BETADIRECTINPUTVERSION:		return "DIERR_BETADIRECTINPUTVERSION";
@@ -278,7 +243,6 @@ const char* i9InputDX::ErrorDesc( int err )
 		case E_HANDLE:							return "E_HANDLE";
 	}
 	return "DIERR_UNKNOWN";
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

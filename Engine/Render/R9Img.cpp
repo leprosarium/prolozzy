@@ -31,64 +31,55 @@ r9Img::r9Img()
 
 BOOL R9_ImgCreate( r9Img* img, BOOL clear )
 {
-	guard(R9_ImgCreate)
 	if(img==NULL) return FALSE;
 	if(img->m_width==0 || img->m_height==0 || img->m_pf==R9_PF_UNKNOWN) return FALSE;
 	img->m_size	= img->m_width * img->m_height * R9_PFSpp(img->m_pf);
-	img->m_data	= (byte*)smalloc(img->m_size);
+	img->m_data	= (byte*)malloc(img->m_size);
 	if(clear) memset(img->m_data,0,img->m_size);
 	return TRUE;
-	unguard()
 }
 
 void R9_ImgDestroy( r9Img* img )
 { 
-	guard(R9_ImgDestroy)
 	if(img==NULL) return;
-	if(img->m_data) sfree(img->m_data); 
+	if(img->m_data) free(img->m_data); 
 	img->m_width	= 0;
 	img->m_height	= 0;
 	img->m_pf		= R9_PF_UNKNOWN;
 	img->m_size		= 0;
 	img->m_data		= NULL;	
-	unguard()
 }
 
 BOOL R9_ImgDuplicate( r9Img* src, r9Img* dst )
 {
-	guard(R9_ImgDuplicate);
 	if(!src || !R9_ImgIsValid(src)) return FALSE;
 	if(!dst || R9_ImgIsValid(dst)) return FALSE;
 	dst->m_width = src->m_width;
 	dst->m_height = src->m_height;
 	dst->m_pf = src->m_pf;
 	dst->m_size = src->m_size;
-	dst->m_data = (byte*)smalloc(dst->m_size);
+	dst->m_data = (byte*)malloc(dst->m_size);
 	memcpy(dst->m_data,src->m_data,dst->m_size);
 	return TRUE;
-	unguard();
 }
 
 BOOL R9_ImgFlipV( r9Img* img )
 {
-	guard(R9_ImgFlipV)
 	if(!img || !R9_ImgIsValid(img)) return FALSE;
 	int linesize = R9_ImgLineSize(img);
-	byte* temp = (byte*)smalloc(linesize);
+	byte* temp = (byte*)malloc(linesize);
 	for(int i=0;i<img->m_height/2;i++)
 	{
 		memcpy( temp, img->m_data + i*linesize, linesize );
 		memcpy( img->m_data + i*linesize, img->m_data + (img->m_height-1-i)*linesize, linesize );
 		memcpy( img->m_data + (img->m_height-1-i)*linesize, temp, linesize );
 	}
-	sfree(temp);
+	free(temp);
 	return TRUE;
-	unguard()
 }
 
 BOOL R9_ImgFlipRGB( r9Img* img )
 {
-	guard(R9_ImgFlipRGB)
 	if(!img || !R9_ImgIsValid(img)) return FALSE;
 	int spp = R9_PFSpp(img->m_pf);
 	if( spp!=3 && spp!=4 ) return FALSE;
@@ -99,12 +90,10 @@ BOOL R9_ImgFlipRGB( r9Img* img )
 		img->m_data[i+2] = t;
 	}
 	return TRUE;
-	unguard()
 }
 
 BOOL R9_ImgScale( r9Img* src, r9Img* dst )
 {
-	guard(R9_ImgScale)
 	if(!src || !R9_ImgIsValid(src)) return FALSE;
 	if(!dst || R9_ImgIsValid(dst)) return FALSE; // dst must not be valid (only width, height are needed)
 
@@ -299,12 +288,10 @@ BOOL R9_ImgScale( r9Img* src, r9Img* dst )
 	}
 
 	return TRUE;
-	unguard();
 }
 
 BOOL R9_ImgScale( r9Img* img, int w, int h )
 {
-	guard(R9_ImgScale)
 	if(!img || !R9_ImgIsValid(img)) return FALSE;
 	r9Img imgnew;
 	imgnew.m_width = w;
@@ -313,12 +300,10 @@ BOOL R9_ImgScale( r9Img* img, int w, int h )
 	R9_ImgDestroy(img);
 	*img = imgnew;
 	return TRUE;
-	unguard()
 }
 
 BOOL R9_ImgCrop( r9Img* src, int x, int y, r9Img* dst )
 {
-	guard(R9_ImgCrop)
 	if(!src || !R9_ImgIsValid(src)) return FALSE;
 	if(!dst || R9_ImgIsValid(dst)) return FALSE; // dst must not be valid (only width, height are needed)
 
@@ -343,12 +328,10 @@ BOOL R9_ImgCrop( r9Img* src, int x, int y, r9Img* dst )
 	}
 
 	return TRUE;
-	unguard()
 }
 
 BOOL R9_ImgCrop( r9Img* img, int x, int y, int w, int h )
 {
-	guard(R9_ImgCrop)
 	if(!img || !R9_ImgIsValid(img)) return FALSE;
 	r9Img imgnew;
 	imgnew.m_width = w;
@@ -357,12 +340,10 @@ BOOL R9_ImgCrop( r9Img* img, int x, int y, int w, int h )
 	R9_ImgDestroy(img);
 	*img = imgnew;
 	return TRUE;
-	unguard()
 }
 
 BOOL R9_ImgConvertPF( r9Img* src, r9Img* dst, int pf )
 {
-	guard(R9_ImgConvertPF);
 	if(!src || !R9_ImgIsValid(src)) return FALSE;
 	if(!dst || R9_ImgIsValid(dst)) return FALSE;
 	dst->m_width = src->m_width;
@@ -378,12 +359,10 @@ BOOL R9_ImgConvertPF( r9Img* src, r9Img* dst, int pf )
 		}
 	}
 	return TRUE;
-	unguard();
 }
 
 BOOL R9_ImgCopy2Mem( r9Img* img, void* buffer, int pitch )
 {
-	guard(R9_ImgCopy2Mem)
 	if(!img || !R9_ImgIsValid(img)) return FALSE;
 	byte* mdata = (byte*)buffer;
 	byte* idata = img->m_data;
@@ -395,12 +374,10 @@ BOOL R9_ImgCopy2Mem( r9Img* img, void* buffer, int pitch )
 		idata += lnsize;
 	}
 	return TRUE;
-	unguard()
 }
 
 BOOL R9_ImgCopy( r9Img* src, r9Img* dst, int x, int y )
 {
-	guard(R9_ImgCopy2Mem)
 	if(!src || !R9_ImgIsValid(src)) return FALSE;
 	if(!dst || !R9_ImgIsValid(dst)) return FALSE;
 	if(R9_PFSpp(src->m_pf)!=R9_PFSpp(src->m_pf)) return FALSE;
@@ -408,12 +385,10 @@ BOOL R9_ImgCopy( r9Img* src, r9Img* dst, int x, int y )
 	int pitch = dst->m_width * spp;
 	byte* buffer = dst->m_data + y*pitch + x*spp;
 	return R9_ImgCopy2Mem( src, buffer, pitch );
-	unguard()
 }
 
 BOOL R9_ImgBitBlt( r9Img* src, int sx, int sy, int sw, int sh, r9Img* dst, int dx, int dy )
 {
-	guard(R9_ImgBitBlt)
 	if(!src || !R9_ImgIsValid(src)) return FALSE;
 	if(!dst || !R9_ImgIsValid(dst)) return FALSE;
 	if(R9_PFSpp(src->m_pf)!=R9_PFSpp(src->m_pf)) return FALSE;
@@ -435,13 +410,11 @@ BOOL R9_ImgBitBlt( r9Img* src, int sx, int sy, int sw, int sh, r9Img* dst, int d
 	}
 
 	return TRUE;
-	unguard()
 }
 
 
 BOOL R9_ImgBitBltSafe( r9Img* src, int sx, int sy, int sw, int sh, r9Img* dst, int dx, int dy )
 {
-	guard(R9_ImgBitBltSafe)
 	if(!src || !R9_ImgIsValid(src)) return FALSE;
 	if(!dst || !R9_ImgIsValid(dst)) return FALSE;
 	for(int i=0; i<sh; i++)
@@ -453,12 +426,10 @@ BOOL R9_ImgBitBltSafe( r9Img* src, int sx, int sy, int sw, int sh, r9Img* dst, i
 		}
 	}
 	return TRUE;
-	unguard()
 }
 
 BOOL R9_ImgWriteBuffer( r9Img* img, void* buffer, r9PFInfo* pfinfo, int pitch )
 {
-	guard(R9_ImgWriteBuffer);
 	if(!img || !R9_ImgIsValid(img)) return FALSE;
 	byte* idata = img->m_data;
 	r9PFInfo* pfinfoimg = &r9_pfinfo[img->m_pf];
@@ -475,12 +446,10 @@ BOOL R9_ImgWriteBuffer( r9Img* img, void* buffer, r9PFInfo* pfinfo, int pitch )
 		}
 	}
 	return TRUE;	
-	unguard();
 }
 
 BOOL R9_ImgReadBuffer( r9Img* img, void* buffer, r9PFInfo* pfinfo, int pitch )
 {
-	guard(img_readbuffer);
 	if(!img || !R9_ImgIsValid(img)) return FALSE;
 	byte* idata = img->m_data;
 	r9PFInfo* pfinfoimg = &r9_pfinfo[img->m_pf];
@@ -497,7 +466,6 @@ BOOL R9_ImgReadBuffer( r9Img* img, void* buffer, r9PFInfo* pfinfo, int pitch )
 		}
 	}
 	return TRUE;	
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

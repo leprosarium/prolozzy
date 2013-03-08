@@ -42,7 +42,6 @@ const char* GetLogFile()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 cDizCfg::cDizCfg()
 {
-	guard(cDizCfg::cDizCfg)
 
 	m_scale					= 0;
 
@@ -77,29 +76,24 @@ cDizCfg::cDizCfg()
 
 	m_info					= NULL;
 
-	unguard()
 }
 
 void cDizCfg::Init()
 {
-	guard(cDizCfg::Init)
 	Load(); Save();
 	// read info file
 	F9FILE f = F9_FileOpen("Data\\dizzy.inf");
 	if(!f) { dlog(LOGAPP, L"dizzy.inf not found\n"); return; }
 	int size = F9_FileSize(f);
 	if(size==0) { F9_FileClose(f); return; }
-	m_info = (char*)smalloc(size+1); m_info[size]=0;
+	m_info = (char*)malloc(size+1); m_info[size]=0;
 	F9_FileRead(m_info,size,f);
 	F9_FileClose(f);
-	unguard()
 }
 
 void cDizCfg::Done()
 {
-	guard(cDizCfg::Done)
-	if(m_info) sfree(m_info);
-	unguard()
+	if(m_info) free(m_info);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -107,7 +101,6 @@ void cDizCfg::Done()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 bool cDizCfg::Load()
 {
-	guard(cDizCfg::Load)
 	char inifile[256];
 
 	// USER
@@ -148,12 +141,10 @@ bool cDizCfg::Load()
 	ini_getint( inifile, "INPUT",	"joystick_ay",	&m_joy[5]				);
 
 	return true;
-	unguard()
 }
 
 bool cDizCfg::Save()
 {
-	guard(cDizCfg::Save)
 	char inifile[256];
 
 	// USER
@@ -194,12 +185,10 @@ bool cDizCfg::Save()
 	ini_setint( inifile, "INPUT",	"joystick_ay",	m_joy[5]				);
 
 	return true;
-	unguard()
 }
 
 void cDizCfg::LoadRenderCfg( r9Cfg& cfg, int& api )
 {
-	guard(cDizCfg::LoadRenderCfg);
 	char inifile[256];
 	strcpy( inifile, file_getfullpath(GetIniFile()) );
 
@@ -219,12 +208,10 @@ void cDizCfg::LoadRenderCfg( r9Cfg& cfg, int& api )
 	ini_getint( inifile, "VIDEO", "refresh",	&cfg.m_refresh );
 	ini_getint( inifile, "VIDEO", "vsync",		&cfg.m_vsync );
 
-	unguard();
 }
 
 const char* cDizCfg::GetInfoValue( const char* name )
 {
-	guard(cDizCfg::GetInfoValue);
 	int p;
 	const char* sz;
 	static char szret[128];
@@ -242,7 +229,6 @@ const char* cDizCfg::GetInfoValue( const char* name )
 	parser_trimbackspace(szret,p);
 	
 	return szret;
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

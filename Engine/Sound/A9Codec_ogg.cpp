@@ -26,38 +26,29 @@ long   ogg_tell		(void *datasource) { return F9_FileTell((F9FILE)datasource); }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 a9Codec_ogg::a9Codec_ogg()
 {
-	guard(a9Codec_ogg::a9Codec_ogg);
 	m_type = A9_CODEC_OGG;
 	m_file = NULL;
 	m_pcmbuf = NULL;
 	m_pcmpos = 0;
 	m_pcmcnt = 0;
-	unguard();
 }
 
 a9Codec_ogg::~a9Codec_ogg()
 {
-	guard(a9Codec_ogg::~a9Codec_ogg);
-	unguard();
 }
 
 int a9Codec_ogg::Init()
 {
-	guard(a9Codec_ogg::Init);
 	return A9_OK;
-	unguard();
 }
 
 int a9Codec_ogg::Done()
 {
-	guard(a9Codec_ogg::Done);
 	return A9_OK;
-	unguard();
 }
 
 int	a9Codec_ogg::Open( const char* name )
 {
-	guard(a9Codec_ogg::Open);
 	if(m_status!=A9_CODEC_CLOSED) return A9_FAIL;
 
 	// set user callbacks
@@ -67,7 +58,7 @@ int	a9Codec_ogg::Open( const char* name )
 
 	if(ov_open_callbacks(m_file, &m_oggfile, NULL, 0, mycallbacks) < 0) { F9_FileClose(m_file); return A9_UNSUPORTED; }
 
-	m_pcmbuf = (byte*)smalloc(PCMSIZE);
+	m_pcmbuf = (byte*)malloc(PCMSIZE);
 	m_pcmpos = 0;
 	m_pcmcnt = 0;
 
@@ -81,12 +72,10 @@ int	a9Codec_ogg::Open( const char* name )
 
 	m_status = A9_CODEC_OPENED;
 	return A9_OK;
-	unguard();
 }
 
 int	a9Codec_ogg::BeginRender( int pos, int loop )
 {
-	guard(a9Codec_ogg::BeginRender);
 	if(m_status!=A9_CODEC_OPENED) return A9_FAIL;
 	m_loop = loop;
 	m_pcmpos = 0;
@@ -96,12 +85,10 @@ int	a9Codec_ogg::BeginRender( int pos, int loop )
 
 	m_status = A9_CODEC_RENDERING;
 	return A9_OK;
-	unguard();
 }
 
 int	a9Codec_ogg::Render( byte* buffer, int size )
 {
-	guard(a9Codec_ogg::Render);
 	if(m_status!=A9_CODEC_RENDERING) return A9_FAIL;
 	if(size<=0) return A9_FAIL;
 	int pos=0; // current position in buffer (in bytes)
@@ -150,30 +137,25 @@ int	a9Codec_ogg::Render( byte* buffer, int size )
 			if(pos==memsize) return size; // fix!
 		}
 	}
-	unguard();
 }
 
 int	a9Codec_ogg::EndRender()
 {
-	guard(a9Codec_ogg::EndRender);
 	if(m_status!=A9_CODEC_RENDERING) return A9_FAIL;
 	m_pcmpos = 0;
 	m_pcmcnt = 0;
 	m_status = A9_CODEC_OPENED;
 	return A9_OK;
-	unguard();
 }
 
 int	a9Codec_ogg::Close()
 {
-	guard(a9Codec_ogg::Close);
 	if(m_status!=A9_CODEC_OPENED) return A9_FAIL;
-	if(m_pcmbuf) sfree(m_pcmbuf);
+	if(m_pcmbuf) free(m_pcmbuf);
 	ov_clear(&m_oggfile); // closes m_file too
 	m_file = NULL;
 	m_status = A9_CODEC_CLOSED;
 	return A9_OK;
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

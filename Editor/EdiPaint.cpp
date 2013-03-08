@@ -12,33 +12,25 @@ cEdiPaint g_paint;
 
 cEdiPaint::cEdiPaint()
 {
-	guard(cEdiPaint::cEdiPaint)
 	m_tilepath[0] = 0;
 	m_shadersel = R9_BLEND_ALPHAREP;
 	m_brushrect = 0;
-	unguard()
 }
 
 cEdiPaint::~cEdiPaint()
 {
-	guard(cEdiPaint::~cEdiPaint)
 	// nothing - use Done
-	unguard()
 }
 
 BOOL cEdiPaint::Init()
 {
-	guard(cEdiPaint::Init)
 	return TRUE;
-	unguard()
 }
 
 void cEdiPaint::Done()
 {
-	guard(cEdiPaint::Done)
 	TileUnload();
 	index.clear();
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -50,7 +42,6 @@ int		gstile_duplicates;		// status report on id duplicates
 
 BOOL cEdiPaint::TileLoadFile( const char* filepath )
 {
-	guard(cEdiPaint::TileLoadFile)
 	
 	// check file type (not counted if unaccepted); only TGA and PNG files accepted
 	const char* ext = file_path2ext(filepath); if(!ext) return FALSE;
@@ -95,7 +86,7 @@ BOOL cEdiPaint::TileLoadFile( const char* filepath )
 
 	// create new tile
 	idx = TileAdd(id);
-	cTile* tile = TileGet(idx); sassert(tile!=NULL);
+	cTile* tile = TileGet(idx); assert(tile!=NULL);
 	tile->m_tex = R9_TextureCreate(&img);
 	if(tile->m_tex==NULL)
 	{
@@ -118,21 +109,17 @@ BOOL cEdiPaint::TileLoadFile( const char* filepath )
 	dlog(LOGAPP, L"  %S [%i]\n", filepath, frames );
 	
 	return TRUE;
-	unguard()
 }
 
 void FFCallback_Tile( const char* filepath, BOOL dir )
 {
-	guard(FFCallback_Tile)
 	if(dir) return;
 	int n = (int)strlen(g_paint.m_tilepath);
 	BOOL ret = g_paint.TileLoadFile(filepath+n);
-	unguard()
 }
 
 BOOL cEdiPaint::TileLoad( const char* path )
 {
-	guard(cEdiPaint::TileLoad)
 	if(!path || !path[0]) return FALSE; // invalid path
 	strcpy(m_tilepath,path);
 	int szlen = (int)strlen(m_tilepath);
@@ -172,39 +159,35 @@ BOOL cEdiPaint::TileLoad( const char* path )
 	index.clear();
 	for(i=0;i<TileCount();i++)
 	{
-		cTile* tile = g_paint.TileGet(i); sassert(tile!=NULL);
+		cTile* tile = g_paint.TileGet(i); assert(tile!=NULL);
 		index.insert(Hash::value_type(tile->m_id, i));
 	}
 
 	return TRUE;
-	unguard()
 }
 
 void cEdiPaint::TileUnload()
 {
-	guard(cEdiPaint::TileUnload)
 	// done
 	index.clear();
 	for(int i=0; i<m_tile.size();i++) 
 	{
 		R9_TextureDestroy(m_tile[i]->m_tex);
-		if(m_tile[i]->m_name) sfree(m_tile[i]->m_name);
-		sdelete(m_tile[i]);
+		if(m_tile[i]->m_name) free(m_tile[i]->m_name);
+		delete m_tile[i];
 	}
 	m_tile.clear();
-	unguard()
 }
 
 int cEdiPaint::TileAdd( int id )
 {
-	guard(cEdiPaint::TileAdd)
 	if(id<0) return -1; // negative ids not accepted
 
 	// check duplicate id
 	if(TileFind(id)!=-1) return -1; // duplicate id
 	
 	// add new tile to list
-	cTile* tile = snew cTile();
+	cTile* tile = new cTile();
 	tile->m_id = id;
 	int idx = m_tile.size();
 	m_tile.push_back(tile);
@@ -212,18 +195,15 @@ int cEdiPaint::TileAdd( int id )
 	// add tracker to hash
 	index.insert(Hash::value_type(tile->m_id, idx));
 	return idx;
-	unguard()
 }
 
 void cEdiPaint::TileDel( int idx )
 {
-	guard(cEdiPaint::TileDel)
 	if(cTile* tile = TileGet(idx)) {
 		index.erase(tile->m_id);
-		sdelete(tile);
+		delete tile;
 		m_tile.erase(m_tile.begin() + idx);
 	}
-	unguard()
 }
 
 
@@ -232,7 +212,6 @@ void cEdiPaint::TileDel( int idx )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiPaint::DrawTile( int idx, int x, int y, iRect& map, dword color, int flip, int frame, int blend, float scale )
 {
-	guard(cEdiPaint::DrawTile)
 	cTile* tile = TileGet(idx); 
 	if(tile==NULL) return;
 	
@@ -252,12 +231,10 @@ void cEdiPaint::DrawTile( int idx, int x, int y, iRect& map, dword color, int fl
 	R9_SetState(R9_STATE_BLEND,blend);
 	R9_DrawSprite( pos, src, tile->m_tex, color, flip, (float)scale );
 
-	unguard()
 }
 	
 void cEdiPaint::DrawTile( int idx, int x, int y, dword color, int flip, int frame, int blend, float scale )
 {
-	guard(cEdiPaint::DrawTile)
 	cTile* tile = TileGet(idx); 
 	if(tile==NULL) return;
 
@@ -277,12 +254,10 @@ void cEdiPaint::DrawTile( int idx, int x, int y, dword color, int flip, int fram
 	R9_SetState(R9_STATE_BLEND,blend);
 	R9_DrawSprite( pos, src, tile->m_tex, color, flip, scale );
 
-	unguard()
 }
 
 void cEdiPaint::DrawBrushAt( tBrush* brush, int x, int y, float zoom, BOOL anim )
 {
-	guard(cEdiPaint::DrawBrushAt)
 	if(brush==NULL) return;
 	int idx = TileFind(brush->m_data[BRUSH_TILE]);
 	// if(idx==-1) return;
@@ -346,7 +321,6 @@ void cEdiPaint::DrawBrushAt( tBrush* brush, int x, int y, float zoom, BOOL anim 
 	}
 
 	R9_SetClipping(oldclip);
-	unguard()
 }
 
 void cEdiPaint::DrawBrushFlashAt( tBrush* brush, int x, int y, float zoom, BOOL anim )
@@ -363,14 +337,12 @@ void cEdiPaint::DrawBrushFlashAt( tBrush* brush, int x, int y, float zoom, BOOL 
 
 dword cEdiPaint::GetFlashingColorBW()
 {
-	guard(cEdiPaint::GetFlashingColorBW)
 	int period = 500;
 	float pow = (float)((sys_gettickcount())%period) / period;
 	if(pow>0.5f) pow = 1.0f-pow;
 	dword color = (dword)(pow * 255);
 	color = 0xa0000000 | (color<<16) | (color<<8) | (color);
 	return color;
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

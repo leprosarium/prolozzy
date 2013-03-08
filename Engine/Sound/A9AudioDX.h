@@ -54,7 +54,7 @@ virtual	void		Update();
 		A9BUFFER		BufferCreate( a9Info* info, int flags = A9_FLAG_VOLUME );
 		byte*			BufferLock( A9BUFFER buffer );
 		void			BufferUnlock( A9BUFFER buffer );
-inline	BOOL			BufferIsLocked( A9BUFFER buffer )								{ guardfast(BufferIsLocked); sassert(buffer); return ((a9BufferDX*)buffer)->m_lockdata!=NULL; unguardfast(); }
+inline	BOOL			BufferIsLocked( A9BUFFER buffer )								{ assert(buffer); return ((a9BufferDX*)buffer)->m_lockdata!=NULL; }
 virtual	A9BUFFER		BufferCreate( const char* filename, int flags = A9_FLAG_VOLUME );
 virtual	A9BUFFER		BufferCreateFromMemory( a9Info* info, void* audiodata, int flags = A9_FLAG_VOLUME );
 virtual	void			BufferDestroy( A9BUFFER buffer );

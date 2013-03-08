@@ -8,18 +8,14 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 f9FileZip::f9FileZip()
 {
-	guard(f9FileZip::f9FileZip);
 	m_type			= F9_FILE_ZIP;
 	m_arcname		= NULL;
 	m_offset		= -1;
 	memset( &m_zips, 0, sizeof(z_stream) );
-	unguard();
 }
 
 f9FileZip::~f9FileZip()
 {
-	guard(f9FileZip::~f9FileZip);
-	unguard();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -30,7 +26,6 @@ f9FileZip::~f9FileZip()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL f9FileZip::Open( const char* name, int mode )
 {
-	guard(f9FileZip::Open);
 	if(IsOpen()) Close();
 	if(name==NULL) return F9_FAIL;
 	if(!F9_ISREADONLY(mode)) return F9_FAIL; // readonly
@@ -89,12 +84,10 @@ BOOL f9FileZip::Open( const char* name, int mode )
 	
 	m_open = TRUE;
 	return F9_OK;
-	unguard();
 }
 
 int f9FileZip::Close()
 {
-	guard(f9FileZip::Close);
 	if(!IsOpen()) return F9_FAIL;
 	InitZlib(ZLIB_END);
 	m_arcfile.Close();
@@ -104,12 +97,10 @@ int f9FileZip::Close()
 
 	m_open = FALSE;
 	return F9_OK;
-	unguard();
 }
 
 int f9FileZip::Seek( int64 offset, int origin )
 {
-	guard(f9FileZip::Seek);
 	if(!IsOpen()) return F9_FAIL;
 
 	int64 off = offset;
@@ -140,26 +131,20 @@ int f9FileZip::Seek( int64 offset, int origin )
 		return Seek( oldpos + off, F9_SEEK_SET );
 	}
 	return F9_OK;
-	unguard();
 }
 
 int64 f9FileZip::Tell()
 {
-	guard(f9FileZip::Tell);
 	return m_pos;
-	unguard();
 }
 
 int64 f9FileZip::Size()
 {
-	guard(f9FileZip::Size);
 	return m_size;
-	unguard();
 }
 
 int64 f9FileZip::Read( void* data, int64 size )
 {
-	guard(f9FileZip::Read);
 	if(!IsOpen() || data==NULL) return 0;
 
 	BOOL  error			= FALSE;
@@ -212,12 +197,10 @@ int64 f9FileZip::Read( void* data, int64 size )
 	int64 total_read = (m_zips.total_out > read_before)?(m_zips.total_out - read_before):0;
 	m_pos += total_read;
 	return total_read;
-	unguard();
 }
 
 BOOL f9FileZip::InitZlib( int mode )
 {
-	guard(f9FileZip::InitZlib);
 	if(mode==ZLIB_INIT)
 	{
 		memset( &m_zips, 0, sizeof(z_stream) );
@@ -231,12 +214,10 @@ BOOL f9FileZip::InitZlib( int mode )
 		return TRUE;
 	}
 	return FALSE;
-	unguard();
 }  	
 
 void f9FileZip::Reset()
 {
-	guard(f9FileZip::Reset);
 	if(!IsOpen()) return;
 
 	InitZlib(ZLIB_END);
@@ -248,7 +229,6 @@ void f9FileZip::Reset()
 					m_localheader.sizename + 
 					m_localheader.sizextra, F9_SEEK_SET);
 	m_pos = 0;
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

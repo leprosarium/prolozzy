@@ -12,20 +12,15 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 cGUIColorPick::cGUIColorPick()
 {
-	guard(cGUIColorPick::cGUIColorPick)
-	unguard()
 }
 
 cGUIColorPick::~cGUIColorPick()
 {
-	guard(cGUIColorPick::~cGUIColorPick)
 	SetTxt(IV_TXT,NULL);
-	unguard()
 }
 
 void cGUIColorPick::Update()
 {
-	guard(cGUIColorPick::Update)
 	RECT rc;
 	GetScrRect(rc);
 	m_mousein = INRECT( g_gui->m_mousex, g_gui->m_mousey, rc);
@@ -58,14 +53,11 @@ void cGUIColorPick::Update()
 		}
 	}
 	
-	unguard()
 }
 
 void cGUIColorPick::Draw()
 {
-	guard(cGUIColorPick::Draw)
 	return; // don't draw anything
-	unguard()
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -74,7 +66,6 @@ void cGUIColorPick::Draw()
 
 void cGUIColorPick::SetTxt( int idx, char* text )
 {
-	guard(cGUIColorPick::SetTxt)
 	if(idx==IV_TXT)
 	{
 		char* txt = m_var[idx].m_str;
@@ -85,7 +76,6 @@ void cGUIColorPick::SetTxt( int idx, char* text )
 		return;
 	}
 	cGUIItem::SetTxt(idx,text);
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

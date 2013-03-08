@@ -27,17 +27,14 @@ e9AppCallback e9App::m_callback[E9_APP_CALLBACKS] = { NULL, NULL, NULL, NULL, NU
 
 e9AppCallback e9App::SetCallback( int idx, e9AppCallback callback )
 {
-	guard(e9App::SetCallback);
-	sassert(0<=idx && idx<E9_APP_CALLBACKS);
+	assert(0<=idx && idx<E9_APP_CALLBACKS);
 	e9AppCallback prev = m_callback[idx];
 	m_callback[idx] = callback;
 	return prev;
-	unguard();
 }
 
 BOOL e9App::Init( HINSTANCE hinstance, const char* cmdline )
 {
-	guard(e9App::Init);
 	// init
 	m_hinstance	= hinstance;
 	m_cmdline = cmdline;
@@ -66,19 +63,15 @@ BOOL e9App::Init( HINSTANCE hinstance, const char* cmdline )
 	SetFocus( m_hwnd );
 
 	return TRUE;
-	unguard();
 }
 
 void e9App::Done()
 {
-	guard(e9App::Done);
 	if(m_callback[E9_APP_ONDONE]) m_callback[E9_APP_ONDONE]();
-	unguard();
 }
 
 void e9App::Run()
 {
-	guard(e9App::Run);
 	dlog(LOGAPP, L"Main loop start.\n\n" );
 
 	MSG	msg;
@@ -118,12 +111,10 @@ void e9App::Run()
 	}
 
 	dlog(LOGAPP, L"\nMain loop finished.\n");
-	unguard();
 }
 
 void e9App::SetStr( int prop, const char* value )
 {
-	guard(e9App::SetStr);
 	switch(prop)
 	{
 		case E9_APP_NAME:
@@ -140,12 +131,10 @@ void e9App::SetStr( int prop, const char* value )
 			return;
 		}
 	}
-	unguard();
 }
 
 const char* e9App::GetStr( int prop )
 {
-	guard(e9App::GetStr);
 	switch(prop)
 	{
 		case E9_APP_NAME:
@@ -159,24 +148,20 @@ const char* e9App::GetStr( int prop )
 		case E9_APP_PATH:		return m_path;
 	}
 	return NULL;
-	unguard();
 }
 
 void e9App::SetInt( int prop, int value )
 {
-	guard(e9App::SetInt);
 	switch(prop)
 	{
 		case E9_APP_WINDOWED:	m_windowed = value; break;
 		case E9_APP_CURSOR:		m_cursor = value; break;
 		case E9_APP_COOL:		m_cool = value; break;
 	}
-	unguard();
 }
 
 int e9App::GetInt( int prop )
 {
-	guard(e9App::GetInt);
 	switch(prop)
 	{
 		case E9_APP_ACTIVE:		return m_active;
@@ -188,12 +173,10 @@ int e9App::GetInt( int prop )
 		case E9_APP_FPS:		return (int)m_fps;
 	}
 	return 0;
-	unguard();
 }
 
 void e9App::SetVoid( int prop, void* value )
 {
-	guard(e9App::SetVoid);
 	switch(prop)
 	{
 		case E9_APP_PARAM:		m_param[0] = value; break;
@@ -201,12 +184,10 @@ void e9App::SetVoid( int prop, void* value )
 		case E9_APP_PARAM+2:	m_param[2] = value; break;
 		case E9_APP_PARAM+3:	m_param[3] = value; break;
 	}
-	unguard();
 }
 
 void* e9App::GetVoid( int prop )
 {
-	guard(e9App::GetVoid);
 	switch(prop)
 	{
 		case E9_APP_PARAM:		return m_param[0];
@@ -215,22 +196,18 @@ void* e9App::GetVoid( int prop )
 		case E9_APP_PARAM+3:	return m_param[3];
 	}
 	return NULL;
-	unguard();
 }
 
 void e9App::SetCursor( int cursor )
 {
-	guard(e9App::SetCursor);
 	if(cursor<0 || cursor>=E9_CURSOR_MAX) return;
 	::SetCursor(m_hcursor[cursor]);
 	m_cursor = cursor;
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 int e9App::InitWindow()
 {
-	guard(e9App::InitWindow);
 	BOOL ok;
 	
 	// register window
@@ -269,12 +246,10 @@ int e9App::InitWindow()
 	if(m_hwnd==NULL) { dlog(LOGERR, L"APP: failed to create main window.\n"); return FALSE; }
 
 	return TRUE;
-	unguard();
 }
 
 void e9App::UpdateClocks()
 {
-	guard(e9App::UpdateClocks);
 	m_frame++;
 
 	// real time
@@ -295,12 +270,10 @@ void e9App::UpdateClocks()
 	}
 	fpscount++;
 			
-	unguard();
 }
 
 LRESULT	CALLBACK e9App::WndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	guard(e9App::WndProc)
 	if(m_callback[E9_APP_ONMSG]) 
 	{
 		m_param[0] = (void*)(intptr)msg;
@@ -370,7 +343,6 @@ LRESULT	CALLBACK e9App::WndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 			return 0;
 	}
 	return DefWindowProc( hwnd, msg, wParam, lParam );
-	unguard()
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

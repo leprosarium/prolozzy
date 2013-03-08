@@ -20,7 +20,6 @@ r9RenderDX::tDirect3DCreate9 r9RenderDX::m_Direct3DCreate9 = NULL;
 
 r9RenderDX::r9RenderDX()
 {
-	guard(r9RenderDX::r9RenderDX);
 	m_api = R9_API_DIRECTX;
 
 	m_d3d		= NULL;
@@ -42,19 +41,15 @@ r9RenderDX::r9RenderDX()
 	m_targetwidth	= 0;
 	m_targetheight	= 0;
 
-	unguard();
 }
 
 r9RenderDX::~r9RenderDX()
 {
-	guard(r9RenderDX::~r9RenderDX);
 	m_targetlist.clear();
-	unguard();
 }
 
 BOOL r9RenderDX::LoadDll()
 {
-	guard(r9RenderDX::LoadDll);
 #ifdef R9_ENABLE_DLLDX
 	if(m_dll) return TRUE;
 	m_dll = LoadLibrary("d3d9.dll");
@@ -69,19 +64,16 @@ BOOL r9RenderDX::LoadDll()
 	m_Direct3DCreate9 = &Direct3DCreate9;
 	return TRUE;
 #endif
-	unguard();
 }
 
 void r9RenderDX::UnloadDll()
 {
-	guard(r9RenderDX::UnloadDll);
 #ifdef R9_ENABLE_DLLDX
 	if(m_dll==NULL) return;
 	FreeLibrary(m_dll);	
 	m_dll=NULL;
 #endif
 	m_Direct3DCreate9 = NULL;
-	unguard();
 }
 
 static int SortDisplayModes( const VOID* arg1, const VOID* arg2 )
@@ -103,7 +95,6 @@ static int SortDisplayModes( const VOID* arg1, const VOID* arg2 )
 
 int r9RenderDX::GatherDisplayModes( r9DisplayMode* displaymode )
 {
-	guard(r9RenderDX::GatherDisplayModes);
 	int p;
 	int count = 0;
 
@@ -203,12 +194,10 @@ int r9RenderDX::GatherDisplayModes( r9DisplayMode* displaymode )
 	}
 
 	return count;
-	unguard();
 }
 
 BOOL r9RenderDX::Init( HWND hwnd, r9Cfg* cfg )
 {
-	guard(r9RenderDX::Init);
 	m_hwnd = hwnd;
 
 	// config
@@ -230,10 +219,10 @@ BOOL r9RenderDX::Init( HWND hwnd, r9Cfg* cfg )
 	PrepareWindow();
 
 	// create d3d device
-	if(!D3D_CreateDevice())	{ srelease(m_d3d); return FALSE; }
+	if(!D3D_CreateDevice())	{ if(m_d3d) m_d3d->Release(); return FALSE; }
 
 	// batch
-	if(!D3D_BatchCreate()) { srelease(m_d3dd); srelease(m_d3d); return FALSE; }
+	if(!D3D_BatchCreate()) { if(m_d3dd) m_d3dd->Release(); if(m_d3d) m_d3d->Release(); return FALSE; }
 
 	// default render states
 	SetDefaultStates();
@@ -246,32 +235,26 @@ BOOL r9RenderDX::Init( HWND hwnd, r9Cfg* cfg )
 	CreateFont();
 
 	return TRUE;
-	unguard();
 }
 
 void r9RenderDX::Done()
 {
-	guard(r9RenderDX::Done);
 	r9Render::Done();
 	if(m_batchd3d) D3D_BatchUnlock();
-	srelease(m_batchd3d);
-	srelease(m_d3dtarget);
-	srelease(m_d3dd);
-	srelease(m_d3d);
-	unguard();
+	if(m_batchd3d) m_batchd3d->Release();
+	if(m_d3dtarget) m_d3dtarget->Release();
+	if(m_d3dd) m_d3dd->Release();
+	if(m_d3d) m_d3d->Release();
 }
 
 BOOL r9RenderDX::IsReady()
 {
-	guard(r9RenderDX::IsReady);
 	return (m_d3d!=NULL && m_d3dd!=NULL);
-	unguard();
 }
 
 R9TEXTURE r9RenderDX::TextureCreate( r9Img* img )
 {
-	guard(r9RenderDX::TextureCreate);
-	sassert(m_d3dd);
+	assert(m_d3dd);
 	HRESULT hr;
 	// check image
 	if(img==NULL) return NULL;
@@ -308,7 +291,7 @@ R9TEXTURE r9RenderDX::TextureCreate( r9Img* img )
 	// lock
 	D3DLOCKED_RECT d3dlockedrect;
 	hr = d3dtex->LockRect( 0, &d3dlockedrect, NULL, D3DLOCK_NOSYSLOCK );
-	if(FAILED(hr)) { srelease(d3dtex); return NULL; }
+	if(FAILED(hr)) { if(d3dtex) d3dtex->Release(); return NULL; }
 	int pitch = d3dlockedrect.Pitch;
 	byte* data = (byte*)d3dlockedrect.pBits;
 
@@ -321,7 +304,7 @@ R9TEXTURE r9RenderDX::TextureCreate( r9Img* img )
 	hr = d3dtex->UnlockRect(0);
 
 	// create R9 texture
-	r9Texture* tex = snew r9Texture;
+	r9Texture* tex = new r9Texture;
 	tex->m_width = img->m_width;
 	tex->m_height = img->m_height;
 	tex->m_realwidth = w;
@@ -330,13 +313,11 @@ R9TEXTURE r9RenderDX::TextureCreate( r9Img* img )
 	tex->m_handlerex = NULL;
 
 	return tex;
-	unguard();
 }
 
 R9TEXTURE r9RenderDX::TextureCreateTarget( int width, int height )
 {
-	guard(r9RenderDX::TextureCreateTarget);
-	sassert(m_d3dd);
+	assert(m_d3dd);
 	HRESULT hr;
 
 	// find accepted size, power of 2, etc
@@ -368,7 +349,7 @@ R9TEXTURE r9RenderDX::TextureCreateTarget( int width, int height )
 	// no locks on the render target!
 
 	// create R9 texture
-	r9Texture* tex = snew r9Texture;
+	r9Texture* tex = new r9Texture;
 	tex->m_width = width;
 	tex->m_height = height;
 	tex->m_realwidth = w;
@@ -382,38 +363,32 @@ R9TEXTURE r9RenderDX::TextureCreateTarget( int width, int height )
 	TT_Add(tex);
 
 	return tex;
-	unguard();
 }
 
 void r9RenderDX::TextureDestroy( R9TEXTURE texture )
 {
-	guard(r9RenderDX::TextureDestroy);
 	if(texture==NULL) return;
 	LPDIRECT3DTEXTURE9 d3dtex = (LPDIRECT3DTEXTURE9)(texture->m_handler);
 	LPDIRECT3DSURFACE9 d3dsrf = (LPDIRECT3DSURFACE9)(texture->m_handlerex);
 	if(d3dsrf) TT_Del(texture); // delete render target texture from manager
-	if(d3dsrf) srelease(d3dsrf);
-	if(d3dtex) srelease(d3dtex);
-	sdelete(texture);
-	unguard();
+	if(d3dsrf) if(d3dsrf) d3dsrf->Release();
+	if(d3dtex) if(d3dtex) d3dtex->Release();
+	delete texture;
 }
 
 void r9RenderDX::SetTexture( R9TEXTURE texture )
 {
-	guard(r9RenderDX::SetTexture);
 	if(m_texture==texture) return;
 	if(NeedFlush()) Flush();
 	m_texture = texture;
 	LPDIRECT3DTEXTURE9 d3dtex = NULL;
 	if(m_texture) d3dtex = (LPDIRECT3DTEXTURE9)(m_texture->m_handler);
 	HRESULT hr = m_d3dd->SetTexture(0,d3dtex);
-	unguard();
 }
 
 void r9RenderDX::SetState( int state, int value )
 {
-	guard(r9RenderDX::SetState);
-	sassert(0<=state && state<R9_STATES);
+	assert(0<=state && state<R9_STATES);
 	if(m_state[state]==value) return;
 	if(NeedFlush()) Flush();
 	m_state[state] = value;
@@ -479,12 +454,10 @@ void r9RenderDX::SetState( int state, int value )
 			break;
 		}
 	}
-	unguard();
 }
 
 void r9RenderDX::SetViewport( fRect& rect )
 {
-	guard(r9RenderDX::SetViewport);
 	if(m_viewport==rect) return;
 	m_viewport = rect;
 	D3DVIEWPORT9 vp;
@@ -495,12 +468,10 @@ void r9RenderDX::SetViewport( fRect& rect )
 	vp.MinZ = 0.0f;
 	vp.MaxZ = 1.0f;
 	m_d3dd->SetViewport(&vp);
-	unguard();
 }
 
 void r9RenderDX::SetView( int x, int y, dword flip )
 {
-	guard(r9RenderDX::SetView);
 	m_viewx = x;
 	m_viewy = y;
 	m_viewflip = flip;
@@ -512,12 +483,10 @@ void r9RenderDX::SetView( int x, int y, dword flip )
 	mat._44 = 1.0f;
 	m_d3dd->SetTransform( D3DTS_VIEW, &mat );	
 	// I could also have it software at Push, like I do with x and y
-	unguard();
 }
 
 void r9RenderDX::SetDefaultStates()
 {
-	guard(r9RenderDX::SetDefaultStates);
 	// device default states
 	m_d3dd->SetRenderState(D3DRS_FILLMODE,D3DFILL_SOLID);
 	m_d3dd->SetRenderState(D3DRS_ALPHATESTENABLE,FALSE);
@@ -540,20 +509,16 @@ void r9RenderDX::SetDefaultStates()
 
 	// hide cursor in fullscreen
 	m_d3dd->ShowCursor(m_cfg.m_windowed);
-	unguard();
 }
 
 void r9RenderDX::Clear( dword color )
 {
-	guard(r9RenderDX::Clear);
 	if( !m_beginendscene ) return;
 	m_d3dd->Clear( 0, NULL, D3DCLEAR_TARGET, color, 1.0f, 0 );
-	unguard();
 }
 
 BOOL r9RenderDX::BeginScene( R9TEXTURE target )
 {
-	guard(r9RenderDX::BeginScene);
 	if( m_beginendscene ) return FALSE;
 	m_primitivecount = 0;
 	if(m_d3dd->TestCooperativeLevel()!=D3D_OK) return FALSE; // lost or something, wait for CheckDevice to aquire it back
@@ -567,7 +532,7 @@ BOOL r9RenderDX::BeginScene( R9TEXTURE target )
 		// set new target
 		LPDIRECT3DSURFACE9 d3dsrf = (LPDIRECT3DSURFACE9)(target->m_handlerex);
 		hr = m_d3dd->SetRenderTarget(0,d3dsrf);
-		if(FAILED(hr)) { R9_LOGERROR("can't set render target.",hr); srelease(m_d3dtarget); return FALSE; }
+		if(FAILED(hr)) { R9_LOGERROR("can't set render target.",hr); if(m_d3dtarget) m_d3dtarget->Release(); return FALSE; }
 
 		m_targetwidth = target->m_realwidth;
 		m_targetheight = target->m_realheight;
@@ -584,17 +549,15 @@ BOOL r9RenderDX::BeginScene( R9TEXTURE target )
 		R9_LOGERROR("can't begin scene.",hr);
 		//set back old render target
 		m_d3dd->SetRenderTarget(0,m_d3dtarget);
-		srelease(m_d3dtarget);
+		if(m_d3dtarget) m_d3dtarget->Release();
 		return FALSE;
 	}
 	m_beginendscene = TRUE;
 	return TRUE;
-	unguard();
 }
 
 void r9RenderDX::EndScene()
 {
-	guard(r9RenderDX::EndScene);
 	if( !m_beginendscene ) return;
 	if(NeedFlush()) Flush();
 	m_beginendscene = FALSE;
@@ -603,22 +566,18 @@ void r9RenderDX::EndScene()
 	if(m_d3dtarget) // restore old render target
 	{
 		m_d3dd->SetRenderTarget(0,m_d3dtarget);
-		srelease(m_d3dtarget);
+		if(m_d3dtarget) m_d3dtarget->Release();
 	}
-	unguard();
 }
 
 void r9RenderDX::Present()
 {
-	guard(r9RenderDX::Present);
 	if(m_d3dd->TestCooperativeLevel()!=D3D_OK) return; // lost or something
 	HRESULT hr = m_d3dd->Present( NULL, NULL, m_hwnd, NULL );	
-	unguard();
 }
 
 BOOL r9RenderDX::CheckDevice()
 {
-	guard(r9RenderDX::CheckDevice);
 	
 	HRESULT hr = m_d3dd->TestCooperativeLevel();
 	if( hr==D3D_OK ) return TRUE; // everything is fine
@@ -634,13 +593,11 @@ BOOL r9RenderDX::CheckDevice()
 	D3D_HandleReset(1);	
 
 	return TRUE; // success
-	unguard();
 }
 
 //@OBSOLETE
 BOOL r9RenderDX::ToggleVideoMode()
 {
-	guard(r9RenderDX::ToggleVideoMode);
 	if(m_d3dd->TestCooperativeLevel()!=D3D_OK ) return FALSE;
 	dlog(LOGRND, L"Toggle video mode.\n");
 
@@ -660,12 +617,10 @@ BOOL r9RenderDX::ToggleVideoMode()
 	PrepareWindow(); // prepare again for correct resize
 	return TRUE;
 
-	unguard();
 }
 
 void r9RenderDX::Push( r9Vertex* vx, int vxs, int primitive )
 {
-	guard(r9RenderDX::Push);
 	// set primitive
 	if(GetState(R9_STATE_PRIMITIVE)!=primitive)
 		SetState(R9_STATE_PRIMITIVE,primitive);
@@ -704,12 +659,10 @@ void r9RenderDX::Push( r9Vertex* vx, int vxs, int primitive )
 		if( m_batchcount==batchsize ) Flush();
 	}
 	
-	unguard();
 }
 
 void r9RenderDX::Flush()
 {
-	guard(r9RenderDX::Flush);
 	HRESULT hr;
 	m_needflush = FALSE;
 	if(m_batchcount==0) return;
@@ -730,7 +683,6 @@ void r9RenderDX::Flush()
 	// lock
 	D3D_BatchLock();
 	m_batchcount = 0;
-	unguard();
 }
 
 
@@ -739,7 +691,6 @@ void r9RenderDX::Flush()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL r9RenderDX::SaveScreenShot( fRect* rect, BOOL full )
 {
-	guard(r9RenderDX::SaveScreenShot)
 	r9Img img;
 	if(!TakeScreenShot(&img, rect, full)) return FALSE;
 
@@ -763,12 +714,10 @@ BOOL r9RenderDX::SaveScreenShot( fRect* rect, BOOL full )
 	
 	dlog(LOGRND, L"ScreenShot saved!\n");
 	return TRUE;
-	unguard()
 }
 
 BOOL r9RenderDX::TakeScreenShot( r9Img* img, fRect* rect, BOOL full )
 {
-	guard(r9RenderDX::TakeScreenShot)
 	HRESULT	hr;
 
 	if(img==NULL) return FALSE;
@@ -824,7 +773,7 @@ BOOL r9RenderDX::TakeScreenShot( r9Img* img, fRect* rect, BOOL full )
 		if( FAILED(hr) ) return FALSE;
 
 		hr = m_d3dd->GetFrontBufferData(0,dxsrf);
-		if( FAILED(hr) ) { srelease(dxsrf); return FALSE; }
+		if( FAILED(hr) ) { if(dxsrf) dxsrf->Release(); return FALSE; }
 	}
 	else // from backbuffer; copy in other surf because bkbuffer may not be lockable
 	{
@@ -834,16 +783,16 @@ BOOL r9RenderDX::TakeScreenShot( r9Img* img, fRect* rect, BOOL full )
 
 		LPDIRECT3DSURFACE9 bksrf;
 		hr = m_d3dd->GetRenderTarget(0,&bksrf);
-		if(FAILED(hr)) { srelease(dxsrf); return FALSE; }
+		if(FAILED(hr)) { if(dxsrf) dxsrf->Release(); return FALSE; }
 		hr = m_d3dd->GetRenderTargetData(bksrf,dxsrf);
-		if(FAILED(hr)) { srelease(bksrf); srelease(dxsrf); return FALSE; }
-		srelease(bksrf);
+		if(FAILED(hr)) { if(dxsrf) dxsrf->Release() ; if(bksrf) bksrf->Release(); return FALSE; }
+		if(bksrf) bksrf->Release();
 	}
 
 	// lock dx surf
 	memset( &dxlockdata, 0, sizeof(dxlockdata) );
 	hr = dxsrf->LockRect( &dxlockdata, &r, D3DLOCK_READONLY );
-	if( FAILED(hr) ) { srelease(dxsrf); return FALSE; }
+	if( FAILED(hr) ) { if(dxsrf) dxsrf->Release(); return FALSE; }
 
 	// copy pixels 32bit > 24bit
 	if(R9_ImgCreate(img))
@@ -863,18 +812,16 @@ BOOL r9RenderDX::TakeScreenShot( r9Img* img, fRect* rect, BOOL full )
 
 	// unlock and release
 	dxsrf->UnlockRect();
-	srelease(dxsrf);
+	if(dxsrf) dxsrf->Release();
 
 	return TRUE;
-	unguard()
 }
 
 BOOL r9RenderDX::CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )
 {
-	guard(r9RenderDX::CopyTargetToImage);
-	sassert(img); 
-	sassert(rect);
-	sassert(target);
+	assert(img); 
+	assert(rect);
+	assert(target);
 	if(!R9_ImgIsValid(img)) return FALSE;
 
 	int x = (int)rect->x1;
@@ -923,7 +870,6 @@ BOOL r9RenderDX::CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )
 	dstemp->Release();
 
 	return TRUE;
-	unguard();
 }
 
 
@@ -932,7 +878,6 @@ BOOL r9RenderDX::CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void r9RenderDX::PrepareWindow()
 {
-	guard(r9RenderDX::PrepareWindow);
 	if( m_cfg.m_windowed )
 	{
 		int scrw = sys_desktopwidth();
@@ -962,13 +907,11 @@ void r9RenderDX::PrepareWindow()
 	RECT r;
 	GetWindowRect(m_hwnd,&r);
 	dlog(LOGRND, L"window size %ix%i\n",r.right-r.left,r.bottom-r.top);
-	unguard();
 }
 
 void r9RenderDX::D3D_GetPresentParams( D3DPRESENT_PARAMETERS* d3dparam )
 {
-	guard(r9RenderDX::D3D_GetPresentParams)
-	sassert(d3dparam!=NULL);
+	assert(d3dparam!=NULL);
 	memset(d3dparam,0,sizeof(D3DPRESENT_PARAMETERS));
 	d3dparam->BackBufferWidth					= m_cfg.m_width;
 	d3dparam->BackBufferHeight					= m_cfg.m_height;
@@ -983,14 +926,12 @@ void r9RenderDX::D3D_GetPresentParams( D3DPRESENT_PARAMETERS* d3dparam )
 	d3dparam->Flags								= 0;
 	d3dparam->FullScreen_RefreshRateInHz		= m_cfg.m_windowed ? 0 : m_cfg.m_refresh;
 	d3dparam->PresentationInterval				= m_cfg.m_vsync ? D3DPRESENT_INTERVAL_DEFAULT : D3DPRESENT_INTERVAL_IMMEDIATE;
-	unguard()
 }
 
 BOOL r9RenderDX::D3D_CreateDevice()
 {
-	guard(r9RenderDX::D3D_CreateDevice)
-	sassert(m_d3d);
-	sassert(!m_d3dd);
+	assert(m_d3d);
+	assert(!m_d3dd);
 	HRESULT hr;
 
 	// caps
@@ -1012,32 +953,28 @@ BOOL r9RenderDX::D3D_CreateDevice()
 	if(FAILED(hr)) { R9_LOGERROR("CreateDevice failed.",hr); return FALSE; }
 
 	return TRUE;
-	unguard()
 }
 
 BOOL r9RenderDX::D3D_Reset()
 {
-	guard(r9RenderDX::D3D_Reset);
 	dlog(LOGRND, L"RENDER: reset device.\n");
 	D3DPRESENT_PARAMETERS d3dparam;
 	D3D_GetPresentParams(&d3dparam);
 	HRESULT hr = m_d3dd->Reset(&d3dparam);
 	if(FAILED(hr)) { R9_LOGERROR("reset device failure.",hr); return FALSE; }
 	return TRUE;
-	unguard();
 }
 
 void r9RenderDX::D3D_HandleReset( int mode )
 {
-	guard(r9RenderDX::D3D_HandleReset);
 	if(mode==0) // store and release
 	{
-		if(m_batchd3d) { D3D_BatchUnlock();	srelease(m_batchd3d); } // vertex buffer
+		if(m_batchd3d) { D3D_BatchUnlock();	if(m_batchd3d) m_batchd3d->Release(); } // vertex buffer
 		TT_Release();
 	}
 	else // restore
 	{
-		if(!D3D_BatchCreate()) { errorexit("Can't recover buffer from lost device."); } // vertex buffer
+		if(!D3D_BatchCreate()) { dlog(LOGSYS, L"ERROREXIT: Can't recover buffer from lost device.\n"); exit(-1); } // vertex buffer
 		TT_Recreate();
 
 		// restore render states
@@ -1050,24 +987,20 @@ void r9RenderDX::D3D_HandleReset( int mode )
 		// notify user, to repaint content of render targets (the rest is handeled here)
 		if(m_handlereset) m_handlereset();
 	}
-	unguard();
 }
 
 BOOL r9RenderDX::D3D_BatchCreate()
 {
-	guard(r9RenderDX::D3D_BatchCreate);
 	dword fvf = D3DFVF_XYZ | D3DFVF_DIFFUSE |D3DFVF_TEX1;
 	HRESULT hr = m_d3dd->CreateVertexBuffer( R9_BATCHSIZE_DX*sizeof(r9VertexDX), D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC, fvf, D3DPOOL_DEFAULT, &m_batchd3d, NULL );
 	if(FAILED(hr)) { R9_LOGERROR("create vertex buffer failed.", hr); return FALSE; }
-	if(!D3D_BatchLock()) { R9_LOGERROR("vertex buffer lock failed.", hr); srelease(m_batchd3d); return FALSE; }
+	if(!D3D_BatchLock()) { R9_LOGERROR("vertex buffer lock failed.", hr); if(m_batchd3d) m_batchd3d->Release(); return FALSE; }
 	memset(m_batchbuffer,0,R9_BATCHSIZE_DX*sizeof(r9VertexDX)); // clear
 	return TRUE;
-	unguard();
 }
 
 BOOL r9RenderDX::D3D_BatchLock()
 {
-	guard(r9RenderDX::D3D_BatchLock);
 	if(m_batchbuffer!=NULL) return FALSE;
 	m_batchcount = 0;
 	void* data = NULL;
@@ -1075,23 +1008,19 @@ BOOL r9RenderDX::D3D_BatchLock()
 	if(FAILED(hr)) return FALSE;
 	m_batchbuffer = (r9VertexDX*)data;
 	return TRUE;
-	unguard();
 }
 
 BOOL r9RenderDX::D3D_BatchUnlock()
 {
-	guard(r9RenderDX::D3D_BatchUnlock);
 	if(m_batchbuffer==NULL) return FALSE;
 	HRESULT hr = m_batchd3d->Unlock();
 	if(FAILED(hr)) return FALSE;
 	m_batchbuffer = NULL;
 	return TRUE;
-	unguard();
 }
 
 r9PFInfo* r9RenderDX::D3D_PFInfo( D3DFORMAT d3dpf )
 {
-	guard(r9RenderDX::D3D_PFInfo);
 	static r9PFInfo d3dpfinfo[] =
 	{
 		// D3DFMT_R5G6B5
@@ -1111,18 +1040,14 @@ r9PFInfo* r9RenderDX::D3D_PFInfo( D3DFORMAT d3dpf )
 		case D3DFMT_A8R8G8B8:	return &d3dpfinfo[3];
 	}
 	return NULL;
-	unguard();
 }
 
 void r9RenderDX::TT_Add(R9TEXTURE texture)
 {
-	guardfast(r9RenderDX::TT_Add);
 	m_targetlist.push_back(texture);
-	unguardfast();
 }
 void r9RenderDX::TT_Del(R9TEXTURE texture)
 {
-	guardfast(r9RenderDX::TT_Del);
 	for(int i=0;i<m_targetlist.size();i++)
 	{
 		if(m_targetlist[i]==texture)
@@ -1131,42 +1056,37 @@ void r9RenderDX::TT_Del(R9TEXTURE texture)
 			return;
 		}
 	}
-	unguardfast();
 }
 
 void r9RenderDX::TT_Release()
 {
-	guard(r9RenderDX::TT_Release);
 	for(int i=0;i<m_targetlist.size();i++)
 	{
 		LPDIRECT3DTEXTURE9 d3dtex = (LPDIRECT3DTEXTURE9)(m_targetlist[i]->m_handler);
 		LPDIRECT3DSURFACE9 d3dsrf = (LPDIRECT3DSURFACE9)(m_targetlist[i]->m_handlerex);
-		if(d3dsrf) srelease(d3dsrf);
-		if(d3dtex) srelease(d3dtex);
+		if(d3dsrf) d3dsrf->Release();
+		if(d3dtex) d3dtex->Release();
 		m_targetlist[i]->m_handler = NULL;
 		m_targetlist[i]->m_handlerex = NULL;
 	}
-	unguard();
 }
 
 void r9RenderDX::TT_Recreate()
 {
-	guard(r9RenderDX::TT_Recreate);
 	for(int i=0;i<m_targetlist.size();i++)
 	{
 		// manareli...
 		// create new temporary tex (will add it in targetlist too!)
 		R9TEXTURE ttex = TextureCreateTarget(m_targetlist[i]->m_width,m_targetlist[i]->m_height);
-		if(ttex==NULL) { errorexit("Can't recover render target, from lost device."); }
+		if(ttex==NULL) { dlog(LOGSYS, L"ERROREXIT: Can't recover render target, from lost device.\n"); exit(-1); }
 		// force content into the old tex pointer (that was cleared before reset)
 		*m_targetlist[i] = *ttex;
 		// remove last entry in targetlist (the temporary new tex)
-		sverify(m_targetlist[m_targetlist.size()-1]==ttex);
+		assert(m_targetlist[m_targetlist.size()-1]==ttex);
 		m_targetlist.pop_back();
 		// delete temporary new tex pointer
-		sdelete(ttex);
+		delete ttex;
 	}
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

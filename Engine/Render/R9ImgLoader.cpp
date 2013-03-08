@@ -36,7 +36,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL R9_ImgLoadFile( const char* name, r9Img* img )
 {
-	guard(R9_ImgLoadFile);
 	if(!name || !img || R9_ImgIsValid(img) ) return FALSE;
 	R9_ImgClear(img);
 
@@ -61,12 +60,10 @@ BOOL R9_ImgLoadFile( const char* name, r9Img* img )
 	F9_FileClose(file);
 
 	return ret;
-	unguard();
 }
 
 BOOL R9_ImgSaveFile( const char* name, r9Img* img )
 {
-	guard(R9_ImgSaveFile);
 	if(!name || !img || !R9_ImgIsValid(img)) return FALSE;
 
 	// type
@@ -90,12 +87,10 @@ BOOL R9_ImgSaveFile( const char* name, r9Img* img )
 	F9_FileClose(file);
 
 	return ret;
-	unguard();
 }
 
 BOOL R9_ImgLoadHeader( const char* name, r9Img* img )
 {
-	guard(R9_ImgLoadHeader);
 	if(!name || !img || R9_ImgIsValid(img) ) return FALSE;
 	R9_ImgClear(img);
 
@@ -119,7 +114,6 @@ BOOL R9_ImgLoadHeader( const char* name, r9Img* img )
 	F9_FileClose(file);
 
 	return ret;
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -127,7 +121,6 @@ BOOL R9_ImgLoadHeader( const char* name, r9Img* img )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL R9_ImgReadTGA( F9FILE file, r9Img* img )
 {
-	guard(R9_ImgReadTGA);
 	if(!file || !img || R9_ImgIsValid(img)) return FALSE;
 	R9_ImgClear(img);
 
@@ -156,12 +149,10 @@ BOOL R9_ImgReadTGA( F9FILE file, r9Img* img )
 		R9_ImgFlipV(img);
 
 	return TRUE;
-	unguard();
 }
 
 BOOL R9_ImgWriteTGA( F9FILE file, r9Img* img )
 {
-	guard(R9_ImgWriteTGA);
 	if(!file || !img || !R9_ImgIsValid(img)) return FALSE;
 
 	R9_ImgFlipV(img);
@@ -189,12 +180,10 @@ BOOL R9_ImgWriteTGA( F9FILE file, r9Img* img )
 	R9_ImgFlipV(img);
 
 	return TRUE;
-	unguard();
 }
 
 BOOL R9_ImgReadHeaderTGA( F9FILE file, r9Img* img )
 {
-	guard(R9_ImgReadHeaderTGA);
 	if(!file || !img || R9_ImgIsValid(img)) return FALSE;
 	R9_ImgClear(img);
 
@@ -213,7 +202,6 @@ BOOL R9_ImgReadHeaderTGA( F9FILE file, r9Img* img )
 	img->m_pf		= header.m_PixelDepth==24 ? R9_PF_RGB : R9_PF_ARGB;
 
 	return TRUE;
-	unguard();
 }
 
 
@@ -226,53 +214,41 @@ static F9FILE r9_imgpng_file = NULL;
 
 static void	R9_ImgPNG_ReadData( png_structp png_ptr, png_bytep data, png_size_t length )
 {
-	guard(R9_ImgPNG_ReadData);
-	sassert(r9_imgpng_file!=NULL);
+	assert(r9_imgpng_file!=NULL);
 	int ret = F9_FileRead( data, (int)length, r9_imgpng_file );
-	sassert(ret==length);
-	unguard();
+	assert(ret==length);
 }
 
 static void R9_ImgPNG_WriteData( png_structp png_ptr, png_bytep data, png_size_t length )
 {
-	guard(R9_ImgPNG_WriteData);
-	sassert(r9_imgpng_file!=NULL);
+	assert(r9_imgpng_file!=NULL);
 	int ret = F9_FileWrite( data, (int)length, r9_imgpng_file );
-	sassert(ret==length);
-	unguard();
+	assert(ret==length);
 }
 
 static png_voidp R9_ImgPNG_Malloc( png_structp png_ptr, png_size_t size )
 {
-	guard(R9_ImgPNG_Malloc);
-	return smalloc((int)size);
-	unguard();
+	return malloc((int)size);
 }
 
 static void R9_ImgPNG_Free( png_structp png_ptr, png_voidp data )
 {
-	guard(R9_ImgPNG_Free);
-	if(data) sfree(data);
-	unguard();
+	if(data) free(data);
 }
 
 static void R9_ImgPNG_FatalError( png_structp png_ptr, png_const_charp message )
 {
-	guard(R9_ImgPNG_FatalError);
-	errorexit((char*)message);
-	unguard();
+	dlog(LOGSYS, L"ERROREXIT: %S\n", (char*)message);
+	exit(-1);
 }
 
 static void R9_ImgPNG_Warning( png_structp png_ptr, png_const_charp message )
 {
-	guard(R9_ImgPNG_Warning);
 	dlog(LOGRND, L"%S", message);
-	unguard();
 }
 
 BOOL R9_ImgReadPNG( F9FILE file, r9Img* img )
 {
-	guard(R9_ImgReadPNG);
 	if(file==NULL || img==NULL) return FALSE;
 	R9_ImgDestroy(img);
 	
@@ -333,7 +309,7 @@ BOOL R9_ImgReadPNG( F9FILE file, r9Img* img )
 	img->m_width = pngwidth;
 	img->m_height = pngheight;
 	img->m_pf = R9_PF_RGB;
-	sassert(img->m_width!=0 && img->m_height!=0);
+	assert(img->m_width!=0 && img->m_height!=0);
 
 	// Strip off any 16 bit info
 	if(pngbits==16) png_set_strip_16(png_ptr);
@@ -367,15 +343,15 @@ BOOL R9_ImgReadPNG( F9FILE file, r9Img* img )
 	png_read_update_info(png_ptr, info_ptr);
 
 	png_uint_32 rowbytes = png_get_rowbytes(png_ptr, info_ptr);
-	if(img->m_pf==R9_PF_RGB) sassert(rowbytes==img->m_width*3);
+	if(img->m_pf==R9_PF_RGB) assert(rowbytes==img->m_width*3);
 	else
-	if(img->m_pf==R9_PF_RGB) sassert(rowbytes==img->m_width*4);
+	if(img->m_pf==R9_PF_RGB) assert(rowbytes==img->m_width*4);
 
 	// create image
 	R9_ImgCreate(img);
 
 	// set up the row pointers...
-	png_bytep* rowpointers = (png_bytep*)smalloc(img->m_height*sizeof(png_bytep));
+	png_bytep* rowpointers = (png_bytep*)malloc(img->m_height*sizeof(png_bytep));
 	for(int i=0; i<img->m_height; i++)
 	  rowpointers[i] = img->m_data + (i*rowbytes);
 
@@ -385,17 +361,15 @@ BOOL R9_ImgReadPNG( F9FILE file, r9Img* img )
 	// release
 	png_read_end(png_ptr, NULL);
 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
-	sfree(rowpointers);
+	free(rowpointers);
 	r9_imgpng_file = NULL;
 
 	R9_ImgFlipRGB(img); // it was BGR, we want it RGB !
 	return TRUE;
-	unguard();
 }
 
 BOOL R9_ImgWritePNG( F9FILE file, r9Img* img )
 {
-	guard(R9_ImgWritePNG);
 	
 	const int32 compressionlevel = 6;
 	const int32 strategy = 0;
@@ -464,7 +438,7 @@ BOOL R9_ImgWritePNG( F9FILE file, r9Img* img )
 	}
 
 	png_write_info(png_ptr, info_ptr);
-	png_bytep* rowpointers = (png_bytep*)smalloc(img->m_height*sizeof(png_bytep));
+	png_bytep* rowpointers = (png_bytep*)malloc(img->m_height*sizeof(png_bytep));
 	for(int i=0; i<img->m_height; i++)
 		rowpointers[i] = (png_bytep)(img->m_data+(i*R9_ImgLineSize(img)));
 
@@ -473,19 +447,17 @@ BOOL R9_ImgWritePNG( F9FILE file, r9Img* img )
 	// release
 	png_write_end(png_ptr, info_ptr);
 	png_destroy_write_struct(&png_ptr, &info_ptr);
-	sfree(rowpointers);
+	free(rowpointers);
 	r9_imgpng_file = NULL;
 
 	// flip rgb back, if necessarily
 	if(img->m_pf==R9_PF_ARGB || img->m_pf==R9_PF_RGB) R9_ImgFlipRGB(img);
 
 	return TRUE;
-	unguard();
 }
 
 BOOL R9_ImgReadHeaderPNG( F9FILE file, r9Img* img )
 {
-	guard(R9_ImgReadHeaderPNG);
 	if(file==NULL || img==NULL) return FALSE;
 	R9_ImgDestroy(img);
 	
@@ -553,7 +525,6 @@ BOOL R9_ImgReadHeaderPNG( F9FILE file, r9Img* img )
 	r9_imgpng_file = NULL;
 
 	return TRUE;
-	unguard();
 }
 
 #else
@@ -574,19 +545,15 @@ int r9_imgjpg_quality = 32; // 0..100
 
 static int R9_ImgJPG_ReadData( void* file, unsigned char* data, int length )
 {
-	guard(R9_ImgJPG_ReadData);
-	sassert(file!=NULL);
+	assert(file!=NULL);
 	int ret = F9_FileRead( data, length, (F9FILE)file );
 	return ret;
-	unguard();
 }
 static int R9_ImgJPG_WriteData( void* file, unsigned char* data, int length )
 {
-	guard(R9_ImgJPG_WriteData);
-	sassert(file!=NULL);
+	assert(file!=NULL);
 	int ret = F9_FileWrite( data, length, (F9FILE)file );
 	return ret;
-	unguard();
 }
 static int R9_ImgJPG_Flush( void* file )
 {
@@ -594,15 +561,12 @@ static int R9_ImgJPG_Flush( void* file )
 }
 static int R9_ImgJPG_Error( void* file )
 {
-	guard(R9_ImgJPG_Error);
-	sassert(file!=NULL);
+	assert(file!=NULL);
 	return FALSE; // report no error (called after file write)
-	unguard();
 }
 
 BOOL R9_ImgReadJPG( F9FILE file, r9Img* img )
 {
-	guard(R9_ImgReadJPG);
 
 	if(file==NULL || img==NULL) return FALSE;
 	R9_ImgDestroy(img);
@@ -641,7 +605,7 @@ BOOL R9_ImgReadJPG( F9FILE file, r9Img* img )
 
 	// Set up the row pointers...
 	int rowbytes = cinfo.output_width * cinfo.output_components;
-	sassert(rowbytes==R9_ImgLineSize(img));
+	assert(rowbytes==R9_ImgLineSize(img));
 	for(int i=0; i<img->m_height; i++)
 	{
 	  JSAMPROW rowpointer = img->m_data + (i * rowbytes);
@@ -657,12 +621,10 @@ BOOL R9_ImgReadJPG( F9FILE file, r9Img* img )
 
 	R9_ImgFlipRGB(img); // jpegs are BGR
 	return TRUE;
-	unguard();
 }
 
 BOOL R9_ImgWriteJPG( F9FILE file, r9Img* img )
 {
-	guard(R9_ImgWriteJPG);
 	if(file==NULL || img==NULL) return FALSE;
 	if(!R9_ImgIsValid(img)) return FALSE;
 	if(R9_PFSpp(img->m_pf)!=3) return FALSE; // 24bpp / 3bytes
@@ -712,12 +674,10 @@ BOOL R9_ImgWriteJPG( F9FILE file, r9Img* img )
 
 	R9_ImgFlipRGB(img); // back to RGB
 	return TRUE;
-	unguard();
 }
 
 BOOL R9_ImgReadHeaderJPG( F9FILE file, r9Img* img )
 {
-	guard(R9_ImgReadHeaderJPG);
 
 	if(file==NULL || img==NULL) return FALSE;
 	R9_ImgDestroy(img);
@@ -757,7 +717,6 @@ BOOL R9_ImgReadHeaderJPG( F9FILE file, r9Img* img )
 	void* v=malloc(1);
 
 	return TRUE;
-	unguard();
 }
 
 void R9_ImgSetQualityJPG( int quality )

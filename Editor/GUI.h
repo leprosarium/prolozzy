@@ -90,8 +90,8 @@ virtual	int				DlgFind( cGUIDlg* dlg );		// return idx
 void* GUICreateClass( char* classname );
 
 extern	cGUI*			g_gui;
-inline	BOOL			GUIInit			()						{ g_gui = snew cGUI(); return g_gui->Init(); }
-inline	void			GUIDone			()						{ if(g_gui)	{ g_gui->Done(); sdelete(g_gui); }}	
+inline	BOOL			GUIInit			()						{ g_gui = new cGUI(); return g_gui->Init(); }
+inline	void			GUIDone			()						{ if(g_gui)	{ g_gui->Done(); delete g_gui; }}	
 
 #endif
 //////////////////////////////////////////////////////////////////////////////////////////////////

@@ -39,7 +39,7 @@ virtual	void			SetTxt				( int idx, char* text );
 		int				Chr2Pos				(int chr);				// get pixel pos from char pos
 inline  void			ShiftLeft			(int chr, int count);	// shifts count chars starting with chr 
 inline  void			ShiftRight			(int chr, int count);	// shifts count chars starting with chr 
-inline	void			SetBkTxt			(char* txt)				{ if(m_bktxt) sfree(m_bktxt); m_bktxt=NULL; if(txt) m_bktxt=sstrdup(txt); }
+inline	void			SetBkTxt			(char* txt)				{ if(m_bktxt) free(m_bktxt); m_bktxt=NULL; if(txt) m_bktxt=sstrdup(txt); }
 		void			ClipboardCopy		();						// copy to windows clipboard
 		void			ClipboardPaste		();						// paste from windows clipboard
 		void			SelectionCut		();						// cut current selection, if any

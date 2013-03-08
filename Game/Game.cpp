@@ -18,49 +18,39 @@ static cDizApp* g_dizapp = NULL;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 int AppOnInit()
 {
-	guard(AppOnInit);
-	sassert(g_dizapp==NULL);
-	g_dizapp = snew cDizApp();
+	assert(g_dizapp==NULL);
+	g_dizapp = new cDizApp();
 	return g_dizapp->Init();
-	unguard();
 }
 
 int AppOnDone()
 {
-	guard(AppOnDone);
-	sassert(g_dizapp!=NULL);
+	assert(g_dizapp!=NULL);
 	g_dizapp->Done();
-	sdelete(g_dizapp);
+	delete g_dizapp;
 	return 0;
-	unguard();
 }
 
 int AppOnActivate()
 {
-	guard(AppOnActivate);
-	sassert(g_dizapp!=NULL);
+	assert(g_dizapp!=NULL);
 	g_dizapp->Activate( E9_AppGetInt(E9_APP_ACTIVE) );
 	return 0;
-	unguard();
 }
 
 int AppOnRun()
 {
-	guard(AppOnRun);
-	sassert(g_dizapp!=NULL);
+	assert(g_dizapp!=NULL);
 	if(!g_dizapp->Update()) return 0; // exit
 	g_dizapp->Draw();
 	return 1;
-	unguard();
 }
 
 int AppOnPaint()
 {
-	guard(AppOnPaint);
-	sassert(g_dizapp!=NULL);
+	assert(g_dizapp!=NULL);
 	g_dizapp->Draw();
 	return 0;
-	unguard();
 }
 
 

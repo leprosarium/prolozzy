@@ -25,22 +25,17 @@ DUMBFILE_SYSTEM dumb_fs;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 a9Codec_dumb::a9Codec_dumb()
 {
-	guard(a9Codec_dumb::a9Codec_dumb);
 	m_type		= A9_CODEC_DUMB;
 	m_duh		= NULL;
 	m_duhsr		= NULL;
-	unguard();
 }
 
 a9Codec_dumb::~a9Codec_dumb()
 {
-	guard(a9Codec_dumb::~a9Codec_dumb);
-	unguard();
 }
 
 int a9Codec_dumb::Init()
 {
-	guard(a9Codec_dumb::Init);
 	atexit(&dumb_exit);
 	//dumb_register_stdfiles();
 	dumb_fs.open	= dumb_open;	
@@ -51,19 +46,15 @@ int a9Codec_dumb::Init()
 	register_dumbfile_system(&dumb_fs);
 	dumb_it_max_to_mix = 256;
 	return A9_OK;
-	unguard();
 }
 
 int a9Codec_dumb::Done()
 {
-	guard(a9Codec_dumb::Done);
 	return A9_OK;
-	unguard();
 }
 
 int	a9Codec_dumb::Open( const char* name )
 {
-	guard(a9Codec_dumb::Open);
 	if(m_status!=A9_CODEC_CLOSED) return A9_FAIL;
 	// set user callbacks
 	// load
@@ -99,12 +90,10 @@ int	a9Codec_dumb::Open( const char* name )
 
 	m_status = A9_CODEC_OPENED;
 	return A9_OK;
-	unguard();
 }
 
 int	a9Codec_dumb::BeginRender( int pos, int loop )
 {
-	guard(a9Codec_dumb::BeginRender);
 	if(m_status!=A9_CODEC_OPENED) return A9_FAIL;
 	m_loop = loop;
 
@@ -120,39 +109,32 @@ int	a9Codec_dumb::BeginRender( int pos, int loop )
 
 	m_status = A9_CODEC_RENDERING;
 	return A9_OK;
-	unguard();
 }
 
 int	a9Codec_dumb::Render( byte* buffer, int size )
 {
-	guard(a9Codec_dumb::Render);
 	if(m_status!=A9_CODEC_RENDERING) return A9_FAIL;
 	if(size<=0) return A9_FAIL;
 	float volume = 1.0f;
 	float delta = DUMB_SEC / m_info.m_frequency;
 	int ret = duh_render(m_duhsr, m_info.m_depth, !m_info.m_signed, volume, delta, size, buffer);
 	return ret;
-	unguard();
 }
 
 int	a9Codec_dumb::EndRender()
 {
-	guard(a9Codec_dumb::EndRender);
 	if(m_status!=A9_CODEC_RENDERING) return A9_FAIL;
 	duh_end_sigrenderer(m_duhsr);
 	m_status = A9_CODEC_OPENED;
 	return A9_OK;
-	unguard();
 }
 
 int	a9Codec_dumb::Close()
 {
-	guard(a9Codec_dumb::Close);
 	if(m_status!=A9_CODEC_OPENED) return A9_FAIL;
 	unload_duh(m_duh);
 	m_status = A9_CODEC_CLOSED;
 	return A9_OK;
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

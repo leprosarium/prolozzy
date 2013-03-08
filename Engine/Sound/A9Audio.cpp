@@ -10,38 +10,29 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 a9Audio::a9Audio()
 {
-	guard(a9Audio::a9Audio);
 	m_hwnd = NULL;
 	m_volumedefault	= 100;
 	m_memory = 0;
 	m_voices = 0;
 	m_hw = 0;
-	unguard();
 }
 
 a9Audio::~a9Audio()
 {
-	guard(a9Audio::a9Audio);
-	unguard();
 }
 
 int	a9Audio::Init( HWND hwnd )
 {
-	guard(a9Audio::Init);
 	m_hwnd = hwnd;
 	return A9_OK;
-	unguard();
 }
 
 void a9Audio::Done()
 {
-	guard(a9Audio::Done);
-	unguard();
 }
 
 int	a9Audio::Get( int prop )
 {
-	guard(a9Audio::Get);
 	long volume=0;
 	switch(prop)
 	{
@@ -50,19 +41,14 @@ int	a9Audio::Get( int prop )
 		case A9_VOICES:			return m_voices;
 	}
 	return 0;
-	unguard();
 }
 
 void a9Audio::Set( int prop, int val )
 {
-	guard(a9Audio::Set);
-	unguard();
 }
 
 void a9Audio::Update()
 {
-	guard(a9Audio::Update);
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -70,7 +56,6 @@ void a9Audio::Update()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 A9BUFFERPROTO a9Audio::BufferPrecache( const char* filename ) 
 { 
-	guard(a9Audio::BufferPrecache);
 	int ret;
 	a9BufferProto* proto = NULL;
 	
@@ -85,9 +70,9 @@ A9BUFFERPROTO a9Audio::BufferPrecache( const char* filename )
 	if(A9_CodecGetInfo(codec)->DataSize()==0) goto error;
 
 	// create proto
-	proto = snew a9BufferProto();
+	proto = new a9BufferProto();
 	proto->m_info = *A9_CodecGetInfo(codec);
-	proto->m_data = (byte*)smalloc( proto->m_info.DataSize() );
+	proto->m_data = (byte*)malloc( proto->m_info.DataSize() );
 
 	// fill data
 	if(proto->m_data==NULL) goto error;
@@ -102,28 +87,23 @@ A9BUFFERPROTO a9Audio::BufferPrecache( const char* filename )
 	return proto;	
 
 	error:
-	if(proto) { if(proto->m_data) sfree(proto->m_data); sdelete(proto); }
+	if(proto) { if(proto->m_data) free(proto->m_data); delete proto; }
 	if(codec) { A9_CodecEndRender(codec); A9_CodecClose(codec); A9_CodecDestroy(codec); }
 	return NULL;
 
-	unguard();
 }
 
 void a9Audio::BufferDeprecache( A9BUFFERPROTO proto ) 
 {
-	guard(a9Audio::BufferDeprecache);
 	if(!proto) return;
-	if(proto->m_data) sfree(proto->m_data);
-	sdelete(proto);
-	unguard();
+	if(proto->m_data) free(proto->m_data);
+	delete proto;
 }
 
 A9BUFFER a9Audio::BufferCreateFromProto( A9BUFFERPROTO proto, int flags )
 {
-	guard(a9Audio::BufferCreateFromProto);
-	sassert(proto);
+	assert(proto);
 	return BufferCreateFromMemory(&proto->m_info, proto->m_data, flags);
-	unguard();
 }
 
 A9BUFFER a9Audio::BufferCreate( const char* filename, int flags ) { return NULL; }
@@ -155,48 +135,40 @@ a9Audio* a9_audio = NULL;
 
 BOOL A9_Init( HWND hwnd, int api )
 {
-	guard(A9_Init);
 	if(a9_audio) return TRUE;
 	dlog(LOGSND, L"Audio init (api=%i).\n",api);
-	a9_audio = snew a9AudioDX();
+	a9_audio = new a9AudioDX();
 	if(a9_audio->Init(hwnd)==A9_FAIL)
 	{
-		sdelete(a9_audio);
+		delete a9_audio;
 		a9_audio = NULL;
 		return FALSE;
 	}
 	return TRUE;
-	unguard();
 }
 
 void A9_Done()
 {
-	guard(A9_Done);
 	if(!a9_audio) return;
 	a9_audio->Done();
-	sdelete(a9_audio);
+	delete a9_audio;
 	a9_audio = NULL;
 	dlog(LOGSND, L"Audio done.\n");
-	unguard();
 }
 
 int A9_VolumeDecibelToPercent( int vol )
 {
-	guard(A9_VolumeDecibelToPercent);
 	vol/=100;
 	if(vol>0) return 100;
 	if(vol<=-100) return 0;
 	return (int)(100.f / powf(10.f,(-vol/20.f)));
-	unguard();
 }
 
 int A9_VolumePercentToDecibel( int vol )
 {
-	guard(A9_VolumePercentToDecibel);
 	if(vol<=0) return -10000;
 	if(vol>=100) return 0;
 	return (int)(-100.f*(20.f * log10(100.f/vol)));
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

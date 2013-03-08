@@ -125,33 +125,33 @@ extern	a9Audio* a9_audio;
 		BOOL			A9_Init( HWND hwnd, int api=A9_API_DEFAULT );					// init a9 driver
 		void			A9_Done();														// done a9 driver
 inline	BOOL			A9_IsReady()													{ return a9_audio!=NULL; }
-inline	int				A9_Get( int prop )												{ guardfast(A9_AudioGet);			sassert(a9_audio); return a9_audio->Get(prop); unguardfast(); }
-inline	void			A9_Set( int prop, int val )										{ guardfast(A9_AudioSet);			sassert(a9_audio); a9_audio->Set(prop,val); unguardfast(); }
-inline	void			A9_Update()														{ guardfast(A9_AudioSet);			sassert(a9_audio); a9_audio->Update(); unguardfast(); }
+inline	int				A9_Get( int prop )												{ assert(a9_audio); return a9_audio->Get(prop); }
+inline	void			A9_Set( int prop, int val )										{ assert(a9_audio); a9_audio->Set(prop,val); }
+inline	void			A9_Update()														{ assert(a9_audio); a9_audio->Update(); }
 
-inline	A9BUFFERPROTO	A9_BufferPrecache( const char* filename )								{ guardfast(A9_BufferCreate);		sassert(a9_audio); return a9_audio->BufferPrecache(filename); unguardfast(); }
-inline	void			A9_BufferDeprecache( A9BUFFERPROTO proto )						{ guardfast(A9_BufferCreate);		sassert(a9_audio); a9_audio->BufferDeprecache(proto); unguardfast(); }
-inline	A9BUFFER		A9_BufferCreate( const char* filename, int flags=A9_FLAG_VOLUME )		{ guardfast(A9_BufferCreate);		sassert(a9_audio); return a9_audio->BufferCreate(filename,flags); unguardfast(); }
-inline	A9BUFFER		A9_BufferCreateFromProto( A9BUFFERPROTO proto, int flags = A9_FLAG_VOLUME )					{ guardfast(A9_BufferCreate);		sassert(a9_audio); return a9_audio->BufferCreateFromProto(proto,flags); unguardfast(); }
-inline	A9BUFFER		A9_BufferCreateFromMemory( a9Info* info, void* audiodata, int flags = A9_FLAG_VOLUME )	{ guardfast(A9_BufferCreate);		sassert(a9_audio); return a9_audio->BufferCreateFromMemory(info,audiodata,flags); unguardfast(); }
-inline	void			A9_BufferDestroy( A9BUFFER buffer )								{ guardfast(A9_BufferDestroy);		sassert(a9_audio); a9_audio->BufferDestroy(buffer); unguardfast(); }
-inline	int				A9_BufferPlay( A9BUFFER buffer, BOOL loop=FALSE )				{ guardfast(A9_BufferPlay);			sassert(a9_audio); return a9_audio->BufferPlay(buffer,loop); unguardfast(); }
-inline	int				A9_BufferStop( A9BUFFER buffer )								{ guardfast(A9_BufferStop);			sassert(a9_audio); return a9_audio->BufferStop(buffer); unguardfast(); }
-inline	int				A9_BufferGet( A9BUFFER buffer, int prop )						{ guardfast(A9_BufferGet);			sassert(a9_audio); return a9_audio->BufferGet(buffer,prop); unguardfast(); }
-inline	void			A9_BufferSet( A9BUFFER buffer, int prop, int val )				{ guardfast(A9_BufferSet);			sassert(a9_audio); a9_audio->BufferSet(buffer,prop,val); unguardfast(); }
-inline	int				A9_BufferGetPosition( A9BUFFER buffer )							{ guardfast(A9_BufferGetPosition);	sassert(a9_audio); return a9_audio->BufferGetPosition(buffer); unguardfast(); }
-inline	void			A9_BufferSetPosition( A9BUFFER buffer, int pos )				{ guardfast(A9_BufferSetPosition);	sassert(a9_audio); a9_audio->BufferSetPosition(buffer,pos); unguardfast(); }
-inline	BOOL			A9_BufferIsPlaying( A9BUFFER buffer )							{ guardfast(A9_BufferIsPlaying);	sassert(a9_audio); return a9_audio->BufferIsPlaying(buffer); unguardfast(); }
+inline	A9BUFFERPROTO	A9_BufferPrecache( const char* filename )						{ assert(a9_audio); return a9_audio->BufferPrecache(filename); }
+inline	void			A9_BufferDeprecache( A9BUFFERPROTO proto )						{ assert(a9_audio); a9_audio->BufferDeprecache(proto); }
+inline	A9BUFFER		A9_BufferCreate( const char* filename, int flags=A9_FLAG_VOLUME )	{ assert(a9_audio); return a9_audio->BufferCreate(filename,flags); }
+inline	A9BUFFER		A9_BufferCreateFromProto( A9BUFFERPROTO proto, int flags = A9_FLAG_VOLUME )		{ assert(a9_audio); return a9_audio->BufferCreateFromProto(proto,flags); }
+inline	A9BUFFER		A9_BufferCreateFromMemory( a9Info* info, void* audiodata, int flags = A9_FLAG_VOLUME )	{ assert(a9_audio); return a9_audio->BufferCreateFromMemory(info,audiodata,flags); }
+inline	void			A9_BufferDestroy( A9BUFFER buffer )								{ assert(a9_audio); a9_audio->BufferDestroy(buffer); }
+inline	int				A9_BufferPlay( A9BUFFER buffer, BOOL loop=FALSE )				{ assert(a9_audio); return a9_audio->BufferPlay(buffer,loop); }
+inline	int				A9_BufferStop( A9BUFFER buffer )								{ assert(a9_audio); return a9_audio->BufferStop(buffer); }
+inline	int				A9_BufferGet( A9BUFFER buffer, int prop )						{ assert(a9_audio); return a9_audio->BufferGet(buffer,prop); }
+inline	void			A9_BufferSet( A9BUFFER buffer, int prop, int val )				{ assert(a9_audio); a9_audio->BufferSet(buffer,prop,val); }
+inline	int				A9_BufferGetPosition( A9BUFFER buffer )							{ assert(a9_audio); return a9_audio->BufferGetPosition(buffer); }
+inline	void			A9_BufferSetPosition( A9BUFFER buffer, int pos )				{ assert(a9_audio); a9_audio->BufferSetPosition(buffer,pos); }
+inline	BOOL			A9_BufferIsPlaying( A9BUFFER buffer )							{ assert(a9_audio); return a9_audio->BufferIsPlaying(buffer); }
 
-inline	A9STREAM		A9_StreamCreate( const char* filename, int flags=A9_FLAG_VOLUME )		{ guardfast(A9_StreamCreate);		sassert(a9_audio); return a9_audio->StreamCreate(filename,flags); unguardfast(); }
-inline	void			A9_StreamDestroy( A9STREAM stream )								{ guardfast(A9_StreamDestroy);		sassert(a9_audio); a9_audio->StreamDestroy(stream); unguardfast(); }
-inline	int				A9_StreamPlay( A9STREAM stream, BOOL loop )						{ guardfast(A9_StreamPlay);			sassert(a9_audio); return a9_audio->StreamPlay(stream,loop); unguardfast(); }
-inline	int				A9_StreamStop( A9STREAM stream )								{ guardfast(A9_StreamStop);			sassert(a9_audio); return a9_audio->StreamStop(stream); unguardfast(); }
-inline	int				A9_StreamGet( A9STREAM stream, int prop )						{ guardfast(A9_StreamGet);			sassert(a9_audio); return a9_audio->StreamGet(stream,prop); unguardfast(); }
-inline	void			A9_StreamSet( A9STREAM stream, int prop, int val )				{ guardfast(A9_StreamSet);			sassert(a9_audio); a9_audio->StreamSet(stream,prop,val); unguardfast(); }
-inline	int				A9_StreamGetPosition( A9STREAM stream )							{ guardfast(A9_StreamGetPosition);	sassert(a9_audio); return a9_audio->StreamGetPosition(stream); unguardfast(); }
-inline	void			A9_StreamSetPosition( A9STREAM stream, int pos )				{ guardfast(A9_StreamSetPosition);	sassert(a9_audio); a9_audio->StreamSetPosition(stream,pos); unguardfast(); }
-inline	BOOL			A9_StreamIsPlaying( A9STREAM stream )							{ guardfast(A9_StreamIsPlaying);	sassert(a9_audio); return a9_audio->StreamIsPlaying(stream); unguardfast(); }
+inline	A9STREAM		A9_StreamCreate( const char* filename, int flags=A9_FLAG_VOLUME )	{ assert(a9_audio); return a9_audio->StreamCreate(filename,flags); }
+inline	void			A9_StreamDestroy( A9STREAM stream )								{ assert(a9_audio); a9_audio->StreamDestroy(stream); }
+inline	int				A9_StreamPlay( A9STREAM stream, BOOL loop )						{ assert(a9_audio); return a9_audio->StreamPlay(stream,loop); }
+inline	int				A9_StreamStop( A9STREAM stream )								{ assert(a9_audio); return a9_audio->StreamStop(stream); }
+inline	int				A9_StreamGet( A9STREAM stream, int prop )						{ assert(a9_audio); return a9_audio->StreamGet(stream,prop); }
+inline	void			A9_StreamSet( A9STREAM stream, int prop, int val )				{ assert(a9_audio); a9_audio->StreamSet(stream,prop,val); }
+inline	int				A9_StreamGetPosition( A9STREAM stream )							{ assert(a9_audio); return a9_audio->StreamGetPosition(stream); }
+inline	void			A9_StreamSetPosition( A9STREAM stream, int pos )				{ assert(a9_audio); a9_audio->StreamSetPosition(stream,pos); }
+inline	BOOL			A9_StreamIsPlaying( A9STREAM stream )							{ assert(a9_audio); return a9_audio->StreamIsPlaying(stream); }
 
 		int				A9_VolumeDecibelToPercent( int vol );							// conversion from volume in decibels [-10000,0] to percent [0,100]
 		int				A9_VolumePercentToDecibel( int vol );							// conversion from volume in percent [0,100] to decibels [-10000,0]

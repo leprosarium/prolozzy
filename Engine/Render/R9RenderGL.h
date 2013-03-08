@@ -153,7 +153,6 @@ static	tglGetTexImage			m_glGetTexImage			;
 
 inline void r9RenderGL::GL_BindTexture()
 {
-	guardfast(r9RenderGL::GL_BindTexture);
 	// texture
 	GLint i = 0;
 	if(m_texture) i = (GLuint)(intptr)m_texture->m_handler;
@@ -184,7 +183,6 @@ inline void r9RenderGL::GL_BindTexture()
 			// m_glTexEnvi( GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_REPLACE );
 		}
 	}	
-	unguardfast();
 }
 
 

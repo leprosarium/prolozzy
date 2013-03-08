@@ -58,7 +58,6 @@ LPWSTR swprint(LPCWSTR szFormat, ...)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 const char* parser_skipchar( const char* buffer, const char* charlist, int& parsedsize )
 {
-	guard(parser_skipchar);
 	parsedsize = 0;
 	while(*buffer!=0)
 	{
@@ -75,12 +74,10 @@ const char* parser_skipchar( const char* buffer, const char* charlist, int& pars
 		parsedsize++;
 	}
 	return buffer;
-	unguard();
 }
 
 const char* parser_skiptochar( const char* buffer, const char* charlist, int& parsedsize )
 {
-	guard(parser_skiptochar);
 	parsedsize = 0;
 	while(*buffer!=0)
 	{
@@ -97,31 +94,25 @@ const char* parser_skiptochar( const char* buffer, const char* charlist, int& pa
 		parsedsize++;
 	}
 	return buffer;
-	unguard();
 }
 
 const char* parser_skipline( const char* buffer, int& parsedsize )
 {
-	guard(parser_skipline);
 	const char* bufferstart = buffer;
 	buffer = parser_skiptochar(buffer,"\n\r", parsedsize);
 	buffer = parser_skipchar(buffer,"\n\r", parsedsize);
 	parsedsize = (int)(intptr)(buffer-bufferstart);
 	return buffer;
-	unguard();
 }
 
 
 const char* parser_skipspace( const char* buffer, int& parsedsize )
 {
-	guard(parser_skipspace);
 	return parser_skipchar(buffer," \t\r\n",parsedsize);
-	unguard();
 }
 
 const char* parser_skiptotoken( const char* buffer, const char* token, int& parsedsize )
 {
-	guard(parser_skiptotoken);
 	parsedsize=0;
 	while(*buffer!=0)
 	{
@@ -133,12 +124,10 @@ const char* parser_skiptotoken( const char* buffer, const char* token, int& pars
 		parsedsize++;
 	}
 	return buffer;
-	unguard();
 }
 
 BOOL parser_readtoken( const char* buffer, const char* token, int& parsedsize )
 {
-	guard(parser_readtoken);
 	parsedsize=0;
 	while(*buffer==*token)
 	{
@@ -147,12 +136,10 @@ BOOL parser_readtoken( const char* buffer, const char* token, int& parsedsize )
 		parsedsize++;
 	}
 	return *token==0;
-	unguard();
 }
 
 BOOL parser_readword( const char* buffer, char* value, int valuesize, int& parsedsize )
 {
-	guard(parser_readword);
 	parsedsize=0;
 	while(*buffer!=0 && *buffer!=' ' && *buffer!='\t' && *buffer!='\n' && *buffer!='\r' && parsedsize<valuesize-1)
 	{
@@ -163,12 +150,10 @@ BOOL parser_readword( const char* buffer, char* value, int valuesize, int& parse
 	}
 	*value=0;
 	return parsedsize>0;
-	unguard();
 }
 
 BOOL parser_readline( const char* buffer, char* value, int valuesize, int& parsedsize )
 {
-	guard(parser_readline);
 	int read=0;
 	parsedsize=0;
 	while(*buffer!=0 && *buffer!='\n' && *buffer!='\r' && read<valuesize-1)
@@ -191,12 +176,10 @@ BOOL parser_readline( const char* buffer, char* value, int valuesize, int& parse
 	}
 	*value = 0;
 	return parsedsize>0;
-	unguard();
 }
 
 BOOL parser_readvarstr( const char* buffer, const char* name, char* value, int valuesize, int& parsedsize )
 {
-	guard(parser_readvarstr);
 	const char* bufferstart = buffer;
 	
 	buffer=parser_skipspace(buffer,parsedsize);
@@ -216,12 +199,10 @@ BOOL parser_readvarstr( const char* buffer, const char* name, char* value, int v
 
 	parsedsize = (int)(intptr)(buffer-bufferstart);
 	return TRUE;
-	unguard();
 }
 
 BOOL parser_readvarint( const char* buffer, const char* name, int* value, int& parsedsize )
 {
-	guard(parser_readvarint);
 	const char* bufferstart = buffer;
 	
 	buffer=parser_skipspace(buffer,parsedsize);
@@ -246,12 +227,10 @@ BOOL parser_readvarint( const char* buffer, const char* name, int* value, int& p
 
 	parsedsize = (int)(intptr)(buffer-bufferstart);
 	return TRUE;
-	unguard();
 }
 
 BOOL parser_readvarfloat( const char* buffer, const char* name, float* value, int& parsedsize )
 {
-	guard(parser_readvarfloat);
 	const char* bufferstart = buffer;
 	
 	buffer=parser_skipspace(buffer,parsedsize);
@@ -276,16 +255,13 @@ BOOL parser_readvarfloat( const char* buffer, const char* name, float* value, in
 
 	parsedsize = (int)(intptr)(buffer-bufferstart);
 	return TRUE;
-	unguard();
 }
 
 void parser_trimbackspace( char* buffer, int& pos )
 {
-	guard(parser_trimbackspace);
 	while(pos>0 && (buffer[pos-1]==' ' || buffer[pos-1]=='\t' || buffer[pos-1]=='\r' || buffer[pos-1]=='\n') )
 		pos--;
 	buffer[pos]=0;
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

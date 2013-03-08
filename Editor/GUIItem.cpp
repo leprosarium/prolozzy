@@ -11,7 +11,6 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 cGUIItem::cGUIItem()
 {
-	guard(cGUIItem::cGUIItem)
 	memset(&m_var,0,sizeof(m_var));
 	// defaults
 	m_var[IV_IMG].m_int = -1;
@@ -22,29 +21,23 @@ cGUIItem::cGUIItem()
 	SetInt(IV_IMGCOLOR,	0xffffffff);
 	SetInt(IV_IMGALIGN,	GUIALIGN_CENTERXY);
 	m_dlg = NULL;
-	unguard()
 }
 
 cGUIItem::~cGUIItem()
 {
-	guard(cGUIItem::~cGUIItem)
-	sassert(m_dlg==NULL);
+	assert(m_dlg==NULL);
 	SetTxt(IV_TXT,NULL);		
 	SetTxt(IV_CMDACTION,NULL);	
 	SetTxt(IV_TOOLTIP,NULL);
-	unguard()
 }
 
 
 void cGUIItem::Build()
 {
-	guard(cGUIItem::Build)
-	unguard()
 }
 
 void cGUIItem::Update()
 {
-	guard(cGUIItem::Update)
 	RECT rc;
 	GetScrRect(rc);
 	m_mousein = INRECT( g_gui->m_mousex, g_gui->m_mousey, rc);
@@ -55,12 +48,10 @@ void cGUIItem::Update()
 		if(I9_GetKeyDown(I9_MOUSE_B2))	SetInt(IV_CMDACTIONPARAM,2);
 		if(GetInt(IV_CMDACTIONPARAM))		Action();
 	}
-	unguard()
 }
 
 void cGUIItem::Draw()
 {
-	guard(cGUIItem::Draw)
 	RECT rc; 
 	GetScrRect(rc);
 
@@ -86,7 +77,6 @@ void cGUIItem::Draw()
 	if( style & GUISTYLE_BORDER3D )
 		GUIDrawRect3D( rc.left, rc.top, rc.right, rc.bottom, GetInt(IV_COLOR+2), style & GUISTYLE_PRESSED );
 
-	unguard()
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -95,80 +85,64 @@ void cGUIItem::Draw()
 
 void cGUIItem::SetInt( int idx, int val )
 {
-	guard(cGUIItem::SetInt)
-	sassert(0<=idx && idx<IV_MAX);
+	assert(0<=idx && idx<IV_MAX);
 	m_var[idx].m_int=val;
-	unguard()
 }
 
 int cGUIItem::GetInt( int idx )
 {
-	guard(cGUIItem::GetInt)
-	sassert(0<=idx && idx<IV_MAX);
+	assert(0<=idx && idx<IV_MAX);
 	return m_var[idx].m_int;	
-	unguard()
 }
 
 void cGUIItem::SetTxt( int idx, char* text )
 {
-	guard(cGUIItem::SetTxt)
-	sassert(0<=idx && idx<IV_MAX);
+	assert(0<=idx && idx<IV_MAX);
 	char* sz = m_var[idx].m_str;
-	if(sz) sfree(sz);
+	if(sz) free(sz);
 	m_var[idx].m_str = sstrdup(text);
-	unguard()
 }
 
 char* cGUIItem::GetTxt( int idx )
 {
-	guard(cGUIItem::GetTxt)
-	sassert(0<=idx && idx<IV_MAX);
+	assert(0<=idx && idx<IV_MAX);
 	return m_var[idx].m_str;
-	unguard()
 }
 
 void cGUIItem::SetPoint( int idx, POINT point )
 {
-	guard(cGUIItem::SetPoint)
-	sassert(0<=idx && idx<IV_MAX-1);
+	assert(0<=idx && idx<IV_MAX-1);
 	m_var[idx+0].m_int = point.x;
 	m_var[idx+1].m_int = point.y;
-	unguard()
 }
 
 POINT cGUIItem::GetPoint( int idx )
 {
-	guard(cGUIItem::GetPoint)
-	sassert(0<=idx && idx<IV_MAX-1);
+	assert(0<=idx && idx<IV_MAX-1);
 	POINT point;
 	point.x = m_var[idx+0].m_int;
 	point.y = m_var[idx+1].m_int;
 	return point;
-	unguard()
 }
 
 void cGUIItem::SetRect( int idx, RECT rect )
 {
-	guard(cGUIItem::SetRect)
-	sassert(0<=idx && idx<IV_MAX-3);
+	assert(0<=idx && idx<IV_MAX-3);
 	m_var[idx+0].m_int = rect.left;
 	m_var[idx+1].m_int = rect.top;
 	m_var[idx+2].m_int = rect.right;
 	m_var[idx+3].m_int = rect.bottom;
-	unguard()
 }
 
 RECT cGUIItem::GetRect( int idx )
 {
-	guard(cGUIItem::GetRect)
-	sassert(0<=idx && idx<IV_MAX-3);
+	assert(0<=idx && idx<IV_MAX-3);
 	RECT rect;
 	rect.left = m_var[idx+0].m_int;
 	rect.top = m_var[idx+1].m_int;
 	rect.right = m_var[idx+2].m_int;
 	rect.bottom = m_var[idx+3].m_int;
 	return rect;
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -177,7 +151,6 @@ RECT cGUIItem::GetRect( int idx )
 
 void cGUIItem::GetScrRect( RECT &rc )
 {
-	guard(cGUIItem::GetScrRect)
 	rc = GetRect(IV_RECT);
 	cGUIDlg *p = m_dlg;
 	if(p!=NULL)
@@ -187,22 +160,18 @@ void cGUIItem::GetScrRect( RECT &rc )
 		rc.right  += p->GetInt(DV_X);
 		rc.bottom += p->GetInt(DV_Y);
 	}
-	unguard()
 }
 
 
 int cGUIItem::SetParent( cGUIDlg* dlg)
 {
-	guard(cGUIItem::SetParent)
-	sassert(m_dlg==NULL); 
+	assert(m_dlg==NULL); 
 	if(dlg!=NULL) return dlg->ItemAdd(this);
 	return -1;
-	unguard()
 }
 
 void cGUIItem::Capture( BOOL on )
 {
-	guard(cGUIItem::Capture)
 	if(on)
 	{
 		if(g_gui->m_capture==NULL) 
@@ -213,34 +182,27 @@ void cGUIItem::Capture( BOOL on )
 		if(g_gui->m_capture==this) 
 			g_gui->m_capture = NULL;
 	}
-	unguard()
 }
 
 BOOL cGUIItem::IsCaptured()
 {
-	guard(cGUIItem::IsCaptured)
 	return (g_gui->m_capture==this);
-	unguard()
 }
 
 
 void cGUIItem::Select()	
 {
-	guard(cGUIItem::Select)
 	g_gui->m_lastdlg = g_gui->DlgFind(m_dlg);
 	g_gui->m_lastitem = m_dlg->ItemFind(this);
-	unguard()
 }
 
 
 void cGUIItem::Action()
 {
-	guard(cGUIItem::Action)
 	char* cmd = GetTxt(IV_CMDACTION);
 	if(cmd==NULL || cmd[0]==0) return;
 	Select();	
 	g_gui->ScriptPrologDo(cmd);
-	unguard()
 }
 
 
@@ -251,21 +213,16 @@ void cGUIItem::Action()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 cGUITitle::cGUITitle()
 {
-	guard(cGUITitle::cGUITitle)
 	SetInt(IV_VALUE,1);
 	m_movex = m_movey = 0;
-	unguard()
 }
 
 cGUITitle::~cGUITitle()
 {
-	guard(cGUITitle::~cGUITitle)
-	unguard()
 }
 
 void cGUITitle::Update()
 {
-	guard(cGUITitle::Update)
 	RECT rc;
 	GetScrRect(rc);
 	m_mousein = INRECT( g_gui->m_mousex, g_gui->m_mousey, rc);
@@ -308,7 +265,6 @@ void cGUITitle::Update()
 		m_dlg->SetInt(DV_Y2, y+h);
 	}
 	
-	unguard()
 }
 
 

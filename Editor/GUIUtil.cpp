@@ -11,8 +11,7 @@ R9TEXTURE g_texdot = NULL;
 
 void GUIInitResources()
 {
-	guard(GUIInitResources);
-	sassert(R9_IsReady());
+	assert(R9_IsReady());
 	// create chess texture for dot lines
 	r9Img img;
 	img.m_width = 64;
@@ -29,20 +28,16 @@ void GUIInitResources()
 	}
 	g_texdot = R9_TextureCreate(&img);
 	R9_ImgDestroy(&img);
-	unguard();
 }
 
 void GUIDoneResources()
 {
-	guard(GUIDoneResources);
 	if(g_texdot) R9_TextureDestroy(g_texdot);
 	g_texdot = NULL;
-	unguard();
 }
 
 dword GUIColorShift( dword color, int delta )
 {
-	guard(GUIColorShift)
 	int r = (color>>16) & 0xff;
 	int g = (color>>8) & 0xff;
 	int b = color & 0xff;
@@ -56,12 +51,10 @@ dword GUIColorShift( dword color, int delta )
 	if(b>255) b = 255; 
 	if(b<0)	  b = 0;
 	return ( (color & 0xff000000) | (r<<16) | (g<<8) | b );
-	unguard()
 }
 
 void GUIDrawGradient( int x1, int y1, int x2, int y2, dword color1, dword color2 )
 {
-	guard(GUIDrawGradient);
 	if(R9_GetTexture()!=NULL) R9_SetTexture(NULL);
 
 	r9Vertex vx[6];
@@ -92,12 +85,10 @@ void GUIDrawGradient( int x1, int y1, int x2, int y2, dword color1, dword color2
 	vx[5].color = color1;
 
 	R9_Push(vx,6,R9_PRIMITIVE_TRIANGLE);
-	unguard();
 }
 
 void GUIDrawLineDot( int x1, int y1, int x2, int y2, dword color, float dx, float dy )
 {
-	guard(GUIDrawLineDot);
 	if(!g_texdot) return;
 	if(R9_GetTexture()!=g_texdot) R9_SetTexture(g_texdot);
 	r9Vertex vx[2];
@@ -115,23 +106,19 @@ void GUIDrawLineDot( int x1, int y1, int x2, int y2, dword color, float dx, floa
 	vx[1].v		= ((float)y2+dy) / (float)th;
 
 	R9_Push(vx,2,R9_PRIMITIVE_LINE);
-	unguard();
 }
 
 void GUIDrawRectDot( int x1, int y1, int x2, int y2, dword color )
 {
-	guard(GUIDrawRectDot)
 	float d = (float)(sys_gettickcount()%1024); // offsets not too big
 	GUIDrawLineDot( x1,y1,	 x2,y1,	  color, d, 0.0f );
 	GUIDrawLineDot( x1,y1,	 x1,y2,	  color, 0.0f, d );
 	GUIDrawLineDot( x2-1,y1, x2-1,y2, color, 0.0f, d );
 	GUIDrawLineDot( x1,y2-1, x2,y2-1, color, d, 0.0f );
-	unguard()
 }
 
 void GUIDrawText( int x1, int y1, int x2, int y2, char* text, dword color, int align, int offset )
 {
-	guard(GUIDrawText)
 	if(text==NULL) return;
 	if(color==0) return;
 	dword oldcolor = g_gui->m_font->GetColor(); 
@@ -153,12 +140,10 @@ void GUIDrawText( int x1, int y1, int x2, int y2, char* text, dword color, int a
 	g_gui->m_font->Print((float)x,(float)y,text);  
 
 	g_gui->m_font->SetColor(oldcolor);
-	unguard()
 }
 
 void GUIDrawImg( int x1, int y1, int x2, int y2, int img, dword color, int align )
 {
-	guard(GUIDrawImg)
 	if(img==-1) return;
 	if(color==0) return;
 	R9TEXTURE tex = g_gui->m_texturepool.Get(img);
@@ -177,7 +162,6 @@ void GUIDrawImg( int x1, int y1, int x2, int y2, int img, dword color, int align
 	
 	R9_SetState(R9_STATE_BLEND, R9_BLEND_ALPHA);
 	R9_DrawSprite(fV2(x,y),fRect(0,0,w,h),tex,color);
-	unguard()
 }
 
 
@@ -185,7 +169,6 @@ void GUIDrawImg( int x1, int y1, int x2, int y2, int img, dword color, int align
 //////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL WinDlgOpenFile( LPWSTR filename, LPWSTR ext, int mode )
 {
-	guard(WinDlgOpenFile)
 	if(mode!=0 && mode!=1) return FALSE;
 	
 	dword flags=0;
@@ -244,14 +227,12 @@ BOOL WinDlgOpenFile( LPWSTR filename, LPWSTR ext, int mode )
 	if(mode==1)
 		ok = GetSaveFileNameW( &ofn );
 	return ok;
-	unguard()
 }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL WinDlgOpenFolder( LPWSTR foldername )
 {
-	guard(WinDlgOpenFolder)
 	foldername[0]=0;
 
 	BROWSEINFOW bi;
@@ -273,14 +254,12 @@ BOOL WinDlgOpenFolder( LPWSTR foldername )
 	if (s == 0) return 0;
 	if (foldername[s - 1] == L'\\') foldername[s-1] = 0;
 	return 1;
-	unguard()
 }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL WinDlgOpenColor( dword* color, BOOL extended )
 {
-	guard(WinDlgOpenColor)
 
 	static COLORREF custom[16];
 
@@ -298,7 +277,6 @@ BOOL WinDlgOpenColor( dword* color, BOOL extended )
 	if( ok ) // keep alpha and reverse red and blue
 		*color = (*color & 0xff000000) | RGB2BGR(cc.rgbResult);
 	return ok;
-	unguard()
 }
 
 

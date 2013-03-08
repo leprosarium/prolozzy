@@ -43,7 +43,6 @@ r9RenderGL::tglGetTexImage			r9RenderGL::m_glGetTexImage			= NULL;
 
 r9RenderGL::r9RenderGL()
 {
-	guard(r9RenderGL::r9RenderGL);
 	m_api			= R9_API_OPENGL;
 	m_hdc			= NULL;
 	m_hrc			= NULL;
@@ -51,13 +50,10 @@ r9RenderGL::r9RenderGL()
 	m_batchbuffer	= NULL;
 	m_caps.m_texture_env_combine	= FALSE;
 	m_textarget		= NULL;
-	unguard();
 }
 
 r9RenderGL::~r9RenderGL()
 {
-	guard(r9RenderGL::~r9RenderGL);
-	unguard();
 }
 
 
@@ -66,7 +62,6 @@ r9RenderGL::~r9RenderGL()
 
 BOOL r9RenderGL::LoadDll()
 {
-	guard(r9RenderGL::LoadDll);
 #ifdef R9_ENABLE_DLLGL
 	if(m_dll) return TRUE;
 	m_dll = LoadLibrary("opengl32.dll");
@@ -141,12 +136,10 @@ BOOL r9RenderGL::LoadDll()
 
 	return TRUE;
 #endif
-	unguard();
 }
 
 void r9RenderGL::UnloadDll()
 {
-	guard(r9RenderGL::UnloadDll);
 #ifdef R9_ENABLE_DLLGL
 	if(m_dll==NULL) return;
 	FreeLibrary(m_dll);	
@@ -183,12 +176,10 @@ void r9RenderGL::UnloadDll()
 	m_glCopyTexImage2D		= NULL;
 	m_glGetTexImage			= NULL;
 
-	unguard();
 }
 
 void r9RenderGL::LogAdapterInfo()
 {
-	guard(r9RenderGL::LogAdapterInfo);
 	DISPLAY_DEVICE  dd;
 	memset(&dd,0,sizeof(dd));
 	dd.cb = sizeof(DISPLAY_DEVICE);
@@ -206,7 +197,6 @@ void r9RenderGL::LogAdapterInfo()
 	}
 
 	dlog(LOGRND, L"Video adapter unknown.");
-	unguard();
 }
 
 static int SortDisplayModes( const VOID* arg1, const VOID* arg2 )
@@ -228,7 +218,6 @@ static int SortDisplayModes( const VOID* arg1, const VOID* arg2 )
 
 int r9RenderGL::GatherDisplayModes( r9DisplayMode* displaymode )
 {
-	guard(r9RenderGL::GatherDisplayModes);
 	BOOL ok;
 	int count = 0;
 	
@@ -294,12 +283,10 @@ int r9RenderGL::GatherDisplayModes( r9DisplayMode* displaymode )
 	}
 
 	return count;
-	unguard();
 }
 
 BOOL r9RenderGL::Init( HWND hwnd, r9Cfg* cfg )
 {
-	guard(r9RenderGL::Init);
 	// m_hwnd = hwnd; OpenGL uses a child render window, because of the bpp problem
 	
 	// config
@@ -330,31 +317,25 @@ BOOL r9RenderGL::Init( HWND hwnd, r9Cfg* cfg )
 	CreateFont();
 
 	return TRUE;
-	unguard();
 }
 
 void r9RenderGL::Done()
 {
-	guard(r9RenderGL::Done);
 	r9Render::Done();
-	sfree(m_batchbuffer);
+	free(m_batchbuffer);
 	if(!m_cfg.m_windowed) ChangeDisplaySettings(NULL,0);
 	if(m_hrc) { m_wglMakeCurrent(NULL,NULL); m_wglDeleteContext(m_hrc); m_hrc=NULL; }
 	if(m_hdc) { ReleaseDC(m_hwnd,m_hdc); m_hdc=NULL; }
 	DestroyRenderWindow();
-	unguard();
 }
 
 BOOL r9RenderGL::IsReady()
 {
-	guard(r9RenderGL::IsReady);
 	return (m_hrc!=NULL);
-	unguard();
 }
 
 R9TEXTURE r9RenderGL::TextureCreate( r9Img* img )
 {
-	guard(r9RenderGL::TextureCreate);
 	// check image
 	if(img==NULL) return NULL;
 	if(!R9_ImgIsValid(img)) return NULL;
@@ -378,7 +359,7 @@ R9TEXTURE r9RenderGL::TextureCreate( r9Img* img )
 		img2.m_pf = img->m_pf;
 		img2.m_width = w;
 		img2.m_height = h;
-		R9_ImgCreate(&img2,TRUE); sassert(img2.m_data);
+		R9_ImgCreate(&img2,TRUE); assert(img2.m_data);
 		R9_ImgBitBlt(img,0,0,img->m_width,img->m_height,&img2,0,0);
 		imgdata = img2.m_data; // use this data
 	}
@@ -397,7 +378,7 @@ R9TEXTURE r9RenderGL::TextureCreate( r9Img* img )
 	if(R9_ImgIsValid(&img2)) R9_ImgDestroy(&img2); // destroy resized if needed
 
 	// create R9 texture
-	r9Texture* tex		= snew r9Texture;
+	r9Texture* tex		= new r9Texture;
 	tex->m_width		= img->m_width;
 	tex->m_height		= img->m_height;
 	tex->m_realwidth	= w;
@@ -408,12 +389,10 @@ R9TEXTURE r9RenderGL::TextureCreate( r9Img* img )
 	GL_BindTexture(); // for wrap and filter
 
 	return tex;
-	unguard();
 }
 
 R9TEXTURE r9RenderGL::TextureCreateTarget( int width, int height )
 {
-	guard(r9RenderGL::TextureCreateTarget);
 	
 	// find accepted size, power of 2, etc
 	int w = GetPow2HI(width);
@@ -423,7 +402,7 @@ R9TEXTURE r9RenderGL::TextureCreateTarget( int width, int height )
 
 	// data
 	int spp = 4;
-	byte* imgdata = (byte*)smalloc(w*h*spp); sassert(imgdata);
+	byte* imgdata = (byte*)malloc(w*h*spp); assert(imgdata);
 	memset(imgdata,0,w*h*spp);
 
 	// create GL texture
@@ -432,10 +411,10 @@ R9TEXTURE r9RenderGL::TextureCreateTarget( int width, int height )
 	m_glBindTexture(GL_TEXTURE_2D, gltex);
 	m_glTexImage2D(GL_TEXTURE_2D, 0, spp, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, imgdata);
 
-	sfree(imgdata);
+	free(imgdata);
 
 	// create R9 texture
-	r9Texture* tex		= snew r9Texture;
+	r9Texture* tex		= new r9Texture;
 	tex->m_width		= width;
 	tex->m_height		= height;
 	tex->m_realwidth	= w;
@@ -446,33 +425,27 @@ R9TEXTURE r9RenderGL::TextureCreateTarget( int width, int height )
 	GL_BindTexture(); // for wrap and filter
 
 	return tex;
-	unguard();
 }
 
 void r9RenderGL::TextureDestroy( R9TEXTURE texture )
 {
-	guard(r9RenderGL::TextureDestroy);
 	if(texture==NULL) return;
 	GLuint gltex = (GLuint)(intptr)texture->m_handler;
 	m_glDeleteTextures(1,&gltex);
-	sdelete(texture);
-	unguard();
+	delete texture;
 }
 
 void r9RenderGL::SetTexture( R9TEXTURE texture )
 {
-	guard(r9RenderGL::SetTexture);
 	if(m_texture==texture) return;
 	if(NeedFlush()) Flush();
 	m_texture = texture;
 	GL_BindTexture();
-	unguard();
 }
 
 void r9RenderGL::SetState( int state, int value )
 {
-	guard(r9RenderGL::SetState);
-	sassert(0<=state && state<R9_STATES);
+	assert(0<=state && state<R9_STATES);
 	if(m_state[state]==value) return;
 	if(NeedFlush()) Flush();
 	m_state[state] = value;
@@ -518,12 +491,10 @@ void r9RenderGL::SetState( int state, int value )
 			break;
 		}
 	}
-	unguard();
 }
 
 void r9RenderGL::SetViewport( fRect& rect )
 {
-	guard(r9RenderGL::SetViewport);
 	if(m_viewport==rect) return;
 	m_viewport = rect;
 	m_glViewport((GLint)rect.x1,(GLint)rect.y1,(GLint)rect.Width(),(GLint)rect.Height());
@@ -532,12 +503,10 @@ void r9RenderGL::SetViewport( fRect& rect )
 	m_glOrtho(rect.x1,rect.x2,rect.y2,rect.y1,-1,1);
 	m_glMatrixMode(GL_MODELVIEW);
 	m_glLoadIdentity();
-	unguard();
 }
 
 void r9RenderGL::SetView( int x, int y, dword flip )
 {
-	guard(r9RenderGL::SetView);
 	m_viewx = x;
 	m_viewy = y;
 	m_viewflip = flip;
@@ -556,13 +525,11 @@ void r9RenderGL::SetView( int x, int y, dword flip )
 	m_glLoadIdentity();
 	m_glOrtho(rect.x1,rect.x2,rect.y2,rect.y1,-1,1);
 
-	unguard();
 
 }
 
 void r9RenderGL::SetDefaultStates()
 {
-	guard(r9RenderGL::SetDefaultStates);
 	// device default states
 	m_glEnable(GL_BLEND);
 	m_glEnable(GL_TEXTURE_2D);
@@ -577,22 +544,18 @@ void r9RenderGL::SetDefaultStates()
 
 	// our render states
 	r9Render::SetDefaultStates();
-	unguard();
 }
 
 void r9RenderGL::Clear( dword color )
 {
-	guard(r9RenderGL::Clear);
 	if( !m_beginendscene ) return;
 	fColor fcolor(color);
 	m_glClearColor(fcolor.r,fcolor.g,fcolor.b,fcolor.a);
 	m_glClear(GL_COLOR_BUFFER_BIT);
-	unguard();
 }
 
 BOOL r9RenderGL::BeginScene( R9TEXTURE target )
 {
-	guard(r9RenderGL::BeginScene);
 	if( m_beginendscene ) return FALSE;
 	m_primitivecount = 0;
 
@@ -607,12 +570,10 @@ BOOL r9RenderGL::BeginScene( R9TEXTURE target )
 
 	m_beginendscene = TRUE;
 	return TRUE;
-	unguard();
 }
 
 void r9RenderGL::EndScene()
 {
-	guard(r9RenderGL::EndScene);
 	if( !m_beginendscene ) return;
 	if(NeedFlush()) Flush();
 	m_beginendscene = FALSE;
@@ -631,20 +592,16 @@ void r9RenderGL::EndScene()
 		m_textarget = NULL; // clear
 	}
 
-	unguard();
 }
 
 void r9RenderGL::Present()
 {
-	guard(r9RenderGL::Present);
 	BOOL ok = SwapBuffers(m_hdc);
-	unguard();
 }
 
 //@OBSOLETE
 BOOL r9RenderGL::ToggleVideoMode()
 {
-	guard(r9RenderGL::ToggleVideoMode);
 	dlog(LOGRND, L"Toggle video mode: ");
 	BOOL ok = FALSE;
 	if(!m_cfg.m_windowed) // change to windowed
@@ -671,12 +628,10 @@ BOOL r9RenderGL::ToggleVideoMode()
 	}
 	dlog(LOGRND,ok? L"successful\n" : L"failed\n");
 	return ok;
-	unguard();
 }
 
 void r9RenderGL::Push( r9Vertex* vx, int vxs, int primitive )
 {
-	guard(r9RenderGL::Push);
 	// set primitive
 	if(GetState(R9_STATE_PRIMITIVE)!=primitive)
 		SetState(R9_STATE_PRIMITIVE,primitive);
@@ -716,12 +671,10 @@ void r9RenderGL::Push( r9Vertex* vx, int vxs, int primitive )
 		if( m_batchcount==batchsize ) Flush();
 	}
 	
-	unguard();
 }
 
 void r9RenderGL::Flush()
 {
-	guard(r9RenderGL::Flush);
 	m_needflush = FALSE;
 	if(m_batchcount==0) return;
 
@@ -744,7 +697,6 @@ void r9RenderGL::Flush()
 
 
 	m_batchcount = 0;
-	unguard();
 }
 
 
@@ -753,8 +705,6 @@ void r9RenderGL::Flush()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL r9RenderGL::SaveScreenShot( fRect* rect, BOOL full )
 {
-	guard(r9RenderGL::SaveScreenShot)
-
 	r9Img img;
 	if(!TakeScreenShot(&img, rect, full)) return FALSE;
 
@@ -779,13 +729,10 @@ BOOL r9RenderGL::SaveScreenShot( fRect* rect, BOOL full )
 	dlog(LOGRND, L"ScreenShot saved!\n");
 
 	return TRUE;
-	unguard()
 }
 
 BOOL r9RenderGL::TakeScreenShot( r9Img* img, fRect* rect, BOOL full )
 {
-	guard(r9RenderGL::TakeScreenShot)
-
 	if(img==NULL) return FALSE;
 	if( IsBeginEndScene() ) { dlog(LOGRND, L"ScreenShot can not be taken inside Begin - End frame.\n"); return FALSE; }
 	if( m_cfg.m_bpp!=32 ) 	{ dlog(LOGRND, L"ScreenShot can be taken only in 32bit modes.\n"); return FALSE; }
@@ -833,15 +780,13 @@ BOOL r9RenderGL::TakeScreenShot( r9Img* img, fRect* rect, BOOL full )
 
 	R9_ImgFlipRGB(img);
 	return TRUE;
-	unguard()
 }
 
 BOOL r9RenderGL::CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )
 {
-	guard(r9RenderGL::CopyTargetToImage);
-	sassert(img); 
-	sassert(rect);
-	sassert(target);
+	assert(img); 
+	assert(rect);
+	assert(target);
 	if(!R9_ImgIsValid(img)) return FALSE;
 
 	int x = (int)rect->x1;
@@ -870,7 +815,6 @@ BOOL r9RenderGL::CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )
 
 	R9_ImgDestroy(&imgtmp);
 	return TRUE;
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -878,7 +822,6 @@ BOOL r9RenderGL::CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL r9RenderGL::CreateRenderWindow()
 {
-	guard(r9RenderGL::CreateRenderWindow);
 	HWND hwnd_parent = E9_GetHWND();
 	if(!hwnd_parent) return FALSE;
 	RECT rect_parent;
@@ -919,12 +862,10 @@ BOOL r9RenderGL::CreateRenderWindow()
 
 	return TRUE;
 
-	unguard();
 }
 
 BOOL r9RenderGL::DestroyRenderWindow()
 {
-	guard(r9RenderGL::DestroyRenderWindow);
 	if(m_hwnd) 
 	{ 
 		DestroyWindow(m_hwnd); 
@@ -932,19 +873,15 @@ BOOL r9RenderGL::DestroyRenderWindow()
 	}
 	if(!UnregisterClass("E9_RNDCLASS",E9_GetHINSTANCE())) { dlog(LOGERR, L"RENDER: can't unregister window class."); }
 	return TRUE;
-	unguard();
 }
 
 LRESULT	CALLBACK r9RenderGL::WndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	guard(r9RenderGL::WndProc);
 	return DefWindowProc( hwnd, msg, wParam, lParam );
-	unguard();
 }
 
 void r9RenderGL::PrepareParentWindow()
 {
-	guard(r9RenderGL::PrepareParentWindow);
 	HWND hwnd = E9_GetHWND();
 	if(!hwnd) return;
 	if( m_cfg.m_windowed )
@@ -978,13 +915,11 @@ void r9RenderGL::PrepareParentWindow()
 	RECT r;
 	GetWindowRect(hwnd,&r);
 	dlog(LOGRND, L"window size %ix%i\n",r.right-r.left,r.bottom-r.top);
-	unguard();
 }
 
 BOOL r9RenderGL::GL_CreateDevice()
 {
-	guard(r9RenderGL::GL_CreateDevice)
-	sassert(!m_hrc);
+	assert(!m_hrc);
 
 	PIXELFORMATDESCRIPTOR pfd =
 	{
@@ -1058,16 +993,13 @@ BOOL r9RenderGL::GL_CreateDevice()
 	if(m_hrc) { m_wglMakeCurrent(NULL,NULL); m_wglDeleteContext(m_hrc); m_hrc=NULL; }
 	if(m_hdc) { ReleaseDC(m_hwnd,m_hdc); m_hdc=NULL; }
 	return FALSE;
-	unguard()
 }
 
 BOOL r9RenderGL::GL_BatchCreate()
 {
-	guard(r9RenderGL::GL_BatchCreate);
-	m_batchbuffer = (r9Vertex*)smalloc(R9_BATCHSIZE_GL*sizeof(r9Vertex));
+	m_batchbuffer = (r9Vertex*)malloc(R9_BATCHSIZE_GL*sizeof(r9Vertex));
 	memset(m_batchbuffer,0,R9_BATCHSIZE_GL*sizeof(r9Vertex)); // clear
 	return TRUE;
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

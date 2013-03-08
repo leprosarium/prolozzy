@@ -272,37 +272,30 @@ PREDICATE_M(map, saveImage, 1)
 //////////////////////////////////////////////////////////////////////////////////////////////////
 cPartitionCel::cPartitionCel()
 {
-	guard(cPartitionCel::cPartitionCel)
 	m_count=0;
 	m_size=0;
 	m_data=NULL;
-	unguard()
 }
 
 cPartitionCel::~cPartitionCel()
 {
-	guard(cPartitionCel::~cPartitionCel)
-	if(m_data!=NULL) sfree(m_data);
-	unguard()
+	if(m_data!=NULL) free(m_data);
 }
 
 void cPartitionCel::Add( int val )
 {
-	guard(cPartitionCel::cPartitionCel)
 	if(m_count==m_size)
 	{
 		m_size+=256;
-		m_data = (int*)srealloc(m_data,m_size*sizeof(int));
-		sassert(m_data!=NULL);
+		m_data = (int*)realloc(m_data,m_size*sizeof(int));
+		assert(m_data!=NULL);
 	}
 	m_data[m_count]=val;
 	m_count++;
-	unguard()
 }
 
 void cPartitionCel::Sub( int val )
 {
-	guard(cPartitionCel::cPartitionCel)
 	for(int i=0;i<m_count;i++)
 	{
 		if(m_data[i]==val) 
@@ -313,16 +306,13 @@ void cPartitionCel::Sub( int val )
 			return;
 		}
 	}
-	unguard()
 }
 
 int cPartitionCel::Find( int val )
 {
-	guard(cPartitionCel::Find)
 	for(int i=0;i<m_count;i++)
 		if(m_data[i]==val) return i;
 	return -1;
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -331,7 +321,6 @@ int cPartitionCel::Find( int val )
 
 cEdiMap::cEdiMap()
 {
-	guard(cEdiMap::cEdiMap)
 	
 	// map
 	m_mapw			= 0;
@@ -371,18 +360,14 @@ cEdiMap::cEdiMap()
 	m_count_brushdraw = 0;
 	m_count_brushcheck = 0;
 
-	unguard()
 }
 
 cEdiMap::~cEdiMap()
 {
-	guard(cEdiMap::~cEdiMap)
-	unguard()
 }
 
 BOOL cEdiMap::Init()
 {
-	guard(cEdiMap::Init)
 
 	// create render target shader
 	int width = R9_GetWidth();
@@ -408,12 +393,10 @@ BOOL cEdiMap::Init()
 	}
 
 	return TRUE;
-	unguard()
 }
 
 void cEdiMap::Done()
 {
-	guard(cEdiMap::Done)
 
 	MarkerClear();
 	PartitionDone();
@@ -422,16 +405,15 @@ void cEdiMap::Done()
 	if(m_target) { R9_TextureDestroy(m_target); m_target=NULL; }
 	
 	// brushes
-	if(m_brush) sfree(m_brush);
+	if(m_brush) free(m_brush);
 	m_brush=NULL;
 	m_brushcount = 0;
 	m_brushsize	= 0;
-	if(m_brushvis) sfree(m_brushvis);
+	if(m_brushvis) free(m_brushvis);
 	m_brushviscount=NULL;
 	m_brushviscount=0;
 	m_brushvissize=0;
 
-	unguard()
 }
 
 
@@ -440,7 +422,6 @@ void cEdiMap::Done()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiMap::Update( float dtime )
 {
-	guard(cEdiMap::Update)
 
 	int stepx = EdiApp()->m_gridsize;
 	int stepy = EdiApp()->m_gridsize;
@@ -586,7 +567,6 @@ void cEdiMap::Update( float dtime )
 	if(m_refresh) Refresh(); // @HM is it safe for draw (needs to be after bounds checks) !
 	m_refresh = FALSE;
 
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -594,7 +574,6 @@ void cEdiMap::Update( float dtime )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiMap::Draw()
 {
-	guard(cEdiMap::Draw)
 
 	// draw pre-rendered map
 	if(!m_target) return; // render target is not supported
@@ -614,12 +593,10 @@ void cEdiMap::Draw()
 		R9_DrawBar( fRect(m_viewx-VIEWB+3,m_viewy-VIEWB+3,m_viewx-3, m_viewy-3), 0xffffffff );
 	}
 
-	unguard()
 }
 
 void cEdiMap::Refresh()
 {
-	guard(cEdiMap::Refresh)
 	// draw in render target
 	if(R9_BeginScene(m_target))
 	{
@@ -637,7 +614,6 @@ void cEdiMap::Refresh()
 
 		R9_EndScene();
 	}
-	unguard()
 }
 
 
@@ -646,7 +622,6 @@ void cEdiMap::Refresh()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiMap::Reset()
 {
-	guard(cEdiMap::Reset)
 
 	MarkerClear();
 	PartitionDone();
@@ -665,7 +640,6 @@ void cEdiMap::Reset()
 	m_refresh = TRUE;
 	SelectionRefresh();
 
-	unguard()
 }
 
 int cEdiMap::Resize( int width, int height )
@@ -699,12 +673,11 @@ int cEdiMap::Resize( int width, int height )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 int	cEdiMap::BrushNew()
 {
-	guard(cEdiMap::BrushNew)
 	if(m_brushcount==m_brushsize)
 	{
 		m_brushsize += 1024; // grow
-		m_brush = (tBrush*)srealloc(m_brush, m_brushsize*sizeof(tBrush));
-		sassert(m_brush!=NULL);
+		m_brush = (tBrush*)realloc(m_brush, m_brushsize*sizeof(tBrush));
+		assert(m_brush!=NULL);
 	}
 	
 	// init
@@ -715,29 +688,24 @@ int	cEdiMap::BrushNew()
 
 	m_brushcount++;
 	return m_brushcount-1;
-	unguard()
 }
 
 void cEdiMap::BrushIns( int idx, tBrush& brush )
 {
-	guard(cEdiMap::BrushIns)
-	sassert(0<=idx && idx<=m_brushcount);
+	assert(0<=idx && idx<=m_brushcount);
 	BrushNew();
 	for(int i=m_brushcount-1;i>idx;i--) m_brush[i] = m_brush[i-1];
 	m_brush[idx]=brush;
 	if(m_brush[idx].m_data[BRUSH_SELECT]) m_selectcount++;
-	unguard()
 }
 
 void cEdiMap::BrushDel( int idx )
 {
-	guard(cEdiMap::BrushDel)
-	sassert(0<=idx && idx<m_brushcount);
+	assert(0<=idx && idx<m_brushcount);
 	if(m_brush[idx].m_data[BRUSH_SELECT]) m_selectcount--;
 	if( idx<m_brushcount-1 )
 		memcpy( &m_brush[idx], &m_brush[idx+1], sizeof(tBrush)*(m_brushcount-1-idx) );
 	m_brushcount--;
-	unguard()
 }
 
 tBrush & cEdiMap::GetBrush(int idx)
@@ -750,7 +718,6 @@ tBrush & cEdiMap::GetBrush(int idx)
 /*
 void cEdiMap::BrushDrawOld( iRect& view )
 {
-	guard(cEdiMap::BrushDrawOld)
 	return; // update brushview to be usable !!!???
 
 	m_count_brushdraw = 0;
@@ -791,13 +758,11 @@ void cEdiMap::BrushDrawOld( iRect& view )
 
 	EdiApp()->m_brush = brushtemp;
 
-	unguard()
 }
 */
 
 void cEdiMap::BrushDrawExtra( iRect& view )
 {
-	guard(cEdiMap::BrushDrawExtra)
 	int i;
 	m_count_brushdraw = 0;
 	m_count_brushcheck = 0;
@@ -819,7 +784,7 @@ void cEdiMap::BrushDrawExtra( iRect& view )
 		for( i=0; i<brushcount; i++ )
 		{
 			int idx = m_partition[pidx]->m_data[i];
-			sassert(0<=idx && idx<m_brushcount);
+			assert(0<=idx && idx<m_brushcount);
 			m_count_brushcheck++;
 
 			tBrush& brush = m_brush[idx];
@@ -838,7 +803,7 @@ void cEdiMap::BrushDrawExtra( iRect& view )
 			if(m_brushviscount==m_brushvissize)
 			{
 				m_brushvissize+=1024;
-				m_brushvis = (int*)srealloc(m_brushvis, m_brushvissize*sizeof(int));
+				m_brushvis = (int*)realloc(m_brushvis, m_brushvissize*sizeof(int));
 			}
 			m_brushvis[m_brushviscount] = idx;
 			m_brushviscount++;
@@ -898,12 +863,10 @@ void cEdiMap::BrushDrawExtra( iRect& view )
 
 	EdiApp()->m_brush = brushtemp;
 
-	unguard()
 }
 
 int	cEdiMap::BrushPick( int x, int y )
 {
-	guard(cEdiMap::BrushPick)
 	for( int idx=m_brushcount-1; idx>=0; idx-- ) // top to bottom
 	{
 		tBrush& brush = m_brush[idx];
@@ -919,13 +882,11 @@ int	cEdiMap::BrushPick( int x, int y )
 		if(INRECT(x,y,bb)) return idx;
 	}
 	return -1;
-	unguard()
 }
 
 void cEdiMap::BrushToFront( int idx )
 {
-	guard(cEdiMap::BrushToFront)
-	sassert(0<=idx && idx<m_brushcount);
+	assert(0<=idx && idx<m_brushcount);
 	// search	
 	int i;
 	int idx0=idx;
@@ -949,13 +910,11 @@ void cEdiMap::BrushToFront( int idx )
 	PartitionFix(idx+1,idx0,-1); // fix indices after shifting
 	PartitionAdd(idx0); // add new one
 
-	unguard()
 }
 
 void cEdiMap::BrushToBack( int idx )
 {
-	guard(cEdiMap::BrushToBack)
-	sassert(0<=idx && idx<m_brushcount);
+	assert(0<=idx && idx<m_brushcount);
 	// search	
 	int i;
 	int idx0=idx;
@@ -980,22 +939,19 @@ void cEdiMap::BrushToBack( int idx )
 	PartitionAdd(idx0); // add new one
 	
 
-	unguard()
 }
 
 void cEdiMap::BrushClear()
 {
-	guard(cEdiMap::BrushClear)
-	if(m_brush) sfree(m_brush);
+	if(m_brush) free(m_brush);
 	m_brush=NULL;
 	m_brushcount = 0;
 	m_brushsize	= 0;
-	if(m_brushvis) sfree(m_brushvis);
+	if(m_brushvis) free(m_brushvis);
 	m_brushviscount=NULL;
 	m_brushviscount=0;
 	m_brushvissize=0;
 	m_selectcount=0;
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1003,26 +959,21 @@ void cEdiMap::BrushClear()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiMap::PartitionInit()
 {
-	guard(cEdiMap::PartitionInit)
 	PartitionDone();// safety
 	int pcountw = PartitionCountW();
 	int pcounth = PartitionCountH();
 	for(int i=0;i<pcountw*pcounth;i++)
-		m_partition.push_back(snew cPartitionCel());
-	unguard()
+		m_partition.push_back(new cPartitionCel());
 }
 
 void cEdiMap::PartitionDone()
 {
-	guard(cEdiMap::PartitionDone)
-	for(; !m_partition.empty(); m_partition.pop_back()) sdelete(m_partition.back());
+	for(; !m_partition.empty(); m_partition.pop_back()) delete m_partition.back();
 	m_partition.clear(); 
-	unguard()
 }
 
 BOOL cEdiMap::PartitionAdd( int brushidx )
 {
-	guard(cEdiMap::PartitionAdd)
 	int pcountw = PartitionCountW();
 	iRect br;
 	br.x1 = m_brush[brushidx].m_data[BRUSH_X];
@@ -1046,12 +997,10 @@ BOOL cEdiMap::PartitionAdd( int brushidx )
 	if(!ok)
 		dlog(LOGAPP, L"Brush # %d (%d, %d)-(%d, %d) out of bounds\n", brushidx, br.x1, br.y1, br.x2, br.y2);
 	return ok;
-	unguard()
 }
 
 void cEdiMap::PartitionDel( int brushidx )
 {
-	guard(cEdiMap::PartitionDel)
 	int pcountw = PartitionCountW();
 	iRect br;
 	br.x1 = m_brush[brushidx].m_data[BRUSH_X];
@@ -1068,14 +1017,12 @@ void cEdiMap::PartitionDel( int brushidx )
 		if( RECT2RECT(br,pr) )
 			m_partition[i]->Sub(brushidx);
 	}
-	unguard()
 }
 
 int	cEdiMap::PartitionGet( iRect& rect, int* buffer, int buffersize )
 {
-	guard(cEdiMap::PartitionGet)
-	sassert(buffer!=NULL);
-	sassert(buffersize>0);
+	assert(buffer!=NULL);
+	assert(buffersize>0);
 	int pcountw = PartitionCountW();
 	int count = 0;
 	for(int i=0; i<m_partition.size(); i++)
@@ -1093,12 +1040,10 @@ int	cEdiMap::PartitionGet( iRect& rect, int* buffer, int buffersize )
 		}
 	}	
 	return count;
-	unguard()
 }
 
 void cEdiMap::PartitionFix( int brushidx1, int brushidx2, int delta )
 {
-	guard(cEdiMap::PartitionFix)
 	for(int i=0; i<m_partition.size(); i++)
 	{
 		cPartitionCel* pcel = m_partition[i];
@@ -1108,12 +1053,10 @@ void cEdiMap::PartitionFix( int brushidx1, int brushidx2, int delta )
 				pcel->m_data[j] += delta;
 		}
 	}
-	unguard()
 }
 
 BOOL cEdiMap::PartitionRepartition()
 {
-	guard(cEdiMap::PartitionRepartition)
 	int i;
 	// force all clean
 	for(i=0; i<m_partition.size(); i++)
@@ -1123,7 +1066,6 @@ BOOL cEdiMap::PartitionRepartition()
 	for(i=0; i<m_brushcount; i++)
 		ok &= PartitionAdd(i);
 	return ok;
-	unguard()
 }
 
 
@@ -1132,7 +1074,6 @@ BOOL cEdiMap::PartitionRepartition()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiMap::MarkerToggle( int x, int y )
 {
-	guard(cEdiMap::MarkerToggle)
 	int dist = -1;
 	int mark = MarkerClosest( m_camx, m_camy, dist );
 	if(mark!=-1 && dist==0) // remove existing mark
@@ -1143,11 +1084,9 @@ void cEdiMap::MarkerToggle( int x, int y )
 	{
 		m_marker.push_back(tMarker(x,y,m_camz));
 	}
-	unguard()
 }
 void cEdiMap::MarkerGoto( int dir )				
 {
-	guard(cEdiMap::MarkerGoto)
 	int dist = -1;
 	int mark = MarkerClosest( m_camx, m_camy, dist );
 	if(mark==-1) return; // no markers
@@ -1161,12 +1100,10 @@ void cEdiMap::MarkerGoto( int dir )
 	m_camy = m_marker[mark].y;
 	m_camz = m_marker[mark].z;
 	m_refresh = TRUE;
-	unguard()
 }
 
 int	cEdiMap::MarkerClosest( int x, int y, int &dist )
 {
-	guard(cEdiMap::MarkerClosest)
 	int mark=-1;
 	int mind = -1;
 	for(int i=0;i<m_marker.size();i++)
@@ -1183,19 +1120,15 @@ int	cEdiMap::MarkerClosest( int x, int y, int &dist )
 	}
 	dist = mind;
 	return mark;
-	unguard()
 }
 
 void cEdiMap::MarkerClear()
 {
-	guard(cEdiMap::MarkerClear)
 	m_marker.clear();
-	unguard()
 }
 
 void cEdiMap::MarkerResize()
 {
-	guard(cEdiMap::MarkerResize)
 	// remove markers out of the new map size
 	for(int i=0;i<m_marker.size();i++)
 	{
@@ -1205,12 +1138,10 @@ void cEdiMap::MarkerResize()
 			i--;
 		}
 	}
-	unguard()
 }
 
 BOOL cEdiMap::MarkerTest( int idx )
 {
-	guard(cEdiMap::MarkerTest);
 	if(idx<0 || idx>=m_marker.size()) return FALSE;
 	int camx = m_marker[idx].x;
 	int camy = m_marker[idx].y;
@@ -1222,7 +1153,6 @@ BOOL cEdiMap::MarkerTest( int idx )
 	if(camx>m_mapw-camw/2) return FALSE;
 	if(camy>m_maph-camh/2) return FALSE;
 	return TRUE;
-	unguard();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1230,21 +1160,18 @@ BOOL cEdiMap::MarkerTest( int idx )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiMap::SelectionRefresh()
 {
-	guard(cEdiMap::SelectionRefresh)
 	m_selectcount=0;
 	for(int i=0;i<m_brushcount;i++)
 	{
 		if(m_brush[i].m_data[BRUSH_SELECT]) 
 			m_selectcount++;
 	}
-	unguard()
 }
 
 void cEdiMap::SelectionGoto( int dir )
 {
-	guard(cEdiMap::SelectionGoto)
 	if(m_brushcount==0) return;
-	sassert(dir==-1 || dir==1);
+	assert(dir==-1 || dir==1);
 	if(m_selectgoto<=-1) m_selectgoto = m_brushcount-1;
 	if(m_selectgoto>=m_brushcount) m_selectgoto = 0;
 	int i = m_selectgoto;
@@ -1263,7 +1190,6 @@ void cEdiMap::SelectionGoto( int dir )
 		}
 		if(i==m_selectgoto) return;
 	}
-	unguard()
 }
 
 
@@ -1272,7 +1198,6 @@ void cEdiMap::SelectionGoto( int dir )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiMap::DrawGrid( iRect &view )
 {
-	guard(cEdiMap::DrawGrid)
 	int i;
 	iRect view2;
 	R9_SetState(R9_STATE_BLEND,R9_BLEND_ALPHA);
@@ -1330,12 +1255,10 @@ void cEdiMap::DrawGrid( iRect &view )
 		}
 	}
 
-	unguard()
 }
 
 void cEdiMap::DrawAxes( int x, int y )
 {
-	guard(cEdiMap::DrawAxes)
 	if(!EdiApp()->m_axes) return;
 
 	CAM2VIEW(x,y);
@@ -1343,43 +1266,35 @@ void cEdiMap::DrawAxes( int x, int y )
 	y += VIEWY;
 	R9_DrawLine( fV2(x,VIEWY), fV2(x,VIEWY+VIEWH), EdiApp()->GetColor(EDI_COLORGRID3) );
 	R9_DrawLine( fV2(VIEWX,y), fV2(VIEWX+VIEWW,y), EdiApp()->GetColor(EDI_COLORGRID3) );
-	unguard()
 }
 
 void cEdiMap::DrawScrollers()
 {
-	guard(cEdiMap::DrawScrollers)
 	fRect rc;
 	rc = GetHScrollRect();
 	R9_DrawBar(rc, (EdiApp()->GetColor(EDI_COLORBACK2) & 0x00ffffff) | 0x60000000 );
 	rc = GetVScrollRect();
 	R9_DrawBar(rc, (EdiApp()->GetColor(EDI_COLORBACK2) & 0x00ffffff) | 0x60000000);
-	unguard()
 }
 
 iRect cEdiMap::GetHScrollRect()
 {
-	guard(cEdiMap::GetHScrollRect);
 	float x1 = (float)(m_camx-(m_vieww/m_camz)/2) / m_mapw * m_vieww;
 	float x2 = (float)(m_camx+(m_vieww/m_camz)/2) / m_mapw * m_vieww;
 	iRect rc( (float)m_viewx+x1, (float)m_viewy+m_viewh+2, (float)m_viewx+x2, (float)m_viewy+m_viewh+VIEWB );	
 	return rc;
-	unguard();
 }
 
 iRect cEdiMap::GetVScrollRect()
 {
-	guard(cEdiMap::GetVScrollRect);
 	float y1 = (float)(m_camy-(m_viewh/m_camz)/2) / m_maph * m_viewh;
 	float y2 = (float)(m_camy+(m_viewh/m_camz)/2) / m_maph * m_viewh;
 	iRect rc( (float)m_viewx+m_vieww+2, (float)m_viewy+y1, (float)m_viewx+m_vieww+VIEWB, (float)m_viewy+y2 );
 	return rc;
-	unguard();
 }
 
 void cEdiMap::CheckMapView()
 {
-	guard(cEdiMap::CheckMapView)
 	m_viewx = VIEWB;
 	m_viewy = VIEWB+32;
 	m_vieww = R9_GetWidth() - 2*VIEWB;
@@ -1389,7 +1304,6 @@ void cEdiMap::CheckMapView()
 	if(m_viewh>m_maph) m_viewh=m_maph;
 	m_viewx = VIEWB + (R9_GetWidth() - m_vieww - (2*VIEWB) ) / 2;
 	m_viewy = VIEWB + 32 + (R9_GetHeight() - m_viewh - (32+16+2*VIEWB) ) / 2;
-	unguard()
 }
 
 
@@ -1399,7 +1313,6 @@ void cEdiMap::CheckMapView()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL cEdiMap::SaveMapImage(const std::string & filename )
 {
-	guard(cEdiMap::SaveMapImage)
 	if(!m_target) return FALSE;
 
 	// CREATE IMGHUGE
@@ -1464,7 +1377,6 @@ BOOL cEdiMap::SaveMapImage(const std::string & filename )
 	BOOL ok = R9_ImgSaveFile(filename.c_str(), &imghuge);
 	R9_ImgDestroy(&imghuge);
 	return ok;
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1510,13 +1422,13 @@ bool cEdiMap::LoadMap(const std::string &filename)
 			case MAP_CHUNKID:
 			{
 				if( chunksize!=strlen(MAP_ID) )	{ ERROR_CHUNK("size"); }
-				buffer = (char*)smalloc(chunksize);
+				buffer = (char*)malloc(chunksize);
 				size = 0;
 				size += F9_FileRead(buffer, chunksize, file);
-				if(size!=chunksize) { sfree(buffer);  ERROR_CHUNK("size"); }
+				if(size!=chunksize) { free(buffer);  ERROR_CHUNK("size"); }
 
-				if(memcmp(buffer,MAP_ID,chunksize)!=0) { dlog(LOGAPP, L"invalid map id: '%S' (current version: '%S')\n", buffer, MAP_ID); sfree(buffer); F9_FileClose(file); return false; }
-				sfree(buffer);
+				if(memcmp(buffer,MAP_ID,chunksize)!=0) { dlog(LOGAPP, L"invalid map id: '%S' (current version: '%S')\n", buffer, MAP_ID); free(buffer); F9_FileClose(file); return false; }
+				free(buffer);
 				break;
 			}
 

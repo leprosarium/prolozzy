@@ -51,7 +51,7 @@ public:
 		char*		m_name;						// tile name
 						
 					cTile(int m_id) : m_id(m_id), m_group(), m_frames(1), fx(1), fy(1), m_tex(NULL), m_name(NULL) { }
-					~cTile() { guardfast(~cTile); if(m_tex)  R9_TextureDestroy(m_tex);  R9_ImgDestroy(&m_img); if(m_name)  sfree(m_name); unguardfast(); }
+					~cTile() { if(m_tex)  R9_TextureDestroy(m_tex);  R9_ImgDestroy(&m_img); if(m_name) free(m_name); }
 	    int         GetFx(int frame) const		{ return frame % fx; }
 		int         GetFy(int frame) const		{ return frame / fx; }
 		int			GetWidth()					{ return fx > 0 ? R9_TextureGetWidth(m_tex) / fx : R9_TextureGetWidth(m_tex); }
@@ -69,7 +69,7 @@ public:
 		r9Font*		m_font;						// font
 		
 					cFont()						{ m_id=0; m_group=0; m_font=NULL; }
-					~cFont()					{ if(m_font) sdelete(m_font); }
+					~cFont()					{ if(m_font) delete m_font; }
 inline	int			GetSize()					{ return (int)m_font->GetSize(); }
 inline	int			GetCharWidth( char c )		{ return (int)m_font->GetCharWidth(c); }
 inline	int			GetTextWidth( const char* text )	{ return (int)m_font->GetTextWidth(text); }
@@ -134,8 +134,8 @@ public:
 
 class Tiles : std::vector<cTile*>
 {
-	typedef std::vector<cTile*> Cont;
 	IntIndex Index;
+	typedef std::vector<cTile*> Cont;
 public:
 	using Cont::size;
 	using Cont::iterator;
@@ -143,9 +143,23 @@ public:
 	using Cont::begin;
 	using Cont::end;
 
-	~Tiles() { clear(); }
-	void clear() {  for(iterator i = begin(), e = end(); i != e; ++i) delete *i; Index.clear(); Cont::clear(); }
-	void erase(iterator i) { value_type tile = *i; Index.erase(tile->m_id); delete tile; Cont::erase(i); }
+	~Tiles() { 
+		assert(size()==0); 
+		clear(); 
+		assert(size()==0); 
+	}
+	void clear() {  
+		for(iterator i = begin(), e = end(); i != e; ++i) 
+			delete *i; 
+		Index.clear(); 
+		Cont::clear(); 
+	}
+	void erase(iterator i) { 
+		value_type tile = *i; 
+		Index.erase(tile->m_id); 
+		delete tile; 
+		Cont::erase(i); 
+	}
 
 
 	void Done();

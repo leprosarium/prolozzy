@@ -343,7 +343,6 @@ cDizGame::cDizGame() : 	_void("void"),	soft("soft"), hard("hard"), jump("jump"),
 						_viewportFlipX(), _viewportFlipY(),
 						_fullMaterialMap()
 {
-	guard(cDizGame::cDizGame)
 
 
 	m_screen_bw		= GAME_SCRWB;
@@ -364,18 +363,14 @@ cDizGame::cDizGame() : 	_void("void"),	soft("soft"), hard("hard"), jump("jump"),
 	m_fffx_period		= 50;
 
 	m_visible_brushes	= 0;
-	unguard()
 }
 
 cDizGame::~cDizGame()
 {
-	guard(cDizGame::~cDizGame)
-	unguard()
 }
 
 bool cDizGame::Init()
 {
-	guard(cDizGame::Init)
 
 	fps(GAME_FPS);
 
@@ -387,22 +382,18 @@ bool cDizGame::Init()
 	g_paint.Layout(); // refresh layout
 
 	return CheckVersion();
-	unguard()
 }
 
 void cDizGame::Done()
 {
-	guard(cDizGame::Done)
 	m_obj.clear();
 	m_collider.clear();
-	if(m_matmap)	{ sfree(m_matmap); m_matmap=NULL; }
+	if(m_matmap)	{ free(m_matmap); m_matmap=NULL; }
 	//m_dlg.Done();
-	unguard()
 }
 
 bool cDizGame::Start()
 {
-	guard(cDizGame::Start)
 
 	// map reset
 	g_map.Reset();
@@ -430,12 +421,10 @@ bool cDizGame::Start()
 	g_script.Start();
 
 	return true;
-	unguard()
 }
 
 bool cDizGame::CheckVersion()
 {
-	guard(CheckVersion)
 	// requested version must be in the folowing formats: 2.0, 2.01, 2.01b, etc
 	// the match is done on first 2 digits (2.0)
 	const char* reqv = g_cfg.GetInfoValue("dizzyage_version");
@@ -450,7 +439,6 @@ bool cDizGame::CheckVersion()
 		sys_msgbox( E9_GetHWND(), swprint(L"This game doesn't specify the version of DizzyAGE it was made for.\nYou are running it with DizzyAGE v%S\nIf you experience malfunctions, contact the author.",engv), L"WARNING",MB_OK );
 	}
 	return true;
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -458,7 +446,6 @@ bool cDizGame::CheckVersion()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 bool cDizGame::Update()
 {
-	guard(cDizGame::Update)
 
 	int i;
 	int rx, ry;
@@ -613,7 +600,6 @@ bool cDizGame::Update()
 	g_script.gameAfterUpdate();
 
 	return true;
-	unguard()
 }
 
 
@@ -622,7 +608,6 @@ bool cDizGame::Update()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cDizGame::Draw()
 {
-	guard(cDizGame::Draw)
 	//int i;
 
 	// clipping
@@ -735,7 +720,6 @@ void cDizGame::Draw()
 	g_paint.m_huddraw = false;
 	R9_ResetClipping();
 
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -743,25 +727,20 @@ void cDizGame::Draw()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cDizGame::SetRoom( int x, int y )
 {
-	guard(cDizGame::SetRoom)
 	roomX(x);
 	roomY(y);
 	MatMapUpdate();
 	ObjGather();
-	unguard()
 }
 
 void cDizGame::MatMapAlloc()
 {
-	guard(cDizGame::MatMapAlloc);
-	if(m_matmap) sfree(m_matmap);
-	m_matmap = (byte*)smalloc(9*Room::Width*Room::Height);
-	unguard();
+	if(m_matmap) free(m_matmap);
+	m_matmap = (byte*)malloc(9*Room::Width*Room::Height);
 }
 
 void cDizGame::MatMapUpdate()
 {
-	guard(cDizGame::MatMapUpdate)
 	if(!m_matmap) return; // not allocated yet
 	
 	// clear
@@ -821,7 +800,6 @@ void cDizGame::MatMapUpdate()
 	// @DBG material (dark colors)
 	//R9_ImgSaveFile("matdump.tga",&g_paint.m_imgtarget);
 
-	unguard()
 }
 
 
@@ -831,15 +809,12 @@ void cDizGame::MatMapUpdate()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cDizGame::ObjPresent( int idx )
 {
-	guard(cDizGame::ObjPresent)
 	if(std::find(m_obj.begin(), m_obj.end(), idx) == m_obj.end())
 		ObjAdd(idx);
-	unguard()
 }
 
 void cDizGame::ObjGather()
 {
-	guard(cDizGame::ObjGather)
 
 	int i;
 	m_obj.clear();
@@ -869,12 +844,10 @@ void cDizGame::ObjGather()
 		if(RECT2RECT(objbb,roombb)) ObjAdd(i); // object is present in current bordered room
 	}
 
-	unguard()
 }
 
 void cDizGame::ObjDraw( const tBrush & brush )
 {
-	guard(cDizGame::ObjDraw)
 	
 	// MAKEBBR
 	int rx = roomX();
@@ -892,7 +865,6 @@ void cDizGame::ObjDraw( const tBrush & brush )
 	int frame = ComputeFrame(brush.Get(BRUSH_FRAME),tile->m_frames,brush.Get(BRUSH_ANIM));
 	g_paint.DrawBrush( brush, m_viewx+x1, m_viewy+y1, frame );
 
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -900,7 +872,6 @@ void cDizGame::ObjDraw( const tBrush & brush )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cDizGame::FFFXUpdate()
 {
-	guard(cDizGame::FFFXUpdate)
 	if(!I9_IsReady()) return;
 	if(!I9_DeviceIsPresent(I9_DEVICE_JOYSTICK1)) return; // no joystick
 	BOOL isrunning = I9_DeviceFFIsPlaying(I9_DEVICE_JOYSTICK1);
@@ -916,7 +887,6 @@ void cDizGame::FFFXUpdate()
 		I9_DeviceFFSet(I9_DEVICE_JOYSTICK1, 0, 0);
 		if(isrunning) I9_DeviceFFStop(I9_DEVICE_JOYSTICK1);
 	}
-	unguard();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

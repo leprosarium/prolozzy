@@ -33,7 +33,6 @@ cDizScript g_script;
 //////////////////////////////////////////////////////////////////////////////////////////////////
 cDizScript::cDizScript()
 {
-	guard(cDizScript::cDizScript)
 	
 	Soutput->functions->write = &Log_write;
 	Serror->functions->write = &Log_write;
@@ -41,7 +40,6 @@ cDizScript::cDizScript()
 	Soutput->handle = reinterpret_cast<void *>(LOGGS);
 	Serror->handle  = reinterpret_cast<void *>(LOGAPP);
 
-	unguard()
 }
 
 void registerHandler(functor_t &handler, const char * name, int ar = 0) 
@@ -53,7 +51,6 @@ void registerHandler(functor_t &handler, const char * name, int ar = 0)
 
 bool cDizScript::Init()
 {
-	guard(cDizScript::Init)
 
 	module = PL_new_module(PL_new_atom("user"));
 	_event= PL_pred(PL_new_functor(PL_new_atom("event"), 1), PL_new_module(PL_new_atom("handlers")));
@@ -79,20 +76,15 @@ bool cDizScript::Init()
 	gameInit();
 
 	return true;
-	unguard()
 }
 
 void cDizScript::Start()
 {
-	guard(cDizScript::Start)
 	gameStart();
-	unguard()
 }
 
 void cDizScript::Update()
 {
-	guard(cDizScript::Update)
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -101,9 +93,6 @@ void cDizScript::Update()
 
 void cDizScript::CallHandler(functor_t handler, const PlTermv &av )
 {		
-
-	guard(cDizScript::CallHandler)	
-
 	try
 	{
 		PlCall(module, _event, PlCompound(handler, av));
@@ -113,8 +102,6 @@ void cDizScript::CallHandler(functor_t handler, const PlTermv &av )
 		PlException ee(e);
 		dlog(L"Dizzy.pl 1111 not found: %s", static_cast<LPCWSTR>(ee));
 	}
-
-	unguard()
 }
 
 PREDICATE_M(core, ticktime, 1)
@@ -650,8 +637,7 @@ PREDICATE_M(core, debugData, 2)
 
 //int gsDebugCool( gsVM* vm )
 //{
-//	guard(gsDebugCool)
-//	if(gs_params(vm)==0)
+////	if(gs_params(vm)==0)
 //	{
 //		gs_pushint(vm,E9_AppGetInt(E9_APP_COOL));
 //		return 1;
@@ -662,13 +648,11 @@ PREDICATE_M(core, debugData, 2)
 //	int val = gs_toint(vm,0);
 //	E9_AppSetInt(E9_APP_COOL,val);
 //	return 0;
-//	unguard()
-//}
+////}
 //
 //int gsDebugLog( gsVM* vm )
 //{
-//	guard(gsDebugLog)
-//	if(!gs_ckparams(vm,1))		GS_RETURNINT(vm,0);
+////	if(!gs_ckparams(vm,1))		GS_RETURNINT(vm,0);
 //	if(!gs_cktype(vm,0,GS_INT)) GS_RETURNINT(vm,0);
 //	int i;
 //	if(gs_toint(vm,0))
@@ -684,13 +668,11 @@ PREDICATE_M(core, debugData, 2)
 //		D9_LogOpenChannel(LOGERR,true); // always open
 //	}
 //	return 0;
-//	unguard()
-//}
+////}
 //
 //int gsDebugDev( gsVM* vm )
 //{
-//	guard(gsDebugDev)
-//	if(gs_params(vm)==0)
+////	if(gs_params(vm)==0)
 //	{
 //		gs_pushint(vm,cDizDebug::m_developer);
 //		return 1;
@@ -702,8 +684,7 @@ PREDICATE_M(core, debugData, 2)
 //	cDizDebug::m_developer = val;
 //	g_paint.Layout();
 //	return 0;
-//	unguard()
-//}
+////}
 //
 
 PREDICATE_M(core, ini, 4)

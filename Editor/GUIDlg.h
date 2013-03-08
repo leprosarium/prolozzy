@@ -68,7 +68,7 @@ virtual	RECT			GetRect				( int idx );
 inline	int				ItemCount			()					{ return m_item.size(); }
 inline	cGUIItem*		ItemGet				(int idx)			{ if(0<=idx && idx<ItemCount()) return m_item[idx]; return 0; }
 inline	int				ItemAdd				( cGUIItem* item )	{ if(item) { item->m_dlg=this; int idx = m_item.size(); m_item.push_back(item); return idx; } return -1; }
-inline	void			ItemDel				( int idx )			{ if(0<=idx && idx<ItemCount()) { sdelete(m_item[idx]); m_item.erase(m_item.begin() + idx); } }
+inline	void			ItemDel				( int idx )			{ if(0<=idx && idx<ItemCount()) { delete m_item[idx]; m_item.erase(m_item.begin() + idx); } }
 virtual	int				ItemFind			( int id );		
 virtual	int				ItemFind			( cGUIItem* item );
 

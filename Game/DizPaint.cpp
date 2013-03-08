@@ -84,7 +84,6 @@ PREDICATE_M(tile, name, 2)
 
 cDizPaint::cDizPaint()
 {
-	guard(cDizPaint::cDizPaint)
 	m_scrx = 0;
 	m_scry = 0;
 	m_scale = 1;
@@ -94,43 +93,35 @@ cDizPaint::cDizPaint()
 	m_hudshader = SHADER_BLEND;
 	m_hudcolor = 0xffffffff;
 	m_huddraw = false;
-	unguard()
 }
 
 cDizPaint::~cDizPaint()
 {
-	guard(cDizPaint::~cDizPaint)
 	// nothing - use Done
-	unguard()
 }
 
 bool cDizPaint::Init()
 {
-	guard(cDizPaint::Init)
 	bool ok = true;
 
 	// screen
 	Layout();
 
 	return ok;
-	unguard()
 }
 
 void cDizPaint::Done()
 {
-	guard(cDizPaint::Done)
 
 	tiles.Done();
 	// fonts
-	for(;!m_font.empty(); m_font.pop_back()) sdelete(m_font.back());
+	for(;!m_font.empty(); m_font.pop_back()) delete m_font.back();
 	m_font.clear();
 
-	unguard()
 }
 
 bool cDizPaint::Reacquire()
 {
-	guard(cDizPaint::Reacquire);
 	dlog(LOGAPP, L"Paint reaquire.\n");
 	bool ok=true;
 	for(Tiles::iterator i = tiles.begin(), e = tiles.end(); i != e; ++i) 
@@ -144,12 +135,10 @@ bool cDizPaint::Reacquire()
 		}
 	}
 	return ok;
-	unguard();
 }
 
 void cDizPaint::Unacquire()
 {
-	guard(cDizPaint::Unacquire);
 	dlog(LOGAPP, L"Paint unaquire.\n");
 	int i;
 	for(Tiles::iterator i = tiles.begin(), e = tiles.end(); i != e; ++i) 
@@ -163,12 +152,10 @@ void cDizPaint::Unacquire()
 		if(m_font[i]->m_font)
 			m_font[i]->m_font->SetTexture(NULL); // safe
 	}
-	unguard();
 }
 
 void cDizPaint::Layout()
 {
-	guard(cDizPaint::Layout);
 	m_scale = g_cfg.m_scale;
 	if(m_scale==0)	m_scale = MAX( 0, MIN( R9_GetWidth()/g_game.m_screen_bw, R9_GetHeight()/g_game.m_screen_bh ) );
 	if(!g_dizdebug.m_console)
@@ -181,7 +168,6 @@ void cDizPaint::Layout()
 		m_scrx = 0;
 		m_scry = 0;
 	}
-	unguard();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -197,11 +183,11 @@ int		gstile_group;			// current loading group
 void Tiles::Done()
 {
 	clear();
+	int sz = size();
 }
 
 bool Tiles::LoadFile( const char* filepath, int group )
 {
-	guard(cDizPaint::TileLoadFile)
 	
 	// check file type (not counted if unaccepted); only TGA and PNG files accepted
 	const char* ext = file_path2ext(filepath); if(!ext) return false;
@@ -289,20 +275,16 @@ bool Tiles::LoadFile( const char* filepath, int group )
 		dlog(LOGAPP, L"  %S [%i]\n", filepath, frames );
 	
 	return true;
-	unguard()
 }
 
 void FFCallback_Tile( const char* filepath, BOOL dir )
 {
-	guard(FFCallback_Tile)
 	if(dir) return;
 	bool ret = g_paint.tiles.LoadFile(filepath,gstile_group);
-	unguard()
 }
 
 bool Tiles::Load( char* path, int group )
 {
-	guard(cDizPaint::TileLoad)
 	if(!path || !path[0]) return false; // invalid path
 	int szlen = (int)strlen(path);
 	if(path[szlen-1]!='\\') strcat(path,"\\");
@@ -337,12 +319,10 @@ bool Tiles::Load( char* path, int group )
 	dlog(LOGAPP, L"Tiles report: total=%i, failed=%i (duplicates=%i)\n\n", gstile_total, gstile_fail, gstile_duplicates );
 
 	return true;
-	unguard()
 }
 
 void Tiles::Unload( int group )
 {
-	guard(cDizPaint::TileUnload)
 	int i;
 	for(i=0;i<size();i++)
 	{
@@ -352,12 +332,10 @@ void Tiles::Unload( int group )
 			i--;
 		}
 	}
-	unguard()
 }
 
 int Tiles::Add( int id )
 {
-	guard(cDizPaint::TileAdd)
 	if(id<0) return -1; // negative ids not accepted
 	if(Find(id)!=-1) return -1; // duplicate id
 	push_back(new cTile(id));
@@ -365,15 +343,12 @@ int Tiles::Add( int id )
 
 	Index.insert(IntIndex::value_type(id, idx));
 	return idx;
-	unguard()
 }
 
 void Tiles::Del( int idx )
 {
-	guard(cDizPaint::TileDel)
 	if(!InvalidIdx(idx))
 		erase(begin() + idx);
-	unguard()
 }
 
 
@@ -383,7 +358,6 @@ void Tiles::Del( int idx )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cDizPaint::DrawTile( int idx, int x, int y, iRect& map, dword color, int flip, int frame, int blend, float scale )
 {
-	guard(cDizPaint::DrawTile)
 	cTile* tile = tiles.Get(idx); 
 	if(tile==NULL) return;
 
@@ -403,12 +377,10 @@ void cDizPaint::DrawTile( int idx, int x, int y, iRect& map, dword color, int fl
 	R9_SetState(R9_STATE_BLEND,blend);
 	R9_DrawSprite( pos, src, tile->m_tex, color, flip, (float)m_scale*scale );
 
-	unguard()
 }
 	
 void cDizPaint::DrawTile( int idx, int x, int y, dword color, int flip, int frame, int blend, float scale )
 {
-	guard(cDizPaint::DrawTile)
 	cTile* tile = tiles.Get(idx); 
 	if(tile==NULL) return;
 
@@ -428,12 +400,10 @@ void cDizPaint::DrawTile( int idx, int x, int y, dword color, int flip, int fram
 	R9_SetState(R9_STATE_BLEND,blend);
 	R9_DrawSprite( pos, src, tile->m_tex, color, flip, (float)m_scale*scale );
 
-	unguard()
 }
 
 void cDizPaint::DrawChar( int fontidx, int x, int y, char c, dword color )
 {
-	guard(cDizPaint::DrawChar);
 	if(!FontGet(fontidx)) return;
 	r9Font* font = FontGet(fontidx)->m_font;
 	if(!font) return;
@@ -442,12 +412,10 @@ void cDizPaint::DrawChar( int fontidx, int x, int y, char c, dword color )
 	font->SetColor( color );
 	font->Char( (float)(m_scrx+x*m_scale), (float)(m_scry+y*m_scale), c );
 	font->SetSize(tsize);
-	unguard();
 }
 
 void cDizPaint::DrawBrush( const tBrush & brush, int x, int y, int frame )
 {
-	guard(cDizPaint::DrawBrush)
 //	if(brush==NULL) return;
 	int idx = tiles.Find(brush.Get(BRUSH_TILE));
 	if(idx==-1) return;
@@ -502,7 +470,6 @@ void cDizPaint::DrawBrush( const tBrush & brush, int x, int y, int frame )
 	}
 
 	R9_SetClipping(oldclip);
-	unguard()
 }
 
 
@@ -514,12 +481,11 @@ void cDizPaint::DrawBrush( const tBrush & brush, int x, int y, int frame )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cDizPaint::DrawTileSoft( int idx, int x, int y, iRect& map, dword color, int flip, int frame, int blend, float scale )
 {
-	guard(cDizPaint::DrawTileSoft)
 	cTile* tile = tiles.Get(idx); 
 	if(tile==NULL) return;
 	int w = tile->GetWidth();
 	int h = tile->GetHeight();
-	// sassert(frame==0);
+	// assert(frame==0);
 	if( frame<0 ) frame=0;
 	frame = frame % tile->m_frames;
 	bool rotated = (flip & R9_FLIPR) != FALSE;
@@ -557,14 +523,14 @@ void cDizPaint::DrawTileSoft( int idx, int x, int y, iRect& map, dword color, in
 	// prepare blit
 	int dstw = m_imgtarget.m_width;
 	int dsth = m_imgtarget.m_height;
-	byte* dst = m_imgtarget.m_data; sassert(dst!=NULL);
+	byte* dst = m_imgtarget.m_data; assert(dst!=NULL);
 	dst += rdst.x1 + rdst.y1 * dstw; // start
 
 	int rw = rdst.x2-rdst.x1;
 	int rh = rdst.y2-rdst.y1;
 	int srcw = tile->m_img.m_width;
 	int srch = tile->m_img.m_height;
-	byte* src = tile->m_img.m_data; sassert(src!=NULL);
+	byte* src = tile->m_img.m_data; assert(src!=NULL);
 	src += rsrc.x1 + rsrc.y1 * srcw; // start
 	int srcsx = 1; // step x;
 	if(flip & 1)
@@ -593,17 +559,15 @@ void cDizPaint::DrawTileSoft( int idx, int x, int y, iRect& map, dword color, in
 		src = src0 + srcw*srcsy;
 	}
 
-	unguard()
 }
 
 void cDizPaint::DrawTileSoft2( int idx, int x, int y, iRect& map, dword color, int flip, int frame, int blend, float scale )
 {
-	guard(cDizPaint::DrawTileSoft2)
 	cTile* tile = tiles.Get(idx); 
 	if(tile==NULL) return;
 	int tw = tile->GetWidth();
 	int th = tile->GetHeight();
-	// sassert(frame==0);
+	// assert(frame==0);
 	if( frame<0 ) frame=0;
 	frame = frame % tile->m_frames;
 	int fx = tile->GetFx(frame);
@@ -642,13 +606,13 @@ void cDizPaint::DrawTileSoft2( int idx, int x, int y, iRect& map, dword color, i
 	int dsth = m_imgtarget.m_height;
 	int dw = (int)dst.Width();
 	int dh = (int)dst.Height();
-	byte* dstdata = m_imgtarget.m_data; sassert(dst!=NULL);
+	byte* dstdata = m_imgtarget.m_data; assert(dst!=NULL);
 	dstdata += (int)dst.x1 + (int)dst.y1 * dstw; // start
 	float sw = src.Width();
 	float sh = src.Height();
 	int srcw = tile->m_img.m_width;
 	int srch = tile->m_img.m_height;
-	byte* srcdata = tile->m_img.m_data; sassert(src!=NULL);
+	byte* srcdata = tile->m_img.m_data; assert(src!=NULL);
 	byte mat = m_drawtilemat;
 
 	// draw
@@ -673,7 +637,6 @@ void cDizPaint::DrawTileSoft2( int idx, int x, int y, iRect& map, dword color, i
 		dstdata += dstw - dw;
 	}
 
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -688,7 +651,6 @@ void cDizPaint::DrawTileSoft2( int idx, int x, int y, iRect& map, dword color, i
 // command format can be: {a:l} or {a:left}, {a:c}, {a:r}, {c:ff0080}, {f:0}, {f:1}, {t:10 16 18}
 int	cDizPaint::HUDScanText( char* text, int start, int& end, int* data )
 {
-	guard(cDizPaint::HUDScanText)
 	end = start;
 	data[0]=0;
 
@@ -731,12 +693,10 @@ int	cDizPaint::HUDScanText( char* text, int start, int& end, int* data )
 	}
 
 	return DLGCMD_NONE;
-	unguard()
 }
 
 void cDizPaint::HUDGetTextSize( char* text, int& w, int& h, int& c, int& r )
 {
-	guard(cDizPaint::HUDGetTextSize)
 	w = h = c = r = 0;
 	if(text==NULL) return; // invalid text
 	int fontidx = FontFind(m_hudfont); // find font
@@ -790,12 +750,10 @@ void cDizPaint::HUDGetTextSize( char* text, int& w, int& h, int& c, int& r )
 	}
 
 	r = rowcount;
-	unguard()
 }
 
 void cDizPaint::HUDDrawText( int tileid, iRect& dst, char* text, int m_align )
 {
-	guard(cDizPaint::HUDDrawText)
 	if( m_huddraw==0 ) return; // not in draw
 	if( m_hudshader<0 || m_hudshader>=SHADER_MAX ) return; // invalid shader
 	if( text==NULL ) return; // invalid text
@@ -905,13 +863,11 @@ void cDizPaint::HUDDrawText( int tileid, iRect& dst, char* text, int m_align )
 		linecount++;
 	}
 
-	unguard()
 }
 
 
 void cDizPaint::HUDDrawTile( int tileid, iRect& dst, iRect& src, dword flags, int frame )
 {
-	guard(cDizPaint::HUDDrawTile)
 	if( m_huddraw==0 ) return; // not in draw
 	int tileidx = tiles.Find(tileid);
 	if(tileidx==-1) return;
@@ -947,12 +903,10 @@ void cDizPaint::HUDDrawTile( int tileid, iRect& dst, iRect& src, dword flags, in
 	}
 
 	R9_SetClipping(oldclip);	
-	unguard()
 }
 
 void cDizPaint::HudClipping( iRect& dst )
 {
-	guard(cDizPaint::HudClipping)
 	if( m_huddraw==0 ) return; // not in draw
 	if(dst.x2<dst.x1 || dst.y2<dst.y1)
 	{
@@ -965,7 +919,6 @@ void cDizPaint::HudClipping( iRect& dst )
 	rect.x2 = (float)(m_scrx + dst.x2*m_scale);
 	rect.y2 = (float)(m_scry + dst.y2*m_scale);
 	R9_SetClipping(rect);	
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -973,12 +926,10 @@ void cDizPaint::HudClipping( iRect& dst )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cDizPaint::FontDel( int idx )
 {
-	guard(cDizPaint::FontDel);
 	if(cFont* font = FontGet(idx)) {
-		sdelete (font);
+		delete font;
 		m_font.erase(m_font.begin() + idx);
 	}
-	unguard();
 }
 
 int		gsfont_total;			// status report on total fonts declared (load+failed)
@@ -988,7 +939,6 @@ int		gsfont_group;			// current font group
 
 bool cDizPaint::FontLoadFile( const char* filepath, int group )
 {
-	guard(cDizPaint::FontLoadFile)
 
 	// check file type (not counted if unaccepted);
 	const char* name = file_path2file(filepath); if(!name) return false;
@@ -1019,16 +969,16 @@ bool cDizPaint::FontLoadFile( const char* filepath, int group )
 	}
 
 	// add to list
-	cFont* font = snew cFont();
+	cFont* font = new cFont();
 	font->m_id = id;
 	font->m_group = group;
-	font->m_font = snew r9Font();
+	font->m_font = new r9Font();
 	font->m_font->Create(8,8,8,32,128);
 	if(!font->m_font->Create(filepath))
 	{
 		gsfont_fail++;
 		dlog(LOGSYS, L"! %S (failed to load)\n", filepath);
-		sdelete(font);
+		delete font;
 		return false;
 	}
 	m_font.push_back(font);
@@ -1037,20 +987,16 @@ bool cDizPaint::FontLoadFile( const char* filepath, int group )
 		dlog(LOGAPP, L"  %S\n", filepath );
 	
 	return true;
-	unguard()
 }
 
 void FFCallback_Font( const char* filepath, BOOL dir )
 {
-	guard(FFCallback_Font)
 	if(dir) return;
 	bool ret = g_paint.FontLoadFile(filepath,gsfont_group);
-	unguard()
 }
 
 bool cDizPaint::FontLoad( char* path, int group )
 {
-	guard(cDizPaint::FontLoad)
 	if(!path || !path[0]) return false; // invalid path
 	int szlen = (int)strlen(path);
 	if(path[szlen-1]!='\\') strcat(path,"\\");
@@ -1085,12 +1031,10 @@ bool cDizPaint::FontLoad( char* path, int group )
 	dlog(LOGAPP, L"Fonts report: total=%i, failed=%i (duplicates=%i)\n\n", gsfont_total, gsfont_fail, gsfont_duplicates );
 
 	return true;
-	unguard()
 }
 
 void cDizPaint::FontUnload( int group )
 {
-	guard(cDizPaint::FontUnload)
 	int i;
 	for(i=0;i<m_font.size();i++)
 	{
@@ -1100,7 +1044,6 @@ void cDizPaint::FontUnload( int group )
 			i--;
 		}
 	}
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

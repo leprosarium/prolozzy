@@ -12,38 +12,31 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 cGUIEdit::cGUIEdit()
 {
-	guard(cGUIEdit::cGUIEdit)
 	m_sel1 = 0;
 	m_sel2 = 0;
 	m_edit = FALSE;
 	m_bktxt = NULL;
 	SetInt(IV_TXTSIZE,64);
 	Build();
-	unguard()
 }
 
 cGUIEdit::~cGUIEdit()
 {
-	guard(cGUIEdit::~cGUIEdit)
-		char *txt = m_var[IV_TXT].m_str;
-	if(txt) sfree(txt);
+	char *txt = m_var[IV_TXT].m_str;
+	if(txt) free(txt);
 	m_var[IV_TXT].m_str = NULL;
 	SetBkTxt(NULL);
-	unguard()
 }
 
 void cGUIEdit::Build()
 {
-	guard(cGUIEdit::Build)
 	char* txt = m_var[IV_TXT].m_str;
-	txt = (char*)srealloc(txt, GetInt(IV_TXTSIZE)+1);
+	txt = (char*)realloc(txt, GetInt(IV_TXTSIZE)+1);
 	m_var[IV_TXT].m_str = txt;
-	unguard()
 }
 
 void cGUIEdit::Update()
 {
-	guard(cGUIEdit::Update)
 	RECT rc;
 	GetScrRect(rc);
 	m_mousein = INRECT( g_gui->m_mousex, g_gui->m_mousey, rc);
@@ -261,12 +254,10 @@ void cGUIEdit::Update()
 		Action();
 	}
 	
-	unguard()
 }
 
 void cGUIEdit::Draw()
 {
-	guard(cGUIEdit::Draw)
 	RECT rc; 
 	fRect rc1;
 	GetScrRect(rc);
@@ -338,7 +329,6 @@ void cGUIEdit::Draw()
 	if( style & GUISTYLE_BORDER3D )
 		GUIDrawRect3D( rc.left, rc.top, rc.right, rc.bottom, GetInt(IV_COLOR+2), style & GUISTYLE_PRESSED );
 
-	unguard()
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -347,7 +337,6 @@ void cGUIEdit::Draw()
 
 void cGUIEdit::SetTxt( int idx, char* text )
 {
-	guard(cGUIEdit::SetTxt)
 	if(idx==IV_TXT)
 	{
 		if(text==NULL) return;
@@ -357,12 +346,10 @@ void cGUIEdit::SetTxt( int idx, char* text )
 		return;
 	}
 	cGUIItem::SetTxt(idx,text);
-	unguard()
 }
 
 int cGUIEdit::Pos2Chr(int pos)
 {
-	guard(cGUIEdit::Pos2Chr)
 	int  i,w, size;
 	pos = pos - GetInt(IV_TXTOFFSET);
 	char *sztxt = GetTxt(IV_TXT);
@@ -375,15 +362,12 @@ int cGUIEdit::Pos2Chr(int pos)
 			return i ;
 	}
 	return size;
-	unguard()
 }
 
 int cGUIEdit::Chr2Pos(int chr)
 {
-	guard(cGUIEdit::Chr2Pos)
-	sassert(chr<=(int)strlen(GetTxt(IV_TXT)));
+	assert(chr<=(int)strlen(GetTxt(IV_TXT)));
 	return (int)( (g_gui->m_font->GetTextWidth(GetTxt(IV_TXT),chr) + GetInt(IV_TXTOFFSET)) ); 
-	unguard()
 }
 
 
@@ -392,7 +376,6 @@ int cGUIEdit::Chr2Pos(int chr)
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cGUIEdit::ClipboardCopy()
 {
-	guard(cGUIEdit::ClipboardCopy)
 	char* text = m_var[IV_TXT].m_str;
 	if(!text) return;
 
@@ -414,20 +397,18 @@ void cGUIEdit::ClipboardCopy()
 	if(!OpenClipboard(NULL)) return;
 	if(EmptyClipboard())
 	{
-		HGLOBAL handler = GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE,size+1); sassert(handler!=NULL);
-		void* data = GlobalLock(handler); sassert(data!=NULL);
+		HGLOBAL handler = GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE,size+1); assert(handler!=NULL);
+		void* data = GlobalLock(handler); assert(data!=NULL);
 		memcpy(data,text+s1,size);
 		((char*)data)[size]=0;
 		GlobalUnlock(handler);
 		SetClipboardData(CF_TEXT,handler);
 	}
 	CloseClipboard();
-	unguard()
 }
 
 void cGUIEdit::ClipboardPaste()
 {
-	guard(cGUIEdit::ClipboardPaste)
 	if(!IsClipboardFormatAvailable(CF_TEXT)) return;
 	if(!OpenClipboard(NULL)) return;
 	HGLOBAL handler = GetClipboardData(CF_TEXT);
@@ -442,12 +423,10 @@ void cGUIEdit::ClipboardPaste()
 		}
 	}
 	CloseClipboard();
-	unguard()
 }
 
 void cGUIEdit::SelectionCut()
 {
-	guard(cGUIEdit::SelectionCut);
 	if(m_sel1==m_sel2) return; // no selection
 	// ordered selection
 	int s1,s2;
@@ -463,12 +442,10 @@ void cGUIEdit::SelectionCut()
 	}
 	ShiftLeft(s2,s2-s1);
 	m_sel1 = m_sel2 = s1;
-	unguard();
 }
 
 void cGUIEdit::SelectionPaste( char* txt )
 {
-	guard(cGUIEdit::SelectionPaste);
 	if(txt==NULL) return;
 	int size = (int)strlen(txt);
 	if(size==0) return;
@@ -479,7 +456,6 @@ void cGUIEdit::SelectionPaste( char* txt )
 		memcpy(text+m_sel1,txt,size);
 	m_sel1 += size;
 	m_sel2 = m_sel1;
-	unguard();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

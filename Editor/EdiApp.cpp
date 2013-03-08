@@ -58,7 +58,6 @@ PREDICATE_M(core, tickCount, 1)
 
 cEdiApp::cEdiApp()
 {
-	guard(cEdiApp::cEdiApp)
 
 	m_exit				= 0;
 	m_axes				= 0;
@@ -76,8 +75,8 @@ cEdiApp::cEdiApp()
 	strcpy(m_mapid,		"mapid");
 
 	m_toolcrt			= TOOL_PAINT;
-	m_tool[TOOL_PAINT]	= snew cEdiToolPaint();
-	m_tool[TOOL_EDIT]	= snew cEdiToolEdit();
+	m_tool[TOOL_PAINT]	= new cEdiToolPaint();
+	m_tool[TOOL_EDIT]	= new cEdiToolEdit();
 
 	// reset brush
 	memset(&m_brush,0,sizeof(m_brush));
@@ -97,21 +96,17 @@ cEdiApp::cEdiApp()
 	m_mscrolly = 0;
 
 	m_app = this;
-	unguard()
 }
 
 cEdiApp::~cEdiApp()
 {
-	guard(cEdiApp::~cEdiApp)
 	m_app = NULL;
-	sdelete(m_tool[TOOL_PAINT]);
-	sdelete(m_tool[TOOL_EDIT]);
-	unguard()
+	delete m_tool[TOOL_PAINT];
+	delete m_tool[TOOL_EDIT];
 }
 
 BOOL cEdiApp::Init()
 {
-	guard(cEdiApp::Init)
 	dlog(LOGAPP, L"App init.\n");
 
 	// engine
@@ -145,12 +140,10 @@ BOOL cEdiApp::Init()
 	SetWindowLong(E9_GetHWND(),GWL_EXSTYLE,styleex);
 
 	return TRUE;
-	unguard()
 }
 
 BOOL cEdiApp::InitApp()
 {
-	guard(cEdiApp::InitApp);
 	E9_AppSetStr(E9_APP_NAME,EDI_NAME);
 	E9_AppSetStr(E9_APP_ICON,MAKEINTRESOURCE(IDI_ICON));
 
@@ -159,23 +152,19 @@ BOOL cEdiApp::InitApp()
 	E9_AppSetInt(E9_APP_COOL,cool);
 	
 	return TRUE;
-	unguard();
 }
 
 BOOL cEdiApp::InitFiles()
 {
-	guard(cEdiApp::InitFiles);
 	BOOL ok = F9_Init();
 	if(!ok) return FALSE;
 	int arc = F9_ArchiveOpen("editor.pak", F9_READ | F9_ARCHIVE_PAK );
 	dlog(LOGAPP, L"using editor.pak file.\n");
 	return TRUE;
-	unguard();
 }
 
 BOOL cEdiApp::InitInput()
 {
-	guard(cEdiApp::InitInput);
 	BOOL ok = I9_Init(E9_GetHWND(),E9_GetHINSTANCE(),I9_API_DEFAULT);
 	if(!ok) return FALSE;
 
@@ -185,12 +174,10 @@ BOOL cEdiApp::InitInput()
 	if(!ok) return FALSE;
 	
 	return TRUE;
-	unguard();
 }
 
 BOOL cEdiApp::InitVideo()
 {
-	guard(cEdiApp::InitVideo);
 	char inifile[256];
 	strcpy( inifile, file_getfullpath(USER_INIFILE) );
 
@@ -232,12 +219,10 @@ BOOL cEdiApp::InitVideo()
 	E9_AppSetInt(E9_APP_WINDOWED,cfg.m_windowed);
 
 	return TRUE;
-	unguard();
 }
 
 void cEdiApp::Done()
 {
-	guard(cEdiApp::Done)
 	// must be able to destroy partial init too, in case Init has failed
 
 	// script exit
@@ -261,12 +246,10 @@ void cEdiApp::Done()
 	F9_Done();
 
 	dlog(LOGAPP, L"App done.\n");
-	unguard()
 }
 
 void cEdiApp::Activate( BOOL active )
 {
-	guard(cEdiApp::Activate)
 	if(active)
 	{
 		if(I9_IsReady()) I9_Acquire();
@@ -283,12 +266,10 @@ void cEdiApp::Activate( BOOL active )
 		E9_AppSetCursor(E9_CURSOR_ARROW);
 	}
 	::InvalidateRect(E9_GetHWND(),NULL,0);
-	unguard()
 }
 
 void cEdiApp::Close()
 {
-	guard(cEdiApp::Close);
 	//if(g_gui->m_isbusy) return; // can't close now !
 	int mode = m_tool[m_toolcrt]->m_mode;
 	if(m_toolcrt==0 && mode==1) return;
@@ -296,12 +277,10 @@ void cEdiApp::Close()
 	m_tool[m_toolcrt]->Reset();
 	g_gui->ScriptPrologDo("editor:close");
 	g_gui->m_isbusy = TRUE; // avoid tools problems
-	unguard()
 }
 
 void cEdiApp::DropFile( LPCWSTR filepath )
 {
-	guard(cEdiApp::DropFile);
 	if(g_gui->m_isbusy) { BEEP_ERROR; return ; } // gui busy (modal dialog)
 	if(!wcsstr(filepath, L".pmp")) { BEEP_ERROR; return ; } // not map
 	
@@ -320,29 +299,23 @@ void cEdiApp::DropFile( LPCWSTR filepath )
 	g_map.Update(0.0f);
 	g_map.Refresh();
 	Draw();
-	unguard();
 }
 
 void cEdiApp::Scroll( int dx, int dy )
 {
-	guard(cEdiApp::Scroll);
 	m_mscrollx = dx;
 	m_mscrolly = dy;
-	unguard();
 }
 
 void cEdiApp::HandleReset()
 {
-	guard(cEdiApp::HandleReset);
 	g_map.m_refresh = TRUE; // refresh map
 	g_map.Refresh();
 	EdiApp()->Draw();
-	unguard();
 }
 
 BOOL cEdiApp::Update()
 {
-	guard(cEdiApp::Update)
 	float dtime = (float)E9_AppGetInt(E9_APP_DELTATIME) / 1000.0f;
 
 	// input
@@ -397,13 +370,11 @@ BOOL cEdiApp::Update()
 
 	if(m_exit) return FALSE;
 	return TRUE;
-	unguard()
 }
 
 
 void cEdiApp::Draw()
 {
-	guard(cEdiApp::Draw)
 	if(!R9_IsReady()) return; // avoid painting if render is not ready
 	R9_CheckDevice(); // check for lost device
 	if(R9_BeginScene())
@@ -429,7 +400,6 @@ void cEdiApp::Draw()
 		R9_Present();
 	}
 
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -437,7 +407,6 @@ void cEdiApp::Draw()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiApp::DrawStats()
 {
-	guard(cEdiApp::DrawStats)
 	char sz[64];
 	sprintf(sz, "fps: %i", E9_AppGetInt(E9_APP_FPS));
 	
@@ -449,7 +418,6 @@ void cEdiApp::DrawStats()
 	R9_DrawBar( fRect(x,y,x+w,y+h), 0xa0000000 );
 	R9_DrawText( fV2(x+2,y+2), sz, 0xffffff80 );
 	R9_Flush();
-	unguard()
 }
 
 
@@ -458,13 +426,11 @@ void cEdiApp::DrawStats()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiApp::ToolSet( int tool )
 {
-	guard(cEdiApp::ToolSet)
 	if(tool<0 || tool>=TOOL_MAX) tool=0;
 	if(tool==m_toolcrt) return;
 	m_tool[m_toolcrt]->Switch(FALSE);
 	m_toolcrt = tool;
 	m_tool[m_toolcrt]->Switch(TRUE);
-	unguard()
 }
 
 
@@ -473,29 +439,23 @@ void cEdiApp::ToolSet( int tool )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 int	cEdiApp::GetMouseX()
 {
-	guard(cEdiApp::GetMouseX)
 	POINT mouse;
 	GetCursorPos(&mouse);
 	ScreenToClient(E9_GetHWND(), &mouse);
 	return mouse.x;
-	unguard()
 }
 
 int cEdiApp::GetMouseY()
 {
-	guard(cEdiApp::GetMouseY)
 	POINT mouse;
 	GetCursorPos(&mouse);
 	ScreenToClient(E9_GetHWND(), &mouse);
 	return mouse.y;
-	unguard()
 }
 
 void cEdiApp::WaitCursor( BOOL on )
 {
-	guard(cEdiApp::WaitCursor)
 	E9_AppSetCursor( on ? E9_CURSOR_WAIT : E9_CURSOR_ARROW );
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -503,7 +463,6 @@ void cEdiApp::WaitCursor( BOOL on )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL cEdiApp::Undo()
 {
-	guard(cEdiApp::Undo)
 	switch(m_undoop)
 	{
 		case UNDOOP_ADD:
@@ -533,16 +492,13 @@ BOOL cEdiApp::Undo()
 error:
 	BEEP_ERROR;
 	return FALSE;
-	unguard()
 }
 
 void cEdiApp::UndoSet( int op, int idx, tBrush* brush )
 {
-	guard(cEdiApp::UndoSet)
 	m_undoop = op;
 	m_undoidx = idx;
 	if(brush) m_undobrush=*brush;
-	unguard()
 }
 
 

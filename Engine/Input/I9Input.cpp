@@ -9,7 +9,6 @@ i9Input* i9_input = NULL;
 
 i9Input::i9Input()
 {
-	guard(i9Input::i9Input);
 	m_hwnd		= NULL;
 	m_hinstance = NULL;
 	m_frm		= 0;
@@ -18,48 +17,40 @@ i9Input::i9Input()
 	m_key		= NULL;
 	m_axe		= NULL;
 	m_keyq		= NULL;
-	unguard();
 }
 
 i9Input::~i9Input()
 {
-	guard(i9Input::~i9Input);
-	unguard();
 }
 
 BOOL i9Input::Init( HWND hwnd, HINSTANCE hinstance )
 {
-	guard(i9Input::Init);
 	m_hwnd = hwnd;
 	m_hinstance = hinstance;
 
-	m_key	= (i9Key*)smalloc( I9_KEYS * sizeof(i9Key) );
-	m_axe	= (i9Axe*)smalloc( I9_AXES * sizeof(i9Axe) );
-	m_keyq	= (dword*)smalloc( I9_QUEUESIZE * sizeof(dword) );
+	m_key	= (i9Key*)malloc( I9_KEYS * sizeof(i9Key) );
+	m_axe	= (i9Axe*)malloc( I9_AXES * sizeof(i9Axe) );
+	m_keyq	= (dword*)malloc( I9_QUEUESIZE * sizeof(dword) );
 	memset( m_key, 0, I9_KEYS * sizeof(i9Key) );
 	memset( m_axe, 0, I9_AXES * sizeof(i9Axe) );
 	memset( m_keyq, 0, I9_QUEUESIZE * sizeof(dword) );
 
 	return TRUE;
-	unguard();
 }
 
 void i9Input::Done()
 {
-	guard(i9Input::Done);
 	for(int i=0;i<I9_DEVICES;i++)
 		if(DeviceIsPresent(i))	
 			DeviceDone(i);
 
-	sfree(m_key); m_key=NULL;
-	sfree(m_axe); m_axe=NULL;
-	sfree(m_keyq); m_keyq=NULL;
-	unguard();
+	free(m_key); m_key=NULL;
+	free(m_axe); m_axe=NULL;
+	free(m_keyq); m_keyq=NULL;
 }
 
 void i9Input::Update( float dtime )
 {
-	guard(i9Input::Update);
 	m_frm++;
 	m_time += dtime;
 
@@ -74,35 +65,28 @@ void i9Input::Update( float dtime )
 		// dlog(LOGINP, "INPUT: Too much time without refresh:\n" );
 		Clear();
 	}
-	unguard();
 }
 
 void i9Input::Clear()
 {	
-	guard(i9Input::Clear);
 	for(int i=0;i<I9_DEVICES;i++)
 		if(DeviceIsPresent(i))
 			DeviceClear(i);
 
 	ClearKeyQ();
 	m_time = 0.0f;
-	unguard();
 }
 
 void i9Input::Acquire()
 {
-	guard(i9Input::Acquire);
 	//dlog(LOGINP, "INPUT: Acquire\n");
 	ClearKeyQ();
-	unguard();
 }
 
 void i9Input::Unacquire()
 {
-	guard(i9Input::Unacquire);
 	//dlog(LOGINP, "INPUT: Unacquire\n");
 	ClearKeyQ();	
-	unguard();
 }
 
 BOOL i9Input::DeviceInit( int device )						{ return FALSE; }
@@ -119,7 +103,6 @@ BOOL i9Input::DeviceFFIsPlaying( int device )				{ return FALSE; }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void i9Input::PushKey( int key, BOOL value )
 {
-	guard(i9Input::PushKey);
 
 	m_key[key].m_value	= value;
 	m_key[key].m_frm	= m_frm;		
@@ -134,48 +117,39 @@ void i9Input::PushKey( int key, BOOL value )
 	m_keyq[ m_nkq ] = key | ( value ? I9_KEYMASK_VALUE : 0 );
 	m_nkq++;
 	
-	unguard();
 }
 
 dword i9Input::PopKey()
 {
-	guard(i9Input::PopKey);
 	if( m_nkq == 0 ) return 0;
 	int key = m_keyq[0];
 	m_nkq--;
 	if(m_nkq>0) memcpy( &m_keyq[0], &m_keyq[1], m_nkq * sizeof(int) );
 	return key;
-	unguard();
 }
 
 dword i9Input::PeekKey()
 {
-	guard(i9Input::PeekKey);
 	if( m_nkq == 0 ) return 0;
 	return m_keyq[0];
-	unguard();
 }
 
 int i9Input::FindKeyByAscii( char ascii )
 {
-	guard(i9Input::FindKeyByAscii);
 	ascii = ascii | 32; // lower
 	for(int i=0;i<I9_KEYS;i++)
 		if(m_keyname[i].m_ascii == ascii)
 			return i;
 	return 0;
-	unguard();
 }
 
 int	i9Input::FindKeyByName( const char* name )
 {
-	guard(i9Input::FindKeyByName);
 	if(name==NULL) return 0;
 	for(int i=0;i<I9_KEYS;i++)
 		if( 0==stricmp(name, m_keyname[i].m_name) )
 			return i;
 	return 0;
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -496,31 +470,27 @@ i9KeyName i9Input::m_keyname[ I9_KEYS ] =
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL I9_Init( HWND hwnd, HINSTANCE hinstance, int api )
 {
-	guard(I9_Init);
 	if(i9_input) return TRUE;
 	dlog(LOGINP, L"Input init (api=%i).\n",api);
 	// test api here if more platformes
-	i9_input = snew i9InputDX();
+	i9_input = new i9InputDX();
 	BOOL ok = i9_input->Init( hwnd, hinstance );
 	if(!ok)
 	{
 		i9_input->Done();
-		sdelete(i9_input);
+		delete i9_input;
 		i9_input = NULL;
 	}
 	return ok;
-	unguard();
 }
 
 void I9_Done()
 {
-	guard(I9_Done);
 	if(!i9_input) return;
 	i9_input->Done();
-	sdelete(i9_input);
+	delete i9_input;
 	i9_input = NULL;
 	dlog(LOGINP, L"Input done.\n");
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

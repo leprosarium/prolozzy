@@ -18,7 +18,6 @@ cDizSound g_sound;
 //////////////////////////////////////////////////////////////////////////////////////////////////
 cDizSound::cDizSound()
 {
-	guard(cDizSound::cDizSound)
 	// samples
 	for(int i=0;i<SOUND_VOICES;i++)	m_voice[i] = NULL;
 	m_voicecount = 0;
@@ -44,37 +43,29 @@ cDizSound::cDizSound()
 	m_music_duplicates = 0;
 	m_music_group = 0;
 
-	unguard()
 }
 
 cDizSound::~cDizSound()
 {
-	guard(cDizSound::cDizSound)
-	unguard()
 }
 
 bool cDizSound::Init()
 {
-	guard(cDizSound::Init)
 	return true;
-	unguard()
 }
 
 void cDizSound::Done()
 {
-	guard(cDizSound::Done)
 	SampleStopAll();
 	MusicStop();
-	for(; !m_sampleproto.empty(); m_sampleproto.pop_back()) sdelete(m_sampleproto.back());
+	for(; !m_sampleproto.empty(); m_sampleproto.pop_back()) delete m_sampleproto.back();
 	m_sampleproto.clear();
-	for(; !m_musicproto.empty(); m_musicproto.pop_back()) sdelete(m_musicproto.back());
+	for(; !m_musicproto.empty(); m_musicproto.pop_back()) delete m_musicproto.back();
 	m_musicproto.clear();
-	unguard()
 }
 
 void cDizSound::Update()
 {
-	guard(cDizSound::Update)
 	if(!A9_IsReady()) return;
 	
 	// samples - stop (remove) those that have finished playing
@@ -91,7 +82,6 @@ void cDizSound::Update()
 
 	A9_Update();
 
-	unguard()
 }
 
 bool cDizSound::isSupportedExt(const char * ext) 
@@ -111,7 +101,6 @@ bool cDizSound::isSupportedExt(const char * ext)
 //////////////////////////////////////////////////////////////////////////////////////////////////
 bool cDizSound::SampleLoadFile( const char* filepath, int group )
 {
-	guard(cDizSound::SampleLoadFile)
 
 	char fname[_MAX_FNAME];
 	char ext[_MAX_EXT];
@@ -155,27 +144,23 @@ bool cDizSound::SampleLoadFile( const char* filepath, int group )
 	}
 
 	// add to list
-	tSoundProto* proto = snew tSoundProto(id, group, instances, bufferproto);
+	tSoundProto* proto = new tSoundProto(id, group, instances, bufferproto);
 	m_sampleproto.push_back(proto);
 
 	if(IS_DEVELOPER()) // log for developers
 		dlog(LOGAPP, L"  %S [%i]\n", filepath, instances );
 
 	return true;
-	unguard()
 }
 
 void FFCallback_Sample( const char* filepath, BOOL dir )
 {
-	guard(FFCallback_Sample)
 	if(dir) return;
 	bool ret = g_sound.SampleLoadFile(filepath,g_sound.m_sample_group);
-	unguard()
 }
 
 bool cDizSound::SampleLoad( const char* path, int group )
 {
-	guard(cDizSound::SampleLoad)
 	if(!A9_IsReady()) { dlog(LOGAPP, L"Sound disabled - no samples are loaded.\n"); return false; }
 
 	if(!path || !path[0]) return false; // invalid path
@@ -215,29 +200,25 @@ bool cDizSound::SampleLoad( const char* path, int group )
 	dlog(LOGAPP, L"Samples report: total=%i, failed=%i (duplicates=%i)\n\n", m_sample_total, m_sample_fail, m_sample_duplicates );
 
 	return true;
-	unguard()
 }
 
 void cDizSound::SampleUnload( int group )
 {
-	guard(cDizSound::SampleUnload)
 	int i;
 	for(i=0;i<m_sampleproto.size();i++)
 	{
 		if(m_sampleproto[i]->m_group == group)
 		{
 			SampleStopAll(m_sampleproto[i]->m_id);
-			sdelete(m_sampleproto[i]);
+			delete m_sampleproto[i];
 			m_sampleproto.erase(m_sampleproto.begin() + i);
 			i--;
 		}
 	}
-	unguard()
 }
 
 int	cDizSound::SamplePlay( PlAtom id, int loop )
 {
-	guard(cDizSound::SamplePlay)
 	int i;
 	int protoidx = SampleFind(id);
 	if(protoidx==-1) return -1; // invalid id
@@ -264,13 +245,11 @@ int	cDizSound::SamplePlay( PlAtom id, int loop )
 	m_voice[voiceidx] = buffer;
 	
 	return voiceidx;
-	unguard()
 }
 
 int	cDizSound::SamplePlaying( int voiceidx )
 {
-	guard(cDizSound::SamplePlaying)
-	sassert(0<=voiceidx && voiceidx<SOUND_VOICES);
+	assert(0<=voiceidx && voiceidx<SOUND_VOICES);
 	if(m_voice[voiceidx]==NULL) return -1;
 	if(!A9_BufferIsPlaying(m_voice[voiceidx]))
 	{
@@ -279,35 +258,29 @@ int	cDizSound::SamplePlaying( int voiceidx )
 		return -1;
 	}
 	return A9_BufferGet(m_voice[voiceidx],A9_USER);
-	unguard()
 }
 
 void cDizSound::SampleStop( int voiceidx )
 {
-	guard(cDizSound::SampleStop)
-	sassert(0<=voiceidx && voiceidx<SOUND_VOICES);
+	assert(0<=voiceidx && voiceidx<SOUND_VOICES);
 	if(m_voice[voiceidx]==NULL) return;
 	A9_BufferStop(m_voice[voiceidx]);
 	A9_BufferDestroy(m_voice[voiceidx]);
 	m_voice[voiceidx] = NULL;
-	unguard()
 }
 
 void cDizSound::SampleStopAll( PlAtom id )
 {
-	guard(cDizSound::SampleStopAll)
 	for(int i=0;i<SOUND_VOICES;i++)
 	{
 		A9BUFFER buffer = m_voice[i];
 		if( buffer && (id == all || A9_BufferGet(buffer,A9_USER)==id.handle) )
 			SampleStop(i);
 	}
-	unguard()
 }
 
 void cDizSound::SampleVolume( int volume )
 {
-	guard(cDizSound::SampleVolume)
 	if(volume<0) volume=0;
 	if(volume>100) volume=100;
 	if(volume==g_cfg.m_volfx) return; // same volume
@@ -321,7 +294,6 @@ void cDizSound::SampleVolume( int volume )
 		A9_BufferSet(buffer,A9_VOLUME,volumedb);
 	}
 
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -329,7 +301,6 @@ void cDizSound::SampleVolume( int volume )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 bool cDizSound::MusicLoadFile( const char* filepath, int group )
 {
-	guard(cDizSound::MusicLoadFile)
 	// check name and extension
 	char fname[_MAX_FNAME];
 	char ext[_MAX_EXT];
@@ -360,27 +331,23 @@ bool cDizSound::MusicLoadFile( const char* filepath, int group )
 	}
 
 	// add to list
-	tMusicProto* proto = snew tMusicProto(id, group, stream);
+	tMusicProto* proto = new tMusicProto(id, group, stream);
 	m_musicproto.push_back(proto);
 
 	if(IS_DEVELOPER()) // log for developers
 		dlog(LOGAPP, L"  %S\n", filepath );
 
 	return true;
-	unguard()
 }
 
 void FFCallback_Music( const char* filepath, BOOL dir )
 {
-	guard(FFCallback_Music)
 	if(dir) return;
 	bool ret = g_sound.MusicLoadFile(filepath,g_sound.m_music_group);
-	unguard()
 }
 
 bool cDizSound::MusicLoad( const char* path, int group )
 {
-	guard(cDizSound::MusicLoad)
 	if(!A9_IsReady()) { dlog(LOGAPP, L"Sound disabled - no musics are loaded.\n"); return false; }
 
 	if(!path || !path[0]) return false; // invalid path
@@ -420,12 +387,10 @@ bool cDizSound::MusicLoad( const char* path, int group )
 	dlog(LOGAPP, L"Music report: total=%i, failed=%i (duplicates=%i)\n\n", m_music_total, m_music_fail, m_music_duplicates );
 
 	return true;
-	unguard()
 }
 
 void cDizSound::MusicUnload( int group )
 {
-	guard(cDizSound::MusicUnload)
 	int i;
 	for(i=0;i<m_musicproto.size();i++)
 	{
@@ -433,25 +398,21 @@ void cDizSound::MusicUnload( int group )
 		{
 			if(i==m_musicidx) MusicStop(); // stop if current
 			if(m_musicnext==i) m_musicnext=-1; // clear if next
-			sdelete(m_musicproto[i]);
+			delete m_musicproto[i];
 			m_musicproto.erase(m_musicproto.begin() + i);
 			i--;
 		}
 	}
-	unguard()
 }
 
 void cDizSound::MusicFade( int out, int in )
 {
-	guard(cDizSound::MusicFade);
 	m_musicfadeout = out;
 	m_musicfadein = in;
-	unguard();
 }
 
 int cDizSound::MusicPlay( PlAtom id, int start )
 {
-	guard(cDizSound::MusicPlay)
 
 	int protoidx = MusicFind(id);
 //@	if(protoidx==-1) return -1; // invalid id >> allow -1 for next music, to stop with fade
@@ -463,33 +424,27 @@ int cDizSound::MusicPlay( PlAtom id, int start )
 			m_musicvol = 0.0f; // update will stop current music immediately, if any
 	}
 	return 0; // ok
-	unguard()
 }
 
 PlAtom cDizSound::MusicPlaying()
 {
-	guard(cDizSound::MusicPlaying)
 	// we are interested in what is the scheduled song, ignoring the short fadeout of the current one
 	if(m_musicnext==-1) return -1;
 	return m_musicproto[m_musicnext]->m_id;
-	unguard()
 }
 
 int	cDizSound::MusicPosition()
 {
-	guard(cDizSound::MusicPosition);
 	if(m_musicnext==-1) return -1; // no next music
 	if(m_musicidx!=m_musicnext) return m_musicstart; // current is fading, next is about to start from m_musicstart
 	// we are playing the next music, report curent position
 	if(!m_music) return m_musicstart; // should not happend
 	int musicpos = (int)( (float)A9_StreamGetPosition(m_music) / (float)A9_StreamGet(m_music,A9_FREQUENCY) * 1000.0f );
 	return musicpos; // in ms
-	unguard();
 }
 
 void cDizSound::MusicStop()
 {
-	guard(cDizSound::MusicStop)
 	if(m_musicidx==-1) return;
 	if(!m_music) { m_musicidx=-1; return; } // should not happened
 	A9_StreamSet(m_music,A9_VOLUME,A9_VOLUMEMIN); // silence
@@ -497,12 +452,10 @@ void cDizSound::MusicStop()
 	m_music = NULL;
 	m_musicidx = -1;
 	m_musicpaused = false;
-	unguard()
 }
 
 void cDizSound::MusicPause( bool pause )
 {
-	guard(cDizSound::MusicPause);
 	if( m_musicidx==-1) return;
 	if(!m_music) { m_musicidx=-1; return; } // should not happened
 	if(pause)
@@ -516,12 +469,10 @@ void cDizSound::MusicPause( bool pause )
 		A9_StreamPlay(m_music,true); // play
 	}
 	m_musicpaused = pause;
-	unguard();
 }
 
 void cDizSound::MusicUpdate( float dtime )
 {
-	guard(cDizSound::MusicUpdate)
 
 	if(m_musicidx==-1) // nothing is playing
 	{
@@ -594,12 +545,10 @@ void cDizSound::MusicUpdate( float dtime )
 		}
 	}
 
-	unguard()
 }
 
 void cDizSound::MusicVolume( int volume )
 {
-	guard(cDizSound::MusicVolume)
 	if(volume<0) volume=0;
 	if(volume>100) volume=100;
 	if(volume==g_cfg.m_volmusic) return; // same volume
@@ -610,7 +559,6 @@ void cDizSound::MusicVolume( int volume )
 	{
 		A9_StreamSet(m_music,A9_VOLUME,volumedb);
 	}
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

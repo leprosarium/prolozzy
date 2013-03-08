@@ -21,21 +21,16 @@ int	  ymfread	( void* buffer, int size, void* file )		{ return F9_FileRead(buffe
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 a9Codec_ym::a9Codec_ym()
 {
-	guard(a9Codec_ym::a9Codec_ym);
 	m_type	= A9_CODEC_YM;
 	m_ym	= NULL;
-	unguard();
 }
 
 a9Codec_ym::~a9Codec_ym()
 {
-	guard(a9Codec_ym::~a9Codec_ym);
-	unguard();
 }
 
 int a9Codec_ym::Init()
 {
-	guard(a9Codec_ym::Init);
 	ymFileSystem fs;
 	fs.m_fopen	= ymfopen;
 	fs.m_fclose	= ymfclose;
@@ -44,20 +39,16 @@ int a9Codec_ym::Init()
 	fs.m_fread	= ymfread;
 	ymSetFileSystem( &fs );
 	return A9_OK;
-	unguard();
 }
 
 int a9Codec_ym::Done()
 {
-	guard(a9Codec_ym::Done);
 	// ymStSoundDone(); // no need
 	return A9_OK;
-	unguard();
 }
 
 int	a9Codec_ym::Open( const char* name )
 {
-	guard(a9Codec_ym::Open);
 	if(m_status!=A9_CODEC_CLOSED) return A9_FAIL;
 	m_ym = ymMusicCreate(); if(!m_ym) return A9_FAIL;
 	if(!ymMusicLoad(m_ym,name)) return A9_FAIL;
@@ -73,12 +64,10 @@ int	a9Codec_ym::Open( const char* name )
 
 	m_status = A9_CODEC_OPENED;
 	return A9_OK;
-	unguard();
 }
 
 int	a9Codec_ym::BeginRender( int pos, int loop )
 {
-	guard(a9Codec_ym::BeginRender);
 	if(m_status!=A9_CODEC_OPENED) return A9_FAIL;
 	m_loop = loop;
 
@@ -88,37 +77,30 @@ int	a9Codec_ym::BeginRender( int pos, int loop )
 
 	m_status = A9_CODEC_RENDERING;
 	return A9_OK;
-	unguard();
 }
 
 int	a9Codec_ym::Render( byte* buffer, int size )
 {
-	guard(a9Codec_ym::Render);
 	if(m_status!=A9_CODEC_RENDERING) return A9_FAIL;
 	if(size<=0) return A9_FAIL;
 	int ret = ymMusicCompute(m_ym,(ymsample*)buffer,size);
 	return size;
-	unguard();
 }
 
 int	a9Codec_ym::EndRender()
 {
-	guard(a9Codec_ym::EndRender);
 	if(m_status!=A9_CODEC_RENDERING) return A9_FAIL;
 	ymMusicStop(m_ym);
 	m_status = A9_CODEC_OPENED;
 	return A9_OK;
-	unguard();
 }
 
 int	a9Codec_ym::Close()
 {
-	guard(a9Codec_ym::Close);
 	if(m_status!=A9_CODEC_OPENED) return A9_FAIL;
 	ymMusicDestroy(m_ym);
 	m_status = A9_CODEC_CLOSED;
 	return A9_OK;
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -24,49 +24,36 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 cEdiToolPaint::cEdiToolPaint()
 {
-	guard(cEdiToolPaint::cEdiToolPaint)
 	m_brushidx=-1;
 	m_isbusy=FALSE;
 	strcpy(m_name,"PAINT");
-	unguard()
 }
 
 cEdiToolPaint::~cEdiToolPaint()
 {
-	guard(cEdiToolPaint::~cEdiToolPaint)
-	unguard()
 }
 
 void cEdiToolPaint::Init()
 {
-	guard(cEdiToolPaint::Init)
-	unguard()
 }
 
 void cEdiToolPaint::Done()
 {
-	guard(cEdiToolPaint::Done)
-	unguard()
 }
 
 void cEdiToolPaint::Switch( BOOL on )
 {
-	guard(cEdiToolPaint::Switch)
 	Reset();
-	unguard()
 }
 
 void cEdiToolPaint::Reset()
 {
-	guard(cEdiToolPaint::Reset)
 	if( m_mode==2 )	return;
 	m_mode=-1; // draw trick
-	unguard()
 }
 
 void cEdiToolPaint::Update( float dtime )
 {
-	guard(cEdiToolPaint::Update)
 
 	int mx = EdiApp()->GetMouseX() - VIEWX;
 	int my = EdiApp()->GetMouseY() - VIEWY;
@@ -200,12 +187,10 @@ void cEdiToolPaint::Update( float dtime )
 	}
 
 	m_isbusy = (m_mode==1 || m_mode==2 || m_mode==3);
-	unguard()
 }
 
 void cEdiToolPaint::Draw()
 {
-	guard(cEdiToolPaint::Draw)
 	int mx = EdiApp()->GetMouseX() - VIEWX;
 	int my = EdiApp()->GetMouseY() - VIEWY;
 	if(!INVIEW(mx,my)) return; // && !m_isbusy
@@ -236,13 +221,11 @@ void cEdiToolPaint::Draw()
 
 	brush = brushtemp;
 
-	unguard()
 }
 
 
 void cEdiToolPaint::Command( int cmd )
 {
-	guard(cEdiToolPaint::Command)
 	if(m_brushidx<0 || m_brushidx>g_map.m_brushcount) return;
 	
 	if(cmd==TOOLCMD_PICKBRUSH)
@@ -278,28 +261,23 @@ void cEdiToolPaint::Command( int cmd )
 		m_brushidx=-1;
 		g_map.m_refresh = TRUE;
 	}
-	unguard()
 }
 
 void cEdiToolPaint::BeginUserUpdate()
 {
-	guard(cEdiToolPaint::BeginUserUpdate)
 	if( (m_mode==2 || m_mode==3) && m_brushidx!=-1 )
 	{
 		m_brushtemp = EdiApp()->m_brush;
 		EdiApp()->m_brush = g_map.m_brush[m_brushidx];
 	}
-	unguard()
 }
 
 void cEdiToolPaint::EndUserUpdate()
 {
-	guard(cEdiToolPaint::EndUserUpdate)
 	if( (m_mode==2 || m_mode==3) && m_brushidx!=-1 )
 	{
 		EdiApp()->m_brush = m_brushtemp;
 	}
-	unguard()
 }
 
 
@@ -309,7 +287,6 @@ void cEdiToolPaint::EndUserUpdate()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 cEdiToolEdit::cEdiToolEdit()
 {
-	guard(cEdiToolEdit::cEdiToolEdit)
 	m_selop = 0;
 	m_rect = iRect(0,0,0,0);
 	m_movex = m_movey = 0;
@@ -321,47 +298,37 @@ cEdiToolEdit::cEdiToolEdit()
 	m_clipsize = 0;		
 	m_clip = NULL;
 	strcpy(m_name,"EDIT");
-	unguard()
 }
 
 cEdiToolEdit::~cEdiToolEdit()
 {
-	guard(cEdiToolEdit::~cEdiToolEdit)
-	unguard()
 }
 
 void cEdiToolEdit::Init()
 {
-	guard(cEdiToolEdit::Init)
-	unguard()
 }
 
 void cEdiToolEdit::Done()
 {
-	guard(cEdiToolEdit::Done)
 	// draglist
-	if(m_drag) sfree(m_drag);
+	if(m_drag) free(m_drag);
 	m_dragcount = 0;
 	m_dragsize = 0;
 	m_drag=NULL;
 	// clipboard
-	if(m_clip) sfree(m_clip);
+	if(m_clip) free(m_clip);
 	m_clipcount = 0;
 	m_clipsize = 0;
 	m_clip=NULL;
-	unguard()
 }
 
 void cEdiToolEdit::Switch( BOOL on )
 {
-	guard(cEdiToolEdit::Switch)
 	Reset();
-	unguard()
 }
 
 void cEdiToolEdit::Reset()
 {
-	guard(cEdiToolEdit::Reset)
 	if(m_mode==2)
 	{
 		m_dragcount = 0;
@@ -372,12 +339,10 @@ void cEdiToolEdit::Reset()
 	m_mode = 0;
 	m_selop = 0;
 	m_rect = iRect(0,0,0,0);
-	unguard()
 }
 
 void cEdiToolEdit::Update( float dtime )
 {
-	guard(cEdiToolEdit::Update)
 
 	tBrush& brush = EdiApp()->m_brush;
 
@@ -482,12 +447,10 @@ void cEdiToolEdit::Update( float dtime )
 	g_gui->SetTooltip(inview?sz:"");
 
 	m_isbusy = (m_mode!=0);
-	unguard()
 }
 
 void cEdiToolEdit::Draw()
 {
-	guard(cEdiToolEdit::Draw)
 	int mx = EdiApp()->GetMouseX() - VIEWX;
 	int my = EdiApp()->GetMouseY() - VIEWY;
 	BOOL inview = INVIEW(mx,my);
@@ -537,13 +500,11 @@ void cEdiToolEdit::Draw()
 		GUIDrawRectDot( rect.x1,rect.y1,rect.x2,rect.y2,color);
 	}
 
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiToolEdit::BrushSelect()
 {
-	guard(cEdiToolEdit::BrushSelect)
 	for( int i=0;i<g_map.m_brushviscount;i++ )
 	{
 		int idx = g_map.m_brushvis[i];
@@ -574,26 +535,22 @@ void cEdiToolEdit::BrushSelect()
 		}
 	}
 	g_map.m_refresh=TRUE;
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiToolEdit::BrushDeselect()
 {
-	guard(cEdiToolEdit::BrushDeselect)
 	for(int idx=0;idx<g_map.m_brushcount;idx++)
 	{
 		g_map.m_brush[idx].m_data[BRUSH_SELECT] = 0;
 	}
 	g_map.m_selectcount=0;
 	g_map.m_refresh=TRUE;
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiToolEdit::BrushMoveStart()
 {
-	guard(void cEdiToolEdit::BrushMoveStart)
 	// create drag list with those visible and selected
 	m_dragcount = 0;
 	for(int i=0;i<g_map.m_brushviscount;i++)
@@ -603,20 +560,18 @@ void cEdiToolEdit::BrushMoveStart()
 		if(m_dragcount==m_dragsize) // resize buffer
 		{
 			m_dragsize += 256;
-			m_drag = (int*)srealloc(m_drag,m_dragsize*sizeof(int));
+			m_drag = (int*)realloc(m_drag,m_dragsize*sizeof(int));
 		}
 		m_drag[m_dragcount]=idx;
 		m_dragcount++;
 	}
 	g_map.m_hideselected = TRUE;
 	g_map.m_refresh=TRUE;
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiToolEdit::BrushMove()
 {
-	guard(cEdiToolEdit::BrushMove)
 	for(int idx=0;idx<g_map.m_brushcount;idx++)
 	{
 		if(!g_map.m_brush[idx].m_data[BRUSH_SELECT]) continue;
@@ -629,13 +584,11 @@ void cEdiToolEdit::BrushMove()
 	m_dragcount = 0;
 	g_map.m_hideselected = FALSE;
 	g_map.m_refresh=TRUE;
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiToolEdit::BrushDelete()
 {
-	guard(cEdiToolEdit::BrushDelete)
 	BEEP_OK;
 	EdiApp()->UndoReset();
 	for(int idx=0;idx<g_map.m_brushcount;idx++)
@@ -648,13 +601,11 @@ void cEdiToolEdit::BrushDelete()
 	}
 	g_map.m_selectcount=0;
 	g_map.m_refresh=TRUE;
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiToolEdit::BrushCopy()
 {
-	guard(cEdiToolEdit::BrushCopy)
 	m_clipcount=0;
 	for(int idx=0;idx<g_map.m_brushcount;idx++)
 	{
@@ -662,7 +613,7 @@ void cEdiToolEdit::BrushCopy()
 		if(m_clipcount==m_clipsize) // resize buffer
 		{
 			m_clipsize += 512;
-			m_clip = (tBrush*)srealloc(m_clip,m_clipsize*sizeof(tBrush));
+			m_clip = (tBrush*)realloc(m_clip,m_clipsize*sizeof(tBrush));
 		}
 		m_clip[m_clipcount] = g_map.m_brush[idx];
 		m_clipcount++;
@@ -675,8 +626,8 @@ void cEdiToolEdit::BrushCopy()
 	if(!OpenClipboard(NULL)) return;
 	if(EmptyClipboard())
 	{
-		HGLOBAL handler = GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE,size+4); sassert(handler!=NULL);
-		byte* data = (byte*)GlobalLock(handler); sassert(data!=NULL);
+		HGLOBAL handler = GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE,size+4); assert(handler!=NULL);
+		byte* data = (byte*)GlobalLock(handler); assert(data!=NULL);
 		*(int*)data = size;
 		memcpy(data+4,m_clip,size);
 		GlobalUnlock(handler);
@@ -685,13 +636,11 @@ void cEdiToolEdit::BrushCopy()
 	CloseClipboard();
 
 	BEEP_OK;
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiToolEdit::BrushPaste()
 {
-	guard(cEdiToolEdit::BrushPaste)
 	UINT reg = RegisterClipboardFormat("DizzyAGE_Brushes");
 	if(!IsClipboardFormatAvailable(reg)) return;
 	if(!OpenClipboard(NULL)) return;
@@ -724,7 +673,6 @@ void cEdiToolEdit::BrushPaste()
 		}
 	}
 	CloseClipboard();
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

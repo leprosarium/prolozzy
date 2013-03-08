@@ -134,60 +134,60 @@ extern	i9Input*	i9_input;		// global instance, created by platform
 		BOOL	I9_Init( HWND hwnd, HINSTANCE hinstance, int api=I9_API_DEFAULT );					// init depending on the platform api
 		void	I9_Done();																			// done
 inline	BOOL	I9_IsReady()									{ return (i9_input!=NULL); }							
-inline	void	I9_Update( float dtime )						{ guardfast(I9_Update);				sassert(i9_input); i9_input->Update(dtime); unguardfast(); }
-inline	void	I9_Clear()										{ guardfast(I9_Clear);				sassert(i9_input); i9_input->Clear(); unguardfast(); }
-inline	void	I9_Acquire()									{ guardfast(I9_Acquire);			sassert(i9_input); i9_input->Acquire(); unguardfast(); }
-inline	void	I9_Unacquire()									{ guardfast(I9_Uacquire);			sassert(i9_input); i9_input->Unacquire(); unguardfast(); }
-inline	BOOL	I9_DeviceInit( int device )						{ guardfast(I9_DeviceInit);			sassert(i9_input); return i9_input->DeviceInit(device); unguardfast(); }
-inline	void	I9_DeviceDone( int device )						{ guardfast(I9_DeviceDone);			sassert(i9_input); i9_input->DeviceDone(device); unguardfast(); }
-inline	BOOL	I9_DeviceIsPresent( int device )				{ guardfast(I9_DeviceIsPresent);	sassert(i9_input); return i9_input->DeviceIsPresent(device); unguardfast(); }
-inline	BOOL	I9_DeviceFFInit( int device	)					{ guardfast(I9_DeviceFFInit);		sassert(i9_input); return i9_input->DeviceFFInit(device); unguardfast(); }
-inline	void	I9_DeviceFFSet( int device, int mag, int per )	{ guardfast(I9_DeviceFFSet);		sassert(i9_input); i9_input->DeviceFFSet(device,mag,per); unguardfast(); }
-inline	void	I9_DeviceFFPlay( int device )					{ guardfast(I9_DeviceFFPlay);		sassert(i9_input); i9_input->DeviceFFPlay(device); unguardfast(); }
-inline	void	I9_DeviceFFStop( int device )					{ guardfast(I9_DeviceFFStop);		sassert(i9_input); i9_input->DeviceFFStop(device); unguardfast(); }
-inline	BOOL	I9_DeviceFFIsPlaying( int device )				{ guardfast(I9_DeviceFFIsPlaying);	sassert(i9_input); return i9_input->DeviceFFIsPlaying(device); unguardfast(); }
+inline	void	I9_Update( float dtime )						{ assert(i9_input); i9_input->Update(dtime); }
+inline	void	I9_Clear()										{ assert(i9_input); i9_input->Clear(); }
+inline	void	I9_Acquire()									{ assert(i9_input); i9_input->Acquire(); }
+inline	void	I9_Unacquire()									{ assert(i9_input); i9_input->Unacquire(); }
+inline	BOOL	I9_DeviceInit( int device )						{ assert(i9_input); return i9_input->DeviceInit(device); }
+inline	void	I9_DeviceDone( int device )						{ assert(i9_input); i9_input->DeviceDone(device); }
+inline	BOOL	I9_DeviceIsPresent( int device )				{ assert(i9_input); return i9_input->DeviceIsPresent(device); }
+inline	BOOL	I9_DeviceFFInit( int device	)					{ assert(i9_input); return i9_input->DeviceFFInit(device); }
+inline	void	I9_DeviceFFSet( int device, int mag, int per )	{ assert(i9_input); i9_input->DeviceFFSet(device,mag,per); }
+inline	void	I9_DeviceFFPlay( int device )					{ assert(i9_input); i9_input->DeviceFFPlay(device); }
+inline	void	I9_DeviceFFStop( int device )					{ assert(i9_input); i9_input->DeviceFFStop(device); }
+inline	BOOL	I9_DeviceFFIsPlaying( int device )				{ assert(i9_input); return i9_input->DeviceFFIsPlaying(device); }
 
-inline	BOOL	I9_IsKeyPressed()								{ guardfast(I9_IsKeyPressed);		sassert(i9_input); for(int i=I9_KEYBOARD_FIRSTKEY; i<I9_KEYBOARD_FIRSTKEY+I9_KEYBOARD_KEYS; i++) if( i9_input->GetKeyDown(i) ) return i; return 0; unguardfast(); }
-inline	BOOL	I9_GetKeyValue( int key )						{ guardfast(I9_GetKeyValue);		sassert(i9_input); return i9_input->GetKeyValue(key); unguardfast(); }
-inline	BOOL	I9_GetKeyDown( int key )						{ guardfast(I9_GetKeyDown);			sassert(i9_input); return i9_input->GetKeyDown(key); unguardfast(); }
-inline	BOOL	I9_GetKeyUp( int key )							{ guardfast(I9_GetKeyUp);			sassert(i9_input); return i9_input->GetKeyUp(key); unguardfast(); }
+inline	BOOL	I9_IsKeyPressed()								{ assert(i9_input); for(int i=I9_KEYBOARD_FIRSTKEY; i<I9_KEYBOARD_FIRSTKEY+I9_KEYBOARD_KEYS; i++) if( i9_input->GetKeyDown(i) ) return i; return 0; }
+inline	BOOL	I9_GetKeyValue( int key )						{ assert(i9_input); return i9_input->GetKeyValue(key); }
+inline	BOOL	I9_GetKeyDown( int key )						{ assert(i9_input); return i9_input->GetKeyDown(key); }
+inline	BOOL	I9_GetKeyUp( int key )							{ assert(i9_input); return i9_input->GetKeyUp(key); }
 
-inline	int		I9_GetKeyQCount()								{ guardfast(I9_GetKeyQCount);		sassert(i9_input); return i9_input->GetKeyQCount(); unguardfast(); }
-inline	int		I9_GetKeyQCode( int e=0 )						{ guardfast(I9_GetKeyQCode);		sassert(i9_input); return i9_input->GetKeyQCode(e); unguardfast(); }
-inline	BOOL	I9_GetKeyQValue( int e=0 )						{ guardfast(I9_GetKeyQValue);		sassert(i9_input); return i9_input->GetKeyQValue(e); unguardfast(); }
-inline	void	I9_ClearKeyQ()									{ guardfast(I9_ClearKeyQ);			sassert(i9_input); i9_input->ClearKeyQ(); unguardfast(); }
+inline	int		I9_GetKeyQCount()								{ assert(i9_input); return i9_input->GetKeyQCount(); }
+inline	int		I9_GetKeyQCode( int e=0 )						{ assert(i9_input); return i9_input->GetKeyQCode(e); }
+inline	BOOL	I9_GetKeyQValue( int e=0 )						{ assert(i9_input); return i9_input->GetKeyQValue(e); }
+inline	void	I9_ClearKeyQ()									{ assert(i9_input); i9_input->ClearKeyQ(); }
 
-inline	char		I9_GetKeyAscii( int key )					{ guardfast(I9_GetKeyAscii);		sassert(i9_input); return i9_input->GetKeyAscii(key); unguardfast(); }
-inline	char		I9_GetKeyShifted( int key )					{ guardfast(I9_GetKeyShifted);		sassert(i9_input); return i9_input->GetKeyShifted(key); unguardfast(); }
-inline	const char*	I9_GetKeyName( int key )					{ guardfast(I9_GetKeyName);			sassert(i9_input); return i9_input->GetKeyName(key); unguardfast(); }
-inline	int			I9_FindKeyByAscii( char ascii )				{ guardfast(I9_FindKeyByAscii);		sassert(i9_input); return i9_input->FindKeyByAscii(ascii); unguardfast(); }
-inline	int			I9_FindKeyByName( const char* name )		{ guardfast(I9_FindKeyByName);		sassert(i9_input); return i9_input->FindKeyByName(name); unguardfast(); }
+inline	char		I9_GetKeyAscii( int key )					{ assert(i9_input); return i9_input->GetKeyAscii(key); }
+inline	char		I9_GetKeyShifted( int key )					{ assert(i9_input); return i9_input->GetKeyShifted(key); }
+inline	const char*	I9_GetKeyName( int key )					{ assert(i9_input); return i9_input->GetKeyName(key); }
+inline	int			I9_FindKeyByAscii( char ascii )				{ assert(i9_input); return i9_input->FindKeyByAscii(ascii); }
+inline	int			I9_FindKeyByName( const char* name )		{ assert(i9_input); return i9_input->FindKeyByName(name); }
 
-inline	int		I9_GetAxeValue( int axe )						{ guardfast(I9_GetAxeValue);		sassert(i9_input); return i9_input->GetAxeValue(axe); unguardfast(); }
-inline	int		I9_GetAxeDelta( int axe )						{ guardfast(I9_GetAxeDelta);		sassert(i9_input); return i9_input->GetAxeDelta(axe); unguardfast(); }
-inline	void	I9_SetAxeClip( int axe, int min, int max )		{ guardfast(I9_SetAxeClip);			sassert(i9_input); i9_input->SetAxeClip(axe,min,max); unguardfast(); }
-inline	void	I9_SetAxeSpeed( int axe, int speed )			{ guardfast(I9_SetAxeSpeed);		sassert(i9_input); i9_input->SetAxeSpeed(axe,speed); unguardfast(); }
+inline	int		I9_GetAxeValue( int axe )						{ assert(i9_input); return i9_input->GetAxeValue(axe); }
+inline	int		I9_GetAxeDelta( int axe )						{ assert(i9_input); return i9_input->GetAxeDelta(axe); }
+inline	void	I9_SetAxeClip( int axe, int min, int max )		{ assert(i9_input); i9_input->SetAxeClip(axe,min,max); }
+inline	void	I9_SetAxeSpeed( int axe, int speed )			{ assert(i9_input); i9_input->SetAxeSpeed(axe,speed); }
 
-inline	int		I9_GetMouseX()									{ guardfast(I9_GetMouseX);			sassert(i9_input); return i9_input->GetAxeValue( I9_MOUSE_X ); unguardfast(); }
-inline	int		I9_GetMouseY()									{ guardfast(I9_GetMouseY);			sassert(i9_input); return i9_input->GetAxeValue( I9_MOUSE_Y ); unguardfast(); }
-inline	int		I9_GetMouseDX()									{ guardfast(I9_GetMouseDX);			sassert(i9_input); return i9_input->GetAxeDelta( I9_MOUSE_X ); unguardfast(); }
-inline	int		I9_GetMouseDY()									{ guardfast(I9_GetMouseDY);			sassert(i9_input); return i9_input->GetAxeDelta( I9_MOUSE_Y ); unguardfast(); }
-inline	int		I9_GetMouseLB()									{ guardfast(I9_GetMouseLB);			sassert(i9_input); return i9_input->GetKeyValue( I9_MOUSE_B1 ); unguardfast(); }
-inline	int		I9_GetMouseRB()									{ guardfast(I9_GetMouseRB);			sassert(i9_input); return i9_input->GetKeyValue( I9_MOUSE_B2 ); unguardfast(); }
-inline	int		I9_GetMouseClick()								{ guardfast(I9_GetMouseClick);		sassert(i9_input); return i9_input->GetKeyDown( I9_MOUSE_B1 ); unguardfast(); }
-inline	void	I9_SetMouseX( int x )							{ guardfast(I9_SetMouseX);			sassert(i9_input); i9_input->GetAxe( I9_MOUSE_X ).m_value = x; unguardfast(); }
-inline	void	I9_SetMouseY( int y )							{ guardfast(I9_SetMouseY);			sassert(i9_input); i9_input->GetAxe( I9_MOUSE_Y ).m_value = y; unguardfast(); }
-inline	void	I9_ClipMouse( int x0, int y0, int x1, int y1 )	{ guardfast(I9_ClipMouse);			sassert(i9_input); i9_input->SetAxeClip( I9_MOUSE_X, x0, x1 ); i9_input->SetAxeClip( I9_MOUSE_Y, y0, y1 ); unguardfast(); }
-inline	BOOL	I9_MouseMoved()									{ guardfast(I9_MouseMoved);			sassert(i9_input); return i9_input->GetAxeDelta( I9_MOUSE_X ) || i9_input->GetAxeDelta( I9_MOUSE_Y ); unguardfast(); }
-inline	BOOL	I9_MousePressed()								{ guardfast(I9_MousePressed);		sassert(i9_input); for(int i=I9_MOUSE_B1; i<I9_MOUSE_B8; i++) if( i9_input->GetKeyDown(i) ) return i; return 0; unguardfast(); }
+inline	int		I9_GetMouseX()									{ assert(i9_input); return i9_input->GetAxeValue( I9_MOUSE_X ); }
+inline	int		I9_GetMouseY()									{ assert(i9_input); return i9_input->GetAxeValue( I9_MOUSE_Y ); }
+inline	int		I9_GetMouseDX()									{ assert(i9_input); return i9_input->GetAxeDelta( I9_MOUSE_X ); }
+inline	int		I9_GetMouseDY()									{ assert(i9_input); return i9_input->GetAxeDelta( I9_MOUSE_Y ); }
+inline	int		I9_GetMouseLB()									{ assert(i9_input); return i9_input->GetKeyValue( I9_MOUSE_B1 ); }
+inline	int		I9_GetMouseRB()									{ assert(i9_input); return i9_input->GetKeyValue( I9_MOUSE_B2 ); }
+inline	int		I9_GetMouseClick()								{ assert(i9_input); return i9_input->GetKeyDown( I9_MOUSE_B1 ); }
+inline	void	I9_SetMouseX( int x )							{ assert(i9_input); i9_input->GetAxe( I9_MOUSE_X ).m_value = x; }
+inline	void	I9_SetMouseY( int y )							{ assert(i9_input); i9_input->GetAxe( I9_MOUSE_Y ).m_value = y; }
+inline	void	I9_ClipMouse( int x0, int y0, int x1, int y1 )	{ assert(i9_input); i9_input->SetAxeClip( I9_MOUSE_X, x0, x1 ); i9_input->SetAxeClip( I9_MOUSE_Y, y0, y1 ); }
+inline	BOOL	I9_MouseMoved()									{ assert(i9_input); return i9_input->GetAxeDelta( I9_MOUSE_X ) || i9_input->GetAxeDelta( I9_MOUSE_Y ); }
+inline	BOOL	I9_MousePressed()								{ assert(i9_input); for(int i=I9_MOUSE_B1; i<I9_MOUSE_B8; i++) if( i9_input->GetKeyDown(i) ) return i; return 0; }
 
-inline	int		I9_GetJoystickX( int joy )						{ guardfast(I9_GetJoystickX);		sassert(i9_input); return i9_input->GetAxeValue( I9_JOY_X(joy) ); unguardfast(); }
-inline	int		I9_GetJoystickY( int joy )						{ guardfast(I9_GetJoystickY);		sassert(i9_input); return i9_input->GetAxeValue( I9_JOY_Y(joy) ); unguardfast(); }
-inline	int		I9_GetJoystickB1( int joy )						{ guardfast(I9_GetJoystickB1);		sassert(i9_input); return i9_input->GetKeyValue( I9_JOY_B1(joy) ); unguardfast(); }
-inline	int		I9_GetJoystickB2( int joy )						{ guardfast(I9_GetJoystickB2);		sassert(i9_input); return i9_input->GetKeyValue( I9_JOY_B2(joy) ); unguardfast(); }
-inline	int		I9_GetJoystickB3( int joy )						{ guardfast(I9_GetJoystickB3);		sassert(i9_input); return i9_input->GetKeyValue( I9_JOY_B3(joy) ); unguardfast(); }
-inline	int		I9_GetJoystickB4( int joy )						{ guardfast(I9_GetJoystickB4);		sassert(i9_input); return i9_input->GetKeyValue( I9_JOY_B4(joy) ); unguardfast(); }
-inline	int		I9_GetJoystickHAT( int joy, int hatdir )		{ guardfast(I9_GetJoystickHAT);		sassert(i9_input); return i9_input->GetKeyValue( I9_JOY_H1(joy)+hatdir ); unguardfast(); }
+inline	int		I9_GetJoystickX( int joy )						{ assert(i9_input); return i9_input->GetAxeValue( I9_JOY_X(joy) ); }
+inline	int		I9_GetJoystickY( int joy )						{ assert(i9_input); return i9_input->GetAxeValue( I9_JOY_Y(joy) ); }
+inline	int		I9_GetJoystickB1( int joy )						{ assert(i9_input); return i9_input->GetKeyValue( I9_JOY_B1(joy) ); }
+inline	int		I9_GetJoystickB2( int joy )						{ assert(i9_input); return i9_input->GetKeyValue( I9_JOY_B2(joy) ); }
+inline	int		I9_GetJoystickB3( int joy )						{ assert(i9_input); return i9_input->GetKeyValue( I9_JOY_B3(joy) ); }
+inline	int		I9_GetJoystickB4( int joy )						{ assert(i9_input); return i9_input->GetKeyValue( I9_JOY_B4(joy) ); }
+inline	int		I9_GetJoystickHAT( int joy, int hatdir )		{ assert(i9_input); return i9_input->GetKeyValue( I9_JOY_H1(joy)+hatdir ); }
 
 #endif
 ///////////////////////////////////////////////////////////////////////////////////////////////////

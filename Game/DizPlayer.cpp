@@ -420,20 +420,15 @@ PREDICATE_M(player, makeBBW, 4)
 
 cDizPlayer::cDizPlayer() : idle("idle"), walk("walk"), jump("jump"), fall("fall"), scripted("scripted"), _status(idle)
 {
-	guard(cDizPlayer::cDizPlayer)
 	Reset();
-	unguard()
 }
 
 cDizPlayer::~cDizPlayer()
 {
-	guard(cDizPlayer::~cDizPlayer)
-	unguard()
 }
 
 void cDizPlayer::Reset()
 {
-	guard(cDizPlayer::Reset)
 
 	shader(SHADER_BLEND);
 	status(idle);
@@ -456,7 +451,6 @@ void cDizPlayer::Reset()
 	m_input	= true;
 	m_debug	= false;
 
-	unguard()
 }
 
 
@@ -466,7 +460,6 @@ void cDizPlayer::Reset()
 
 void cDizPlayer::Update()
 {
-	guard(cDizPlayer::Update)
 
 	//Sleep(200); // @T
 
@@ -528,7 +521,6 @@ void cDizPlayer::Update()
 		CheckCollision();
 	}
 
-	unguard()
 }
 
 
@@ -541,7 +533,6 @@ void cDizPlayer::Update()
 
 void cDizPlayer::EnterIdle()
 {
-	guard(cDizPlayer::EnterIdle)
 	_status			= idle;
 	dir(0);
 	pow(0);
@@ -553,12 +544,10 @@ void cDizPlayer::EnterIdle()
 		_tile = idleTile;
 	}
 
-	unguard()
 }
 
 void cDizPlayer::EnterWalk( int dr )
 {
-	guard(cDizPlayer::EnterWalk)
 	_status			= walk; 
 	dir(dr);
 	pow(0);
@@ -570,12 +559,10 @@ void cDizPlayer::EnterWalk( int dr )
 		_tile = walkTile;
 	}
 
-	unguard()
 }
 
 void cDizPlayer::EnterJump( int dr, int pw )
 {
-	guard(cDizPlayer::EnterJump)
 	_status			= jump; 
 	dir(dr);
 	pow(pw);
@@ -599,21 +586,17 @@ void cDizPlayer::EnterJump( int dr, int pw )
 		}
 	}
 	
-	unguard()
 }
 
 void cDizPlayer::EnterFall()
 {
-	guard(cDizPlayer::EnterFall)
 	_status				= fall; 
 	pow(1);
 	// don't change tile and frame
-	unguard()
 }
 
 void cDizPlayer::EnterRoll()
 {
-	guard(cDizPlayer::EnterRoll)
 	
 	pow(1); // cut fall power to roll on ground
 	
@@ -634,12 +617,10 @@ void cDizPlayer::EnterRoll()
 	
 	_stunLevel = 0; // clear stun level
 
-	unguard()
 }
 
 void cDizPlayer::EnterJumper( int mat )
 {
-	guard(cDizPlayer::EnterJumper)
 	if(_life == 0) { EnterIdle(); return; } // no more jumps for mr. dead guy
 
 	int dir = 0;
@@ -656,23 +637,19 @@ void cDizPlayer::EnterJumper( int mat )
 	else
 		EnterRoll(); // roll
 
-	unguard()
 }
 
 void cDizPlayer::EnterSpin( int dr )
 {
-	guard(cDizPlayer::EnterSpin)
 	EnterFall();
 	dir(dr);
 	_tile	= _costume+tileJump();
 	flipX(dir()==-1);
 	_frame	= 1;
-	unguard()
 }
 
 void cDizPlayer::EnterKeyState()
 {
-	guard(cDizPlayer::EnterKeyState)
 	if( _life <= 0 ) {	EnterIdle(); return; } // prepare to die
 
 	int dir = 0;
@@ -693,7 +670,6 @@ void cDizPlayer::EnterKeyState()
 	{
 		EnterIdle();
 	}
-	unguard()
 }
 
 
@@ -705,28 +681,23 @@ void cDizPlayer::EnterKeyState()
 
 void cDizPlayer::UpdateIdle()
 {
-	guard(cDizPlayer::UpdateIdle)
 
 	_frame++;
 
-	unguard()
 }
 
 void cDizPlayer::UpdateWalk()
 {
-	guard(cDizPlayer::UpdateWalk)
 
 	if( CheckWalkX() )
 		_x += dir()*DIZ_STEPX;
 
 	_frame++;
 	
-	unguard()
 }
 
 void cDizPlayer::UpdateJump()
 {
-	guard(cDizPlayer::UpdateJump)
 	
 	if( CheckJumpX() )
 		_x += dir()*DIZ_STEPX;
@@ -746,12 +717,10 @@ void cDizPlayer::UpdateJump()
 			EnterFall();
 	}
 
-	unguard()
 }
 
 void cDizPlayer::UpdateFall()
 {
-	guard(cDizPlayer::UpdateFall)
 
 	if( CheckFallX() )
 		_x += dir()*DIZ_STEPX;
@@ -776,16 +745,13 @@ void cDizPlayer::UpdateFall()
 	else
 		_pow++;
 
-	unguard()
 }
 
 void cDizPlayer::UpdateScripted()
 {
-	guard(cDizPlayer::UpdateScripted)
 	
 	if(anim()!=0) _frame++;
 
-	unguard()
 }
 
 
@@ -796,19 +762,16 @@ void cDizPlayer::UpdateScripted()
 // check if rectangle have no hard materials in side
 bool cDizPlayer::CheckFree( int x1, int y1, int x2, int y2 )
 {
-	guard(cDizPlayer::CheckFree)
 	for(int iy=y1;iy<y2;iy++)
 		for(int ix=x1;ix<x2;ix++)
 			if( g_game.DensMap(ix,iy) == g_game.hard ) 
 				return false;
 	return true;
-	unguard()
 }
 
 // check side, only above 8 bottom pixels. if bottom is blocked it will step-up on it
 bool cDizPlayer::CheckWalkX()
 {
-	guard(cDizPlayer::CheckWalkX)
 	int x1,y1,x2,y2;
 	MakeBB(x1,y1,x2,y2);
 	if(dir()==1)
@@ -818,12 +781,10 @@ bool cDizPlayer::CheckWalkX()
 		return CheckFree( x1-DIZ_STEPX,y1,x1,y2-8 );
 	else
 		return false;
-	unguard()
 }
 
 bool cDizPlayer::CheckJumpX()
 {
-	guard(cDizPlayer::CheckJumpX)
 	int x1,y1,x2,y2;
 	MakeBB(x1,y1,x2,y2);
 	if(dir()==1)
@@ -833,13 +794,11 @@ bool cDizPlayer::CheckJumpX()
 		return CheckFree( x1-DIZ_STEPX,y1,x1,y2-8 );
 	else
 		return false;
-	unguard()
 }
 
 // check material above the box and see how far can it go
 int cDizPlayer::CheckJumpY( int step )
 {
-	guard(cDizPlayer::CheckJumpY)
 	int x1,y1,x2,y2;
 	MakeBB(x1,y1,x2,y2);
 	for(int iy=y1-1;iy>y1-1-step;iy--)
@@ -849,12 +808,10 @@ int cDizPlayer::CheckJumpY( int step )
 				return ((y1-1)-iy);
 	}
 	return step;
-	unguard()
 }
 
 bool cDizPlayer::CheckFallX()
 {
-	guard(cDizPlayer::CheckFallX)
 	int x1,y1,x2,y2;
 	MakeBB(x1,y1,x2,y2);
 	if(dir()==1)	
@@ -864,13 +821,11 @@ bool cDizPlayer::CheckFallX()
 		return CheckFree( x1-DIZ_STEPX,y1,x1,y2-8 );
 	else
 		return false;
-	unguard()
 }
 
 // check material under the box and see how far can it go
 int cDizPlayer::CheckFallY( int step )
 {
-	guard(cDizPlayer::CheckFallY)
 	int x1,y1,x2,y2;
 	MakeBB(x1,y1,x2,y2);
 	for( int iy=y2; iy<y2+step; iy++ )
@@ -878,13 +833,11 @@ int cDizPlayer::CheckFallY( int step )
 			if( g_game.DensMap(ix,iy) != g_game._void ) 
 				return (iy-y2); // return minimized step if block found
 	return step;
-	unguard();
 }
 
 // collision inside box bottom will rise dizzy up with maximum DIZ_STEPY 
 void cDizPlayer::CheckCollision()
 {
-	guard(cDizPlayer::CheckCollision)
 	int x1,y1,x2,y2;
 	MakeBB(x1,y1,x2,y2);
 	
@@ -902,12 +855,10 @@ void cDizPlayer::CheckCollision()
 		}
 	}
 	
-	unguard()
 }
 
 int cDizPlayer::CheckJumper()
 {
-	guard(cDizPlayer::CheckJumper)
 	int x1,y1,x2,y2;
 	MakeBB(x1,y1,x2,y2);
 
@@ -918,13 +869,11 @@ int cDizPlayer::CheckJumper()
 	}
 
 	return -1;
-	unguard()
 }
 
 
 void cDizPlayer::CheckColliders()
 {
-	guard(cDizPlayer::CheckColliders)
 	int x1,y1,x2,y2;
 	int cx1,cy1,cx2,cy2;
 	MakeBBW(x1,y1,x2,y2);
@@ -949,12 +898,10 @@ void cDizPlayer::CheckColliders()
 		obj.Set(BRUSH_COLLISION,collision);
 	}
 
-	unguard()
 }
 
 bool cDizPlayer::CheckCollidersSnap()
 {
-	guard(cDizPlayer::CheckCollidersSnap)
 	int x1,y1,x2,y2;
 	int cx1,cy1,cx2,cy2;
 	MakeBBW(x1,y1,x2,y2);
@@ -1001,7 +948,6 @@ bool cDizPlayer::CheckCollidersSnap()
 	}
 
 	return snap;
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1009,7 +955,6 @@ bool cDizPlayer::CheckCollidersSnap()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cDizPlayer::ReadMatInfo()
 {
-	guard(cDizPlayer::ReadMatInfo)
 	int x1,y1,x2,y2;
 	MakeBB(x1,y1,x2,y2);
 	
@@ -1033,7 +978,6 @@ void cDizPlayer::ReadMatInfo()
 	// center
 	_matCenter = g_game.MatMap((x1+x2)/2,(y1+y2)/2);
 
-	unguard()
 }
 
 
@@ -1042,7 +986,6 @@ void cDizPlayer::ReadMatInfo()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cDizPlayer::Draw()
 {
-	guard(cDizPlayer::Draw)
 	
 	if( disable()) return; // disabled
 
@@ -1074,7 +1017,6 @@ void cDizPlayer::Draw()
 		R9_DrawSprite( pos, src, tile->m_tex, color(), flip, (float)SCALE );
 	}
 
-	unguard()
 }
 
 

@@ -11,19 +11,16 @@
 
 r9Cfg::r9Cfg()
 { 
-	guard(r9Cfg::r9Cfg);
 	m_width		= R9_CFG_WIDTH;
 	m_height	= R9_CFG_HEIGHT;
 	m_bpp		= R9_CFG_BPP;
 	m_windowed	= 1;
 	m_refresh	= 0;
 	m_vsync		= 0;
-	unguard();
 }
 
 r9Render::r9Render()
 {
-	guard(r9Render::r9Render);
 	m_api				= -1;
 	m_dll				= NULL;
 	m_hwnd				= NULL;
@@ -37,33 +34,28 @@ r9Render::r9Render()
 	m_font				= NULL;
 	m_handlereset		= NULL;
 	for(int i=0;i<R9_STATES;i++) m_state[i]=-1; // clear states with invalid values
-	unguard();
 }
 
 r9Render::~r9Render()
 {
-	guard(r9Render::~r9Render);
-	unguard();
 }
 
 BOOL		r9Render::LoadDll()												{ return TRUE; }
 void		r9Render::UnloadDll()											{}
 int			r9Render::GatherDisplayModes( r9DisplayMode* displaymode )		{ return 0; }
 BOOL 		r9Render::Init( HWND hwnd, r9Cfg* cfg )							{ return TRUE; }
-void 		r9Render::Done()												{ if(m_font) { TextureDestroy(m_font->GetTexture()); m_font->Destroy(); sdelete(m_font); } }
+void 		r9Render::Done()												{ if(m_font) { TextureDestroy(m_font->GetTexture()); m_font->Destroy(); delete m_font; } }
 BOOL		r9Render::IsReady()												{ return TRUE; }
 R9TEXTURE	r9Render::TextureCreate( r9Img* img )							{ return NULL; }
 R9TEXTURE	r9Render::TextureCreateTarget( int width, int height )			{ return NULL; }
 
 R9TEXTURE r9Render::TextureLoad( const char* filename )
 {
-	guard(r9Render::TextureLoad);
 	r9Img img;
 	if(!R9_ImgLoadFile(filename, &img)) return NULL;
 	R9TEXTURE tex = TextureCreate(&img);
 	R9_ImgDestroy(&img);
 	return tex;
-	unguard();
 }
 
 void		r9Render::TextureDestroy( R9TEXTURE texture )					{}
@@ -74,7 +66,6 @@ void r9Render::SetViewport( fRect& rect )					{ m_viewport = rect; }
 void r9Render::SetView( int x, int y, dword flip )			{ m_viewx = x; m_viewy = y; m_viewflip = flip; }
 void r9Render::SetDefaultStates()
 {
-	guard(r9Render::SetDefaultStates);
 	m_texture = NULL;
 	for(int i=0;i<R9_STATES;i++) m_state[i]=-1; // clear states with invalid values
 	SetState(R9_STATE_PRIMITIVE,R9_PRIMITIVE_TRIANGLE);
@@ -83,7 +74,6 @@ void r9Render::SetDefaultStates()
 	SetState(R9_STATE_FILTER,TRUE);
 	SetViewport(fRect(0,0,GetWidth(),GetHeight()));
 	SetView( 0, 0, 0 );
-	unguard();
 }
 
 void r9Render::Clear( dword color )							{}				
@@ -102,7 +92,6 @@ BOOL r9Render::CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )	{ 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void r9Render::DrawQuadRot( fV2& pos, fV2& size, fV2& center, float angle, fRect& src, R9TEXTURE tex, dword color )
 {
-	guardfast(r9Render::DrawQuadRot);
 	if(GetTexture()!=tex) SetTexture(tex);
 
 	fV2 dst[4];
@@ -161,12 +150,10 @@ void r9Render::DrawQuadRot( fV2& pos, fV2& size, fV2& center, float angle, fRect
 	vx[5].color = color;
 
 	Push(vx,6,R9_PRIMITIVE_TRIANGLE);
-	unguardfast();
 }
 
 void r9Render::DrawSprite( fV2& pos, fRect& src, R9TEXTURE tex, dword color, dword flip, float scale )
 {
-	guardfast(r9Render::DrawSprite);
 
 	BOOL rotated = flip & R9_FLIPR;
 
@@ -285,39 +272,36 @@ void r9Render::DrawSprite( fV2& pos, fRect& src, R9TEXTURE tex, dword color, dwo
 	}
 
 	Push(vx,6,R9_PRIMITIVE_TRIANGLE);
-	unguardfast();
 }
 
 BOOL r9Render::CreateFont()
 {
-	guard(r9Render::CreateFont);
-	sassert(m_font==NULL);
+	assert(m_font==NULL);
 	char* filename; // name for the memory file
 	dword memsize; // memory buffer (file) size
 	byte* memfile; // memory buffer
 
 	// create fixed font (courier new)
-	m_font = snew r9Font();
+	m_font = new r9Font();
 	m_font->Create(R9_CHRW,R9_CHRH-1);
 
 	// create texture from memory
 	R9TEXTURE tex;
 	memsize = r9_fonttga_buffer[0];
-	memfile = (byte*)smalloc(memsize);
+	memfile = (byte*)malloc(memsize);
 	if(!decompress_data((byte*)(r9_fonttga_buffer+2),r9_fonttga_buffer[1],memfile,memsize)) goto error;
 	filename = F9_MakeFileName("font.tga",memfile,memsize);
 	if(!filename) goto error;
 	tex = TextureLoad(filename);
 	if(!tex) goto error;
 	m_font->SetTexture(tex);
-	sfree(memfile);
+	free(memfile);
 	return TRUE;
 
 	error:
-	sdelete(m_font); m_font=NULL;
-	if(memfile) sfree(memfile);
+	delete m_font; m_font=NULL;
+	if(memfile) free(memfile);
 	return FALSE;
-	unguard();
 }
 
 
@@ -328,14 +312,12 @@ r9Render* r9_render = NULL;
 
 r9Render* R9_CreateRender( int api )
 {
-	guard(R9_CreateRender);
 	r9Render* render=NULL;
-	if(api==R9_API_DIRECTX)	render = snew r9RenderDX();
-	if(api==R9_API_OPENGL)	render = snew r9RenderGL();
+	if(api==R9_API_DIRECTX)	render = new r9RenderDX();
+	if(api==R9_API_OPENGL)	render = new r9RenderGL();
 	if(!render) return NULL;
-	if(!render->LoadDll()) { sdelete(render); return NULL; }
+	if(!render->LoadDll()) { delete render; return NULL; }
 	return render;
-	unguard();
 }
 
 // interface
@@ -344,7 +326,6 @@ r9DisplayMode*	r9DisplayModes;				// displaymodes list
 
 BOOL R9_InitInterface( int api )
 {
-	guard(R9_GatherDisplayModes);
 	dlog(LOGRND, L"Render init interface (api=%i).\n",api);
 	r9Render* render = R9_CreateRender(api);
 	if(!render) return FALSE;
@@ -352,18 +333,16 @@ BOOL R9_InitInterface( int api )
 	// gather display modes
 	r9DisplayModesCount = render->GatherDisplayModes(NULL);
 	if(r9DisplayModesCount==0) return FALSE;
-	r9DisplayModes = (r9DisplayMode*)smalloc(r9DisplayModesCount*sizeof(r9DisplayMode));
+	r9DisplayModes = (r9DisplayMode*)malloc(r9DisplayModesCount*sizeof(r9DisplayMode));
 	r9DisplayModesCount = render->GatherDisplayModes(r9DisplayModes);
 
 	render->UnloadDll();
-	sdelete(render);
+	delete render;
 	return TRUE;
-	unguard();
 }
 
 BOOL R9_FilterCfg( r9Cfg& cfg, int &api )
 {
-	guard(R9_FilterCfg);
 	int count = r9DisplayModesCount;
 	r9DisplayMode* displaymode = r9DisplayModes;
 	if(!displaymode || !count) return FALSE;
@@ -418,12 +397,10 @@ BOOL R9_FilterCfg( r9Cfg& cfg, int &api )
 	else
 	{ dlog(LOGRND, L"  Received:  FAILED\n"); return FALSE; }
 	return ok;
-	unguard();
 }
 
 void R9_LogCfg( r9Cfg& cfg, int api )
 {
-	guard(R9_LogCfg);
 	dlog(LOGRND, L"%S %S %ix%i %ibpp %iHz%S\n", 
 		api?"OpenGL":"DirectX",
 		cfg.m_windowed?"windowed":"full-screen",
@@ -432,23 +409,19 @@ void R9_LogCfg( r9Cfg& cfg, int api )
 		cfg.m_refresh,
 		cfg.m_vsync?" vsync":""
 		);
-	unguard();
 }
 
 void R9_DoneInterface()
 {
-	guard(R9_DoneInterface);
 	if(!r9DisplayModes) return;
-	sfree(r9DisplayModes);
+	free(r9DisplayModes);
 	r9DisplayModes = NULL;
 	r9DisplayModesCount = 0;
 	dlog(LOGRND, L"Render done interface.\n");
-	unguard();
 }
 
 BOOL R9_Init( HWND hwnd, r9Cfg* cfg, int api )
 {
-	guard(R9_Init);
 	if(r9_render) return TRUE;
 	dlog(LOGRND, L"Render init (api=%i).\n",api);
 	r9_render = R9_CreateRender(api);
@@ -456,35 +429,30 @@ BOOL R9_Init( HWND hwnd, r9Cfg* cfg, int api )
 	if(!r9_render->Init(hwnd, cfg))
 	{
 		r9_render->UnloadDll();
-		sdelete(r9_render);
+		delete r9_render;
 		r9_render = NULL;
 		return FALSE;
 	}
 	return TRUE;
-	unguard();
 }
 
 void R9_Done()
 {
-	guard(R9_Done);
 	if(!r9_render) return;
 	r9_render->Done();
 	r9_render->UnloadDll();
-	sdelete(r9_render);
+	delete r9_render;
 	r9_render = NULL;
 	dlog(LOGRND, L"Render done.\n");
-	unguard();
 }
 
 void R9_DrawText( fV2& pos, const char* text, dword color, float scale )
 { 
-	guard(R9_DrawText); 
-	sassert(r9_render); 
+	assert(r9_render); 
 	if(!r9_render->m_font) return; 
 	r9_render->m_font->SetColor(color); 
 	r9_render->m_font->m_scale=scale; 
 	r9_render->m_font->Print(pos.x,pos.y,text); 
-	unguard(); 
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

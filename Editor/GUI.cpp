@@ -20,7 +20,6 @@ cGUI* g_gui = NULL;
 
 cGUI::cGUI()
 {
-	guard(cGUI::cGUI)
 	m_mousex		= 0;
 	m_mousey		= 0;
 	m_font			= NULL;
@@ -30,24 +29,20 @@ cGUI::cGUI()
 	m_isbusy		= FALSE;
 	m_tooltip[0]	=0;
 	memset(&m_var,0,sizeof(m_var));
-	unguard()
 }
 
 cGUI::~cGUI()
 {
-	guard(cGUI::~cGUI)
-	unguard()
 }
 
 BOOL cGUI::Init()
 {
-	guard(cGUI::Init)
 	
 	GUIInitResources();
 
 	// fonts
 	BOOL ok;
-	m_font = snew r9Font(); 
+	m_font = new r9Font(); 
 	ok = m_font->Create("Editor\\Font\\font.fnt");
 	R9TEXTURE tex = R9_TextureLoad("Editor\\Font\\font.tga");
 	m_font->SetTexture(tex);
@@ -61,28 +56,24 @@ BOOL cGUI::Init()
 	m_mousey = pt.y;//Input()->GetMouseY();
 
 	return ok;
-	unguard()
 }
 	
 void cGUI::Done()
 {
-	guard(cGUI::Done)
-	for(; !m_dlg.empty(); m_dlg.pop_back()) sdelete(m_dlg.back());
+	for(; !m_dlg.empty(); m_dlg.pop_back()) delete m_dlg.back();
 	m_dlg.clear();
 	m_capture = NULL;
 	if(m_font) 
 	{
 		R9_TextureDestroy(m_font->GetTexture());
-		sdelete(m_font);
+		delete m_font;
 	}
 	m_texturepool.Done();
 	GUIDoneResources();
-	unguard()
 }
 
 void cGUI::Update()
 {
-	guard(cGUI::Update)
 	int i;
 	m_isbusy = FALSE;
 	
@@ -117,18 +108,16 @@ void cGUI::Update()
 		if(m_dlg[i]->m_mustclose)
 		{
 			m_capture = NULL; // clear captrure (colud be int the dying dialog)
-			sdelete(m_dlg[i]);
+			delete m_dlg[i];
 			m_dlg.erase(m_dlg.begin() + i);
 			if(m_lastdlg==i) m_lastdlg=-1; else
 			if(m_lastdlg>i) m_lastdlg--; // fix index
 			i--;
 		}
-	unguard()
 }
 
 void cGUI::Draw()
 {
-	guard(cGUI::Draw)
 	R9_SetState(R9_STATE_BLEND,R9_BLEND_ALPHA);
 
 	for(int i=0;i<m_dlg.size();i++)
@@ -153,7 +142,6 @@ void cGUI::Draw()
 	if(!E9_AppGetInt(E9_APP_WINDOWED))
 		R9_DrawLine( fV2(m_mousex, m_mousey), fV2(m_mousex+10, m_mousey+10), 0xffffffff );
 
-	unguard()
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -161,36 +149,28 @@ void cGUI::Draw()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cGUI::SetInt( int idx, int val )
 {
-	guard(cGUI::SetInt)
-	sassert(0<=idx && idx<GV_MAX);
+	assert(0<=idx && idx<GV_MAX);
 	m_var[idx].m_int=val;
-	unguard()
 }
 
 int cGUI::GetInt( int idx )
 {
-	guard(cGUI::GetInt)
-	sassert(0<=idx && idx<GV_MAX);
+	assert(0<=idx && idx<GV_MAX);
 	return m_var[idx].m_int;	
-	unguard()
 }
 
 void cGUI::SetTxt( int idx, char* text )
 {
-	guard(cGUI::SetTxt)
-	sassert(0<=idx && idx<GV_MAX);
+	assert(0<=idx && idx<GV_MAX);
 	char* sz = m_var[idx].m_str;
-	if(sz) sfree(sz);
+	if(sz) free(sz);
 	m_var[idx].m_str = sstrdup(text);
-	unguard()
 }
 
 char* cGUI::GetTxt( int idx )
 {
-	guard(cGUI::GetTxt)
-	sassert(0<=idx && idx<GV_MAX);
+	assert(0<=idx && idx<GV_MAX);
 	return m_var[idx].m_str;
-	unguard()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -198,7 +178,6 @@ char* cGUI::GetTxt( int idx )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cGUI::ReadInput()
 {
-	guard(cGUI::ReadInput)
 
 	POINT pt;
 	GetCursorPos(&pt);
@@ -214,7 +193,6 @@ void cGUI::ReadInput()
 	m_key[GUIKEY_SHIFT]	= I9_GetKeyValue(I9K_LSHIFT) || I9_GetKeyValue(I9K_RSHIFT);
 	m_key[GUIKEY_ALT]	= I9_GetKeyValue(I9K_LALT) || I9_GetKeyValue(I9K_RALT);
 
-	unguard()
 }
 
 
@@ -224,22 +202,18 @@ void cGUI::ReadInput()
 
 int cGUI::DlgFind( int id )
 {
-	guard(cGUI::DlgFind)
 	for(int i=0;i<m_dlg.size();i++)
 		if(m_dlg[i]->GetInt(DV_ID) == id)
 			return i;
 	return -1;
-	unguard()
 }
 
 int cGUI::DlgFind( cGUIDlg *dlg )
 {
-	guard(cGUI::DlgFind)
 	for(int i=0;i<m_dlg.size();i++)
 		if(m_dlg[i] == dlg)
 			return i;
 	return -1;
-	unguard()
 }
 
 
@@ -247,7 +221,7 @@ void cGUI::DlgDel( int idx )
 {
 	if(0<=idx && idx<DlgCount()) 
 	{ 
-		sdelete(m_dlg[idx]); 
+		delete m_dlg[idx]; 
 		m_dlg.erase(m_dlg.begin() + idx); 
 	} 
 }
@@ -570,7 +544,7 @@ PREDICATE_M(gui, itemSelect, 1)
 	int idx = A1;
 	if(idx<0 || idx>=dlg->ItemCount())
 		throw PlDomainError("invalid item index", A1);
-	sassert(dlg->ItemGet(idx)); // safety
+	assert(dlg->ItemGet(idx)); // safety
 	g_gui->m_lastitem = idx;
 	return true;
 }
@@ -842,11 +816,10 @@ PREDICATE_M(gui, itemCount, 1)
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // replicators
 //////////////////////////////////////////////////////////////////////////////////////////////////
-#define GUI_REPLICATE(name) if(0==strcmp(classname,#name)) return snew name();
+#define GUI_REPLICATE(name) if(0==strcmp(classname,#name)) return new name();
 
 void* GUICreateClass( char* classname )
 {
-	guard(GUICreateClass);
 	GUI_REPLICATE(cGUIItem);
 	GUI_REPLICATE(cGUITitle);
 	GUI_REPLICATE(cGUIButton);
@@ -858,7 +831,6 @@ void* GUICreateClass( char* classname )
 	GUI_REPLICATE(cGUIColorPick);
 	GUI_REPLICATE(cGUIDlg);
 	return NULL;
-	unguard();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

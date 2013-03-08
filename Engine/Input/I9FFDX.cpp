@@ -9,21 +9,16 @@
 
 i9FFDX::i9FFDX()
 {
-	guard(i9FFDX::i9FFDX);
 	m_dieffect = NULL;
-	unguard();
 }
 
 i9FFDX::~i9FFDX()
 {
-	guard(i9FFDX::~i9FFDX);
-	unguard();
 }
 
 BOOL i9FFDX::Init( IDirectInputDevice8* didevice, int type )
 {
-	guard(i9FFDX::Init);
-	sassert(didevice);
+	assert(didevice);
 	HRESULT hr;
     DWORD	rgdwAxes[2]			= { DIJOFS_X, DIJOFS_Y };
     LONG	rglDirection[2]		= { 0, 0 };
@@ -77,38 +72,30 @@ BOOL i9FFDX::Init( IDirectInputDevice8* didevice, int type )
 	error:
 	dlog(LOGINP, L"INPUT: FFX not supported.");
 	return FALSE;
-	unguard();
 }
 
 void i9FFDX::Done()
 {
-	guard(i9FFDX::Done);
 	if(!m_dieffect) return;
 	m_dieffect->Stop();
 	m_dieffect->Release();
 	m_dieffect = NULL;
-	unguard();
 }
 
 void i9FFDX::Play()
 {
-	guard(i9FFDX::Play);
 	if(!m_dieffect) return;
 	HRESULT hr = m_dieffect->Start(1, 0);
-	unguard();
 }
 
 void i9FFDX::Stop()
 {
-	guard(i9FFDX::Stop);
 	if(!m_dieffect) return;
 	HRESULT hr = m_dieffect->Stop();
-	unguard();
 }
 
 void i9FFDX::Set( int magnitude, int period )
 {
-	guard(i9FFDX::Set);
 	if(!m_dieffect) return;
 
 	DIPERIODIC diPeriodic;      // type-specific parameters
@@ -135,18 +122,15 @@ void i9FFDX::Set( int magnitude, int period )
     eff.dwStartDelay            = 0;
 
 	HRESULT hr = m_dieffect->SetParameters(&eff,DIEP_TYPESPECIFICPARAMS);
-	unguard();
 }
 
 BOOL i9FFDX::IsPlaying()
 {
-	guard(i9FFDX::IsPlaying);
 	if(!m_dieffect) return FALSE;
 	DWORD flags;
 	HRESULT hr = m_dieffect->GetEffectStatus( &flags );
 	if(FAILED(hr)) return FALSE;
 	return (flags & DIEGES_PLAYING);
-	unguard();
 }
 
 BOOL CALLBACK i9FFDX::EnumEffectsProc( LPCDIEFFECTINFO pei, LPVOID pv )

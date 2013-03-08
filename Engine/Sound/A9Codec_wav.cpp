@@ -6,36 +6,27 @@
 
 a9Codec_wav::a9Codec_wav()
 {
-	guard(a9Codec_wav::a9Codec_wav);
 	m_type = A9_CODEC_WAV;
 	m_file = NULL;
 	m_datapos = 0;
-	unguard();
 }
 
 a9Codec_wav::~a9Codec_wav()
 {
-	guard(a9Codec_wav::~a9Codec_wav);
-	unguard();
 }
 
 int a9Codec_wav::Init()
 {
-	guard(a9Codec_wav::Init);
 	return A9_OK;
-	unguard();
 }
 
 int a9Codec_wav::Done()
 {
-	guard(a9Codec_wav::Done);
 	return A9_OK;
-	unguard();
 }
 
 int	a9Codec_wav::Open( const char* name )
 {
-	guard(a9Codec_wav::Open);
 	if(m_status!=A9_CODEC_CLOSED) return A9_FAIL;
 	
 	m_file = F9_FileOpen( name ); 
@@ -58,16 +49,14 @@ int	a9Codec_wav::Open( const char* name )
 	m_info.m_size		= datasize / m_info.SampleSize();
 	m_datapos			= datapos;
 	
-	sassert(wfe.nBlockAlign==m_info.SampleSize()); // safe
+	assert(wfe.nBlockAlign==m_info.SampleSize()); // safe
 
 	m_status = A9_CODEC_OPENED;
 	return A9_OK;
-	unguard();
 }
 
 int	a9Codec_wav::BeginRender( int pos, int loop )
 {
-	guard(a9Codec_wav::BeginRender);
 	if(m_status!=A9_CODEC_OPENED) return A9_FAIL;
 	m_loop = loop;
 	int ret = F9_FileSeek(m_file, m_datapos+pos*m_info.SampleSize(), 0);
@@ -75,12 +64,10 @@ int	a9Codec_wav::BeginRender( int pos, int loop )
 
 	m_status = A9_CODEC_RENDERING;
 	return A9_OK;
-	unguard();
 }
 
 int	a9Codec_wav::Render( byte* buffer, int size )
 {
-	guard(a9Codec_wav::Render);
 	if(m_status!=A9_CODEC_RENDERING) return A9_FAIL;
 	if(size<=0) return A9_FAIL;
 	int buffersize	= size * m_info.SampleSize();			// read request size in bytes
@@ -112,32 +99,26 @@ int	a9Codec_wav::Render( byte* buffer, int size )
 		if( rendersize>=buffersize || !m_loop ) // finished or noloop
 			return rendersize/m_info.SampleSize(); 
 	}
-	unguard();
 }
 
 int	a9Codec_wav::EndRender()
 {
-	guard(a9Codec_wav::EndRender);
 	if(m_status!=A9_CODEC_RENDERING) return A9_FAIL;
 	m_status = A9_CODEC_OPENED;
 	return A9_OK;
-	unguard();
 }
 
 int	a9Codec_wav::Close()
 {
-	guard(a9Codec_wav::Close);
 	if(m_status!=A9_CODEC_OPENED) return A9_FAIL;
 	if(m_file) F9_FileClose(m_file);
 	m_file = NULL;
 	m_status = A9_CODEC_CLOSED;
 	return A9_OK;
-	unguard();
 }
 
 int a9Codec_wav::ReadWaveInfo( F9FILE file, WAVEFORMATEX* wfe, int* datapos, int* datasize )
 {
-	guard(cResWav::ReadWaveInfo);
 	int				r;
 	int				size;
 	char			header[] = "RIFF";
@@ -160,11 +141,11 @@ int a9Codec_wav::ReadWaveInfo( F9FILE file, WAVEFORMATEX* wfe, int* datapos, int
 		if(0==strcmp(header, "fmt "))
 		{
 			r = F9_FileRead(&size, 4, file); if(r!=4) return A9_FAIL;
-			pwfe = (WAVEFORMATEX*)smalloc(size);
-			r = F9_FileRead(pwfe, size, file);	if(r!=size) { sfree(pwfe); return A9_FAIL; }
+			pwfe = (WAVEFORMATEX*)malloc(size);
+			r = F9_FileRead(pwfe, size, file);	if(r!=size) { free(pwfe); return A9_FAIL; }
 			if(size>sizeof(WAVEFORMATEX)) size = sizeof(WAVEFORMATEX);
 			memcpy( wfe, pwfe, size );
-			sfree(pwfe);
+			free(pwfe);
 			if(wfe->wFormatTag!=WAVE_FORMAT_PCM) return A9_UNSUPORTED;
 		}
 		else
@@ -184,7 +165,6 @@ int a9Codec_wav::ReadWaveInfo( F9FILE file, WAVEFORMATEX* wfe, int* datapos, int
 	while(!F9_FileEof(file));
 
 	return A9_FAIL;
-	unguard();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

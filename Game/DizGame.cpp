@@ -726,7 +726,7 @@ void cDizGame::Resize(int w, int h)
 	mapH(h);
 	roomW(Room::Width);
 	roomH(Room::Height);
-	matMap.Alloc(Room::Width, Room::Height);
+	matMap.Resize(Room::Width, Room::Height);
 	SetRoom(g_game.roomX(), g_game.roomY()); // updates materialmap and re-gather objects
 }
 
@@ -755,7 +755,7 @@ void MatMap::SetSize(int w, int h)
 	Size = W3 * H3;
 
 }
-void MatMap::Alloc(int w, int h)
+void MatMap::Resize(int w, int h)
 {
 	SetSize(w, h);
 	delete [] map;

@@ -42,14 +42,13 @@ class MatMap
 	int W, H, W3, H3, Size;
 	int X1, Y1, X2, Y2;
 	void SetSize(int w, int h);
+	bool in(int x, int y) const { return x >= X1 && x < X2 && y >= Y1 && y < Y2; }
 public:
-	MatMap() : map()  { Alloc(Room::Width, Room::Height); }
+	MatMap() : map()  { Resize(Room::Width, Room::Height); }
 	~MatMap() { delete [] map; }
-	void Alloc(int w, int h);
+	void Resize(int w, int h);
 	void Update(int roomX, int roomY, bool full);
-	bool in(int x, int y) { return x >= X1 && x < X2 && y >= Y1 && y < Y2; }
-	byte MatMap::Get(int x, int y) { return in(x, y) ? map[(x + W) + (y + H) * W3] : 0; }
-
+	byte Get(int x, int y) const { return in(x, y) ? map[(x + W) + (y + H) * W3] : 0; }
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -94,13 +93,13 @@ inline	bool			Key( int key )							{ return (keys() & (1<<key)) ? 1 : 0; }			// 
 inline	bool			KeyHit( int key )						{ return (keysHit() & (1<<key)) ? 1 : 0; }			// test a key hit
 
 		Material		materials[MAT_MAX];
+		byte			MatMap				( int x, int y ) { return matMap.Get(x, y); }
+		PlAtom			DensMap				( int x, int y ) { return materials[MatMap(x, y)].density; }
 
 		// map room
 		void			SetRoom				( int x, int y );	// set current room (load)
 		inline	void	MakeRoomBBW			( int &x1, int &y1, int &x2, int &y2, int border=0 )	{ g_map.MakeRoomBBW(roomX(), roomY(), x1, y1, x2, y2, border); }
 
-		byte			MatMap				( int x, int y ) { return matMap.Get(x, y); }
-		PlAtom			DensMap				( int x, int y ) { return materials[MatMap(x, y)].density; }
 		int				m_viewx;								// view position (used in draw, set from G_VIEW, G_SHAKE, and G_VIEWPORT)
 		int				m_viewy;								// view position (used in draw, set from G_VIEW, G_SHAKE, and G_VIEWPORT)
 		int				m_drawmode;								// 0=imgmap (normal), 1=matmap, 2=densitymap, 3=none

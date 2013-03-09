@@ -960,13 +960,8 @@ void cDizPlayer::ReadMatInfo()
 	
 	_matInside = 0;
 	for(int y=y1;y<y2;y++)
-		for(int x=x1;x<x2;x++)
-			_matInside |= (1<<g_game.MatMap(x,y));
-
-	_matUnder = 0;
-	for(int x=x1;x<x2;x++)
-		_matUnder |= (1<<g_game.MatMap(x,y2));
-
+		_matInside |= g_game.MatMap(x1, x2, y);
+	_matUnder = g_game.MatMap(x1, x2, y2);
 	_matCenter = g_game.MatMap((x1+x2)/2,(y1+y2)/2);
 }
 

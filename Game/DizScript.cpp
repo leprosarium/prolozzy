@@ -145,12 +145,7 @@ PREDICATE_M(core, materialRead, 5)
 	int y2 = y1 + h;
 	int mat = 0;
 	for(int y=y1;y<y2;y++)
-	{
-		for(int x=x1;x<x2;x++)
-		{
-			mat |= (1<<g_game.MatMap(x,y));
-		}
-	}
+		mat |= g_game.MatMap(x1, x2, y);
 	A5 = mat;
 	return true;
 }

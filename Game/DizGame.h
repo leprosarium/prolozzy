@@ -49,6 +49,7 @@ public:
 	void Resize(int w, int h);
 	void Update(int roomX, int roomY, bool full);
 	byte Get(int x, int y) const { return in(x, y) ? map[(x + W) + (y + H) * W3] : 0; }
+	int Get(int x1, int x2, int y) const;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -94,6 +95,7 @@ inline	bool			KeyHit( int key )						{ return (keysHit() & (1<<key)) ? 1 : 0; }	
 
 		Material		materials[MAT_MAX];
 		byte			MatMap				( int x, int y ) { return matMap.Get(x, y); }
+		int				MatMap (int x1, int x2, int y) { return matMap.Get(x1, x2, y); }
 		PlAtom			DensMap				( int x, int y ) { return materials[MatMap(x, y)].density; }
 
 		// map room

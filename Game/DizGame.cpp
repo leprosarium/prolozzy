@@ -461,7 +461,7 @@ bool cDizGame::Update()
 	}
 	if(command()==refresh) // refresh room
 	{
-		MatMapUpdate();
+		matMap.Update(roomX(), roomY(), fullMaterialMap());
 	}
 	command(none);
 
@@ -720,6 +720,17 @@ void cDizGame::Draw()
 
 }
 
+void cDizGame::Resize(int w, int h) 
+{
+	mapW(w);
+	mapH(h);
+	roomW(Room::Width);
+	roomH(Room::Height);
+	matMap.Alloc(Room::Width, Room::Height);
+	SetRoom(g_game.roomX(), g_game.roomY()); // updates materialmap and re-gather objects
+}
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // ROOM
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -727,7 +738,7 @@ void cDizGame::SetRoom( int x, int y )
 {
 	roomX(x);
 	roomY(y);
-	MatMapUpdate();
+	matMap.Update(x, y, fullMaterialMap());
 	ObjGather();
 }
 

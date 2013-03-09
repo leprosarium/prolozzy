@@ -369,12 +369,8 @@ void cDizMap::Resize( int width, int height )
 			BrushIndex.insert(IntIndex::value_type(aid, i));
 		}
 	}
-	g_game.mapW(Width());
-	g_game.mapH(Height());
-	g_game.roomW(Room::Width);
-	g_game.roomH(Room::Height);
-	g_game.MatMapAlloc(Room::Width, Room::Height);
-	g_game.SetRoom(g_game.roomX(), g_game.roomY()); // updates materialmap and re-gather objects
+
+	g_game.Resize(Width(), Height());
 }
 
 

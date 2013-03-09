@@ -84,6 +84,9 @@ public:
 		int				m_screen_h;								// game resolution height (192 - Z80 res)
 
 		// game
+
+		void Resize(int w, int h);
+
 		int				m_gameframe;							// game frame index
 
 inline	bool			IsUpdate			( int delay )		{ return (delay==0 || (m_gameframe%delay==0)); }
@@ -96,10 +99,8 @@ inline	bool			KeyHit( int key )						{ return (keysHit() & (1<<key)) ? 1 : 0; }	
 		void			SetRoom				( int x, int y );	// set current room (load)
 		inline	void	MakeRoomBBW			( int &x1, int &y1, int &x2, int &y2, int border=0 )	{ g_map.MakeRoomBBW(roomX(), roomY(), x1, y1, x2, y2, border); }
 
-		void			MatMapAlloc(int w, int h) { matMap.Alloc(w, h); }
 		byte			MatMap				( int x, int y ) { return matMap.Get(x, y); }
 		PlAtom			DensMap				( int x, int y ) { return materials[MatMap(x, y)].density; }
-		void			MatMapUpdate		() { matMap.Update(roomX(), roomY(), fullMaterialMap()); }					// paint material map SOFTWARE
 		int				m_viewx;								// view position (used in draw, set from G_VIEW, G_SHAKE, and G_VIEWPORT)
 		int				m_viewy;								// view position (used in draw, set from G_VIEW, G_SHAKE, and G_VIEWPORT)
 		int				m_drawmode;								// 0=imgmap (normal), 1=matmap, 2=densitymap, 3=none

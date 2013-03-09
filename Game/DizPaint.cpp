@@ -420,31 +420,34 @@ void cDizPaint::DrawBrush( const tBrush & brush, int x, int y, int frame )
 	int idx = tiles.Find(brush.Get(BRUSH_TILE));
 	if(idx==-1) return;
 
-	iRect map;
-	map.x1 = brush.Get(BRUSH_MAP+0);
-	map.y1 = brush.Get(BRUSH_MAP+1);
-	map.x2 = brush.Get(BRUSH_MAP+2);
-	map.y2 = brush.Get(BRUSH_MAP+3);
+	iRect map(	brush.Get(BRUSH_MAP+0),
+				brush.Get(BRUSH_MAP+1),
+				brush.Get(BRUSH_MAP+2),
+				brush.Get(BRUSH_MAP+3));
 	int mw = static_cast<int>(brush.mapWith());
 	int mh = static_cast<int>(brush.mapHeight());
-	float ms = brush.mapScale();
 	if( mw==0 || mh==0 ) return;
+	int bw = brush.Get(BRUSH_W);
+	int bh = brush.Get(BRUSH_H);
+	float ms = brush.mapScale();
 
 	fRect oldclip = R9_GetClipping();
-	fRect newclip = fRect(	m_scrx+x*m_scale, 
-							m_scry+y*m_scale, 
-							m_scrx+x*m_scale+m_scale*brush.Get(BRUSH_W), 
-							m_scry+y*m_scale+m_scale*brush.Get(BRUSH_H) );
+	fRect newclip(	m_scrx+x*m_scale, 
+					m_scry+y*m_scale, 
+					m_scrx+x*m_scale+m_scale*bw, 
+					m_scry+y*m_scale+m_scale*bh);
 	R9_AddClipping(newclip);
 	if(R9_IsClipping())
 	{
 		g_game.m_visible_brushes++;
 
-		int cx = (brush.Get(BRUSH_W)+mw-1) / mw;
-		int cy = (brush.Get(BRUSH_H)+mh-1) / mh;
-
+		int cx = (bw + mw - 1) / mw;
+		int cy = (bh + mh - 1) / mh;
 		int blend = brush.Get(BRUSH_SHADER);
-		bool soft2 = (brush.Get(BRUSH_FLIP) & R9_FLIPR) || (brush.Get(BRUSH_SCALE)!=0 && brush.Get(BRUSH_SCALE)!=100);
+		int bs = brush.Get(BRUSH_SCALE);
+		int color = brush.Get(BRUSH_COLOR);
+		int flip = brush.Get(BRUSH_FLIP);
+		bool soft2 = (flip & R9_FLIPR) || (bs != 0 && bs != 100);
 		
 		int xt=x;
 		for(int i=0;i<cy;i++)
@@ -455,13 +458,13 @@ void cDizPaint::DrawBrush( const tBrush & brush, int x, int y, int frame )
 				if(m_drawtilesoft)
 				{
 					if(soft2)
-						DrawTileSoft2( idx, x, y, map, brush.Get(BRUSH_COLOR), brush.Get(BRUSH_FLIP), frame, blend, ms );
+						DrawTileSoft2( idx, x, y, map, color, flip, frame, blend, ms );
 					else
-						DrawTileSoft( idx, x, y, map, brush.Get(BRUSH_COLOR), brush.Get(BRUSH_FLIP), frame, blend, ms );
+						DrawTileSoft( idx, x, y, map, color, flip, frame, blend, ms );
 				}
 				else
 				{
-					DrawTile( idx, x, y, map, brush.Get(BRUSH_COLOR), brush.Get(BRUSH_FLIP), frame, blend, ms );
+					DrawTile( idx, x, y, map, color, flip, frame, blend, ms );
 				}
 				x+=mw;
 			}
@@ -493,21 +496,14 @@ void cDizPaint::DrawTileSoft( int idx, int x, int y, iRect& map, dword color, in
 	int fy = tile->GetFy(frame);
 	// source rectangle safe
 	iRect rsrc = map;
-	rsrc.x1 += fx * w;
-	rsrc.x2 += fx * w;
-	rsrc.y1 += fy * h;
-	rsrc.y2 += fy * h;
+	rsrc.Offset(iV2(fx * w, fy * h));
 	if(rsrc.x1<0) rsrc.x1=0;
 	if(rsrc.y1<0) rsrc.y1=0;
 	if(rsrc.x2 > w * tile->fx) rsrc.x2 = w * tile->fx;
 	if(rsrc.y2 > h * tile->fy) rsrc.y2 = h * tile->fy;
 
 	// destination rectangle
-	iRect rdst;
-	rdst.x1	= x;
-	rdst.y1	= y;
-	rdst.x2	= x + rsrc.x2 - rsrc.x1;
-	rdst.y2	= y + rsrc.y2 - rsrc.y1;
+	iRect rdst(x, y, x + rsrc.Width(), y + rsrc.Height());
 
 	// clip by clipping (clipping must be already clipped by imgtarget)
 	fRect frdst = rdst;
@@ -574,10 +570,7 @@ void cDizPaint::DrawTileSoft2( int idx, int x, int y, iRect& map, dword color, i
 	int fy = tile->GetFy(frame);
 	// source rectangle safe
 	iRect rsrc = map;
-	rsrc.x1 += fx * tw;
-	rsrc.x2 += fx * tw;
-	rsrc.y1 += fy * th;
-	rsrc.y2 += fy * th;
+	rsrc.Offset(iV2(fx * tw, fy * th));
 	if(rsrc.x1<0) rsrc.x1=0;
 	if(rsrc.y1<0) rsrc.y1=0;
 	if(rsrc.x2 > tw * tile->fx) rsrc.x2 = tw * tile->fx;
@@ -586,11 +579,10 @@ void cDizPaint::DrawTileSoft2( int idx, int x, int y, iRect& map, dword color, i
 	// DRAW SPRITE SOFTWARE
 	bool rotated = (flip & R9_FLIPR) != FALSE;
 
-	fRect dst;
-	dst.x1 = (float)x;
-	dst.y1 = (float)y;
-	dst.x2 = (float)x + (rotated ? (float)rsrc.Height() : (float)rsrc.Width())*scale;
-	dst.y2 = (float)y + (rotated ? (float)rsrc.Width() : (float)rsrc.Height())*scale;
+	fRect dst(	static_cast<float>(x), 
+				static_cast<float>(y),
+				x + (rotated ? rsrc.Height() : rsrc.Width()) * scale,
+				y + (rotated ? rsrc.Width() : rsrc.Height()) * scale);
 	
 	fRect src(rsrc);
 	if(flip & 1)	{ src.x1=(float)rsrc.x2; src.x2=(float)rsrc.x1; }

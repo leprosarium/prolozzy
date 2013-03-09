@@ -355,9 +355,6 @@ cDizGame::cDizGame() : 	_void("void"),	soft("soft"), hard("hard"), jump("jump"),
 	m_viewy			= 0;
 	m_drawmode		= DRAWMODE_NORMAL;
 				
-//	memset(m_matdensity,0,sizeof(m_matdensity));
-//	memset(m_matcolor,0,sizeof(m_matcolor));
-
 	m_fffx_magnitude	= 0;
 	m_fffx_period		= 50;
 
@@ -451,8 +448,7 @@ bool cDizGame::Update()
 	// command process
 	if(command()==start) // start game
 	{
-		bool ok = Start();
-		if(!ok) return false;
+		if(!Start()) return false;
 	}
 	else
 	if(command()==exit) // exit game
@@ -609,12 +605,12 @@ void cDizGame::Draw()
 	//int i;
 
 	// clipping
-	fRect rect; // visible room area
-	fRect clip; // draw room area (for viewportmode=1)
-	rect.x1 = (float)(g_paint.m_scrx+viewX()*g_paint.m_scale);
-	rect.x2 = (float)(g_paint.m_scrx+(viewX()+Room::Width)*g_paint.m_scale);
-	rect.y1 = (float)(g_paint.m_scry+viewY()*g_paint.m_scale);
-	rect.y2 = (float)(g_paint.m_scry+(viewY()+Room::Height)*g_paint.m_scale);
+	fRect clip;// draw room area (for viewportmode=1)
+	// visible room area
+	fRect rect( g_paint.m_scrx+viewX()*g_paint.m_scale,
+				g_paint.m_scry+viewY()*g_paint.m_scale,
+				g_paint.m_scrx+(viewX()+Room::Width)*g_paint.m_scale,
+				g_paint.m_scry+(viewY()+Room::Height)*g_paint.m_scale);
 
 	// view ofset with shake option and optional viewport for scrolling
 	m_viewx = viewX() + shakeX();

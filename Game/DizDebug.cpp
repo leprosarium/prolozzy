@@ -210,6 +210,7 @@ bool cDizDebug::Update()
 	if(I9_GetKeyDown(I9K_F6))
 	{
 		g_map.Reload();
+		g_game.ObjGather();
 	}
 	
 	// resize

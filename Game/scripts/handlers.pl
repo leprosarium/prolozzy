@@ -242,7 +242,8 @@ event(_, playerUpdate) :-
 
 event(_, debug).
 
-
+event(_, reloadMap) :-
+	start:reloadMap.
 
 
 

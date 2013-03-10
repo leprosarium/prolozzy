@@ -125,7 +125,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\E9Engine.cpp" />
-    <ClCompile Include="Common\E9Math.cpp" />
     <ClCompile Include="Common\E9String.cpp" />
     <ClCompile Include="Common\E9System.cpp" />
     <ClCompile Include="Debug\D9Breakpoint.cpp" />

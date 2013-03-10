@@ -826,8 +826,8 @@ int MatMap::Get(int x1, int x2, int y) const
 	int mat = 0;
 	if(y < Y1 || y >= Y2)
 		return mat;
-	x1 = max(x1, X1);
-	x2 = min(x2, X2);
+	x1 = std::max(x1, X1);
+	x2 = std::min(x2, X2);
 	if(x1 >= x2)
 		return mat;
 	for(int v = (y + H) * W3 + (x1 + W), ve = v + (x2 - x1); v < ve; ++v)

@@ -287,7 +287,7 @@ PREDICATE_M(core, colliderSnapDistance, 5)
 		if(!(obj.Get(BRUSH_COLLIDER) & COLLIDER_HARD)) continue; // only those that need it
 		obj.MakeBBW(cx1,cy1,cx2,cy2);
 		if( x2<=cx1 || x1>=cx2 ) continue; // not intersecting
-		if(y1<=cy1 && cy1<y2) dist = MAX(dist,y2-cy1);
+		if(y1<=cy1 && cy1<y2) dist = std::max(dist,y2-cy1);
 	}
 	return A5 = dist;
 }

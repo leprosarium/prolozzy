@@ -676,14 +676,14 @@ int a9AudioDX::StreamUpdate( A9STREAM _stream )
 		// get buffer position
 		int pacsize		= info.m_size/2;					// pac size (half of buffer size)
 		int bufferpos	= a9_audio->BufferGetPosition(buffer);// current buffer playing pos [0..buffersize)
-		int paccrt		= MAX(stream->m_paccount-2,0);		// current playing [0..)
+		int paccrt		= std::max(stream->m_paccount-2,0);		// current playing [0..)
 
 		// fill buffer
 		BOOL needfill = ((bufferpos / pacsize) != (paccrt % 2)) || stream->m_paccount<2;
 		if( needfill )
 		{
 			StreamFill(stream);
-			paccrt = MAX(stream->m_paccount-2,0); // update current playing pac
+			paccrt = std::max(stream->m_paccount-2,0); // update current playing pac
 		}
 
 		// check end of stream
@@ -776,7 +776,7 @@ void a9AudioDX::StreamFill( A9STREAM _stream )
 int	a9AudioDX::StreamUpdateAll()
 {
 	int ret = A9_OK;
-	for(int i=0;i<m_playingstreams.size();i++)
+	for(int i=0, e = static_cast<int>(m_playingstreams.size());i<e;i++)
 	{
 		a9StreamDX* stream = m_playingstreams[i];
 		if(StreamUpdate(stream)!=A9_OK) ret = A9_FAIL;
@@ -796,7 +796,7 @@ int	a9AudioDX::StreamStopAll()
 	sys_waitsemaphore(m_semaphore,2000); // protect
 	#endif
 
-	for(int i=0;i<m_playingstreams.size();i++)
+	for(int i=0, e = static_cast<int>(m_playingstreams.size());i<e;i++)
 	{
 		a9StreamDX* stream = m_playingstreams[i];
 		// stop buffer if playing, no matter what status stream has

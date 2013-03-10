@@ -426,7 +426,7 @@ inline	void		R9_DrawSprite( fV2& pos, fRect& src, R9TEXTURE tex, dword color=0xf
 inline	BOOL		R9_IsClipping()											{ assert(r9_render); return r9_render->IsClipping(); }
 inline	void		R9_SetClipping( fRect& rect )							{ assert(r9_render); r9_render->SetClipping(rect); }
 inline	fRect&		R9_GetClipping()										{ assert(r9_render); return r9_render->GetClipping(); }
-inline	void		R9_ResetClipping()										{ assert(r9_render); r9_render->SetClipping(frect_0); }
+inline	void		R9_ResetClipping()										{ assert(r9_render); r9_render->SetClipping(fRect()); }
 inline	void		R9_AddClipping( fRect& rect )							{ assert(r9_render); if(!r9_render->IsClipping()) r9_render->SetClipping(rect); else r9_render->SetClipping(r9_render->GetClipping() * rect); }
 inline 	void		R9_ClipBar( fRect& dst )								{ assert(r9_render); r9_render->ClipBar(dst); }
 inline 	void		R9_ClipQuad( fRect& dst, fRect& src )					{ assert(r9_render); r9_render->ClipQuad(dst,src); }

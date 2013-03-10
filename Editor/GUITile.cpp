@@ -83,8 +83,8 @@ void cGUITile::Draw()
 	iRect rect;
 	rect.x1 = x;
 	rect.y1 = y;
-	rect.x2 = (int)MIN(x+w*scale, rc.right);
-	rect.y2 = (int)MIN(y+h*scale, rc.bottom);
+	rect.x2 = std::min(x+static_cast<int>(w*scale), static_cast<int>(rc.right));
+	rect.y2 = std::min(y+static_cast<int>(h*scale), static_cast<int>(rc.bottom));
 	GUIDrawBar(rect.x1, rect.y1, rect.x2, rect.y2, GetInt(IV_COLOR+1)); 
 		
 	// sprite

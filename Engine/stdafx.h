@@ -9,6 +9,7 @@
 
 
 // Windows Header Files:
+#define NOMINMAX
 #include <windows.h>
 
 // C RunTime Header Files
@@ -19,9 +20,8 @@
 
 #include <eh.h>
 #include <crtdbg.h>
-//#include <map>
-//#include <string>
-//#include <list>
+
+#include <algorithm>
 
 // DirectX
 #define DIRECTINPUT_VERSION 0x0800

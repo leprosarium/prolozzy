@@ -701,7 +701,7 @@ void cDizPlayer::UpdateJump()
 	
 	if( CheckJumpX() )
 		_x += dir()*DIZ_STEPX;
-	int step = MIN(pow(),DIZ_STEPYMAX);
+	int step = std::min(pow(), DIZ_STEPYMAX);
 	step = CheckJumpY(step);
 	_y -= step;
 	_pow--;
@@ -725,7 +725,7 @@ void cDizPlayer::UpdateFall()
 	if( CheckFallX() )
 		_x += dir()*DIZ_STEPX;
 
-	int step = MIN(pow(),DIZ_STEPYMAX);
+	int step = std::min(pow(), DIZ_STEPYMAX);
 	int step2 = CheckFallY(step);
 	_y += step2;
 
@@ -920,16 +920,16 @@ bool cDizPlayer::CheckCollidersSnap()
 		if( x2<=cx1 || x1>=cx2 ) continue;
 		
 		if(y2<=cy1 && cy1<y2+DIZ_STEPY+1)	// collider's top is inside player's box
-			stepd = MIN(stepd,cy1-y2);
+			stepd = std::min(stepd, cy1-y2);
 
 		if(y1<=cy1 && cy1<y2)				// collider's top is not too far under the player's bottom ( a smaller interval would be (y2-DIZ_STEPY<=cy1 && cy1<y2) )
-			stepu = MAX(stepu,y2-cy1);
+			stepu = std::max(stepu,y2-cy1);
 	}	
 
 	if(stepu>0)
 	{
 		snap = true;
-		_y -= MIN(stepu,DIZ_STEPY);
+		_y -= std::min(stepu, DIZ_STEPY);
 	}
 	else
 	if(stepd<=DIZ_STEPY)

@@ -44,7 +44,7 @@ int f9FilePakZ::Open( const char* name, int mode )
 		if(sizec != m_fileinfo->m_sizec) { free(datac); return F9_FAIL; }
 		
 		// size may be less than sizec !
-		dword size = MAX( m_fileinfo->m_size, MAX(64,m_fileinfo->m_sizec) );
+		dword size = std::max( m_fileinfo->m_size, std::max<dword>(64,m_fileinfo->m_sizec) );
 
 		m_data = (byte*)malloc(size);
 		m_size = m_fileinfo->m_size;

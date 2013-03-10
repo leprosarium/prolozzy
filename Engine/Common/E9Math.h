@@ -6,32 +6,18 @@
 #define __E9MATH_H__
 
 #include "E9System.h"
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // defines
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #define PI							(3.1415926535897932385f)	// pi
-#define DBLPI						(6.283185307179586477f)		// pi*2
 #define RAD2DEG(r)					((r) * 180.0f / PI)			// convert from radians to degrees
 #define DEG2RAD(d)					((d) * PI / 180.0f)			// convert from degrees to radians
 #define	SQR(x)						((x)*(x))
 
-#define MIN(a,b)					( ((a)<(b)) ? (a) : (b) )
-#define MAX(a,b)					( ((a)>(b)) ? (a) : (b) )
-#define BOUND(a,min,max)			( ((a)>(min)) ? ( ((a)<(max)) ? (a) : (max) ) : (min) )
-#define	ISZERO(x)					( fabsf(x) < 0.001f )
-
 #define INRECT( x,y,r )				( r.left<=x && x<r.right && r.top<=y && y<r.bottom )
-#define INLPRECT( x,y,r )			( r->left<=x && x<r->right && r->top<=y && y<r->bottom )
 #define RECT2RECT( r1,r2 )			( !( (r1.x2 <= r2.x1) || (r1.x1 >= r2.x2) || (r1.y2 <= r2.y1) || (r1.y1 >= r2.y2) ) )
-#define LRECT2LRECT( r1,r2 )		( !( (r1->x2 <= r2->x1) || (r1->x1 >= r2->x2) || (r1->y2 <= r2->y1) || (r1->y1 >= r2->y2) ) )
 
-#define FCOLOR2DWORD(color)			( ((int)(color.a * 255) << 24) | ((int)(color.r * 255) << 16) | ((int)(color.g * 255) << 8) | (int)(color.b * 255) )
-#define DWORD2FCOLOR(color)			( fColor((float)((color >> 16) & 255) / 255.0f, (float)((color >> 8) & 255) / 255.0f, (float)((color) & 255) / 255.0f, (float)((color >> 24) & 255) / 255.0f) )
-#define ARGB2DWORD( a, r, g, b )	( (dword)( a<<24 | r<<16 | g<<8 | b ) )
 #define RGB2BGR( argb )				( (argb & 0xff00ff00) | ((argb & 0x00ff0000)>>16) | ((argb & 0x000000ff)<<16) )
-
-#define	FLOAT2INT( f )				( ((f)-floor(f)>=0.5f) ? (int)ceil(f) : (int)floor(f); )
 
 inline int GetPow2LO( int value );	// get the nearst power of 2 (but lower than value)
 inline int GetPow2HI( int value );	// get the nearst power of 2 (but higher than value)
@@ -51,8 +37,10 @@ struct fV2
 			float v[2];
 		};
 
-	fV2()					: x(0.0f), y(0.0f) {}
+	fV2()					: x(), y() {}
 	fV2( float x, float y )	: x(x), y(y) {}
+	fV2( int x, int y) : x(static_cast<float>(x)), y(static_cast<float>(y)) {}
+	fV2( float v) : x(v), y(v) {}
 	fV2( const iV2 & v );
 	fV2( POINT& point )		: x(static_cast<float>(point.x)), y(static_cast<float>(point.y)) {}
 
@@ -101,8 +89,9 @@ struct iV2
 			int v[2];
 		};
 
-	iV2()						: x(0), y(0) {}
+	iV2()						: x(), y() {}
 	iV2( int x, int y )			: x(x), y(y) {}
+	iV2( int v )				: x(v), y(v) {}
 	iV2( float x, float y )		: x(static_cast<int>(x)), y(static_cast<int>(y)) {}
 	iV2( const fV2 & v )		: x(static_cast<int>(v.x)), y(static_cast<int>(v.y)) {}
 	iV2( const POINT & point )	: x(point.x), y(point.y) {}
@@ -141,11 +130,11 @@ struct fRect
 			float v[4];
 		};
 
-inline 	fRect()												: x1(0.0f), y1(0.0f), x2(0.0f), y2(0.0f) {}
-inline 	fRect( float _x1, float _y1, float _x2, float _y2 )	: x1(_x1), y1(_y1), x2(_x2), y2(_y2) {}
-inline 	fRect( int _x1, int _y1, int _x2, int _y2 )			: x1((float)_x1), y1((float)_y1), x2((float)_x2), y2((float)_y2) {}
-inline 	fRect( iRect& r );
-inline 	fRect( RECT& rect )									: x1((float)rect.left), y1((float)rect.top), x2((float)rect.right), y2((float)rect.bottom) {}
+inline 	fRect()												: x1(), y1(), x2(), y2() {}
+inline 	fRect( float x1, float y1, float x2, float y2 )		: x1(x1), y1(y1), x2(x2), y2(y2) {}
+inline 	fRect( int x1, int y1, int x2, int y2 )				: x1((float)x1), y1((float)y1), x2((float)x2), y2((float)y2) {}
+inline 	fRect( const iRect & r );
+inline 	fRect( const RECT& rect )							: x1((float)rect.left), y1((float)rect.top), x2((float)rect.right), y2((float)rect.bottom) {}
 
 inline 	operator fRect &()									{ return *this; }
 inline 	operator float *()									{ return (float*)this; }
@@ -154,10 +143,10 @@ inline 	operator RECT ()									{ RECT rect={(int)x1,(int)y1,(int)x2,(int)y2}; 
 inline 	float 	Width()										{ return x2-x1; }
 inline 	float 	Height()									{ return y2-y1; }
 inline 	fV2		Center()									{ return fV2((x1+x2)/2.0f,(y1+y2)/2.0f); }
-inline 	void	Inflate( fV2 _v )							{ x1+=_v.x; y1+=_v.y; x2-=_v.x; y2-=_v.y; }
-inline 	void	Deflate( fV2 _v )							{ x1-=_v.x; y1-=_v.y; x2+=_v.x; y2+=_v.y; }
-inline 	void	Offset( fV2 _v )							{ x1+=_v.x; y1+=_v.y; x2+=_v.x; y2+=_v.y; }
-inline 	BOOL	IsInside( fV2 _v )							{ return (x1<=_v.x && _v.x<x2 && y1<=_v.y && _v.y<y2); }
+inline 	void	Inflate( const fV2 & v )					{ x1+=v.x; y1+=v.y; x2-=v.x; y2-=v.y; }
+inline 	void	Deflate( const fV2 & v )					{ x1-=v.x; y1-=v.y; x2+=v.x; y2+=v.y; }
+inline 	void	Offset( const fV2 & v )						{ x1+=v.x; y1+=v.y; x2+=v.x; y2+=v.y; }
+inline 	BOOL	IsInside( const fV2 & v )					{ return (x1<=v.x && v.x<x2 && y1<=v.y && v.y<y2); }
 
 };
 
@@ -167,11 +156,6 @@ inline fRect	__fastcall operator+	( const fRect& r1, const fRect& r2 )	{ return 
 inline fRect	__fastcall operator+=	( fRect& r1, const fRect& r2 )			{ if(r2.x1<r1.x1) r1.x1=r2.x1; if(r2.y1<r1.y1) r1.y1=r2.y1; if(r2.x2>r1.x2) r1.x2=r2.x2; if(r2.y2>r1.y2) r1.y2=r2.y2; return r1; }
 inline fRect	__fastcall operator*	( const fRect& r1, const fRect& r2 )	{ return fRect( (r1.x1>r2.x1)?r1.x1:r2.x1, (r1.y1>r2.y1)?r1.y1:r2.y1, (r1.x2<r2.x2)?r1.x2:r2.x2, (r1.y2<r2.y2)?r1.y2:r2.y2 ); }
 inline fRect	__fastcall operator*=	( fRect& r1, const fRect& r2 )			{ if(r2.x1>r1.x1) r1.x1=r2.x1; if(r2.y1>r1.y1) r1.y1=r2.y1; if(r2.x2<r1.x2) r1.x2=r2.x2; if(r2.y2<r1.y2) r1.y2=r2.y2; return r1; }
-
-extern fRect	frect_0;
-extern fRect	frect_1;
-extern fRect	frect_01;
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // iRect
@@ -186,11 +170,11 @@ struct iRect
 			int v[4];
 		};
 
-inline 	iRect()												: x1(0), y1(0), x2(0), y2(0) {}
-inline 	iRect( int _x1, int _y1, int _x2, int _y2 )			: x1(_x1), y1(_y1), x2(_x2), y2(_y2) {}
-inline 	iRect( float _x1, float _y1, float _x2, float _y2 )	: x1((int)_x1), y1((int)_y1), x2((int)_x2), y2((int)_y2) {}
-inline 	iRect( fRect& r )									: x1((int)r.x1), y1((int)r.y1), x2((int)r.x2), y2((int)r.y2) {}
-inline 	iRect( RECT& rect )									: x1(rect.left), y1(rect.top), x2(rect.right), y2(rect.bottom) {}
+inline 	iRect()												: x1(), y1(), x2(), y2() {}
+inline 	iRect( int x1, int y1, int x2, int y2 )				: x1(x1), y1(y1), x2(x2), y2(y2) {}
+inline 	iRect( float x1, float y1, float x2, float y2 )		: x1((int)x1), y1((int)y1), x2((int)x2), y2((int)y2) {}
+inline 	iRect( const fRect & r )							: x1((int)r.x1), y1((int)r.y1), x2((int)r.x2), y2((int)r.y2) {}
+inline 	iRect( const RECT & rect )							: x1(rect.left), y1(rect.top), x2(rect.right), y2(rect.bottom) {}
 
 inline 	operator iRect &()									{ return *this; }
 inline 	operator int *()									{ return (int*)this; }
@@ -199,10 +183,10 @@ inline 	operator RECT ()									{ RECT rect={x1,y1,x2,y2}; return rect; }
 inline 	int 	Width()										{ return x2-x1; }
 inline 	int 	Height()									{ return y2-y1; }
 inline 	iV2		Center()									{ return iV2((x1+x2)/2.0f,(y1+y2)/2.0f); }
-inline 	void	Inflate( iV2 _v )							{ x1+=_v.x; y1+=_v.y; x2-=_v.x; y2-=_v.y; }
-inline 	void	Deflate( iV2 _v )							{ x1-=_v.x; y1-=_v.y; x2+=_v.x; y2+=_v.y; }
-inline 	void	Offset( iV2 _v )							{ x1+=_v.x; y1+=_v.y; x2+=_v.x; y2+=_v.y; }
-inline 	BOOL	IsInside( iV2 _v )							{ return (x1<=_v.x && _v.x<x2 && y1<=_v.y && _v.y<y2); }
+inline 	void	Inflate( const iV2 & v )					{ x1+=v.x; y1+=v.y; x2-=v.x; y2-=v.y; }
+inline 	void	Deflate( const iV2 & v )					{ x1-=v.x; y1-=v.y; x2+=v.x; y2+=v.y; }
+inline 	void	Offset( const iV2 & v )						{ x1+=v.x; y1+=v.y; x2+=v.x; y2+=v.y; }
+inline 	BOOL	IsInside( const iV2 & v )					{ return (x1<=v.x && v.x<x2 && y1<=v.y && v.y<y2); }
 
 };
 
@@ -212,11 +196,6 @@ inline iRect	__fastcall operator+	( const iRect& r1, const iRect& r2 )	{ return 
 inline iRect	__fastcall operator+=	( iRect& r1, const iRect& r2 )			{ if(r2.x1<r1.x1) r1.x1=r2.x1; if(r2.y1<r1.y1) r1.y1=r2.y1; if(r2.x2>r1.x2) r1.x2=r2.x2; if(r2.y2>r1.y2) r1.y2=r2.y2; return r1; }
 inline iRect	__fastcall operator*	( const iRect& r1, const iRect& r2 )	{ return iRect( (r1.x1>r2.x1)?r1.x1:r2.x1, (r1.y1>r2.y1)?r1.y1:r2.y1, (r1.x2<r2.x2)?r1.x2:r2.x2, (r1.y2<r2.y2)?r1.y2:r2.y2 ); }
 inline iRect	__fastcall operator*=	( iRect& r1, const iRect& r2 )			{ if(r2.x1>r1.x1) r1.x1=r2.x1; if(r2.y1>r1.y1) r1.y1=r2.y1; if(r2.x2<r1.x2) r1.x2=r2.x2; if(r2.y2<r1.y2) r1.y2=r2.y2; return r1; }
-
-extern iRect	irect_0;
-extern iRect	irect_1;
-extern iRect	irect_01;
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // fColor
@@ -230,8 +209,8 @@ struct fColor
 		float v[4];
 	};
 	
-	fColor() : b(0.0f), g(0.0f), r(0.0f), a(0.0f) { }
-	fColor( float _a, float _r, float _g, float _b )	: a(_a), r(_r), g(_g), b(_b) { }
+	fColor() : b(), g(), r(), a() { }
+	fColor( float a, float r, float g, float b )	: a(a), r(r), g(g), b(b) { }
 	fColor( dword color ) { b=(float)((color & 0x000000ff)) / 255.0f; g=(float)((color & 0x0000ff00)>>8) / 255.0f; r=(float)((color & 0x00ff0000)>>16) / 255.0f; a=(float)((color & 0xff000000)) / 255.0f; }
 	
 	inline	operator float *()				{ return (float*)this; }
@@ -242,7 +221,7 @@ struct fColor
 // inlines
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 inline fV2::fV2( const iV2 & v ) : x(static_cast<float>(v.x)), y(static_cast<float>(v.y)) {}
-inline fRect::fRect( iRect& r )	: x1((float)r.x1), y1((float)r.y1), x2((float)r.x2), y2((float)r.y2) {}
+inline fRect::fRect( const iRect & r )	: x1((float)r.x1), y1((float)r.y1), x2((float)r.x2), y2((float)r.y2) {}
 
 inline int GetPow2LO( int value )	
 {

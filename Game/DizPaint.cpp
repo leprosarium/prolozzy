@@ -157,7 +157,7 @@ void cDizPaint::Unacquire()
 void cDizPaint::Layout()
 {
 	m_scale = g_cfg.m_scale;
-	if(m_scale==0)	m_scale = MAX( 0, MIN( R9_GetWidth()/g_game.m_screen_bw, R9_GetHeight()/g_game.m_screen_bh ) );
+	if(m_scale==0)	m_scale = std::max( 0, std::min( R9_GetWidth()/g_game.m_screen_bw, R9_GetHeight()/g_game.m_screen_bh ) );
 	if(!g_dizdebug.m_console)
 	{
 		m_scrx = (R9_GetWidth() - g_game.m_screen_w*m_scale )/2;
@@ -652,7 +652,7 @@ int	cDizPaint::HUDScanText( char* text, int start, int& end, int* data )
 
 	// copy data string
 	char szdata[64];
-	int szdatalen = MIN(63,end-start-3);
+	int szdatalen = std::min(63,end-start-3);
 	strncpy( szdata, text+start+3, szdatalen );
 	szdata[szdatalen]=0;
 	

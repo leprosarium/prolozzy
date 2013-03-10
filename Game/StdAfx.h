@@ -9,6 +9,7 @@
 
 
 // Windows Header Files:
+#define NOMINMAX
 #include <windows.h>
 
 // C RunTime Header Files

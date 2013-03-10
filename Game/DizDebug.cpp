@@ -483,7 +483,7 @@ iRect cDizDebug::SlotGetRect()
 	rect.x1 = scrw;
 	rect.y1 = 0;
 	rect.x2 = m_renderw;
-	rect.y2 = MIN(rect.y1+R9_CHRH*SLOT_COUNT,scrh);
+	rect.y2 = std::min(rect.y1+R9_CHRH*SLOT_COUNT,scrh);
 	if(rect.x1>rect.x2) rect.x1=rect.x2;
 	if(rect.y1>rect.y2) rect.y1=rect.y2;
 	return rect;

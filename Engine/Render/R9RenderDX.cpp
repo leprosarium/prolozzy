@@ -1048,32 +1048,29 @@ void r9RenderDX::TT_Add(R9TEXTURE texture)
 }
 void r9RenderDX::TT_Del(R9TEXTURE texture)
 {
-	for(int i=0;i<m_targetlist.size();i++)
-	{
-		if(m_targetlist[i]==texture)
-		{
-			m_targetlist.erase(m_targetlist.begin() + i);
-			return;
-		}
-	}
+	std::vector<R9TEXTURE>::iterator i = std::find(m_targetlist.begin(), m_targetlist.end(), texture);
+	if(i != m_targetlist.end())
+		m_targetlist.erase(i);
+}
+
+void r9RenderDX::ReleaseTexture(R9TEXTURE t)
+{
+	LPDIRECT3DTEXTURE9 d3dtex = reinterpret_cast<LPDIRECT3DTEXTURE9>(t->m_handler);
+	LPDIRECT3DSURFACE9 d3dsrf = reinterpret_cast<LPDIRECT3DSURFACE9>(t->m_handlerex);
+	if(d3dsrf) d3dsrf->Release();
+	if(d3dtex) d3dtex->Release();
+	t->m_handler = 0;
+	t->m_handlerex = 0;
 }
 
 void r9RenderDX::TT_Release()
 {
-	for(int i=0;i<m_targetlist.size();i++)
-	{
-		LPDIRECT3DTEXTURE9 d3dtex = (LPDIRECT3DTEXTURE9)(m_targetlist[i]->m_handler);
-		LPDIRECT3DSURFACE9 d3dsrf = (LPDIRECT3DSURFACE9)(m_targetlist[i]->m_handlerex);
-		if(d3dsrf) d3dsrf->Release();
-		if(d3dtex) d3dtex->Release();
-		m_targetlist[i]->m_handler = NULL;
-		m_targetlist[i]->m_handlerex = NULL;
-	}
+	std::for_each(m_targetlist.begin(), m_targetlist.end(), &r9RenderDX::ReleaseTexture);
 }
 
 void r9RenderDX::TT_Recreate()
 {
-	for(int i=0;i<m_targetlist.size();i++)
+	for(int i=0, e = static_cast<int>(m_targetlist.size());i<e;i++)
 	{
 		// manareli...
 		// create new temporary tex (will add it in targetlist too!)

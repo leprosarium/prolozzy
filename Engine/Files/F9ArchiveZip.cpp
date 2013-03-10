@@ -86,14 +86,14 @@ int f9ArchiveZip::FileFind( const char* name )
 
 std::string f9ArchiveZip::FileGetName( int idx )
 {
-	if(idx >= 0 && idx < m_fat.size()) 
+	if(idx >= 0 && idx < static_cast<int>(m_fat.size())) 
 		return m_fat[idx]->m_name;
 	return std::string();
 }
 
 dword f9ArchiveZip::FileGetSize( int idx )
 {
-	if(idx >= 0 && idx < m_fat.size())
+	if(idx >= 0 && idx < static_cast<int>(m_fat.size()))
 		return m_fat[idx]->m_size;
 	return 0;
 }
@@ -122,7 +122,7 @@ BOOL f9ArchiveZip::ReadFAT()
 	filesize = (int)file.Size();
 
 	// read central dir buffer
-	cebuffsize =  MIN( filesize, ZIP_CENTRAL_END_BUFFER_SIZE );
+	cebuffsize =  std::min<int>(filesize, ZIP_CENTRAL_END_BUFFER_SIZE);
 	cebuff = (char*)malloc( cebuffsize ); 
 	if(!cebuff) { file.Close(); return FALSE; }
 	file.Seek( filesize-cebuffsize );
@@ -155,7 +155,7 @@ BOOL f9ArchiveZip::ReadFAT()
 		}
 		
 		char fname[MAX_PATH];
-		int sizename = MIN(fh->sizename, MAX_PATH - 1);
+		int sizename = std::min<word>(fh->sizename, MAX_PATH - 1);
 		strncpy( fname, central + (i+1)*sizeof(zipFileHeader) + offset, sizename );
 		fname[sizename] = 0;
 

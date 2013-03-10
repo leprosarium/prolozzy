@@ -105,14 +105,14 @@ int f9ArchivePak::FileFind( const char* name )
 
 std::string f9ArchivePak::FileGetName( int idx )
 {
-	if(idx >= 0 && idx < m_fat.size())
+	if(idx >= 0 && idx < static_cast<int>(m_fat.size()))
 		return m_fat[idx]->m_name;	
 	return std::string();
 }
 
 dword f9ArchivePak::FileGetSize( int idx )
 {
-	if(idx >= 0 && idx < m_fat.size())
+	if(idx >= 0 && idx < static_cast<int>(m_fat.size()))
 		return m_fat[idx]->m_size;
 	return 0;
 }

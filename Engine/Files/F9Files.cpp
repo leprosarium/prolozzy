@@ -23,7 +23,7 @@ void f9Files::Init()
 
 void f9Files::Done()
 {
-	for(int i=0;i<m_archives.size();i++) ArchiveClose(i);
+	for(int i=0 ,e = static_cast<int>(m_archives.size());i<e;i++) ArchiveClose(i);
 	m_archives.clear();
 }
 
@@ -59,7 +59,7 @@ int f9Files::ArchiveOpen( const char* name, int mode, const char* password )
 
 void f9Files::ArchiveClose( int idx )
 {
-	if(idx < 0 || idx >= m_archives.size()) return;
+	if(idx < 0 || idx >= static_cast<int>(m_archives.size())) return;
 	Array::iterator it = m_archives.begin() + idx;
 	Array::value_type arc = *it;
 	if(!arc) return;
@@ -70,13 +70,13 @@ void f9Files::ArchiveClose( int idx )
 
 f9Archive* f9Files::ArchiveGet( int idx )
 {
-	if(idx < 0 || idx >= m_archives.size()) return 0;
+	if(idx < 0 || idx >= static_cast<int>(m_archives.size())) return 0;
 	return m_archives[idx];
 }
 
 int f9Files::ArchiveFind( const char* name )
 {
-	for(int i=0; i<m_archives.size(); i++)
+	for(int i=0,e=static_cast<int>(m_archives.size()); i<e; i++)
 		if(m_archives[i] && 0==stricmp(m_archives[i]->m_name, name) ) 
 			return i;
 	return -1;
@@ -84,7 +84,7 @@ int f9Files::ArchiveFind( const char* name )
 
 int f9Files::ArchiveFindContaining( const char* filename )
 {
-	for(int i=0; i<m_archives.size(); i++)
+	for(int i=0, e=static_cast<int>(m_archives.size()); i<e; i++)
 		if( m_archives[i] && m_archives[i]->FileFind( filename ) != -1 )	
 			return i;
 	return -1;
@@ -94,9 +94,9 @@ int f9Files::ArchiveFindContainingEx( const char* path )
 {
 	if(m_archives.size()==0) return -1;
 
-	int i,j,k;
+	int j,k;
 	k = (int)strlen(path);
-	for(i=0; i<m_archives.size(); i++)
+	for(int i=0, e=static_cast<int>(m_archives.size()); i<e; i++)
 	{
 		if(!m_archives[i]) continue;
 		char* arcname = m_archives[i]->m_name;	assert(arcname);
@@ -117,7 +117,7 @@ int f9Files::ArchiveFindContainingEx( const char* path )
 
 int	f9Files::ArchiveGetFileCount( int idx )
 {
-	if(idx < 0 || idx >= m_archives.size()) return 0;
+	if(idx < 0 || idx >= static_cast<int>(m_archives.size())) return 0;
 	if(f9Archive* archive = m_archives[idx])
 		return archive->FileCount();
 	return 0;
@@ -125,7 +125,7 @@ int	f9Files::ArchiveGetFileCount( int idx )
 
 std::string f9Files::ArchiveGetFileName( int idx, int fileidx )
 {
-	if(idx < 0 || idx >= m_archives.size()) return 0;
+	if(idx < 0 || idx >= static_cast<int>(m_archives.size())) return 0;
 	f9Archive* archive = m_archives[idx];		
 	if(!archive) return NULL;
 	if(idx<0 || idx>=archive->FileCount()) return NULL;

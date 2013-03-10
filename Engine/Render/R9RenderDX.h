@@ -104,6 +104,9 @@ static	r9PFInfo*			D3D_PFInfo( D3DFORMAT d3dpf );							// return a r9PFInfo fro
 // DLL functions
 typedef IDirect3D9* (__stdcall * tDirect3DCreate9)(UINT SDKVersion);
 static	tDirect3DCreate9	m_Direct3DCreate9;
+
+	static void ReleaseTexture(R9TEXTURE);
+
 };
 
 #endif

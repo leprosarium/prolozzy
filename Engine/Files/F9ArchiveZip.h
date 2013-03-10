@@ -34,7 +34,7 @@ virtual	int				FileCount		()									{ return m_fat.size(); }
 virtual	int				FileFind		( const char* name );
 virtual	std::string		FileGetName		( int idx );
 virtual	dword			FileGetSize		( int idx );
-inline	f9ZipFileInfo*	FileGetInfo		( int idx )							{ return idx >= 0 && idx < m_fat.size() ? m_fat[idx] : 0; }
+inline	f9ZipFileInfo*	FileGetInfo		( int idx )							{ return idx >= 0 && idx < static_cast<int>(m_fat.size()) ? m_fat[idx] : 0; }
 
 private:
 		BOOL			ReadFAT			();

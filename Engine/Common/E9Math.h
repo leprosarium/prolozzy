@@ -51,42 +51,43 @@ struct fV2
 			float v[2];
 		};
 
-inline 	fV2()							: x(0.0f), y(0.0f) {}
-inline 	fV2( float _x, float _y )		: x(_x), y(_y) {}
-inline 	fV2( int _x, int _y )			: x((float)_x), y((float)_y) {}
-inline 	fV2( iV2 _v );
-inline 	fV2( POINT& point )				: x((float)point.x), y((float)point.y) {}
+	fV2()					: x(0.0f), y(0.0f) {}
+	fV2( float x, float y )	: x(x), y(y) {}
+	fV2( const iV2 & v );
+	fV2( POINT& point )		: x(static_cast<float>(point.x)), y(static_cast<float>(point.y)) {}
 
-inline	operator fV2 &()				{ return *this; }
-inline	operator float *()				{ return (float*)this; }
-inline	operator POINT ()				{ POINT pt={(int)x,(int)y}; return pt; }
+	operator float *()				{ return (float*)this; }
+	operator POINT ()				{ POINT pt={(int)x,(int)y}; return pt; }
 
+	fV2	& __fastcall operator - () { x = -x; y = -y; return *this; }
+	fV2	& __fastcall operator *=(const fV2 & v) { x *= v.x; y *= v.y; return *this; }
+	fV2	& __fastcall operator *=(float f) { x *= f; y *= f; return *this; }
+	fV2	& __fastcall operator /=(const fV2 & v) { x /= v.x; y /= v.y; return *this; }
+	fV2	& __fastcall operator /=(float f) { x /= f; y /= f; return *this; }
+
+	fV2 & __fastcall operator +=(const fV2 & v) { x += v.x; y += v.y; return *this; }
+	fV2 & __fastcall operator +=(float f) { x += f; y += f; return *this; }
+	fV2 & __fastcall operator -=(float f) { x -= f; y -= f; return *this; }
+	float __fastcall operator ! () { return sqrt(x*x + y*y); }
+
+
+	friend bool	__fastcall operator ==	( const fV2 & v1, const fV2 & v2 )		{ return v1.x==v2.x && v1.y==v2.y; }
+	friend bool	__fastcall operator !=	( const fV2 & v1, const fV2 & v2 )		{ return v1.x!=v2.x || v1.y!=v2.y; }
+	friend fV2	__fastcall operator *	( const fV2 & v, float f )			{ return fV2( v.x * f, v.y * f ); }
+	friend fV2	__fastcall operator *	( float f, const fV2 & v )			{ return v * f; }
+	friend fV2	__fastcall operator /	( const fV2 & v, float f )			{ return fV2( v.x / f, v.y / f ); }
+	friend fV2	__fastcall operator +	( const fV2 & v1, const fV2 & v2 )		{ return fV2( v1.x + v2.x, v1.y + v2.y ); }
+	friend fV2	__fastcall operator +	( const fV2 & v, float f )		{ return fV2( v.x + f, v.y + f ); }
+	friend fV2	__fastcall operator +	( float f, const fV2 & v)		{ return v + f; }
+	friend fV2	__fastcall operator -	( const fV2& v1, const fV2 & v2 )		{ return fV2( v1.x - v2.x, v1.y - v2.y ); }
+	friend fV2	__fastcall operator -	( const fV2 & v, float f )		{ return fV2( v.x - f, v.y - f ); }
+	friend float __fastcall operator & ( const fV2 & v1, const fV2 & v2 )		{ return v1.x*v2.x + v1.y*v2.y; }
+	friend bool	__fastcall Nor			( fV2 & v1 ) { float t = !v1; if( t==0.0f ) return false; else { v1 *= (1.0f/t); return true; } }
+	friend fV2	__fastcall Unit			( const fV2 & v1 ) { fV2 v = v1; Nor(v); return v; }
+	friend fV2	__fastcall Lerp			( const fV2 & v1, const fV2 & v2, float s ) { return v1 + s * (v2 - v1); }
+	friend fV2	__fastcall Rotate		( const fV2 & v1, float angsin, float angcos )	{ return  fV2( v1.x * angcos + v1.y * -angsin, v1.x * angsin + v1.y * angcos ); }
+	friend fV2	__fastcall Rotate		( const fV2 & v1, float angle )				{ float rad = DEG2RAD(angle); return Rotate(v1, sin(rad), cos(rad)); }
 };
-
-inline 	BOOL	__fastcall operator==	( const fV2& v1, const fV2& v2 )		{ return v1.x==v2.x && v1.y==v2.y; }
-inline 	BOOL	__fastcall operator!=	( const fV2& v1, const fV2& v2 )		{ return v1.x!=v2.x || v1.y!=v2.y; }
-inline 	fV2		__fastcall operator*	( float scale, const fV2& v1 )			{ return fV2( v1.x * scale, v1.y * scale ); }
-inline 	fV2		__fastcall operator*	( const fV2& v1, float scale )			{ return fV2( v1.x * scale, v1.y * scale ); }
-inline 	fV2		__fastcall operator/	( const fV2& v1, float scale )			{ return fV2( v1.x / scale, v1.y / scale ); }
-inline 	fV2		__fastcall operator+	( const fV2& v1, const fV2& v2 )		{ return fV2( v1.x + v2.x, v1.y + v2.y ); }
-inline 	fV2		__fastcall operator-	( const fV2& v1, const fV2& v2 )		{ return fV2( v1.x - v2.x, v1.y - v2.y ); }
-inline 	fV2		__fastcall operator-	( fV2& v1 )								{ return fV2( -v1.x, -v1.y ); }
-inline 	fV2		__fastcall operator*=	( fV2& v1, float scale )				{ v1.x *= scale; v1.y *= scale; return v1; }
-inline 	fV2		__fastcall operator/=	( fV2& v1, float scale )				{ v1.x /= scale; v1.y /= scale; return v1; }
-inline 	fV2		__fastcall operator+=	( fV2& v1, const fV2& v2 )				{ v1.x += v2.x; v1.y += v2.y; return v1; }
-inline 	fV2		__fastcall operator-=	( fV2& v1, const fV2& v2 )				{ v1.x -= v2.x; v1.y -= v2.y; return v1; }
-inline 	float	__fastcall Dot			( const fV2& v1, const fV2& v2 )		{ return v1.x*v2.x + v1.y*v2.y; }
-inline 	float	__fastcall Len			( const fV2 &v1 )						{ return (float)sqrt( v1.x*v1.x + v1.y*v1.y ); }
-inline 	float	__fastcall LenSqr		( const fV2 &v1 )						{ return v1.x*v1.x + v1.y*v1.y; }
-inline 	BOOL	__fastcall Nor			( fV2 &v1 )								{ float t = Len(v1); if( t==0.0f ) return FALSE; else { v1 *= (1.0f/t); return TRUE; } }
-inline 	fV2		__fastcall Unit			( fV2 &v1 )								{ fV2 v = v1; Nor(v); return v; }
-inline 	fV2		__fastcall Lerp			( fV2 &v1, fV2 &v2, float s )			{ return v1 + s * (v2 - v1); }
-inline 	fV2		__fastcall Rotate		( fV2 &v1, float angsin, float angcos )	{ return  fV2( v1.x * angcos + v1.y * -angsin, v1.x * angsin + v1.y * angcos ); }
-inline 	fV2		__fastcall Rotate		( fV2 &v1, float angle )				{ float rad = DEG2RAD(angle); float angsin = sinf(rad); float angcos=cosf(rad); return Rotate(v1,angsin,angcos); }
-
-extern 	fV2		fv2_0;
-extern 	fV2		fv2_1;
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // iV2 
@@ -100,34 +101,32 @@ struct iV2
 			int v[2];
 		};
 
-inline 	iV2()							: x(0), y(0) {}
-inline 	iV2( int _x, int _y )			: x(_x), y(_y) {}
-inline 	iV2( float _x, float _y )		: x((int)_x), y((int)_y) {}
-inline 	iV2( fV2 _v )					: x((int)_v.x), y((int)_v.y) {}
-inline 	iV2( POINT& point )				: x(point.x), y(point.y) {}
+	iV2()						: x(0), y(0) {}
+	iV2( int x, int y )			: x(x), y(y) {}
+	iV2( float x, float y )		: x(static_cast<int>(x)), y(static_cast<int>(y)) {}
+	iV2( const fV2 & v )		: x(static_cast<int>(v.x)), y(static_cast<int>(v.y)) {}
+	iV2( const POINT & point )	: x(point.x), y(point.y) {}
 
-inline	operator iV2 &()				{ return *this; }
-inline	operator int *()				{ return (int*)this; }
-inline	operator POINT ()				{ POINT pt={x,y}; return pt; }
+	operator int *()				{ return (int*)this; }
+	operator POINT ()				{ POINT pt={x,y}; return pt; }
+	iV2 & __fastcall operator*=	( const  iV2 & v )			{ x *= v.x; y *= v.y; return *this; }
+	iV2 & __fastcall operator*=	( int s )					{ x *= s; y *= s; return *this; }
+	iV2 & __fastcall operator/=	( const  iV2 & v )			{ x /= v.x; y /= v.y; return *this; }
+	iV2 & __fastcall operator/=	( int s )					{ x /= s; y /= s; return *this; }
+	iV2 & __fastcall operator+=	( const iV2 & v)			{ x += v.x; y += v.y; return *this; }
+	iV2 & __fastcall operator+=	( int s)					{ x += s; y += s; return *this; }
+	iV2 & __fastcall operator-=	( const iV2 & v)			{ x -= v.x; y -= v.y; return *this; }
+	iV2 & __fastcall operator-=	( int s)					{ x -= s; y -= s; return *this; }
+	iV2	& __fastcall operator-	()							{ x = -x; y = -y; return *this; }
 
+	friend bool	__fastcall operator==	( const iV2 & v1, const iV2 & v2 )		{ return v1.x==v2.x && v1.y==v2.y; }
+	friend bool	__fastcall operator!=	( const iV2 & v1, const iV2 & v2 )		{ return v1.x!=v2.x || v1.y!=v2.y; }
+	friend iV2	__fastcall operator*	( const iV2 & v, int s )			{ return iV2( v.x * s, v.y * s ); }
+	friend iV2	__fastcall operator*	( int s, const iV2 & v )			{ return v * s; }
+	friend iV2	__fastcall operator/	( const iV2 & v, int s )			{ return iV2( v.x / s, v.y / s ); }
+	friend iV2	__fastcall operator+	( const iV2 & v1, const iV2 & v2 )		{ return iV2( v1.x + v2.x, v1.y + v2.y ); }
+	friend iV2	__fastcall operator-	( const iV2 & v1, const iV2 & v2 )		{ return iV2( v1.x - v2.x, v1.y - v2.y ); }
 };
-
-inline 	BOOL	__fastcall operator==	( const iV2& v1, const iV2& v2 )		{ return v1.x==v2.x && v1.y==v2.y; }
-inline 	BOOL	__fastcall operator!=	( const iV2& v1, const iV2& v2 )		{ return v1.x!=v2.x || v1.y!=v2.y; }
-inline 	iV2		__fastcall operator*	( int scale, const iV2& v1 )			{ return iV2( v1.x * scale, v1.y * scale ); }
-inline 	iV2		__fastcall operator*	( const iV2& v1, int scale )			{ return iV2( v1.x * scale, v1.y * scale ); }
-inline 	iV2		__fastcall operator/	( const iV2& v1, int scale )			{ return iV2( v1.x / scale, v1.y / scale ); }
-inline 	iV2		__fastcall operator+	( const iV2& v1, const iV2& v2 )		{ return iV2( v1.x + v2.x, v1.y + v2.y ); }
-inline 	iV2		__fastcall operator-	( const iV2& v1, const iV2& v2 )		{ return iV2( v1.x - v2.x, v1.y - v2.y ); }
-inline 	iV2		__fastcall operator-	( iV2& v1 )								{ return iV2( -v1.x, -v1.y ); }
-inline 	iV2		__fastcall operator*=	( iV2& v1, int scale )					{ v1.x *= scale; v1.y *= scale; return v1; }
-inline 	iV2		__fastcall operator/=	( iV2& v1, int scale )					{ v1.x /= scale; v1.y /= scale; return v1; }
-inline 	iV2		__fastcall operator+=	( iV2& v1, const iV2& v2 )				{ v1.x += v2.x; v1.y += v2.y; return v1; }
-inline 	iV2		__fastcall operator-=	( iV2& v1, const iV2& v2 )				{ v1.x -= v2.x; v1.y -= v2.y; return v1; }
-
-extern 	iV2		iv2_0;
-extern 	iV2		iv2_1;
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // fRect
@@ -242,7 +241,7 @@ struct fColor
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // inlines
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-inline fV2::fV2( iV2 _v )		: x((float)_v.x), y((float)_v.y) {}
+inline fV2::fV2( const iV2 & v ) : x(static_cast<float>(v.x)), y(static_cast<float>(v.y)) {}
 inline fRect::fRect( iRect& r )	: x1((float)r.x1), y1((float)r.y1), x2((float)r.x2), y2((float)r.y2) {}
 
 inline int GetPow2LO( int value )	

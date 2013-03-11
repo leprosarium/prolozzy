@@ -776,7 +776,7 @@ void a9AudioDX::StreamFill( A9STREAM _stream )
 int	a9AudioDX::StreamUpdateAll()
 {
 	int ret = A9_OK;
-	for(int i=0, e = static_cast<int>(m_playingstreams.size());i<e;i++)
+	for(int i=0;i<static_cast<int>(m_playingstreams.size());i++)
 	{
 		a9StreamDX* stream = m_playingstreams[i];
 		if(StreamUpdate(stream)!=A9_OK) ret = A9_FAIL;

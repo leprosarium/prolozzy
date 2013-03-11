@@ -12,15 +12,11 @@
 #define PI							(3.1415926535897932385f)	// pi
 #define RAD2DEG(r)					((r) * 180.0f / PI)			// convert from radians to degrees
 #define DEG2RAD(d)					((d) * PI / 180.0f)			// convert from degrees to radians
-#define	SQR(x)						((x)*(x))
 
 #define INRECT( x,y,r )				( r.left<=x && x<r.right && r.top<=y && y<r.bottom )
 #define RECT2RECT( r1,r2 )			( !( (r1.x2 <= r2.x1) || (r1.x1 >= r2.x2) || (r1.y2 <= r2.y1) || (r1.y1 >= r2.y2) ) )
 
 #define RGB2BGR( argb )				( (argb & 0xff00ff00) | ((argb & 0x00ff0000)>>16) | ((argb & 0x000000ff)<<16) )
-
-inline int GetPow2LO( int value );	// get the nearst power of 2 (but lower than value)
-inline int GetPow2HI( int value );	// get the nearst power of 2 (but higher than value)
 
 struct iV2;
 struct iRect;
@@ -31,21 +27,13 @@ struct iRect;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct fV2
 {
-		union
-		{
-			struct { float x, y; };
-			float v[2];
-		};
-
+	float x, y;
+	
 	fV2()					: x(), y() {}
 	fV2( float x, float y )	: x(x), y(y) {}
 	fV2( int x, int y) : x(static_cast<float>(x)), y(static_cast<float>(y)) {}
 	fV2( float v) : x(v), y(v) {}
 	fV2( const iV2 & v );
-	fV2( POINT& point )		: x(static_cast<float>(point.x)), y(static_cast<float>(point.y)) {}
-
-	operator float *()				{ return (float*)this; }
-	operator POINT ()				{ POINT pt={(int)x,(int)y}; return pt; }
 
 	fV2	& __fastcall operator - () { x = -x; y = -y; return *this; }
 	fV2	& __fastcall operator *=(const fV2 & v) { x *= v.x; y *= v.y; return *this; }
@@ -83,21 +71,13 @@ struct fV2
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct iV2
 {
-		union
-		{
-			struct { int x, y; };
-			int v[2];
-		};
-
+	int x, y;
 	iV2()						: x(), y() {}
 	iV2( int x, int y )			: x(x), y(y) {}
 	iV2( int v )				: x(v), y(v) {}
 	iV2( float x, float y )		: x(static_cast<int>(x)), y(static_cast<int>(y)) {}
 	iV2( const fV2 & v )		: x(static_cast<int>(v.x)), y(static_cast<int>(v.y)) {}
-	iV2( const POINT & point )	: x(point.x), y(point.y) {}
 
-	operator int *()				{ return (int*)this; }
-	operator POINT ()				{ POINT pt={x,y}; return pt; }
 	iV2 & __fastcall operator*=	( const  iV2 & v )			{ x *= v.x; y *= v.y; return *this; }
 	iV2 & __fastcall operator*=	( int s )					{ x *= s; y *= s; return *this; }
 	iV2 & __fastcall operator/=	( const  iV2 & v )			{ x /= v.x; y /= v.y; return *this; }
@@ -223,6 +203,7 @@ struct fColor
 inline fV2::fV2( const iV2 & v ) : x(static_cast<float>(v.x)), y(static_cast<float>(v.y)) {}
 inline fRect::fRect( const iRect & r )	: x1((float)r.x1), y1((float)r.y1), x2((float)r.x2), y2((float)r.y2) {}
 
+// get the nearst power of 2 (but lower than value)
 inline int GetPow2LO( int value )	
 {
 	for(int i=16; i>=1; i--)
@@ -230,6 +211,7 @@ inline int GetPow2LO( int value )
 	return 2;
 }
 
+// get the nearst power of 2 (but higher than value)
 inline int GetPow2HI( int value )
 {
 	for(int i=1; i<16; i++)

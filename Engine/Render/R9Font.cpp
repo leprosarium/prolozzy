@@ -162,7 +162,8 @@ void r9Font::GetTextBox( const char* text, float& w, float& h )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // draw
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void r9Font::Char( float x, float y, char c )
+
+void r9Font::Char( const fV2 & p, char c )
 {
 	assert(R9_IsReady());
 	if( !IsValid(c) ) return;
@@ -174,10 +175,10 @@ void r9Font::Char( float x, float y, char c )
 	byte ci = (byte)c;
 
 	fRect dst;
-	dst.x1 = x;
-	dst.y1 = y;
-	dst.x2 = x + GetCharWidth(c);
-	dst.y2 = y + GetSize();
+	dst.x1 = p.x;
+	dst.y1 = p.y;
+	dst.x2 = p.x + GetCharWidth(c);
+	dst.y2 = p.y + GetSize();
 	
 	fRect src;
 	src.x1 = (float)m_char[ci].x;
@@ -198,12 +199,12 @@ void r9Font::Char( float x, float y, char c )
 	src.y2 /= th;
 
 	R9_DrawQuad(dst, src, tex, m_color );
+
 }
 
 void r9Font::Print( float x, float y, const char* text )
 {
-	float xx = x;
-	float yy = y;
+	fV2 p(x, y);
 	if( text==NULL ) return;
 
 	while( *text!=0 )
@@ -211,24 +212,24 @@ void r9Font::Print( float x, float y, const char* text )
 		char c = *text;
 		if( c=='\n' )
 		{
-			xx = x;
-			yy += GetSize() + GetOfsY();
+			p.x = x;
+			p.y += GetSize() + GetOfsY();
 		}
 		else 
 		if( c=='\r')
 		{
-			xx = x;
+			p.x = x;
 		}
 		else
 		if( c=='\t')
 		{
-			xx += (GetCharWidth(32) + GetOfsX()) * TAB_SIZE;
+			p.x += (GetCharWidth(32) + GetOfsX()) * TAB_SIZE;
 		}
 		else
 		if( IsValid(c) ) 
 		{
-			Char(xx,yy,c);
-			xx += GetCharWidth(c) + GetOfsX();
+			Char(p, c);
+			p.x += GetCharWidth(c) + GetOfsX();
 		}
 		text++;
 	}

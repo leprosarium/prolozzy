@@ -607,14 +607,13 @@ void cDizGame::Draw()
 	// clipping
 	fRect clip;// draw room area (for viewportmode=1)
 	// visible room area
-	fRect rect( g_paint.m_scrx+viewX()*g_paint.m_scale,
-				g_paint.m_scry+viewY()*g_paint.m_scale,
-				g_paint.m_scrx+(viewX()+Room::Width)*g_paint.m_scale,
-				g_paint.m_scry+(viewY()+Room::Height)*g_paint.m_scale);
+	iV2 view(viewX(), viewY());
+	fRect rect( g_paint.scr + view * g_paint.m_scale,
+				g_paint.scr + (view + iV2(Room::Width, Room::Height)) * g_paint.m_scale);
 
 	// view ofset with shake option and optional viewport for scrolling
-	m_viewx = viewX() + shakeX();
-	m_viewy = viewY() + shakeY();
+	m_viewx = view.x + shakeX();
+	m_viewy = view.y + shakeY();
 	if( viewportMode() )
 	{
 		m_viewx += viewportX();
@@ -629,14 +628,14 @@ void cDizGame::Draw()
 	if( viewportFlipX())
 	{
 		flip |= R9_FLIPX;
-		int vx = g_paint.m_scrx + viewX()*g_paint.m_scale;
-		viewx = R9_GetWidth() - vx - roomW()*g_paint.m_scale - vx + 1; // magic +1
+		int vx = g_paint.scr.x + view.x * g_paint.m_scale;
+		viewx = R9_GetWidth() - vx - roomW() * g_paint.m_scale - vx + 1; // magic +1
 	}
 	if( viewportFlipY())
 	{
 		flip |= R9_FLIPY;
-		int vy = g_paint.m_scry + viewY()*g_paint.m_scale;
-		viewy = R9_GetHeight() - vy - roomH()*g_paint.m_scale - vy + 1; // magic +1
+		int vy = g_paint.scr.y + view.y * g_paint.m_scale;
+		viewy = R9_GetHeight() - vy - roomH() * g_paint.m_scale - vy + 1; // magic +1
 	}
 
 	if( flip )
@@ -645,6 +644,8 @@ void cDizGame::Draw()
 	}
 
 	m_visible_brushes = 0;
+
+
 
 	// for each layer
 	for(int layer=0;layer<GAME_LAYERS;layer++)
@@ -660,8 +661,8 @@ void cDizGame::Draw()
 					// clip here to avoid duplicate draw (brushes shared in neighbour rooms)
 					// Note: brushes order must also be perserved (so the drawframe trick didn't work)
 					R9_SetClipping( rect );
-					clip.x1 = (float)g_paint.m_scrx + (m_viewx+(rx-1)*Room::Width)*g_paint.m_scale,
-					clip.y1 = (float)g_paint.m_scry + (m_viewy+(ry-1)*Room::Height)*g_paint.m_scale,
+					clip.x1 = (float)g_paint.scr.x + (m_viewx+(rx-1)*Room::Width)*g_paint.m_scale,
+					clip.y1 = (float)g_paint.scr.y + (m_viewy+(ry-1)*Room::Height)*g_paint.m_scale,
 					clip.x2 = clip.x1 + Room::Width*g_paint.m_scale;
 					clip.y2 = clip.y1 + Room::Height*g_paint.m_scale;
 					R9_AddClipping( clip );
@@ -764,11 +765,9 @@ void MatMap::Update(int roomX, int roomY, bool full)
 	memset(map, 0, Size);
 	
 	// prepare coordinates
-	int scrx = g_paint.m_scrx;
-	int scry = g_paint.m_scry;
+	iV2 scr(g_paint.scr);
 	int scale = g_paint.m_scale;
-	g_paint.m_scrx = 0;
-	g_paint.m_scry = 0;
+	g_paint.scr = iV2();
 	g_paint.m_scale = 1;
 
 	// clipping
@@ -811,8 +810,7 @@ void MatMap::Update(int roomX, int roomY, bool full)
 
 	// rollback
 	g_paint.m_drawtilesoft = false;
-	g_paint.m_scrx = scrx;
-	g_paint.m_scry = scry;
+	g_paint.scr = scr;
 	g_paint.m_scale = scale;
 	R9_SetClipping(oldclip);
 

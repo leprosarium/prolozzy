@@ -29,8 +29,8 @@
 
 // macros
 #define SCALE			( g_paint.m_scale )
-#define SCALEX(x)		( g_paint.m_scrx+(x)*g_paint.m_scale )
-#define SCALEY(y)		( g_paint.m_scry+(y)*g_paint.m_scale )
+//#define SCALEX(x)		( g_paint.m_scrx+(x)*g_paint.m_scale )
+//#define SCALEY(y)		( g_paint.m_scry+(y)*g_paint.m_scale )
 #define SCALESIZE(w)	( (w)*g_paint.m_scale )
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -212,9 +212,10 @@ public:
 		dword			m_hudcolor;		// current hud color
 		int				m_huddraw;		// draw allowed
 
-		// screen props	
-		int				m_scrx;			// screen offset x
-		int				m_scry;			// screen offset y
+		// screen props
+		iV2				scr;			// screen offset
+//		int				m_scrx;			// screen offset x
+//		int				m_scry;			// screen offset y
 		int				m_scale;		// scale factor
 
 		// fonts

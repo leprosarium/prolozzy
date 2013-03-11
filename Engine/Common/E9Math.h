@@ -111,6 +111,7 @@ struct fRect
 		};
 
 inline 	fRect()												: x1(), y1(), x2(), y2() {}
+		fRect(const fV2 & p1, const fV2 & p2)				: x1(p1.x), y1(p1.y), x2(p2.x), y2(p2.y) {}
 inline 	fRect( float x1, float y1, float x2, float y2 )		: x1(x1), y1(y1), x2(x2), y2(y2) {}
 inline 	fRect( int x1, int y1, int x2, int y2 )				: x1((float)x1), y1((float)y1), x2((float)x2), y2((float)y2) {}
 inline 	fRect( const iRect & r );
@@ -151,6 +152,7 @@ struct iRect
 		};
 
 inline 	iRect()												: x1(), y1(), x2(), y2() {}
+		iRect(const iV2 & p1, const iV2 & p2)				: x1(p1.x), y1(p1.y), x2(p2.x), y2(p2.y) {}
 inline 	iRect( int x1, int y1, int x2, int y2 )				: x1(x1), y1(y1), x2(x2), y2(y2) {}
 inline 	iRect( float x1, float y1, float x2, float y2 )		: x1((int)x1), y1((int)y1), x2((int)x2), y2((int)y2) {}
 inline 	iRect( const fRect & r )							: x1((int)r.x1), y1((int)r.y1), x2((int)r.x2), y2((int)r.y2) {}

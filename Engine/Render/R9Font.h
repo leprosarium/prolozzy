@@ -75,7 +75,7 @@ inline	float		GetCharWidth()										{ return m_scale * m_aspect * m_chrw; }
 		void		GetTextBox( const char* text, float &w, float& h );		// gets the box sizes the text fits in; italic and newlines included
 
 // draw
-		void		Char( float x, float y, char c );					// draw a single char at (x,y)
+		void		Char(const fV2 & p, char c);						// draw a single char at point p
 		void		Print( float x, float y, const char* text );				// draw a text at (x,y)
 		void		Printn( float x, float y, char* text, int size );	// draw a text at (x,y) (size characters)
 		void		Printf( float x, float y, char* format, ... );		// draw a formated text at (x,y)

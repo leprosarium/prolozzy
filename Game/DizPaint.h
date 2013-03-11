@@ -122,6 +122,7 @@ public:
 	int Get( int idx ) const { return m_data[idx]; }
 	void Set( int idx, int val ) { m_data[idx] = val; }
 	void MakeBBW	( int &x1, int &y1, int &x2, int &y2 ) const{ x1 = m_data[BRUSH_X]; x2 = x1+m_data[BRUSH_W]; y1 = m_data[BRUSH_Y]; y2 = y1+m_data[BRUSH_H]; }
+//	iRect MakeBBW() const { iV2 p1(m_data[BRUSH_X], m_data[BRUSH_Y]); return iRect(p1, p1 + iV2(m_data[BRUSH_W], m_data[BRUSH_H])); }
 	float mapScale() const { return m_data[BRUSH_SCALE] > 0 ? m_data[BRUSH_SCALE] / 100.0f : 1.0f; }		
 	float mapWith() const   { return ( (m_data[BRUSH_FLIP] & R9_FLIPR) ? (m_data[BRUSH_MAP+3] - m_data[BRUSH_MAP+1]) : (m_data[BRUSH_MAP+2] - m_data[BRUSH_MAP+0]) ) * mapScale(); }
 	float mapHeight() const { return ( (m_data[BRUSH_FLIP] & R9_FLIPR) ? (m_data[BRUSH_MAP+2] - m_data[BRUSH_MAP+0]) : (m_data[BRUSH_MAP+3] - m_data[BRUSH_MAP+1]) ) * mapScale(); }
@@ -186,12 +187,12 @@ public:
 		void			Layout			();								// compute layout position (scale,scrx,scry)
 
 		// Draw scaled
-		void			DrawTile		( int idx, int x, int y, iRect& map, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f );	// tile scale (in editor paint it was full scale)
-		void			DrawTile		( int idx, int x, int y, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f );				// tile scale (in editor paint it was full scale)
-		void			DrawChar		( int fontidx, int x, int y, char c, dword color=0xffffffff );
+		void			DrawTile		( int idx, const iV2 & p, iRect& map, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f );	// tile scale (in editor paint it was full scale)
+		void			DrawTile		( int idx, const iV2 & p, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f );				// tile scale (in editor paint it was full scale)
+		void			DrawChar		( int fontidx, const iV2 & p, char c, dword color=0xffffffff );
 
 		// Draw brush 
-		void			DrawBrush		( const tBrush & brush, int x, int y, int frame=-1 ); // if frame is -1, tile is automatic animated
+		void			DrawBrush		( const tBrush & brush, const iV2 & p, int frame=-1 ); // if frame is -1, tile is automatic animated
 
 		// Tile material draw (software)
 		void			DrawTileSoft	( int idx, int x, int y, iRect& map, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f );	// paints tile in the image target map (faster, no rotation, no scale)
@@ -214,8 +215,6 @@ public:
 
 		// screen props
 		iV2				scr;			// screen offset
-//		int				m_scrx;			// screen offset x
-//		int				m_scry;			// screen offset y
 		int				m_scale;		// scale factor
 
 		// fonts

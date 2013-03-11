@@ -107,7 +107,6 @@ struct fRect
 		{
 			struct { float x1, y1, x2, y2; };
 			struct { float left, top, right, bottom; };
-			float v[4];
 		};
 
 inline 	fRect()												: x1(), y1(), x2(), y2() {}
@@ -115,11 +114,6 @@ inline 	fRect()												: x1(), y1(), x2(), y2() {}
 inline 	fRect( float x1, float y1, float x2, float y2 )		: x1(x1), y1(y1), x2(x2), y2(y2) {}
 inline 	fRect( int x1, int y1, int x2, int y2 )				: x1((float)x1), y1((float)y1), x2((float)x2), y2((float)y2) {}
 inline 	fRect( const iRect & r );
-inline 	fRect( const RECT& rect )							: x1((float)rect.left), y1((float)rect.top), x2((float)rect.right), y2((float)rect.bottom) {}
-
-inline 	operator fRect &()									{ return *this; }
-inline 	operator float *()									{ return (float*)this; }
-inline 	operator RECT ()									{ RECT rect={(int)x1,(int)y1,(int)x2,(int)y2}; return rect; }
 
 inline 	float 	Width()										{ return x2-x1; }
 inline 	float 	Height()									{ return y2-y1; }
@@ -148,7 +142,6 @@ struct iRect
 		{
 			struct { int x1, y1, x2, y2; };
 			struct { int left, top, right, bottom; };
-			int v[4];
 		};
 
 inline 	iRect()												: x1(), y1(), x2(), y2() {}
@@ -156,11 +149,6 @@ inline 	iRect()												: x1(), y1(), x2(), y2() {}
 inline 	iRect( int x1, int y1, int x2, int y2 )				: x1(x1), y1(y1), x2(x2), y2(y2) {}
 inline 	iRect( float x1, float y1, float x2, float y2 )		: x1((int)x1), y1((int)y1), x2((int)x2), y2((int)y2) {}
 inline 	iRect( const fRect & r )							: x1((int)r.x1), y1((int)r.y1), x2((int)r.x2), y2((int)r.y2) {}
-inline 	iRect( const RECT & rect )							: x1(rect.left), y1(rect.top), x2(rect.right), y2(rect.bottom) {}
-
-inline 	operator iRect &()									{ return *this; }
-inline 	operator int *()									{ return (int*)this; }
-inline 	operator RECT ()									{ RECT rect={x1,y1,x2,y2}; return rect; }
 
 inline 	int 	Width()										{ return x2-x1; }
 inline 	int 	Height()									{ return y2-y1; }

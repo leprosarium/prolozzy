@@ -892,7 +892,7 @@ void cDizGame::ObjDraw( const tBrush & brush )
 	int idx = g_paint.tiles.Find(brush.Get(BRUSH_TILE));
 	cTile* tile = g_paint.tiles.Get(idx); if(!tile) return;
 	int frame = ComputeFrame(brush.Get(BRUSH_FRAME),tile->m_frames,brush.Get(BRUSH_ANIM));
-	g_paint.DrawBrush( brush, m_viewx+x1, m_viewy+y1, frame );
+	g_paint.DrawBrush( brush, iV2(m_viewx+x1, m_viewy+y1), frame );
 
 }
 

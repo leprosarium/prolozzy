@@ -262,7 +262,7 @@ void cDizMap::DrawRoom( int rx, int ry, int layer, int mode, int ofsx, int ofsy 
 			brush.Set(BRUSH_COLOR, g_game.materials[brush.Get(BRUSH_MATERIAL)].color | 0xff000000);
 			brush.Set(BRUSH_SHADER, SHADER_ALPHAREP);
 			g_paint.m_drawtilemat = brush.Get(BRUSH_MATERIAL); // software use this
-			g_paint.DrawBrush( brush, x, y, frame );
+			g_paint.DrawBrush( brush, iV2(x, y), frame );
 			brush.Set(BRUSH_COLOR, color);
 			brush.Set(BRUSH_SHADER, shader);
 		}
@@ -280,7 +280,7 @@ void cDizMap::DrawRoom( int rx, int ry, int layer, int mode, int ofsx, int ofsy 
 					0xffffffff;
 			brush.Set(BRUSH_COLOR,matd_color);
 			brush.Set(BRUSH_SHADER, SHADER_ALPHAREP);
-			g_paint.DrawBrush( brush, x, y, frame );
+			g_paint.DrawBrush( brush, iV2(x, y), frame );
 			brush.Set(BRUSH_COLOR, color);
 			brush.Set(BRUSH_SHADER, shader);
 		}
@@ -292,7 +292,7 @@ void cDizMap::DrawRoom( int rx, int ry, int layer, int mode, int ofsx, int ofsy 
 				if(brush.Get(BRUSH_DELAY)>0) gameframe /= brush.Get(BRUSH_DELAY);
 				frame += gameframe;
 			}
-			g_paint.DrawBrush( brush, x, y, frame );
+			g_paint.DrawBrush( brush, iV2(x, y), frame );
 		}
 	}
 

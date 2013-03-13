@@ -121,12 +121,17 @@ public:
 	void id(const PlAtom &id) { _id = id; }
 	int Get( int idx ) const { return m_data[idx]; }
 	void Set( int idx, int val ) { m_data[idx] = val; }
-	void MakeBBW	( int &x1, int &y1, int &x2, int &y2 ) const{ x1 = m_data[BRUSH_X]; x2 = x1+m_data[BRUSH_W]; y1 = m_data[BRUSH_Y]; y2 = y1+m_data[BRUSH_H]; }
+	void MakeBBW	( int &x1, int &y1, int &x2, int &y2 ) const{ x1 = Get(BRUSH_X); x2 = x1 + Get(BRUSH_W); y1 = Get(BRUSH_Y); y2 = y1 + Get(BRUSH_H); }
 //	iRect MakeBBW() const { iV2 p1(m_data[BRUSH_X], m_data[BRUSH_Y]); return iRect(p1, p1 + iV2(m_data[BRUSH_W], m_data[BRUSH_H])); }
-	float mapScale() const { return m_data[BRUSH_SCALE] > 0 ? m_data[BRUSH_SCALE] / 100.0f : 1.0f; }		
-	float mapWith() const   { return ( (m_data[BRUSH_FLIP] & R9_FLIPR) ? (m_data[BRUSH_MAP+3] - m_data[BRUSH_MAP+1]) : (m_data[BRUSH_MAP+2] - m_data[BRUSH_MAP+0]) ) * mapScale(); }
-	float mapHeight() const { return ( (m_data[BRUSH_FLIP] & R9_FLIPR) ? (m_data[BRUSH_MAP+2] - m_data[BRUSH_MAP+0]) : (m_data[BRUSH_MAP+3] - m_data[BRUSH_MAP+1]) ) * mapScale(); }
+	float mapScale() const { return Get(BRUSH_SCALE) > 0 ? Get(BRUSH_SCALE) / 100.0f : 1.0f; }		
+	float mapWith() const   { return ( (Get(BRUSH_FLIP) & R9_FLIPR) ? (Get(BRUSH_MAP+3) - Get(BRUSH_MAP+1)) : (Get(BRUSH_MAP+2) - Get(BRUSH_MAP+0)) ) * mapScale(); }
+	float mapHeight() const { return ( (Get(BRUSH_FLIP) & R9_FLIPR) ? (Get(BRUSH_MAP+2) - Get(BRUSH_MAP+0)) : (Get(BRUSH_MAP+3) - Get(BRUSH_MAP+1)) ) * mapScale(); }
 	static bool InvalidProp(int idx) { return idx < 0 || idx >= BRUSH_MAX; }	
+
+	iV2 pos() const { return iV2(Get(BRUSH_X), Get(BRUSH_Y)); }
+	iV2 size() const { return iV2(Get(BRUSH_W), Get(BRUSH_H)); }
+	iRect map() const { return iRect(Get(BRUSH_MAP+0), Get(BRUSH_MAP+1), Get(BRUSH_MAP+2), Get(BRUSH_MAP+3)); }
+	fV2 mapSize() const { fV2 sz = map().Size(); return ((Get(BRUSH_FLIP) & R9_FLIPR) ? fV2(sz.y, sz.x) : sz) * mapScale(); }
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

@@ -89,10 +89,12 @@ struct iV2
 	iV2	& __fastcall operator-	()							{ x = -x; y = -y; return *this; }
 
 	friend bool	__fastcall operator==	( const iV2 & v1, const iV2 & v2 )		{ return v1.x==v2.x && v1.y==v2.y; }
+	friend bool __fastcall operator==	( const iV2 & v, int s)					{ return v.x == s && v.y == s; }
 	friend bool	__fastcall operator!=	( const iV2 & v1, const iV2 & v2 )		{ return v1.x!=v2.x || v1.y!=v2.y; }
 	friend iV2	__fastcall operator*	( const iV2 & v, int s )			{ return iV2( v.x * s, v.y * s ); }
 	friend iV2	__fastcall operator*	( int s, const iV2 & v )			{ return v * s; }
 	friend iV2	__fastcall operator/	( const iV2 & v, int s )			{ return iV2( v.x / s, v.y / s ); }
+	friend iV2	__fastcall operator/	( const iV2 & v1, const iV2 & v2 )	{ return iV2( v1.x / v2.x, v1.y / v2.y ); }
 	friend iV2	__fastcall operator+	( const iV2 & v1, const iV2 & v2 )		{ return iV2( v1.x + v2.x, v1.y + v2.y ); }
 	friend iV2	__fastcall operator-	( const iV2 & v1, const iV2 & v2 )		{ return iV2( v1.x - v2.x, v1.y - v2.y ); }
 };
@@ -109,19 +111,20 @@ struct fRect
 			struct { float left, top, right, bottom; };
 		};
 
-inline 	fRect()												: x1(), y1(), x2(), y2() {}
+		fRect()												: x1(), y1(), x2(), y2() {}
 		fRect(const fV2 & p1, const fV2 & p2)				: x1(p1.x), y1(p1.y), x2(p2.x), y2(p2.y) {}
-inline 	fRect( float x1, float y1, float x2, float y2 )		: x1(x1), y1(y1), x2(x2), y2(y2) {}
-inline 	fRect( int x1, int y1, int x2, int y2 )				: x1((float)x1), y1((float)y1), x2((float)x2), y2((float)y2) {}
-inline 	fRect( const iRect & r );
+		fRect( float x1, float y1, float x2, float y2 )		: x1(x1), y1(y1), x2(x2), y2(y2) {}
+		fRect( int x1, int y1, int x2, int y2 )				: x1((float)x1), y1((float)y1), x2((float)x2), y2((float)y2) {}
+		fRect( const iRect & r );
 
-inline 	float 	Width()										{ return x2-x1; }
-inline 	float 	Height()									{ return y2-y1; }
-inline 	fV2		Center()									{ return fV2((x1+x2)/2.0f,(y1+y2)/2.0f); }
-inline 	void	Inflate( const fV2 & v )					{ x1+=v.x; y1+=v.y; x2-=v.x; y2-=v.y; }
-inline 	void	Deflate( const fV2 & v )					{ x1-=v.x; y1-=v.y; x2+=v.x; y2+=v.y; }
-inline 	void	Offset( const fV2 & v )						{ x1+=v.x; y1+=v.y; x2+=v.x; y2+=v.y; }
-inline 	BOOL	IsInside( const fV2 & v )					{ return (x1<=v.x && v.x<x2 && y1<=v.y && v.y<y2); }
+		fV2		Size() const								{ return fV2(Width(), Height()); }
+		float 	Width()	const								{ return x2-x1; }
+		float 	Height() const								{ return y2-y1; }
+		fV2		Center() const								{ return fV2((x1+x2) * 0.5f,(y1+y2) * 0.5f); }
+		void	Inflate( const fV2 & v )					{ x1+=v.x; y1+=v.y; x2-=v.x; y2-=v.y; }
+		void	Deflate( const fV2 & v )					{ x1-=v.x; y1-=v.y; x2+=v.x; y2+=v.y; }
+		void	Offset( const fV2 & v )						{ x1+=v.x; y1+=v.y; x2+=v.x; y2+=v.y; }
+		BOOL	IsInside( const fV2 & v ) const				{ return (x1<=v.x && v.x<x2 && y1<=v.y && v.y<y2); }
 
 };
 
@@ -144,19 +147,21 @@ struct iRect
 			struct { int left, top, right, bottom; };
 		};
 
-inline 	iRect()												: x1(), y1(), x2(), y2() {}
+		iRect()												: x1(), y1(), x2(), y2() {}
 		iRect(const iV2 & p1, const iV2 & p2)				: x1(p1.x), y1(p1.y), x2(p2.x), y2(p2.y) {}
-inline 	iRect( int x1, int y1, int x2, int y2 )				: x1(x1), y1(y1), x2(x2), y2(y2) {}
-inline 	iRect( float x1, float y1, float x2, float y2 )		: x1((int)x1), y1((int)y1), x2((int)x2), y2((int)y2) {}
-inline 	iRect( const fRect & r )							: x1((int)r.x1), y1((int)r.y1), x2((int)r.x2), y2((int)r.y2) {}
+		iRect( int x1, int y1, int x2, int y2 )				: x1(x1), y1(y1), x2(x2), y2(y2) {}
+		iRect( float x1, float y1, float x2, float y2 )		: x1((int)x1), y1((int)y1), x2((int)x2), y2((int)y2) {}
+		iRect( const fRect & r )							: x1((int)r.x1), y1((int)r.y1), x2((int)r.x2), y2((int)r.y2) {}
 
-inline 	int 	Width()										{ return x2-x1; }
-inline 	int 	Height()									{ return y2-y1; }
-inline 	iV2		Center()									{ return iV2((x1+x2)/2.0f,(y1+y2)/2.0f); }
-inline 	void	Inflate( const iV2 & v )					{ x1+=v.x; y1+=v.y; x2-=v.x; y2-=v.y; }
-inline 	void	Deflate( const iV2 & v )					{ x1-=v.x; y1-=v.y; x2+=v.x; y2+=v.y; }
-inline 	void	Offset( const iV2 & v )						{ x1+=v.x; y1+=v.y; x2+=v.x; y2+=v.y; }
-inline 	BOOL	IsInside( const iV2 & v )					{ return (x1<=v.x && v.x<x2 && y1<=v.y && v.y<y2); }
+
+		iV2		Size() const								{ return iV2(Width(), Height()); }
+	 	int 	Width()	const								{ return x2-x1; }
+	 	int 	Height() const								{ return y2-y1; }
+	 	iV2		Center() const								{ return iV2((x1+x2)/2.0f,(y1+y2)/2.0f); }
+	 	void	Inflate( const iV2 & v )					{ x1+=v.x; y1+=v.y; x2-=v.x; y2-=v.y; }
+	 	void	Deflate( const iV2 & v )					{ x1-=v.x; y1-=v.y; x2+=v.x; y2+=v.y; }
+	 	void	Offset( const iV2 & v )						{ x1+=v.x; y1+=v.y; x2+=v.x; y2+=v.y; }
+		BOOL	IsInside( const iV2 & v ) const				{ return (x1<=v.x && v.x<x2 && y1<=v.y && v.y<y2); }
 
 };
 

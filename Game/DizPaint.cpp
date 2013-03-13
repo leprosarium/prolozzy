@@ -413,27 +413,20 @@ void cDizPaint::DrawBrush( const tBrush & brush, const iV2 & p0, int frame )
 	int idx = tiles.Find(brush.Get(BRUSH_TILE));
 	if(idx==-1) return;
 
-	iRect map(	brush.Get(BRUSH_MAP+0),
-				brush.Get(BRUSH_MAP+1),
-				brush.Get(BRUSH_MAP+2),
-				brush.Get(BRUSH_MAP+3));
-	int mw = static_cast<int>(brush.mapWith());
-	int mh = static_cast<int>(brush.mapHeight());
-	if( mw==0 || mh==0 ) return;
-	int bw = brush.Get(BRUSH_W);
-	int bh = brush.Get(BRUSH_H);
+	iRect map = brush.map();
+	iV2 msz = brush.mapSize();
+	if( msz == 0) return;
+	iV2 sz = brush.size();
 	float ms = brush.mapScale();
 
 	fRect oldclip = R9_GetClipping();
 	iV2 p1 = scr + p0 * m_scale;
-	fRect newclip(p1, p1 + m_scale * iV2(bw, bh)); 
+	fRect newclip(p1, p1 + m_scale * sz); 
 	R9_AddClipping(newclip);
 	if(R9_IsClipping())
 	{
 		g_game.m_visible_brushes++;
-
-		int cx = (bw + mw - 1) / mw;
-		int cy = (bh + mh - 1) / mh;
+		iV2 c = (sz + msz - 1) / msz;
 		int blend = brush.Get(BRUSH_SHADER);
 		int bs = brush.Get(BRUSH_SCALE);
 		int color = brush.Get(BRUSH_COLOR);
@@ -441,10 +434,10 @@ void cDizPaint::DrawBrush( const tBrush & brush, const iV2 & p0, int frame )
 		bool soft2 = (flip & R9_FLIPR) || (bs != 0 && bs != 100);
 		
 		iV2 p = p0;
-		for(int i=0;i<cy;i++)
+		for(int i=0;i<c.y;i++)
 		{
 			p.x = p0.x;
-			for(int j=0;j<cx;j++)
+			for(int j=0;j<c.x;j++)
 			{
 				if(m_drawtilesoft)
 				{
@@ -457,9 +450,9 @@ void cDizPaint::DrawBrush( const tBrush & brush, const iV2 & p0, int frame )
 				{
 					DrawTile( idx, p, map, color, flip, frame, blend, ms );
 				}
-				p.x+=mw;
+				p.x+=msz.x;
 			}
-			p.y+=mh;
+			p.y+=msz.y;
 		}
 	}
 

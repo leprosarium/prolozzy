@@ -13,8 +13,7 @@
 
 cDizMap	g_map;
 
-int Room::Width = GAME_ROOMW;
-int Room::Height = GAME_ROOMH;
+iV2 Room::Size(GAME_ROOMW, GAME_ROOMH);
 
 PREDICATE_M(map, brushCount, 1)
 {
@@ -162,13 +161,13 @@ PREDICATE_M(map, setCamY, 1)
 
 PREDICATE_M(map, setRoomW, 1)
 {
-	Room::Width = A1;
+	Room::Size.x = A1;
 	return true;
 }
 
 PREDICATE_M(map, setRoomH, 1)
 {
-	Room::Height = A1;
+	Room::Size.y = A1;
 	return true;
 }
 
@@ -224,17 +223,16 @@ bool cDizMap::Reload()
 void cDizMap::DrawRoom( int rx, int ry, int layer, int mode, int ofsx, int ofsy )
 {
 	int color, shader;
+	iV2 r(rx, ry);
+	iV2 ofs(ofsx, ofsy);
 	if(InvalidRoomCoord(rx, ry)) return;
 
 	// viewport clipping test
 	if( !g_paint.m_drawtilesoft )
 	{
-		iRect viewport;
-		viewport.x1 = g_game.roomX() * Room::Width - g_game.viewportX();
-		viewport.y1 = g_game.roomY() * Room::Height - g_game.viewportY();
-		viewport.x2 = viewport.x1 + Room::Width;
-		viewport.y2 = viewport.y1 + Room::Height;
-		if( rx*Room::Width>=viewport.x2 || ry*Room::Height>=viewport.y2 || (rx+1)*Room::Width<=viewport.x1 || (ry+1)*Room::Height<=viewport.y1 )
+		iV2 p1 = g_game.roomPos() * Room::Size - g_game.viewportPos();
+		iRect viewport(p1, p1 + Room::Size);
+		if( rx * Room::Size.x >= viewport.x2 || ry * Room::Size.y >= viewport.y2 || (rx+1) * Room::Size.x <= viewport.x1 || (ry+1) * Room::Size.y <= viewport.y1 )
 			return;
 	}
 	const std::vector<int> & part = GetRoom(rx, ry).Brushes();
@@ -250,8 +248,7 @@ void cDizMap::DrawRoom( int rx, int ry, int layer, int mode, int ofsx, int ofsy 
 		
 		if( brush.Get(BRUSH_LAYER) != layer ) continue; // filter layer
 
-		int x = brush.Get(BRUSH_X) - rx * Room::Width + ofsx;
-		int y = brush.Get(BRUSH_Y) - ry * Room::Height + ofsy;
+		iV2 p = brush.pos() - r * Room::Size + ofs;
 		int frame = brush.Get(BRUSH_FRAME);
 
 		if(mode==DRAWMODE_MATERIAL)
@@ -262,7 +259,7 @@ void cDizMap::DrawRoom( int rx, int ry, int layer, int mode, int ofsx, int ofsy 
 			brush.Set(BRUSH_COLOR, g_game.materials[brush.Get(BRUSH_MATERIAL)].color | 0xff000000);
 			brush.Set(BRUSH_SHADER, SHADER_ALPHAREP);
 			g_paint.m_drawtilemat = brush.Get(BRUSH_MATERIAL); // software use this
-			g_paint.DrawBrush( brush, iV2(x, y), frame );
+			g_paint.DrawBrush( brush, p, frame );
 			brush.Set(BRUSH_COLOR, color);
 			brush.Set(BRUSH_SHADER, shader);
 		}
@@ -280,7 +277,7 @@ void cDizMap::DrawRoom( int rx, int ry, int layer, int mode, int ofsx, int ofsy 
 					0xffffffff;
 			brush.Set(BRUSH_COLOR,matd_color);
 			brush.Set(BRUSH_SHADER, SHADER_ALPHAREP);
-			g_paint.DrawBrush( brush, iV2(x, y), frame );
+			g_paint.DrawBrush( brush, p, frame );
 			brush.Set(BRUSH_COLOR, color);
 			brush.Set(BRUSH_SHADER, shader);
 		}
@@ -292,7 +289,7 @@ void cDizMap::DrawRoom( int rx, int ry, int layer, int mode, int ofsx, int ofsy 
 				if(brush.Get(BRUSH_DELAY)>0) gameframe /= brush.Get(BRUSH_DELAY);
 				frame += gameframe;
 			}
-			g_paint.DrawBrush( brush, iV2(x, y), frame );
+			g_paint.DrawBrush( brush, p, frame );
 		}
 	}
 
@@ -307,8 +304,7 @@ void cDizMap::DrawRoom( int rx, int ry, int layer, int mode, int ofsx, int ofsy 
 void cDizMap::PartitionAdd( int brushidx )
 {
 	tBrush & brush = BrushGet(brushidx);
-	iRect rbrush;
-	brush.MakeBBW(rbrush.x1,rbrush.y1,rbrush.x2,rbrush.y2);
+	iRect rbrush = brush.rect();
 	/* @TODO find a way to optimize and get the partitions
 	int brx = rbrush.x1 % m_mapw; // roomx for top-left brush corner
 	int bry = rbrush.y1 / m_maph; // roomy for top-left brush corner
@@ -337,8 +333,8 @@ void cDizMap::Resize( int width, int height )
 	if(height<MAP_SIZEMIN)	height = MAP_SIZEMIN;	// too small
 	if(width>MAP_SIZEMAX)	width = MAP_SIZEMAX;	// too big
 	if(height>MAP_SIZEMAX)	height = MAP_SIZEMAX;	// too big
-	m_mapw = width / Room::Width;
-	m_maph = height / Room::Height;
+	m_mapw = width / Room::Size.x;
+	m_maph = height / Room::Size.y;
 
 	int count = Width() * Height();
 	Rooms.clear();

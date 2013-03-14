@@ -14,13 +14,12 @@ cDizPlayer	g_player;
 
 void cDizPlayer::MakeBB	( int &x1, int &y1, int &x2, int &y2 ) const
 { 
-	int rx = g_game.roomX() * Room::Width;	
-	int ry = g_game.roomY() * Room::Height;	
+	iV2 r = g_game.roomPos() * Room::Size;
 	MakeBBW(x1,y1,x2,y2);			
-	x1 -= rx;			
-	x2 -= rx;			
-	y1 -= ry;			
-	y2 -= ry;			
+	x1 -= r.x;			
+	x2 -= r.x;			
+	y1 -= r.y;			
+	y2 -= r.y;			
 }
 
 PREDICATE_M(player, x, 1)
@@ -392,14 +391,12 @@ PREDICATE_M(player, setCustomMove, 1)
 
 PREDICATE_M(player, makeBB, 4)
 {
-	int rx = g_game.roomX();
-	int ry = g_game.roomY();
 	int x1, x2, y1, y2;
-	g_player.MakeBBW(x1, y1, x2, y2);
-	A1 = x1 - rx * Room::Width;
-	A2 = y1 - ry * Room::Height;
-	A3 = x2 - rx * Room::Width;
-	A4 = y2 - ry * Room::Height;
+	g_player.MakeBB(x1, y1, x2, y2);
+	A1 = x1;
+	A2 = y1;
+	A3 = x2;
+	A4 = y2;
 	return true;
 }
 
@@ -985,8 +982,8 @@ void cDizPlayer::Draw()
 		int blend = shader();
 		int w = tile->GetWidth();
 		int h = tile->GetHeight();
-		int x = _x-rx*Room::Width - w/2; // @TODO need -1 to the MatchX offset because of the 25 vs 24 width bla bla
-		int y = _y-ry*Room::Height + _h/2 - h;
+		int x = _x-rx*Room::Size.x - w/2; // @TODO need -1 to the MatchX offset because of the 25 vs 24 width bla bla
+		int y = _y-ry*Room::Size.y + _h/2 - h;
 		x += g_game.m_viewx;
 		y += g_game.m_viewy;
 		fRect src;

@@ -18,16 +18,15 @@
 class Room
 {
 public:
-	static int Width;
-	static int Height;
+	static iV2 Size;
 	static const int Border = 16;
 private:
 	std::vector<int> _Brushes;
 public:
 	void AddBrush(int idx) { _Brushes.push_back(idx); }
 	const std::vector<int> & Brushes() const { return _Brushes; }
-	static int PosX2Room(int x) { return x >= 0  ?  x / Room::Width : (x + 1) / Room::Width - 1; }
-	static int PosY2Room(int y) { return y >= 0  ?  y / Room::Height : (y + 1) / Room::Height - 1; }
+	static int PosX2Room(int x) { return x >= 0  ?  x / Size.x : (x + 1) / Size.x - 1; }
+	static int PosY2Room(int y) { return y >= 0  ?  y / Size.y : (y + 1) / Size.y - 1; }
 };
 
 class Object : public tBrush
@@ -72,7 +71,7 @@ public:
 		int			    RoomIdx(int rx, int ry) const { return rx + ry * Width(); }
 		bool			InvalidRoomCoord(int rx, int ry)	{ return rx < 0 || rx >= Width() || ry < 0 || ry >= Height(); }
 
-inline	void			MakeRoomBBW			( int rx, int ry, int &x1, int &y1, int &x2, int &y2, int border=0 )	{ x1=rx*Room::Width-border; y1=ry*Room::Height-border; x2=(rx+1)*Room::Width+border; y2=(ry+1)*Room::Height+border; }
+inline	void			MakeRoomBBW			( int rx, int ry, int &x1, int &y1, int &x2, int &y2, int border=0 )	{ x1=rx*Room::Size.x-border; y1=ry*Room::Size.y-border; x2=(rx+1)*Room::Size.x+border; y2=(ry+1)*Room::Size.y+border; }
 
 		int				Width() const { return m_mapw; }
 		int				Height() const { return m_maph; }

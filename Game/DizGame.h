@@ -44,7 +44,7 @@ class MatMap
 	void SetSize(int w, int h);
 	bool in(int x, int y) const { return x >= X1 && x < X2 && y >= Y1 && y < Y2; }
 public:
-	MatMap() : map()  { Resize(Room::Width, Room::Height); }
+	MatMap() : map()  { Resize(Room::Size.x, Room::Size.y); }
 	~MatMap() { delete [] map; }
 	void Resize(int w, int h);
 	void Update(int roomX, int roomY, bool full);
@@ -127,12 +127,15 @@ inline	void			FFFXStop()								{ m_fffx_magnitude=0; FFmagnitude(0); FFFXUpdate
 		int				fps() const { return _fps; }
 		int				keys() const { return _keys; }
 		int				keysHit() const { return _keysHit; }
+		iV2				roomPos() const { return iV2(roomX(), roomY()); }
 		int				roomX() const { return _roomX; }
 		int				roomY() const { return _roomY; }
+		iV2				roomSize() const { return iV2(roomW(), roomH()); }
 		int				roomW() const { return _roomW; }
 		int				roomH() const { return _roomH; }
 		int				mapW() const { return _mapW; }
 		int				mapH() const { return _mapH; }
+		iV2				viewPos() const { return iV2(viewX(), viewY()); }
 		int				viewX() const { return _viewX; }
 		int				viewY() const { return _viewY; }
 		int				shakeX() const { return _shakeX; }
@@ -142,6 +145,7 @@ inline	void			FFFXStop()								{ m_fffx_magnitude=0; FFmagnitude(0); FFFXUpdate
 		int				FFmagnitude() const { return  _FFmagnitude; }
 		int				FFperiod() const { return _FFperiod; }
 		bool			viewportMode() const { return _viewportMode; }
+		iV2				viewportPos() const { return iV2(viewportX(), viewportY()); }
 		int				viewportX() const { return _viewportX; }
 		int				viewportY() const { return _viewportY; }
 		bool			viewportFlipX() const { return _viewportFlipX; }

@@ -537,19 +537,19 @@ bool cDizGame::Update()
 		rx = roomX();
 		ry = roomY();
 		bool outroom = false;
-		outroom |= ( g_player.x() < rx*Room::Width );
-		outroom |= ( g_player.x() >= (rx+1)*Room::Width );
-		outroom |= ( g_player.y() < ry*Room::Height );
-		outroom |= ( g_player.y() >= (ry+1)*Room::Height );
+		outroom |= ( g_player.x() < rx*Room::Size.x );
+		outroom |= ( g_player.x() >= (rx+1)*Room::Size.x );
+		outroom |= ( g_player.y() < ry*Room::Size.y );
+		outroom |= ( g_player.y() >= (ry+1)*Room::Size.y );
 		if(outroom)	g_script.roomOut(); // users may change player's pos on this handler
 
 		// world bound check
 		rx = Room::PosX2Room( g_player.x() );
 		ry = Room::PosY2Room( g_player.y() );
 		if( rx<0 )				{ rx=0; g_player.x(0); }
-		if( rx>g_map.Width()-1 )	{ rx=g_map.Width()-1; g_player.x(g_map.Width()*Room::Width-4); }
+		if( rx>g_map.Width()-1 )	{ rx=g_map.Width()-1; g_player.x(g_map.Width()*Room::Size.x-4); }
 		if( ry<0 )				{ ry=0; g_player.y(0); }
-		if( ry>g_map.Height()-1 )	{ ry=g_map.Height()-1; g_player.y(g_map.Height()*Room::Height-1); }
+		if( ry>g_map.Height()-1 )	{ ry=g_map.Height()-1; g_player.y(g_map.Height()*Room::Size.y-1); }
 
 		// room tranzit
 		if( rx!=roomX() ||ry!=roomY())
@@ -609,7 +609,7 @@ void cDizGame::Draw()
 	// visible room area
 	iV2 view(viewX(), viewY());
 	fRect rect( g_paint.scr + view * g_paint.m_scale,
-				g_paint.scr + (view + iV2(Room::Width, Room::Height)) * g_paint.m_scale);
+				g_paint.scr + (view + Room::Size) * g_paint.m_scale);
 
 	// view ofset with shake option and optional viewport for scrolling
 	m_viewx = view.x + shakeX();
@@ -661,12 +661,12 @@ void cDizGame::Draw()
 					// clip here to avoid duplicate draw (brushes shared in neighbour rooms)
 					// Note: brushes order must also be perserved (so the drawframe trick didn't work)
 					R9_SetClipping( rect );
-					clip.x1 = (float)g_paint.scr.x + (m_viewx+(rx-1)*Room::Width)*g_paint.m_scale,
-					clip.y1 = (float)g_paint.scr.y + (m_viewy+(ry-1)*Room::Height)*g_paint.m_scale,
-					clip.x2 = clip.x1 + Room::Width*g_paint.m_scale;
-					clip.y2 = clip.y1 + Room::Height*g_paint.m_scale;
+					clip.x1 = (float)g_paint.scr.x + (m_viewx+(rx-1)*Room::Size.x)*g_paint.m_scale,
+					clip.y1 = (float)g_paint.scr.y + (m_viewy+(ry-1)*Room::Size.y)*g_paint.m_scale,
+					clip.x2 = clip.x1 + Room::Size.x*g_paint.m_scale;
+					clip.y2 = clip.y1 + Room::Size.y*g_paint.m_scale;
 					R9_AddClipping( clip );
-					g_map.DrawRoom( roomX()+rx-1, roomY()+ry-1, layer, m_drawmode, m_viewx+(rx-1)*Room::Width, m_viewy+(ry-1)*Room::Height );
+					g_map.DrawRoom( roomX()+rx-1, roomY()+ry-1, layer, m_drawmode, m_viewx+(rx-1)*Room::Size.x, m_viewy+(ry-1)*Room::Size.y );
 				}
 			}
 		}
@@ -721,9 +721,9 @@ void cDizGame::Resize(int w, int h)
 {
 	mapW(w);
 	mapH(h);
-	roomW(Room::Width);
-	roomH(Room::Height);
-	matMap.Resize(Room::Width, Room::Height);
+	roomW(Room::Size.x);
+	roomH(Room::Size.y);
+	matMap.Resize(roomW(), roomH());
 	SetRoom(g_game.roomX(), g_game.roomY()); // updates materialmap and re-gather objects
 }
 
@@ -855,10 +855,10 @@ void cDizGame::ObjGather()
 	{
 		// extended room bound to 3x3 rooms
 		MakeRoomBBW(roombb.x1,roombb.y1,roombb.x2,roombb.y2,0);
-		roombb.x1 -= Room::Width;
-		roombb.x2 += Room::Width;
-		roombb.y1 -= Room::Height;
-		roombb.y2 += Room::Height;
+		roombb.x1 -= Room::Size.x;
+		roombb.x2 += Room::Size.x;
+		roombb.y1 -= Room::Size.y;
+		roombb.y2 += Room::Size.y;
 	}
 	else
 	{
@@ -869,7 +869,7 @@ void cDizGame::ObjGather()
 	for( i=0; i<g_map.ObjCount(); i++ )
 	{
 		tBrush & obj = g_map.ObjGet(i);
-		obj.MakeBBW(objbb.x1,objbb.y1,objbb.x2,objbb.y2);
+		objbb = obj.rect();
 		if(RECT2RECT(objbb,roombb)) ObjAdd(i); // object is present in current bordered room
 	}
 
@@ -877,23 +877,11 @@ void cDizGame::ObjGather()
 
 void cDizGame::ObjDraw( const tBrush & brush )
 {
-	
-	// MAKEBBR
-	int rx = roomX();
-	int ry = roomY();
-	int x1,y1,x2,y2;
-	brush.MakeBBW(x1,y1,x2,y2);
-	x1 = x1 - rx*Room::Width;
-	x2 = x2 - rx*Room::Width;
-	y1 = y1 - ry*Room::Height;
-	y2 = y2 - ry*Room::Height;
-
 	// draw current tile frame
 	int idx = g_paint.tiles.Find(brush.Get(BRUSH_TILE));
 	cTile* tile = g_paint.tiles.Get(idx); if(!tile) return;
 	int frame = ComputeFrame(brush.Get(BRUSH_FRAME),tile->m_frames,brush.Get(BRUSH_ANIM));
-	g_paint.DrawBrush( brush, iV2(m_viewx+x1, m_viewy+y1), frame );
-
+	g_paint.DrawBrush( brush, iV2(m_viewx, m_viewy) + brush.pos() - roomPos() * Room::Size, frame );
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

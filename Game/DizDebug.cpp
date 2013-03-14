@@ -335,16 +335,14 @@ void cDizDebug::NavigationUpdate()
 
 	int mw = g_map.Width();
 	int mh = g_map.Height();
-	int rw = Room::Width;
-	int rh = Room::Height;
 	int px = g_player.x();
 	int py = g_player.y();
 	if(ctrl)
 	{
-		if(I9_GetKeyDown(I9K_LEFT))		px-=rw;
-		if(I9_GetKeyDown(I9K_RIGHT))	px+=rw;
-		if(I9_GetKeyDown(I9K_UP))		py-=rh;
-		if(I9_GetKeyDown(I9K_DOWN))		py+=rh;
+		if(I9_GetKeyDown(I9K_LEFT))		px-=Room::Size.x;
+		if(I9_GetKeyDown(I9K_RIGHT))	px+=Room::Size.x;
+		if(I9_GetKeyDown(I9K_UP))		py-=Room::Size.y;
+		if(I9_GetKeyDown(I9K_DOWN))		py+=Room::Size.y;
 	}
 	else
 	if(shift)
@@ -355,8 +353,8 @@ void cDizDebug::NavigationUpdate()
 		if(I9_GetKeyDown(I9K_DOWN))		py+=4;
 	}
 	
-	if(px>=mw*rw) px=mw*rw-1;
-	if(py>=mh*rh) py=mh*rh-1;
+	if(px>=mw*Room::Size.x) px=mw*Room::Size.x-1;
+	if(py>=mh*Room::Size.y) py=mh*Room::Size.y-1;
 	if(px<0) px=0;
 	if(py<0) py=0;
 	g_player.x(px);

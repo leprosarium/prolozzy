@@ -93,6 +93,7 @@ struct iV2
 	friend bool	__fastcall operator!=	( const iV2 & v1, const iV2 & v2 )		{ return v1.x!=v2.x || v1.y!=v2.y; }
 	friend iV2	__fastcall operator*	( const iV2 & v, int s )			{ return iV2( v.x * s, v.y * s ); }
 	friend iV2	__fastcall operator*	( int s, const iV2 & v )			{ return v * s; }
+	friend iV2	__fastcall operator*	( const iV2 & v1, const iV2 & v2 )	{ return iV2( v1.x * v2.x, v1.y * v2.y); }
 	friend iV2	__fastcall operator/	( const iV2 & v, int s )			{ return iV2( v.x / s, v.y / s ); }
 	friend iV2	__fastcall operator/	( const iV2 & v1, const iV2 & v2 )	{ return iV2( v1.x / v2.x, v1.y / v2.y ); }
 	friend iV2	__fastcall operator+	( const iV2 & v1, const iV2 & v2 )		{ return iV2( v1.x + v2.x, v1.y + v2.y ); }
@@ -125,7 +126,6 @@ struct fRect
 		void	Deflate( const fV2 & v )					{ x1-=v.x; y1-=v.y; x2+=v.x; y2+=v.y; }
 		void	Offset( const fV2 & v )						{ x1+=v.x; y1+=v.y; x2+=v.x; y2+=v.y; }
 		BOOL	IsInside( const fV2 & v ) const				{ return (x1<=v.x && v.x<x2 && y1<=v.y && v.y<y2); }
-
 };
 
 inline	BOOL	__fastcall operator==	( const fRect& r1, const fRect& r2 )	{ return (r1.x1==r2.x1 && r1.y1==r2.y1 && r1.x2==r2.x2 && r1.y2==r2.y2); }
@@ -162,7 +162,6 @@ struct iRect
 	 	void	Deflate( const iV2 & v )					{ x1-=v.x; y1-=v.y; x2+=v.x; y2+=v.y; }
 	 	void	Offset( const iV2 & v )						{ x1+=v.x; y1+=v.y; x2+=v.x; y2+=v.y; }
 		BOOL	IsInside( const iV2 & v ) const				{ return (x1<=v.x && v.x<x2 && y1<=v.y && v.y<y2); }
-
 };
 
 inline	BOOL	__fastcall operator==	( const iRect& r1, const iRect& r2 )	{ return (r1.x1==r2.x1 && r1.y1==r2.y1 && r1.x2==r2.x2 && r1.y2==r2.y2); }

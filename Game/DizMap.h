@@ -63,8 +63,7 @@ public:
 		bool			Reload				();								// reload map for debug purposes
 
 		// draw
-		void			DrawRoom			( int rx, int ry, int layer, int mode, int ofsx=0, int ofsy=0 );	// rx=roomx, ry=roomy layer=0..8; mode: 0=normal, 1=material, 2=density; ofsx=ofsetx, ofs=ofsety
-
+		void			DrawRoom			( const iV2 & rp, int layer, int mode, const iV2 & ofs);	// layer=0..8; mode: 0=normal, 1=material, 2=density
 
 		Room &			GetRoom(int idx) { return Rooms[idx]; }
 		Room &			GetRoom(int rx, int ry) { return GetRoom(RoomIdx(rx, ry)); }

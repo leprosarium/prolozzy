@@ -39,16 +39,17 @@ public:
 class MatMap
 {
 	byte * map; // material map (3x3 rooms, with current room in the middle)
-	int W, H, W3, H3, Size;
-	int X1, Y1, X2, Y2;
-	void SetSize(int w, int h);
-	bool in(int x, int y) const { return x >= X1 && x < X2 && y >= Y1 && y < Y2; }
+	iV2 Size, Size3;
+	int Cap;
+	iRect Rect;
+	void SetSize(const iV2 & size);
+	bool in(const iV2 & p) const { return Rect.IsInside(p); }
 public:
-	MatMap() : map()  { Resize(Room::Size.x, Room::Size.y); }
+	MatMap() : map()  { Resize(Room::Size); }
 	~MatMap() { delete [] map; }
-	void Resize(int w, int h);
-	void Update(int roomX, int roomY, bool full);
-	byte Get(int x, int y) const { return in(x, y) ? map[(x + W) + (y + H) * W3] : 0; }
+	void Resize(const iV2 & size);
+	void Update(const iV2 & room, bool full);
+	byte Get(const iV2 & p) const { return in(p) ? map[(p.x + Size.x) + (p.y + Size.y) * Size3.x] : 0; }
 	int Get(int x1, int x2, int y) const;
 };
 
@@ -94,16 +95,15 @@ inline	bool			Key( int key )							{ return (keys() & (1<<key)) ? 1 : 0; }			// 
 inline	bool			KeyHit( int key )						{ return (keysHit() & (1<<key)) ? 1 : 0; }			// test a key hit
 
 		Material		materials[MAT_MAX];
-		byte			MatMap				( int x, int y ) { return matMap.Get(x, y); }
+		byte			MatMap ( const iV2 & p) { return matMap.Get(p); }
 		int				MatMap (int x1, int x2, int y) { return matMap.Get(x1, x2, y); }
-		PlAtom			DensMap				( int x, int y ) { return materials[MatMap(x, y)].density; }
+		PlAtom			DensMap	( const iV2 & p) { return materials[MatMap(p)].density; }
 
 		// map room
 		void			SetRoom				( int x, int y );	// set current room (load)
 		inline	void	MakeRoomBBW			( int &x1, int &y1, int &x2, int &y2, int border=0 )	{ g_map.MakeRoomBBW(roomX(), roomY(), x1, y1, x2, y2, border); }
 
-		int				m_viewx;								// view position (used in draw, set from G_VIEW, G_SHAKE, and G_VIEWPORT)
-		int				m_viewy;								// view position (used in draw, set from G_VIEW, G_SHAKE, and G_VIEWPORT)
+		iV2				viewShift;								// view position (used in draw, set from G_VIEW, G_SHAKE, and G_VIEWPORT)
 		int				m_drawmode;								// 0=imgmap (normal), 1=matmap, 2=densitymap, 3=none
 			
 		// objects
@@ -138,6 +138,7 @@ inline	void			FFFXStop()								{ m_fffx_magnitude=0; FFmagnitude(0); FFFXUpdate
 		iV2				viewPos() const { return iV2(viewX(), viewY()); }
 		int				viewX() const { return _viewX; }
 		int				viewY() const { return _viewY; }
+		iV2				shake() const { return iV2(shakeX(), shakeY()); }
 		int				shakeX() const { return _shakeX; }
 		int				shakeY() const { return _shakeY; }
 		int				mapColor() const { return _mapColor; }

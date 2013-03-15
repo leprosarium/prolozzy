@@ -351,8 +351,6 @@ cDizGame::cDizGame() : 	_void("void"),	soft("soft"), hard("hard"), jump("jump"),
 	m_screen_h		= GAME_SCRH;
 
 	m_gameframe		= 0;
-	m_viewx			= 0;
-	m_viewy			= 0;
 	m_drawmode		= DRAWMODE_NORMAL;
 				
 	m_fffx_magnitude	= 0;
@@ -457,7 +455,7 @@ bool cDizGame::Update()
 	}
 	if(command()==refresh) // refresh room
 	{
-		matMap.Update(roomX(), roomY(), fullMaterialMap());
+		matMap.Update(roomPos(), fullMaterialMap());
 	}
 	command(none);
 
@@ -612,13 +610,9 @@ void cDizGame::Draw()
 				g_paint.scr + (view + Room::Size) * g_paint.m_scale);
 
 	// view ofset with shake option and optional viewport for scrolling
-	m_viewx = view.x + shakeX();
-	m_viewy = view.y + shakeY();
+	viewShift = view + shake();
 	if( viewportMode() )
-	{
-		m_viewx += viewportX();
-		m_viewy += viewportY();
-	}
+		viewShift += viewportPos();
 	
 	// viewport flipping
 	dword flip = 0;
@@ -654,19 +648,20 @@ void cDizGame::Draw()
 		if( viewportMode() )
 		{
 			// full matmap 3x3 rooms
-			for( int ry=0; ry<3; ry++ )
+			for( iV2 r; r.y<3; r.y++ )
 			{
-				for( int rx=0; rx<3; rx++ )
+				for(r.x=0; r.x<3; r.x++ )
 				{
 					// clip here to avoid duplicate draw (brushes shared in neighbour rooms)
 					// Note: brushes order must also be perserved (so the drawframe trick didn't work)
 					R9_SetClipping( rect );
-					clip.x1 = (float)g_paint.scr.x + (m_viewx+(rx-1)*Room::Size.x)*g_paint.m_scale,
-					clip.y1 = (float)g_paint.scr.y + (m_viewy+(ry-1)*Room::Size.y)*g_paint.m_scale,
+					clip.x1 = (float)g_paint.scr.x + (viewShift.x+(r.x-1)*Room::Size.x)*g_paint.m_scale,
+					clip.y1 = (float)g_paint.scr.y + (viewShift.y+(r.y-1)*Room::Size.y)*g_paint.m_scale,
 					clip.x2 = clip.x1 + Room::Size.x*g_paint.m_scale;
 					clip.y2 = clip.y1 + Room::Size.y*g_paint.m_scale;
 					R9_AddClipping( clip );
-					g_map.DrawRoom( roomX()+rx-1, roomY()+ry-1, layer, m_drawmode, m_viewx+(rx-1)*Room::Size.x, m_viewy+(ry-1)*Room::Size.y );
+					iV2 rr = r - 1;
+					g_map.DrawRoom( roomPos() + rr, layer, m_drawmode, viewShift + rr * Room::Size);
 				}
 			}
 		}
@@ -674,7 +669,7 @@ void cDizGame::Draw()
 		{
 			// classic style
 			R9_SetClipping( rect );
-			g_map.DrawRoom( roomX(), roomY(), layer, m_drawmode, m_viewx, m_viewy );
+			g_map.DrawRoom( roomPos(), layer, m_drawmode, viewShift);
 		}
 
 		// objects present
@@ -723,7 +718,7 @@ void cDizGame::Resize(int w, int h)
 	mapH(h);
 	roomW(Room::Size.x);
 	roomH(Room::Size.y);
-	matMap.Resize(roomW(), roomH());
+	matMap.Resize(Room::Size);
 	SetRoom(g_game.roomX(), g_game.roomY()); // updates materialmap and re-gather objects
 }
 
@@ -735,34 +730,29 @@ void cDizGame::SetRoom( int x, int y )
 {
 	roomX(x);
 	roomY(y);
-	matMap.Update(x, y, fullMaterialMap());
+	matMap.Update(roomPos(), fullMaterialMap());
 	ObjGather();
 }
 
-void MatMap::SetSize(int w, int h)
+void MatMap::SetSize(const iV2 & size)
 {
-	W = w;
-	H = h;
-	X1 = -W;
-	X2 = 2 * W;
-	Y1 = -H;
-	Y2 = 2 * H;
-	W3 = W * 3;
-	H3 = H * 3;
-	Size = W3 * H3;
+	Size = size;
+	Rect = iRect(-Size, Size * 2); 
+	Size3 = Size * 3;
+	Cap = Size3.x * Size3.y;
 
 }
-void MatMap::Resize(int w, int h)
+void MatMap::Resize(const iV2 & size)
 {
-	SetSize(w, h);
+	SetSize(size);
 	delete [] map;
-	map = new byte[Size];
+	map = new byte[Cap];
 }
 
-void MatMap::Update(int roomX, int roomY, bool full)
+void MatMap::Update(const iV2 & room, bool full)
 {
 	// clear
-	memset(map, 0, Size);
+	memset(map, 0, Cap);
 	
 	// prepare coordinates
 	iV2 scr(g_paint.scr);
@@ -776,9 +766,9 @@ void MatMap::Update(int roomX, int roomY, bool full)
 	// prepare for software rendering
 	g_paint.m_drawtilesoft = true;
 	g_paint.m_imgtarget.m_pf = R9_PF_A;
-	g_paint.m_imgtarget.m_width = W3;
-	g_paint.m_imgtarget.m_height = H3;
-	g_paint.m_imgtarget.m_size = Size;
+	g_paint.m_imgtarget.m_width = Size3.x;
+	g_paint.m_imgtarget.m_height = Size3.y;
+	g_paint.m_imgtarget.m_size = Cap;
 	g_paint.m_imgtarget.m_data = map;
 
 	// draw room
@@ -788,23 +778,24 @@ void MatMap::Update(int roomX, int roomY, bool full)
 		if( full )
 		{
 			// full matmap 3x3 rooms
-			for( int ry=0; ry<3; ry++ )
+			for( iV2 r; r.y<3; r.y++ )
 			{
-				int ryH = ry * H;
-				for( int rx=0; rx<3; rx++ )
+				int ryH = r.y * Size.y;
+				for(r.x=0; r.x<3; r.x++ )
 				{
-					int rxW = rx * W;
+					int rxW = r.x * Size.x;
 					// clip here to avoid duplicate draw (brushes shared in neighbour rooms)
-					R9_SetClipping(fRect(rxW, ryH, rxW + W, ryH + H));
-					g_map.DrawRoom(roomX + rx - 1, roomY + ry - 1, layer, DRAWMODE_MATERIAL, rxW, ryH);
+					R9_SetClipping(fRect(rxW, ryH, rxW + Size.x, ryH + Size.y));
+					iV2 rr = r - 1;
+					g_map.DrawRoom(room + rr, layer, DRAWMODE_MATERIAL, iV2(rxW, ryH));
 				}
 			}
 		}
 		else
 		{
 			// classic style
-			R9_SetClipping( fRect(W - Room::Border, H - Room::Border, X2 + Room::Border, Y2 + Room::Border) );
-			g_map.DrawRoom( roomX, roomY, layer, DRAWMODE_MATERIAL, W, H);
+			R9_SetClipping( fRect(Size - Room::Border, iV2(Rect.x2, Rect.y2) + Room::Border) );
+			g_map.DrawRoom( room, layer, DRAWMODE_MATERIAL, Size);
 		}
 	}
 
@@ -822,13 +813,13 @@ void MatMap::Update(int roomX, int roomY, bool full)
 int MatMap::Get(int x1, int x2, int y) const
 {
 	int mat = 0;
-	if(y < Y1 || y >= Y2)
+	if(y < Rect.y1 || y >= Rect.y2)
 		return mat;
-	x1 = std::max(x1, X1);
-	x2 = std::min(x2, X2);
+	x1 = std::max(x1, Rect.x1);
+	x2 = std::min(x2, Rect.x2);
 	if(x1 >= x2)
 		return mat;
-	for(int v = (y + H) * W3 + (x1 + W), ve = v + (x2 - x1); v < ve; ++v)
+	for(int v = (y + Size.y) * Size3.x + (x1 + Size.x), ve = v + (x2 - x1); v < ve; ++v)
 		mat |= (1<<map[v]);
 	return mat;
 }
@@ -881,7 +872,7 @@ void cDizGame::ObjDraw( const tBrush & brush )
 	int idx = g_paint.tiles.Find(brush.Get(BRUSH_TILE));
 	cTile* tile = g_paint.tiles.Get(idx); if(!tile) return;
 	int frame = ComputeFrame(brush.Get(BRUSH_FRAME),tile->m_frames,brush.Get(BRUSH_ANIM));
-	g_paint.DrawBrush( brush, iV2(m_viewx, m_viewy) + brush.pos() - roomPos() * Room::Size, frame );
+	g_paint.DrawBrush( brush, viewShift + brush.pos() - roomPos() * Room::Size, frame );
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

@@ -759,9 +759,9 @@ void cDizPlayer::UpdateScripted()
 // check if rectangle have no hard materials in side
 bool cDizPlayer::CheckFree( int x1, int y1, int x2, int y2 )
 {
-	for(int iy=y1;iy<y2;iy++)
-		for(int ix=x1;ix<x2;ix++)
-			if( g_game.DensMap(ix,iy) == g_game.hard ) 
+	for(iV2 i(x1, y1);i.y<y2;i.y++)
+		for(i.x=x1;i.x<x2;i.x++)
+			if( g_game.DensMap(i) == g_game.hard ) 
 				return false;
 	return true;
 }
@@ -798,12 +798,10 @@ int cDizPlayer::CheckJumpY( int step )
 {
 	int x1,y1,x2,y2;
 	MakeBB(x1,y1,x2,y2);
-	for(int iy=y1-1;iy>y1-1-step;iy--)
-	{
-		for(int ix=x1;ix<x2;ix++)
-			if( g_game.DensMap(ix,iy) == g_game.hard ) 
-				return ((y1-1)-iy);
-	}
+	for(iV2 i(x1, y1-1);i.y>y1-1-step;i.y--)
+		for(i.x=x1;i.x<x2;i.x++)
+			if( g_game.DensMap(i) == g_game.hard ) 
+				return ((y1-1)-i.y);
 	return step;
 }
 
@@ -825,10 +823,10 @@ int cDizPlayer::CheckFallY( int step )
 {
 	int x1,y1,x2,y2;
 	MakeBB(x1,y1,x2,y2);
-	for( int iy=y2; iy<y2+step; iy++ )
-		for(int ix=x1;ix<x2;ix++)
-			if( g_game.DensMap(ix,iy) != g_game._void ) 
-				return (iy-y2); // return minimized step if block found
+	for( iV2 i(x1, y2); i.y<y2+step; i.y++ )
+		for(i.x=x1;i.x<x2;i.x++)
+			if( g_game.DensMap(i) != g_game._void ) 
+				return (i.y-y2); // return minimized step if block found
 	return step;
 }
 
@@ -839,14 +837,14 @@ void cDizPlayer::CheckCollision()
 	MakeBB(x1,y1,x2,y2);
 	
 	// going from up to bottom until the first hard line found
-	for( int iy=y2-DIZ_STEPY; iy<y2; iy++ )
+	for( iV2 i(x1, y2-DIZ_STEPY); i.y<y2; i.y++ )
 	{
 		bool hard = false;
-		for(int ix=x1;ix<x2;ix++)
+		for(i.x=x1;i.x<x2;i.x++)
 		{
-			if( g_game.DensMap(ix,iy) == g_game.hard ) 
+			if( g_game.DensMap(i) == g_game.hard ) 
 			{
-				_y -= y2-iy;
+				_y -= y2-i.y;
 				return;
 			}
 		}
@@ -858,10 +856,9 @@ int cDizPlayer::CheckJumper()
 {
 	int x1,y1,x2,y2;
 	MakeBB(x1,y1,x2,y2);
-
-	for(int ix=x1;ix<x2;ix++)
+	for(iV2 i(x1, y2); i.x<x2;i.x++)
 	{
-		int mat = g_game.MatMap(ix,y2);
+		int mat = g_game.MatMap(i);
 		if( g_game.materials[mat].density == g_game.jump ) return mat;
 	}
 
@@ -952,14 +949,14 @@ bool cDizPlayer::CheckCollidersSnap()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cDizPlayer::ReadMatInfo()
 {
-	int x1,y1,x2,y2;
-	MakeBB(x1,y1,x2,y2);
+	iV2 p1, p2;
+	MakeBB(p1.x,p1.y,p2.x,p2.y);
 	
 	_matInside = 0;
-	for(int y=y1;y<y2;y++)
-		_matInside |= g_game.MatMap(x1, x2, y);
-	_matUnder = g_game.MatMap(x1, x2, y2);
-	_matCenter = g_game.MatMap((x1+x2)/2,(y1+y2)/2);
+	for(int y=p1.y;y<p2.y;y++)
+		_matInside |= g_game.MatMap(p1.x, p2.x, y);
+	_matUnder = g_game.MatMap(p1.x, p2.x, p2.y);
+	_matCenter = g_game.MatMap((p1 + p2) / 2);
 }
 
 
@@ -984,8 +981,8 @@ void cDizPlayer::Draw()
 		int h = tile->GetHeight();
 		int x = _x-rx*Room::Size.x - w/2; // @TODO need -1 to the MatchX offset because of the 25 vs 24 width bla bla
 		int y = _y-ry*Room::Size.y + _h/2 - h;
-		x += g_game.m_viewx;
-		y += g_game.m_viewy;
+		x += g_game.viewShift.x;
+		y += g_game.viewShift.y;
 		fRect src;
 		int fx = tile->GetFx(frame);
 		int fy = tile->GetFy(frame);

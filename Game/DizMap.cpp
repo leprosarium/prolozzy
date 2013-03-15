@@ -10,10 +10,8 @@
 #include "DizApp.h"
 
 #include <sstream>
-
-cDizMap	g_map;
-
 iV2 Room::Size(GAME_ROOMW, GAME_ROOMH);
+cDizMap	g_map;
 
 PREDICATE_M(map, brushCount, 1)
 {
@@ -220,22 +218,20 @@ bool cDizMap::Reload()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // DRAW ROOM
 //////////////////////////////////////////////////////////////////////////////////////////////////
-void cDizMap::DrawRoom( int rx, int ry, int layer, int mode, int ofsx, int ofsy )
+void cDizMap::DrawRoom( const iV2 & rp, int layer, int mode, const iV2 & ofs)
 {
 	int color, shader;
-	iV2 r(rx, ry);
-	iV2 ofs(ofsx, ofsy);
-	if(InvalidRoomCoord(rx, ry)) return;
+	if(InvalidRoomCoord(rp.x, rp.y)) return;
 
 	// viewport clipping test
 	if( !g_paint.m_drawtilesoft )
 	{
 		iV2 p1 = g_game.roomPos() * Room::Size - g_game.viewportPos();
 		iRect viewport(p1, p1 + Room::Size);
-		if( rx * Room::Size.x >= viewport.x2 || ry * Room::Size.y >= viewport.y2 || (rx+1) * Room::Size.x <= viewport.x1 || (ry+1) * Room::Size.y <= viewport.y1 )
+		if( rp.x * Room::Size.x >= viewport.x2 || rp.y * Room::Size.y >= viewport.y2 || (rp.x+1) * Room::Size.x <= viewport.x1 || (rp.y+1) * Room::Size.y <= viewport.y1 )
 			return;
 	}
-	const std::vector<int> & part = GetRoom(rx, ry).Brushes();
+	const std::vector<int> & part = GetRoom(rp.x, rp.y).Brushes();
 	for(size_t i=0;i<part.size();i++)
 	{
 		int brushidx = part[i];
@@ -248,7 +244,7 @@ void cDizMap::DrawRoom( int rx, int ry, int layer, int mode, int ofsx, int ofsy 
 		
 		if( brush.Get(BRUSH_LAYER) != layer ) continue; // filter layer
 
-		iV2 p = brush.pos() - r * Room::Size + ofs;
+		iV2 p = brush.pos() - rp * Room::Size + ofs;
 		int frame = brush.Get(BRUSH_FRAME);
 
 		if(mode==DRAWMODE_MATERIAL)
@@ -294,7 +290,6 @@ void cDizMap::DrawRoom( int rx, int ry, int layer, int mode, int ofsx, int ofsy 
 	}
 
 	R9_Flush(); // be sure!
-
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

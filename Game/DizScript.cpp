@@ -159,9 +159,9 @@ PREDICATE_M(core, materialDensityRead, 5)
 	int h = A4;
 	int x2 = x1 + w;
 	int y2 = y1 + h;
-	for(int y=y1;y<y2;y++)
-		for(int x=x1;x<x2;x++)
-			dens.insert(g_game.DensMap(x, y));
+	for(iV2 p(x1, y1);p.y<y2;p.y++)
+		for(p.x=x1;p.x<x2;p.x++)
+			dens.insert(g_game.DensMap(p));
 	PlTail l(A5);
 	for(std::set<PlAtom>::const_iterator i = dens.begin(), e = dens.end(); i != e; ++i)
 		l.append(*i);
@@ -176,9 +176,9 @@ PREDICATE_M(core, materialCheckFree, 4)
 	int x2 = A3;
 	int y2 = A4;
 	
-	for(int iy=y1;iy<y2;iy++)
-		for(int ix=x1;ix<x2;ix++)
-			if( g_game.DensMap(ix,iy) == g_game.hard ) 
+	for(iV2 p(x1, y1);p.y<y2;p.y++)
+		for(p.x=x1;p.x<x2;p.x++)
+			if( g_game.DensMap(p) == g_game.hard ) 
 				return false;
 	return true;
 }
@@ -191,22 +191,22 @@ PREDICATE_M(core, materialGetFreeDist, 7)
 	int y2 = A4;
 	int dir = A5;
 	bool hardonly = (A6 == g_game.hard); // hard or void
-	int ix,iy;
+	iV2 i;
 	if(dir==0) // [top to bottom)
 	{
-		for( iy=y1; iy<y2; iy++ )
+		for( i.y=y1; i.y<y2; i.y++ )
 		{
-			for(ix=x1;ix<x2;ix++)
+			for(i.x=x1;i.x<x2;i.x++)
 			{
 				if(hardonly)
 				{
-					if( g_game.DensMap(ix,iy) == g_game.hard ) 
-						return A7 = iy-y1; // blocked
+					if( g_game.DensMap(i) == g_game.hard ) 
+						return A7 = i.y-y1; // blocked
 				}
 				else
 				{
-					if( g_game.DensMap(ix,iy) != g_game._void ) 
-						return A7 = iy-y1; // blocked
+					if( g_game.DensMap(i) != g_game._void ) 
+						return A7 = i.y-y1; // blocked
 				}
 			}
 		}
@@ -216,19 +216,19 @@ PREDICATE_M(core, materialGetFreeDist, 7)
 	else
 	if(dir==1) // (bottom to top]
 	{
-		for( iy=y2-1; iy>=y1; iy-- )
+		for( i.y=y2-1; i.y>=y1; i.y-- )
 		{
-			for(ix=x1;ix<x2;ix++)
+			for(i.x=x1;i.x<x2;i.x++)
 			{
 				if(hardonly)
 				{
-					if( g_game.DensMap(ix,iy) == g_game.hard ) 
-						return A7 = y2-1-iy; // blocked
+					if( g_game.DensMap(i) == g_game.hard ) 
+						return A7 = y2-1-i.y; // blocked
 				}
 				else
 				{
-					if( g_game.DensMap(ix,iy) != g_game._void ) 
-						return A7 = y2-1-iy; // blocked
+					if( g_game.DensMap(i) != g_game._void ) 
+						return A7 = y2-1-i.y; // blocked
 				}
 			}
 		}

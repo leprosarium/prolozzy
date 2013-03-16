@@ -44,12 +44,13 @@ class MatMap
 	iRect Rect;
 	void SetSize(const iV2 & size);
 	bool in(const iV2 & p) const { return Rect.IsInside(p); }
+	int idx(const iV2 & p)  const { return (p.x + Size.x) + (p.y + Size.y) * Size3.x; }
 public:
 	MatMap() : map()  { Resize(Room::Size); }
 	~MatMap() { delete [] map; }
 	void Resize(const iV2 & size);
 	void Update(const iV2 & room, bool full);
-	byte Get(const iV2 & p) const { return in(p) ? map[(p.x + Size.x) + (p.y + Size.y) * Size3.x] : 0; }
+	byte Get(const iV2 & p) const { return in(p) ? map[idx(p)] : 0; }
 	int Get(int x1, int x2, int y) const;
 };
 

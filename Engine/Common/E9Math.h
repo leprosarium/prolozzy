@@ -46,9 +46,13 @@ struct fV2
 	fV2 & __fastcall operator -=(float f) { x -= f; y -= f; return *this; }
 	float __fastcall operator ! () { return sqrt(x*x + y*y); }
 
+	bool operator <(float v) const { return x < v && y < v; }
+    bool operator >(float v) const { return x > v && y > v; }
+    bool operator <=(const fV2 & v) const { return x <= v.x && y <= v.y; }
+    bool operator >=(const fV2 & v) const { return x >= v.x && y >= v.y; }
+	bool operator ==(const fV2 & v) const { return x == v.x && y == v.y; }
+	bool operator !=(const fV2 & v) const { return ! operator==(v);}
 
-	friend bool	__fastcall operator ==	( const fV2 & v1, const fV2 & v2 )		{ return v1.x==v2.x && v1.y==v2.y; }
-	friend bool	__fastcall operator !=	( const fV2 & v1, const fV2 & v2 )		{ return v1.x!=v2.x || v1.y!=v2.y; }
 	friend fV2	__fastcall operator *	( const fV2 & v, float f )			{ return fV2( v.x * f, v.y * f ); }
 	friend fV2	__fastcall operator *	( float f, const fV2 & v )			{ return v * f; }
 	friend fV2	__fastcall operator /	( const fV2 & v, float f )			{ return fV2( v.x / f, v.y / f ); }
@@ -88,9 +92,19 @@ struct iV2
 	iV2 & __fastcall operator-=	( int s)					{ x -= s; y -= s; return *this; }
 	iV2	__fastcall operator-	() const					{ return iV2(-x, -y); }
 
-	friend bool	__fastcall operator==	( const iV2 & v1, const iV2 & v2 )		{ return v1.x==v2.x && v1.y==v2.y; }
-	friend bool __fastcall operator==	( const iV2 & v, int s)					{ return v.x == s && v.y == s; }
-	friend bool	__fastcall operator!=	( const iV2 & v1, const iV2 & v2 )		{ return v1.x!=v2.x || v1.y!=v2.y; }
+	bool operator <(int v) const { return x < v && y < v; }
+    bool operator >(int v) const { return x > v && y > v; }
+    bool operator <=(const iV2 & v) const { return x <= v.x && y <= v.y; }
+    bool operator >=(const iV2 & v) const { return x >= v.x && y >= v.y; }
+	bool operator ==(const iV2 & v) const { return x == v.x && y == v.y; }
+	bool operator ==(int v) const { return x == v && y == v; }
+	bool operator !=(const iV2 & v) const { return ! operator==(v);}
+
+
+
+
+
+
 	friend iV2	__fastcall operator*	( const iV2 & v, int s )			{ return iV2( v.x * s, v.y * s ); }
 	friend iV2	__fastcall operator*	( int s, const iV2 & v )			{ return v * s; }
 	friend iV2	__fastcall operator*	( const iV2 & v1, const iV2 & v2 )	{ return iV2( v1.x * v2.x, v1.y * v2.y); }
@@ -101,7 +115,7 @@ struct iV2
 	friend iV2	__fastcall operator+	( int s, const iV2 & v )			{ return v + s; }
 	friend iV2	__fastcall operator-	( const iV2 & v1, const iV2 & v2 )	{ return iV2( v1.x - v2.x, v1.y - v2.y ); }
 	friend iV2	__fastcall operator-	( const iV2 & v, int s )			{ return iV2( v.x - s, v.y - s ); }
-	friend iV2	__fastcall operator-	( int s, const iV2 & v )			{ return -v + s;}
+	friend iV2	__fastcall operator-	( int s, const iV2 & v )			{ return s + -v;}
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

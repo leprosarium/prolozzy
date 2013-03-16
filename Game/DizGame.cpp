@@ -441,7 +441,6 @@ bool cDizGame::Update()
 {
 
 	int i;
-	int rx, ry;
 
 	// command process
 	if(command()==start) // start game
@@ -532,28 +531,20 @@ bool cDizGame::Update()
 	if( g_map.Width()>0 && g_map.Height()>0 ) // if map size is valid
 	{
 		// room bound check
-		rx = roomX();
-		ry = roomY();
-		bool outroom = false;
-		outroom |= ( g_player.x() < rx*Room::Size.x );
-		outroom |= ( g_player.x() >= (rx+1)*Room::Size.x );
-		outroom |= ( g_player.y() < ry*Room::Size.y );
-		outroom |= ( g_player.y() >= (ry+1)*Room::Size.y );
-		if(outroom)	g_script.roomOut(); // users may change player's pos on this handler
+		if(!Room::Rect(roomPos()).IsInside(g_player.pos()))	g_script.roomOut(); // users may change player's pos on this handler
 
 		// world bound check
-		rx = Room::PosX2Room( g_player.x() );
-		ry = Room::PosY2Room( g_player.y() );
-		if( rx<0 )				{ rx=0; g_player.x(0); }
-		if( rx>g_map.Width()-1 )	{ rx=g_map.Width()-1; g_player.x(g_map.Width()*Room::Size.x-4); }
-		if( ry<0 )				{ ry=0; g_player.y(0); }
-		if( ry>g_map.Height()-1 )	{ ry=g_map.Height()-1; g_player.y(g_map.Height()*Room::Size.y-1); }
+		iV2 r = Room::Pos2Room( g_player.pos() );
+		if( r.x<0 )				{ r.x=0; g_player.x(0); }
+		if( r.x>g_map.Width()-1 )	{ r.x=g_map.Width()-1; g_player.x(g_map.Width()*Room::Size.x-4); }
+		if( r.y<0 )				{ r.y=0; g_player.y(0); }
+		if( r.y>g_map.Height()-1 )	{ r.y=g_map.Height()-1; g_player.y(g_map.Height()*Room::Size.y-1); }
 
 		// room tranzit
-		if( rx!=roomX() ||ry!=roomY())
+		if( r != roomPos())
 		{
 			g_script.roomClose();
-			SetRoom( rx, ry );
+			SetRoom( r.x, r.y );
 			g_script.roomOpen();
 		}
 	}
@@ -605,7 +596,7 @@ void cDizGame::Draw()
 	// clipping
 	fRect clip;// draw room area (for viewportmode=1)
 	// visible room area
-	iV2 view(viewX(), viewY());
+	iV2 view = viewPos();
 	fRect rect( g_paint.scr + view * g_paint.m_scale,
 				g_paint.scr + (view + Room::Size) * g_paint.m_scale);
 
@@ -738,7 +729,7 @@ void MatMap::SetSize(const iV2 & size)
 {
 	Size = size;
 	Rect = iRect(-Size, Size * 2); 
-	Size3 = Size * 3;
+	Size3 = Rect.Size();
 	Cap = Size3.x * Size3.y;
 
 }
@@ -819,7 +810,7 @@ int MatMap::Get(int x1, int x2, int y) const
 	x2 = std::min(x2, Rect.x2);
 	if(x1 >= x2)
 		return mat;
-	for(int v = (y + Size.y) * Size3.x + (x1 + Size.x), ve = v + (x2 - x1); v < ve; ++v)
+	for(int v = idx(iV2(x1, y)), ve = v + (x2 - x1); v < ve; ++v)
 		mat |= (1<<map[v]);
 	return mat;
 }

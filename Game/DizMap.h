@@ -25,8 +25,10 @@ private:
 public:
 	void AddBrush(int idx) { _Brushes.push_back(idx); }
 	const std::vector<int> & Brushes() const { return _Brushes; }
+	static iV2 Pos2Room(const iV2 & p) { return iV2(PosX2Room(p.x), PosY2Room(p.y)); }
 	static int PosX2Room(int x) { return x >= 0  ?  x / Size.x : (x + 1) / Size.x - 1; }
 	static int PosY2Room(int y) { return y >= 0  ?  y / Size.y : (y + 1) / Size.y - 1; }
+	static iRect Rect(const iV2 & r) { return iRect(r * Size, (r + 1) * Size); } 
 };
 
 class Object : public tBrush

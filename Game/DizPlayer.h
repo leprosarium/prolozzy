@@ -87,6 +87,7 @@ inline	cTile*		FindTile			()											{ return g_paint.tiles.Get(g_paint.tiles.
 		bool		m_debug;			// prevent player's update while debug movement
 		
 		PlAtom		status() const { return _status; }
+		iV2			pos() const { return iV2(x(), y()); }
 		int			x() const { return _x; }
 		int			y() const { return _y; }
 		int			w() const { return _w; }

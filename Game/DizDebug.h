@@ -9,6 +9,8 @@
 #include "E9Math.h"
 #include "SWI-Stream.h"
 
+#include <deque>
+
 #define CON_LINESIZE		80		// characters per line
 #define CON_LINES			2048	// total lines
 #define SLOT_COUNT			16		// total slots
@@ -22,6 +24,39 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // cDizDebug
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+class Line : public std::string
+{
+public:
+	Line(int Ch, const std::string & str) : std::string(str), Ch(Ch) {}  
+	int Ch;
+};
+
+class Console : std::deque<Line>
+{
+	typedef std::deque<Line> Strings; 
+	size_t Cap;
+	size_t PageBegin;
+	iterator last;
+
+	void PagePosUp(size_t pos, size_t step) { if (pos < step) Begin(); else PageBegin = pos - step; }
+	void PushToken(size_t page, int ch, const std::string & str);
+public:
+	using Strings::empty;
+	using Strings::begin;
+	using Strings::end;
+	using Strings::const_iterator;
+	
+	Console(size_t Cap) : Cap(Cap), PageBegin(0), last(end()) {}
+
+	void PageUp(size_t step) { PagePosUp(PageBegin, step); } 
+	void PageDown(size_t step, size_t page) { if (PageBegin + step + page >= size()) End(page); else PageBegin += step; }
+	void Begin() {	PageBegin = 0; }
+	void End(size_t page) {	PagePosUp(size(), page); }
+
+	const_iterator page() const { return begin() + PageBegin; }
+	void Push(size_t page, int ch, const std::string & str);
+};
+
 class cDizDebug
 {
 public:
@@ -51,9 +86,7 @@ public:
 		void	ConsoleDraw();
 		void	ConsolePush( int ch, LPCWSTR msg );
 static	void	Con_LogCallback( int ch, LPCWSTR msg );
-		char*	m_con_lines;								// messages lines storage
-		int		m_con_pagetop;								// current visible line
-		int		m_con_nextline;								// next free line (loops from beginning when full)
+		Console	con;
 
 		// slots
 		iRect	SlotGetRect();

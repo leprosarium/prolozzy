@@ -59,8 +59,6 @@ ssize_t cDizDebug::PrologRead(char *buffer, size_t size)
 	e9AppCallback pnt = E9_AppSetCallback(E9_APP_ONPAINT, PrologDebugDraw);
 	MSG	msg;
 
-	char* szline = m_con_lines + m_con_nextline * CON_LINESIZE + 1;
-	strcpy(m_input_cmd, szline);
 	size_t sz = strlen(m_input_cmd);
 	m_input_open = true;
 	m_input_crt = sz;
@@ -117,13 +115,10 @@ static ssize_t Log_read(void *handle, char *buffer, size_t size)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-cDizDebug::cDizDebug()
+cDizDebug::cDizDebug() : con(CON_LINES)
 {
 	Soutput->functions->read = Log_read;
-
-	m_con_lines = 0;
-	m_con_pagetop = 0;
-	m_con_nextline = 0;
+;
 	memset(m_slot,0,sizeof(m_slot));
 	m_input_open = 0;
 	m_input_crt = 0;
@@ -151,10 +146,6 @@ bool cDizDebug::Init()
 
 	// console
 	m_console = false;
-	m_con_lines = new char[CON_LINES*CON_LINESIZE];
-	memset(m_con_lines,0,sizeof(CON_LINES*CON_LINESIZE));
-	m_con_pagetop = 0;
-	m_con_nextline = 0;
 	D9_LogSetCallback( Con_LogCallback );
 
 	//log
@@ -167,9 +158,6 @@ bool cDizDebug::Init()
 
 void cDizDebug::Done()
 {
-	// console
-	delete [] m_con_lines;
-	m_con_lines = 0;
 }
 
 bool cDizDebug::Update()
@@ -365,6 +353,8 @@ void cDizDebug::NavigationUpdate()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // CONSOLE
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 iRect cDizDebug::ConsoleGetRect()
 {
 	iRect rect(0, 0, m_renderw, m_renderh - (INFO_LINES+1)*R9_CHRH);
@@ -384,83 +374,70 @@ void cDizDebug::ConsoleUpdate()
 	iRect rect = ConsoleGetRect();
 	int pageh=rect.Height() / R9_CHRH - 1; // page height in lines
 	int step = (I9_GetKeyValue(I9K_LSHIFT) || I9_GetKeyValue(I9K_RSHIFT)) ? 1 : pageh;
-	if(I9_GetKeyDown(I9K_PGUP))		m_con_pagetop -= step; else
-	if(I9_GetKeyDown(I9K_PGDN))		m_con_pagetop += step; else
-	if(I9_GetKeyDown(I9K_HOME))		m_con_pagetop = 0; else
-	if(I9_GetKeyDown(I9K_END))		m_con_pagetop = CON_LINES;
-	// clamp
-	if(m_con_pagetop>m_con_nextline-pageh) m_con_pagetop=m_con_nextline-pageh;
-	if(m_con_pagetop<0) m_con_pagetop=0;
+	if(I9_GetKeyDown(I9K_PGUP))		con.PageUp(step); else
+	if(I9_GetKeyDown(I9K_PGDN))		con.PageDown(step, pageh); else
+	if(I9_GetKeyDown(I9K_HOME))		con.Begin(); else
+	if(I9_GetKeyDown(I9K_END))		con.End(pageh);
 }
 
 void cDizDebug::ConsoleDraw()
 {
+	if(con.empty()) return;
 	fRect rect = ConsoleGetRect();
 	fRect oldclip = R9_GetClipping();
 	R9_SetClipping(rect);
 	R9_DrawBar(rect,COLOR_BBKGR);
 	rect.x1 += R9_CHRW;
 	rect.y1 += R9_CHRH;
-	int line = m_con_pagetop;
 	float y=rect.y1;
-	while(y<rect.y2) // show as many as you can
+	for(auto line = con.page(); y < rect.y2 && line != con.end(); ++line) // show as many as you can
 	{
-		if(line==m_con_nextline) break;
-		char* szline = m_con_lines + line*CON_LINESIZE;
-		int ch = szline[0];
-		dword color = D9_LogGetChannelColor(ch);
-		R9_DrawText(fV2(rect.x1,y),szline+1,color);
-		line++;
+		const Line & l = *line;
+		R9_DrawText(fV2(rect.x1,y), l.c_str(), D9_LogGetChannelColor(l.Ch));
 		y += (float)R9_CHRH;
 	}
 	R9_SetClipping(oldclip);
 }
 
+void Console::Push(size_t page, int ch, const std::string & str)
+{
+	std::string::size_type st = 0, e = 0;
+	while ((e = str.find('\n', st)) != std::string::npos) {
+		PushToken(page, ch, str.substr(st, e - st));
+		last = end();
+		st = e + 1;
+	}
+	PushToken(page, ch, str.substr(st));
+}
+
+void Console::PushToken(size_t page, int ch, const std::string & str)
+{
+	if(str.empty())
+		return;
+	if(last == end())
+	{
+		push_back(Line(ch, str));
+		last = --end();
+		if (size() > Cap)
+			pop_front();
+		if(PageBegin + page + 1 == size())
+			End(page);
+	}
+	else
+		(*last) += str;
+}
+
 void cDizDebug::ConsolePush( int ch, LPCWSTR msg )
 {
 	if(msg==NULL) return;
-	char* szline = &m_con_lines[m_con_nextline*CON_LINESIZE];
-	if(szline[1]==0) szline[0] = ch; // set line channel for first messages on a line
-	int m=0; // msg pos
-	int l=1+(int)strlen(szline+1); // line position
+	std::string str = WideStringToMultiByte(msg);
 	iRect rect = ConsoleGetRect();
 	int pageh = rect.Height() / R9_CHRH - 1; // page height in lines
-	while(true)
-	{
-		if(msg[m]==0) break; 
-		if(msg[m]=='\n' || l==CON_LINESIZE-1) // new line
-		{
-			szline[l]=0; // eol
-			// next line
-			bool bottom = ( m_con_nextline == m_con_pagetop+pageh );
-			m_con_nextline++;
-			if(m_con_nextline==CON_LINES) // full, lose begining
-			{
-				int loose = (CON_LINES/4);
-				memcpy(m_con_lines, m_con_lines+loose*CON_LINESIZE, (CON_LINES-loose)*CON_LINESIZE);
-				m_con_nextline = CON_LINES-loose;
-			}
-			if(bottom) m_con_pagetop = (m_con_nextline-pageh);
-			szline = m_con_lines + m_con_nextline*CON_LINESIZE;
-			szline[0] = ch; // set line channel
-			szline[1] = 0; // clear line
-			l=1;
-			m++;
-			continue;
-		}
-		else
-		{
-			szline[l] = msg[m];
-			l++;
-			m++;
-		}
-	}
-	szline[l] = 0; // eol
+	con.Push(pageh, ch, str);
 }
 
 void cDizDebug::Con_LogCallback( int ch, LPCWSTR msg )
 {
-	if(g_dizdebug.m_con_lines==NULL) return; // not yet
 	g_dizdebug.ConsolePush( ch, msg );
 }
 

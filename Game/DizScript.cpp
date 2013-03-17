@@ -129,9 +129,8 @@ PREDICATE_M(core, materialColor, 2)
 		throw PlDomainError("material number", A1);
 	if(A2.type() == PL_VARIABLE)
 		return A2 = g_game.materials[mat].color;
-	int64 l;
-	if(PL_get_int64(A2, &l))
-		g_game.materials[mat].color = l;
+	int64 l = A2;
+	g_game.materials[mat].color = static_cast<int>(l);
 	return true;
 }
 
@@ -260,7 +259,7 @@ PREDICATE_M(core, objPresentCount, 1)
 PREDICATE_M(core, objPresentIdx, 2)
 {
 	int presentidx = A1;
-	if(presentidx < 0 || presentidx >= g_game.m_obj.size()) 
+	if(presentidx < 0 || static_cast<size_t>(presentidx) >= g_game.m_obj.size()) 
 		throw PlException("invalid present index");	
 	return A2 = g_game.m_obj[presentidx];
 }

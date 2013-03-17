@@ -35,7 +35,7 @@ void cGUIDlg::Update()
 	m_mousein = INRECT( g_gui->m_mousex, g_gui->m_mousey, rc);
 
 	// update children
-	for(int i=0;i<m_item.size();i++)
+	for(size_t i=0;i<m_item.size();i++)
 	{
 		cGUIItem* item = m_item[i];
 		if(!item->GetInt(IV_DISABLE))
@@ -62,11 +62,9 @@ void cGUIDlg::Update()
 
 void cGUIDlg::Draw()
 {
-	for(int i=0;i<m_item.size();i++)
-	{
+	for(size_t i=0;i<m_item.size();i++)
 		if(!m_item[i]->GetInt(IV_HIDDEN))
 			m_item[i]->Draw();
-	}
 }
 
 void cGUIDlg::Close(int ret)
@@ -157,7 +155,7 @@ RECT cGUIDlg::GetRect( int idx )
 
 int cGUIDlg::ItemFind( int id )
 {
-	for(int i=0;i<m_item.size();i++)
+	for(size_t i=0;i<m_item.size();i++)
 		if(m_item[i]->GetInt(IV_ID) == id)
 			return i;
 	return -1;
@@ -165,7 +163,7 @@ int cGUIDlg::ItemFind( int id )
 
 int cGUIDlg::ItemFind( cGUIItem* item )
 {
-	for(int i=0;i<m_item.size();i++)
+	for(size_t i=0;i<m_item.size();i++)
 		if(m_item[i] == item)
 			return i;
 	return -1;

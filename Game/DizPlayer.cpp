@@ -195,10 +195,8 @@ PREDICATE_M(player, color, 1)
 
 PREDICATE_M(player, setColor, 1)
 {
-	int64 v;
-	if(!PL_get_int64(A1, &v))
-		return false; 
-	g_player.color(v); 
+	int64 v = A1;
+	g_player.color(static_cast<int>(v)); 
 	return true;
 }
 

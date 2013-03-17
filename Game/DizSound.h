@@ -61,7 +61,7 @@ public:
 		void				SampleStop			( int voiceidx );				// stop a voice
 		void				SampleStopAll		( PlAtom id = all);				// stop all voices of a sample id, or all voices if id is -1
 		void				SampleVolume		( int volume );					// set samples volume
-inline	int					SampleFind			( PlAtom id )						{ for(int i=0;i<m_sampleproto.size();i++) if(m_sampleproto[i]->m_id==id) return i; return -1; }
+inline	int					SampleFind			( PlAtom id )						{ for(size_t i=0;i<m_sampleproto.size();i++) if(m_sampleproto[i]->m_id==id) return i; return -1; }
 
 		A9BUFFER			m_voice[SOUND_VOICES];								// list with voices buffers
 		std::vector<tSoundProto *> m_sampleproto;								// list with loaded samples
@@ -84,7 +84,7 @@ inline	int					SampleFind			( PlAtom id )						{ for(int i=0;i<m_sampleproto.siz
 		void				MusicPause			( bool pause );					// music pause; stop, but remember where it was
 		void				MusicUpdate			( float dtime );				// deals with the play, stop and volume management
 		void				MusicVolume			( int volume );					// set music volume
-inline	int					MusicFind			( PlAtom id )						{ for(int i=0;i<m_musicproto.size();i++) if(m_musicproto[i]->m_id==id) return i; return -1; }
+inline	int					MusicFind			( PlAtom id )						{ for(size_t i=0;i<m_musicproto.size();i++) if(m_musicproto[i]->m_id==id) return i; return -1; }
 
 		A9STREAM			m_music;											// music stream
 		int					m_musicidx;											// current playing music index in proto list (-1 if none)

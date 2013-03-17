@@ -110,7 +110,7 @@ public:
 
 		// Tiles
 		int				TileCount		()					{ return m_tile.size(); }
-		cTile*			TileGet			( int idx )			{ if(0<=idx && idx<m_tile.size()) return m_tile[idx]; return 0; }
+		cTile*			TileGet			( int idx )			{ if(0<=idx && static_cast<size_t>(idx)<m_tile.size()) return m_tile[idx]; return 0; }
 		int				TileAdd			( int id );			// add a new empty tile; id must be unique
 		void			TileDel			( int idx );		// delete tile by index
 		int				TileFind		( int id )			{ Hash::iterator i = index.find(id); if(i == index.end()) return -1; return i->second; }

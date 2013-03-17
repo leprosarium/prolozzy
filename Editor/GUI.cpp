@@ -13,6 +13,8 @@
 #include "GUIColor.h"
 #include "GUIDlg.h"
 
+#include <algorithm>
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cGUI
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -72,12 +74,19 @@ void cGUI::Done()
 	GUIDoneResources();
 }
 
+namespace 
+{
+	bool ModalDialog (cGUIDlg * dlg) 
+	{
+		return dlg->GetInt(DV_MODAL) != 0;
+	}
+}
+
 void cGUI::Update()
 {
-	int i;
 	m_isbusy = FALSE;
 	
-	if(m_capture!=NULL)
+	if(m_capture)
 	{
 		m_capture->Update();
 		m_isbusy = TRUE;
@@ -85,42 +94,38 @@ void cGUI::Update()
 	else
 	{
 		// serach top most modal
-		for(i=m_dlg.size()-1; i>=0 ;i--)
+		bool modal = false;
+		auto i = find_if(m_dlg.rbegin(), m_dlg.rend(), ModalDialog);
+		if ( i != m_dlg.rend())
 		{
-			if(m_dlg[i]->GetInt(DV_MODAL))
-			{
-				m_dlg[i]->Update();
-				m_isbusy = TRUE;
-				break;
-			}
+			(*i)->Update();
+			m_isbusy = TRUE;
 		}
-		// no modal -> update all
-		if(i<0)
+		else // no modal -> update all
 		{
-			for(i=0;i<m_dlg.size();i++)
-			{
+			for(size_t i=0;i<m_dlg.size();i++)
 				m_dlg[i]->Update();
-			}
 		}
 	}
 	// delete mustclose dialogs
-	for(i=0;i<m_dlg.size();i++)
+	for(size_t i =0;i<m_dlg.size();)
 		if(m_dlg[i]->m_mustclose)
 		{
-			m_capture = NULL; // clear captrure (colud be int the dying dialog)
+			m_capture = 0; // clear captrure (colud be int the dying dialog)
 			delete m_dlg[i];
 			m_dlg.erase(m_dlg.begin() + i);
-			if(m_lastdlg==i) m_lastdlg=-1; else
-			if(m_lastdlg>i) m_lastdlg--; // fix index
-			i--;
+			if(m_lastdlg==static_cast<int>(i)) m_lastdlg=-1; else
+			if(m_lastdlg>static_cast<int>(i)) m_lastdlg--; // fix index
 		}
+		else
+			++i;
 }
 
 void cGUI::Draw()
 {
 	R9_SetState(R9_STATE_BLEND,R9_BLEND_ALPHA);
 
-	for(int i=0;i<m_dlg.size();i++)
+	for(size_t i=0;i<m_dlg.size();i++)
 	{
 		// if(m_dlg[i]->GetInt(DV_MODAL))
 		//	R9_DrawBar(fRect(0,0,R9_GetWidth(),R9_GetHeight()),0x60000000); 
@@ -202,7 +207,7 @@ void cGUI::ReadInput()
 
 int cGUI::DlgFind( int id )
 {
-	for(int i=0;i<m_dlg.size();i++)
+	for(size_t i=0;i<m_dlg.size();i++)
 		if(m_dlg[i]->GetInt(DV_ID) == id)
 			return i;
 	return -1;
@@ -210,7 +215,7 @@ int cGUI::DlgFind( int id )
 
 int cGUI::DlgFind( cGUIDlg *dlg )
 {
-	for(int i=0;i<m_dlg.size();i++)
+	for(size_t i=0;i<m_dlg.size();i++)
 		if(m_dlg[i] == dlg)
 			return i;
 	return -1;
@@ -368,7 +373,7 @@ PREDICATE_M(gui, winDlgOpenFolder, 2)
 
 PREDICATE_M(gui, winDlgOpenColor, 2)
 {
-	dword c = static_cast<int64>(A1);
+	dword c = static_cast<dword>(static_cast<int64>(A1));
 	if(WinDlgOpenColor(&c, TRUE))
 		return A2 = static_cast<int64>(c);
 	return false;
@@ -668,7 +673,7 @@ PREDICATE_M(gui, itemSetColor, 2)
 		throw PlDomainError("Color index", A1);
 	
 	int64 Color = A2;
-	item->SetInt(IV_COLOR + ColorIdx,  Color);
+	item->SetInt(IV_COLOR + ColorIdx,  static_cast<int>(Color));
 	return true;
 }
 
@@ -741,7 +746,7 @@ PREDICATE_M(gui, itemSetGroup, 1)
 PREDICATE_M(gui, itemSetTxtColor, 1)
 {
 	int64 Color = A1;
-	g_gui->GetLastItem()->SetInt(IV_TXTCOLOR,  Color);
+	g_gui->GetLastItem()->SetInt(IV_TXTCOLOR,  static_cast<int>(Color));
 	return true;
 }
 
@@ -755,7 +760,7 @@ PREDICATE_M(gui, itemSetImgAlign, 1)
 PREDICATE_M(gui, itemSetImgColor, 1)
 {
 	int64 Color = A1;
-	g_gui->GetLastItem()->SetInt(IV_IMGCOLOR,  Color);
+	g_gui->GetLastItem()->SetInt(IV_IMGCOLOR,  static_cast<int>(Color));
 	return true;
 }
 

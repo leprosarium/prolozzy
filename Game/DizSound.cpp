@@ -204,17 +204,15 @@ bool cDizSound::SampleLoad( const char* path, int group )
 
 void cDizSound::SampleUnload( int group )
 {
-	int i;
-	for(i=0;i<m_sampleproto.size();i++)
-	{
+	for(size_t i=0;i<m_sampleproto.size();)
 		if(m_sampleproto[i]->m_group == group)
 		{
 			SampleStopAll(m_sampleproto[i]->m_id);
 			delete m_sampleproto[i];
 			m_sampleproto.erase(m_sampleproto.begin() + i);
-			i--;
 		}
-	}
+		else
+			++i;
 }
 
 int	cDizSound::SamplePlay( PlAtom id, int loop )
@@ -391,18 +389,16 @@ bool cDizSound::MusicLoad( const char* path, int group )
 
 void cDizSound::MusicUnload( int group )
 {
-	int i;
-	for(i=0;i<m_musicproto.size();i++)
-	{
+	for(size_t i=0;i<m_musicproto.size();)
 		if(m_musicproto[i]->m_group == group)
 		{
 			if(i==m_musicidx) MusicStop(); // stop if current
 			if(m_musicnext==i) m_musicnext=-1; // clear if next
 			delete m_musicproto[i];
 			m_musicproto.erase(m_musicproto.begin() + i);
-			i--;
 		}
-	}
+		else
+			++i;
 }
 
 void cDizSound::MusicFade( int out, int in )

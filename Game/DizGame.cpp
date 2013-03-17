@@ -191,7 +191,7 @@ PREDICATE_M(game, mapColor, 1)
 PREDICATE_M(game, setMapColor, 1)
 {
 	int64 v = A1;
-	g_game.mapColor(v); 
+	g_game.mapColor(static_cast<int>(v)); 
 	return true;
 }
 
@@ -203,7 +203,7 @@ PREDICATE_M(game, borderColor, 1)
 PREDICATE_M(game, setBorderColor, 1)
 {
 	int64 v = A1;
-	g_game.borderColor(v); 
+	g_game.borderColor(static_cast<int>(v)); 
 	return true;
 }
 

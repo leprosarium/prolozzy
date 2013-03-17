@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "E9String.h"
 
-std::wstring    MultiByteToWideString(const char* szSrc)  
+std::wstring    MultiByteToWideString(LPCSTR szSrc)  
 {
  unsigned int iSizeOfStr = MultiByteToWideChar(CP_ACP, 0, szSrc, -1, NULL, 0);  
  wchar_t* wszTgt = new wchar_t[iSizeOfStr];  
@@ -15,7 +15,7 @@ delete(wszTgt);
 return(wstr);  
 }
 
-std::string WideStringToMultiByte(const wchar_t* wszSrc)  
+std::string WideStringToMultiByte(LPCWSTR wszSrc)  
 {  
     int iSizeOfStr = WideCharToMultiByte(CP_ACP, 0, wszSrc, -1, NULL, 0, NULL, NULL);  
     char* szTgt = new char[iSizeOfStr];  

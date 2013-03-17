@@ -711,8 +711,6 @@ int common(const char *s1, const char *s2, int insensitive)
 
 void cDizDebug::InputAutoComplete()
 {
-	int i;
-
 	// find word begining and ending
 	int start = m_input_crt;
 	while(start>0 && IS_WORD_CHAR(m_input_cmd[start-1])) start--;

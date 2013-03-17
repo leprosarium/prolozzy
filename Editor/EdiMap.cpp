@@ -177,7 +177,7 @@ PREDICATE_M(map, brushGet, 3)
 PREDICATE_M(map, brushSetColor , 2) 
 {
 	int64 color = A2;
-	g_map.GetBrush(A1).m_data[BRUSH_COLOR] = color;
+	g_map.GetBrush(A1).m_data[BRUSH_COLOR] = static_cast<int>(color);
 	return true;
 }
 
@@ -190,7 +190,7 @@ PREDICATE_M(map, brushSet , 3)
 	if(idx == BRUSH_COLOR)
 	{
 		int64 color = A3;
-		brush.m_data[idx] = color;
+		brush.m_data[idx] = static_cast<int>(color);
 	} 
 	else 
 	{
@@ -972,7 +972,7 @@ BOOL cEdiMap::PartitionAdd( int brushidx )
 	int pcountw = PartitionCountW();
 	iRect br = m_brush[brushidx].rect();
 	BOOL ok=FALSE;
-	for(int i=0; i<m_partition.size(); i++)
+	for(size_t i=0; i<m_partition.size(); i++)
 		if( br.Intersects(PartitionRect(i, pcountw)) )
 		{	
 			m_partition[i]->Add(brushidx);
@@ -987,7 +987,7 @@ void cEdiMap::PartitionDel( int brushidx )
 {
 	int pcountw = PartitionCountW();
 	iRect br = m_brush[brushidx].rect();
-	for(int i=0; i<m_partition.size(); i++)
+	for(size_t i=0; i<m_partition.size(); i++)
 		if( br.Intersects(PartitionRect(i, pcountw)) )
 			m_partition[i]->Sub(brushidx);
 }
@@ -998,7 +998,7 @@ int	cEdiMap::PartitionGet( iRect& rect, int* buffer, int buffersize )
 	assert(buffersize>0);
 	int pcountw = PartitionCountW();
 	int count = 0;
-	for(int i=0; i<m_partition.size(); i++)
+	for(size_t i=0; i<m_partition.size(); i++)
 		if(rect.Intersects(PartitionRect(i, pcountw)) )
 		{
 			buffer[count] = i;
@@ -1010,7 +1010,7 @@ int	cEdiMap::PartitionGet( iRect& rect, int* buffer, int buffersize )
 
 void cEdiMap::PartitionFix( int brushidx1, int brushidx2, int delta )
 {
-	for(int i=0; i<m_partition.size(); i++)
+	for(size_t i=0; i<m_partition.size(); i++)
 	{
 		cPartitionCel* pcel = m_partition[i];
 		for(int j=0; j<pcel->m_count; j++)
@@ -1023,13 +1023,12 @@ void cEdiMap::PartitionFix( int brushidx1, int brushidx2, int delta )
 
 BOOL cEdiMap::PartitionRepartition()
 {
-	int i;
 	// force all clean
-	for(i=0; i<m_partition.size(); i++)
+	for(size_t i=0; i<m_partition.size(); i++)
 		m_partition[i]->m_count = 0;
 	// repartition all brushes
 	BOOL ok = TRUE;
-	for(i=0; i<m_brushcount; i++)
+	for(int i=0; i<m_brushcount; i++)
 		ok &= PartitionAdd(i);
 	return ok;
 }

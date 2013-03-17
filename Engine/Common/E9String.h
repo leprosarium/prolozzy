@@ -22,8 +22,8 @@ inline char* sstrdup( const char* sz )
 char* sprint(char* szFormat, ...);
 LPWSTR swprint(LPCWSTR szFormat, ...);
 
-std::string WideStringToMultiByte(const wchar_t* wszSrc);  
-std::wstring    MultiByteToWideString(const char* szSrc);
+std::string WideStringToMultiByte(LPCWSTR wszSrc);  
+std::wstring    MultiByteToWideString(LPCSTR szSrc);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Parsing utils

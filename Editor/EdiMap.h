@@ -137,8 +137,8 @@ public:
 		void		PartitionInit		();							// create partitions cels depending on the map size
 		void		PartitionDone		();							// destroy partitions cels
 inline	void		PartitionReset		()							{ PartitionDone(); PartitionInit(); }
-inline	int			PartitionCountW		()							{ return (m_mapw+PARTITION_CELSIZE-1) / PARTITION_CELSIZE; }
-inline	int			PartitionCountH		()							{ return (m_maph+PARTITION_CELSIZE-1) / PARTITION_CELSIZE; }
+inline	int		PartitionCountW		()							{ return (m_mapw+PARTITION_CELSIZE-1) / PARTITION_CELSIZE; }
+inline	int		PartitionCountH		()							{ return (m_maph+PARTITION_CELSIZE-1) / PARTITION_CELSIZE; }
 		BOOL		PartitionAdd		( int brushidx );			// add a brush index to partitioning; true if successful
 		void		PartitionDel		( int brushidx );			// del a brush index from partitioning; might need PartitionFix
 		int			PartitionGet		( iRect& rect, int* buffer, int buffersize );	// retrive all partitions that intersect a specified area

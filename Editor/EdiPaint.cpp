@@ -170,7 +170,7 @@ void cEdiPaint::TileUnload()
 {
 	// done
 	index.clear();
-	for(int i=0; i<m_tile.size();i++) 
+	for(size_t i=0; i<m_tile.size();i++) 
 	{
 		R9_TextureDestroy(m_tile[i]->m_tex);
 		if(m_tile[i]->m_name) free(m_tile[i]->m_name);

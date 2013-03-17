@@ -700,35 +700,35 @@ PREDICATE_M(edi, setBrushRect, 1)
 PREDICATE_M(edi, setColorBack1, 1)
 {
 	int64 l = A1;
-	EdiApp()->m_color[EDI_COLORBACK1-EDI_COLOR] = l;
+	EdiApp()->m_color[EDI_COLORBACK1-EDI_COLOR] = static_cast<dword>(l);
 	return true;
 }
 
 PREDICATE_M(edi, setColorBack2, 1)
 {
 	int64 l = A1;
-	EdiApp()->m_color[EDI_COLORBACK2-EDI_COLOR] = l;
+	EdiApp()->m_color[EDI_COLORBACK2-EDI_COLOR] = static_cast<dword>(l);
 	return true;
 }
 
 PREDICATE_M(edi, setColorGrid1, 1)
 {
 	int64 l = A1;
-	EdiApp()->m_color[EDI_COLORGRID1-EDI_COLOR] = l;
+	EdiApp()->m_color[EDI_COLORGRID1-EDI_COLOR] = static_cast<dword>(l);
 	return true;
 }
 
 PREDICATE_M(edi, setColorGrid2, 1)
 {
 	int64 l = A1;
-	EdiApp()->m_color[EDI_COLORGRID2-EDI_COLOR] = l;
+	EdiApp()->m_color[EDI_COLORGRID2-EDI_COLOR] = static_cast<dword>(l);
 	return true;
 }
 
 PREDICATE_M(edi, setColorGrid3, 1)
 {
 	int64 l = A1;
-	EdiApp()->m_color[EDI_COLORGRID3-EDI_COLOR] = l;
+	EdiApp()->m_color[EDI_COLORGRID3-EDI_COLOR] = static_cast<dword>(l);
 	return true;
 }
 
@@ -736,7 +736,7 @@ PREDICATE_M(edi, setColorGrid3, 1)
 PREDICATE_M(edi, setColorMap, 1)
 {
 	int64 l = A1;
-	EdiApp()->m_color[EDI_COLORMAP-EDI_COLOR] = l;
+	EdiApp()->m_color[EDI_COLORMAP-EDI_COLOR] = static_cast<dword>(l);
 	return true;
 }
 
@@ -826,7 +826,7 @@ TOOL_BRUSH_PROP(Death, DEATH)
 PREDICATE_M(edi, toolBrushSetColor, 1)
 {
 	int64 color = A1;
-	EdiApp()->m_brush.m_data[BRUSH_COLOR] = color;
+	EdiApp()->m_brush.m_data[BRUSH_COLOR] = static_cast<int>(color);
 	return true;
 }
 
@@ -858,7 +858,7 @@ PREDICATE_M(edi, toolBrushSet, 2)
 	if(idx == BRUSH_COLOR) 
 	{
 		int64 color = A2;
-		EdiApp()->m_brush.m_data[idx] = color;
+		EdiApp()->m_brush.m_data[idx] = static_cast<int>(color);
 	}
 	else {
 		EdiApp()->m_brush.m_data[idx] = A2;

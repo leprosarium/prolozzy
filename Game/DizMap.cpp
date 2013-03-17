@@ -55,7 +55,7 @@ PREDICATE_M(map, brushSet , 3)
 	if(var == BRUSH_COLOR)
 	{
 		int64 color = A3;
-		brush.Set(var, color);
+		brush.Set(var, static_cast<int>(color));
 	} 
 	else 
 	{
@@ -77,7 +77,7 @@ PREDICATE_M(map, objSet , 3)
 	if(var == BRUSH_COLOR)
 	{
 		int64 color = A3;
-		obj.Set(var, color);
+		obj.Set(var, static_cast<int>(color));
 	} 
 	else 
 	{
@@ -109,10 +109,8 @@ PREDICATE_M(map, objVar, 3)
 	PlTerm val = A3;
 	if(val.type() == PL_VARIABLE)
 		return A3 = obj.Get(var);
-	int64 v;
-	if(!PL_get_int64(val, &v))
-		return false;
-	obj.Set(var, v); 
+	int64 v = val;
+	obj.Set(var, static_cast<int>(v)); 
 	return true;
 }
 

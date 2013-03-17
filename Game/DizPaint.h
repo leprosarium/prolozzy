@@ -171,7 +171,7 @@ public:
 
 
 	void Done();
-	bool InvalidIdx(int idx) {return idx < 0 && idx >= size(); }
+	bool InvalidIdx(int idx) {return idx < 0 && static_cast<size_type>(idx) >= size(); }
 
 	cTile * Get(int idx) { if(InvalidIdx(idx)) return 0; return (*this)[idx];}
 	int Add(int id);								// add a new empty tile; id must be unique
@@ -226,12 +226,12 @@ public:
 		int				m_scale;		// scale factor
 
 		// fonts
-		cFont*			FontGet			( int idx )						{ if(0<=idx && idx<m_font.size()) return m_font[idx]; else return 0; }
+		cFont*			FontGet			( int idx )						{ if(0<=idx && static_cast<size_t>(idx) < m_font.size()) return m_font[idx]; else return 0; }
 		void			FontDel			( int idx );
 		bool			FontLoad		( char* path, int group=0 );	// load fonts from a path and set the specified group
 		bool			FontLoadFile	( const char* filepath, int group=0 );// load a font file
 		void			FontUnload		( int group=0 );				// unload fonts (destroy) from the specified group
-		int				FontFind		( int id )						{ for(int i=0;i<m_font.size();i++) if(m_font[i]->m_id==id) return i; return -1; }
+		int				FontFind		( int id )						{ for(size_t i=0;i<m_font.size(); i++) if(m_font[i]->m_id==id) return i; return -1; }
 
 		std::vector<cFont*> m_font;			// fonts list
 		Tiles tiles;

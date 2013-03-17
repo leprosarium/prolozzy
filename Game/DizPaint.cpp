@@ -138,14 +138,13 @@ bool cDizPaint::Reacquire()
 void cDizPaint::Unacquire()
 {
 	dlog(LOGAPP, L"Paint unaquire.\n");
-	int i;
 	for(Tiles::iterator i = tiles.begin(), e = tiles.end(); i != e; ++i) 
 	{
 		cTile * tile = *i;
 		R9_TextureDestroy(tile->m_tex);
 		tile->m_tex = 0;
 	}
-	for(i=0; i<m_font.size(); i++)
+	for(size_t i = 0; i < m_font.size(); i++)
 	{
 		if(m_font[i]->m_font)
 			m_font[i]->m_font->SetTexture(NULL); // safe
@@ -319,15 +318,11 @@ bool Tiles::Load( char* path, int group )
 
 void Tiles::Unload( int group )
 {
-	int i;
-	for(i=0;i<size();i++)
-	{
-		if((*this)[i]->m_group==group)
-		{
+	for(size_t i=0;i<size();)
+		if((*this)[i]->m_group == group)
 			Del(i);
-			i--;
-		}
-	}
+		else
+			++i;
 }
 
 int Tiles::Add( int id )
@@ -1007,15 +1002,11 @@ bool cDizPaint::FontLoad( char* path, int group )
 
 void cDizPaint::FontUnload( int group )
 {
-	int i;
-	for(i=0;i<m_font.size();i++)
-	{
+	for(size_t i=0;i<m_font.size();)
 		if(m_font[i]->m_group==group)
-		{
 			FontDel(i);
-			i--;
-		}
-	}
+		else
+			++i;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

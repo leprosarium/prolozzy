@@ -28,19 +28,6 @@
 #include <SWI-Prolog.h>
 #include <string.h>
 #include <string>
-#ifndef __APPLE__
-#include <malloc.h>
-#endif
-
-#ifdef __BORLANDC__
-#define __inline inline
-#endif
-
-#ifdef _MSC_VER			/* MSVC doesn't know throw doesn't return */
-#define PL_THROWN(value)	return value;
-#else
-#define PL_THROWN(v)		(void)0
-#endif
 
 class PlTerm;
 class PlTermv;
@@ -83,10 +70,10 @@ public:
   { return PL_atom_chars(handle);
   }
 
-  int operator ==(const char *s)
+  bool operator ==(const char *s)
   { return strcmp(s, PL_atom_chars(handle)) == 0;
   }
-  int operator ==(const PlAtom &a)
+  bool operator ==(const PlAtom &a)
   { return handle == a.handle;
   }
   operator size_t() const
@@ -151,47 +138,47 @@ public:
   const char *name();
 
 					/* UNIFY */
-  int operator =(const PlTerm &t2);	/* term */
-  int operator =(const PlAtom &a);	/* atom */
-  int operator =(const char *v);	/* atom (from char *) */
-  int operator =(LPCWSTR v);
-  int operator =(long v);		/* integer */
-  int operator =(int v);		/* integer */
-  int operator =(int64_t v);		/* integer */
-  int operator =(double v);		/* float */
-  int operator =(const PlFunctor &f);	/* functor */
+  bool operator =(const PlTerm &t2);	/* term */
+  bool operator =(const PlAtom &a);	/* atom */
+  bool operator =(const char *v);	/* atom (from char *) */
+  bool operator =(LPCWSTR v);
+  bool operator =(long v);		/* integer */
+  bool operator =(int v);		/* integer */
+  bool operator =(int64_t v);		/* integer */
+  bool operator =(double v);		/* float */
+  bool operator =(const PlFunctor &f);	/* functor */
 
 					/* Comparison standard order terms */
-  int operator ==(const PlTerm &t2)
+  bool operator ==(const PlTerm &t2)
   { return PL_compare(ref, t2.ref) == 0;
   }
-  int operator !=(const PlTerm &t2)
+  bool operator !=(const PlTerm &t2)
   { return PL_compare(ref, t2.ref) != 0;
   }
-  int operator <(const PlTerm &t2)
+  bool operator <(const PlTerm &t2)
   { return PL_compare(ref, t2.ref) < 0;
   }
-  int operator >(const PlTerm &t2)
+  bool operator >(const PlTerm &t2)
   { return PL_compare(ref, t2.ref) > 0;
   }
-  int operator <=(const PlTerm &t2)
+  bool operator <=(const PlTerm &t2)
   { return PL_compare(ref, t2.ref) <= 0;
   }
-  int operator >=(const PlTerm &t2)
+  bool operator >=(const PlTerm &t2)
   { return PL_compare(ref, t2.ref) >= 0;
   }
 					/* comparison (long) */
-  int operator ==(long v);
-  int operator !=(long v);
-  int operator <(long v);
-  int operator >(long v);
-  int operator <=(long v);
-  int operator >=(long v);
+  bool operator ==(long v);
+  bool operator !=(long v);
+  bool operator <(long v);
+  bool operator >(long v);
+  bool operator <=(long v);
+  bool operator >=(long v);
 
 					/* comparison (string) */
-  int operator ==(const char *s);
-  int operator ==(LPCWSTR s);
-  int operator ==(const PlAtom &a);
+  bool operator ==(const char *s);
+  bool operator ==(LPCWSTR s);
+  bool operator ==(const PlAtom &a);
 };
 
 
@@ -485,7 +472,6 @@ public:
       return false;
 
     throw PlTypeError("list", ref);
-    PL_THROWN(false);
   }
 };
 
@@ -583,29 +569,29 @@ public:
   { PL_cut_query(qid);
   }
 
-  int next_solution();
+  bool next_solution();
 };
 
 
-__inline int
+__inline bool
 PlCall(module_t m, predicate_t p,const PlTermv &av)
 { PlQuery q(m, p, av);
   return q.next_solution();
 }
 
-__inline int
+__inline bool
 PlCall(const char *predicate, const PlTermv &args)
 { PlQuery q(predicate, args);
   return q.next_solution();
 }
 
-__inline int
+__inline bool
 PlCall(const char *module, const char *predicate, const PlTermv &args)
 { PlQuery q(module, predicate, args);
   return q.next_solution();
 }
 
-__inline int
+__inline bool
 PlCall(const char *goal)
 { PlQuery q("call", PlTermv(PlCompound(goal)));
   return q.next_solution();
@@ -641,7 +627,6 @@ __inline PlTerm::operator char *(void) const
     return s;
 
   throw PlTypeError("text", ref);
-  PL_THROWN(NULL);
 }
 
 __inline PlTerm::operator LPWSTR() const
@@ -653,7 +638,6 @@ __inline PlTerm::operator LPWSTR() const
     return s;
 
   throw PlTypeError("text", ref);
-  PL_THROWN(NULL);
 }
 
 __inline PlTerm::operator long(void) const
@@ -663,7 +647,6 @@ __inline PlTerm::operator long(void) const
     return v;
 
   throw PlTypeError("integer", ref);
-  PL_THROWN(0L);
 }
 
 __inline PlTerm::operator int(void) const
@@ -673,7 +656,6 @@ __inline PlTerm::operator int(void) const
     return v;
 
   throw PlTypeError("integer", ref);
-  PL_THROWN(0);
 }
 
 __inline PlTerm::operator int64_t(void) const
@@ -683,7 +665,6 @@ __inline PlTerm::operator int64_t(void) const
     return v;
 
   throw PlTypeError("integer", ref);
-  PL_THROWN(0);
 }
 
 __inline PlTerm::operator double(void) const
@@ -693,7 +674,6 @@ __inline PlTerm::operator double(void) const
     return v;
 
   throw PlTypeError("float", ref);
-  PL_THROWN(0.0);
 }
 
 __inline PlTerm::operator PlAtom(void) const
@@ -703,7 +683,6 @@ __inline PlTerm::operator PlAtom(void) const
     return PlAtom(v);
 
   throw PlTypeError("atom", ref);
-  PL_THROWN((atom_t)0);
 }
 
 __inline PlTerm::operator void *(void) const
@@ -713,7 +692,6 @@ __inline PlTerm::operator void *(void) const
     return ptr;
 
   throw PlTypeError("pointer", ref);
-  PL_THROWN(NULL);
 }
 
 __inline PlTerm::operator std::string() const
@@ -723,7 +701,6 @@ __inline PlTerm::operator std::string() const
     return std::string(s);
 
   throw PlTypeError("text", ref);
-  PL_THROWN(NULL);
 }
 
 
@@ -747,7 +724,6 @@ PlTerm::operator [](int index) const
     else
       throw PlDomainError("arity", t.ref); /* TBD: proper exception */
   }
-  PL_THROWN((term_t)0);
 }
 
 
@@ -760,7 +736,6 @@ PlTerm::arity()
     return arity;
 
   throw PlTypeError("compound", ref);
-  PL_THROWN(0);
 }
 
 
@@ -773,170 +748,162 @@ PlTerm::name()
     return PL_atom_chars(name);
 
   throw PlTypeError("compound", ref);
-  PL_THROWN(NULL);
 }
 
 
 					/* Unification */
 
-__inline int PlTerm::operator =(const PlTerm &t2)	/* term = term */
+__inline bool PlTerm::operator =(const PlTerm &t2)	/* term = term */
 { int rc = PL_unify(ref, t2.ref);
   term_t ex;
 
   if ( !rc && (ex=PL_exception(0)) )
     throw PlResourceError(ex);
-  return rc;
+  return rc != FALSE;
 }
 
-__inline int PlTerm::operator =(const PlAtom &a) 	/* term = atom */
+__inline bool PlTerm::operator =(const PlAtom &a) 	/* term = atom */
 { int rc = PL_unify_atom(ref, a.handle);
   term_t ex;
 
   if ( !rc && (ex=PL_exception(0)) )
     throw PlResourceError(ex);
-  return rc;
+  return rc != FALSE;
 }
 
-__inline int PlTerm::operator =(const char *v)		/* term = atom */
+__inline bool PlTerm::operator =(const char *v)		/* term = atom */
 { int rc = PL_unify_atom_chars(ref, v);
   term_t ex;
 
   if ( !rc && (ex=PL_exception(0)) )
     throw PlResourceError(ex);
-  return rc;
+  return rc != FALSE;
 }
 
-__inline int PlTerm::operator =(LPCWSTR v)		/* term = atom */
+__inline bool PlTerm::operator =(LPCWSTR v)		/* term = atom */
 { 
   int rc = PL_unify_wchars(ref, PL_ATOM, wcslen(v), v);
   term_t ex;
 
   if ( !rc && (ex=PL_exception(0)) )
     throw PlResourceError(ex);
-  return rc;
+  return rc != FALSE;
 }
 
-__inline int PlTerm::operator =(long v)
+__inline bool PlTerm::operator =(long v)
 { int rc = PL_unify_integer(ref, v);
   term_t ex;
 
   if ( !rc && (ex=PL_exception(0)) )
     throw PlResourceError(ex);
-  return rc;
+  return rc != FALSE;
 }
 
-__inline int PlTerm::operator =(int v)
+__inline bool PlTerm::operator =(int v)
 { int rc = PL_unify_integer(ref, v);
   term_t ex;
 
   if ( !rc && (ex=PL_exception(0)) )
     throw PlResourceError(ex);
-  return rc;
+  return rc != FALSE;
 }
 
-__inline int PlTerm::operator =(int64_t v)
+__inline bool PlTerm::operator =(int64_t v)
 { int rc = PL_unify_int64(ref, v);
   term_t ex;
 
   if ( !rc && (ex=PL_exception(0)) )
     throw PlResourceError(ex);
-  return rc;
+  return rc != FALSE;
 }
 
-__inline int PlTerm::operator =(double v)
+__inline bool PlTerm::operator =(double v)
 { int rc = PL_unify_float(ref, v);
   term_t ex;
 
   if ( !rc && (ex=PL_exception(0)) )
     throw PlResourceError(ex);
-  return rc;
+  return rc != FALSE;
 }
 
-__inline int PlTerm::operator =(const PlFunctor &f)
+__inline bool PlTerm::operator =(const PlFunctor &f)
 { int rc = PL_unify_functor(ref, f.functor);
   term_t ex;
 
   if ( !rc && (ex=PL_exception(0)) )
     throw PlResourceError(ex);
-  return rc;
+  return rc != FALSE;
 }
 
 					/* comparison */
 
 
-__inline int PlTerm::operator ==(long v)
+__inline bool PlTerm::operator ==(long v)
 { long v0;
 
   if ( PL_get_long(ref, &v0) )
     return v0 == v;
 
   throw PlTypeError("integer", ref);
-  PL_THROWN(0);
 }
 
-__inline int PlTerm::operator !=(long v)
+__inline bool PlTerm::operator !=(long v)
 { long v0;
 
   if ( PL_get_long(ref, &v0) )
     return v0 != v;
 
   throw PlTypeError("integer", ref);
-  PL_THROWN(0);
 }
 
-__inline int PlTerm::operator <(long v)
+__inline bool PlTerm::operator <(long v)
 { long v0;
 
   if ( PL_get_long(ref, &v0) )
     return v0 < v;
 
   throw PlTypeError("integer", ref);
-  PL_THROWN(0);
 }
 
-__inline int PlTerm::operator >(long v)
+__inline bool PlTerm::operator >(long v)
 { long v0;
 
   if ( PL_get_long(ref, &v0) )
     return v0 > v;
 
   throw PlTypeError("integer", ref);
-  PL_THROWN(0);
 }
 
-__inline int PlTerm::operator <=(long v)
+__inline bool PlTerm::operator <=(long v)
 { long v0;
 
   if ( PL_get_long(ref, &v0) )
     return v0 <= v;
 
   throw PlTypeError("integer", ref);
-  PL_THROWN(0);
 }
 
-__inline int PlTerm::operator >=(long v)
+__inline bool PlTerm::operator >=(long v)
 { long v0;
 
   if ( PL_get_long(ref, &v0) )
     return v0 >= v;
 
   throw PlTypeError("integer", ref);
-  PL_THROWN(0);
 }
 
 				      /* comparison (string) */
 
-__inline int PlTerm::operator ==(const char *s)
+__inline bool PlTerm::operator ==(const char *s)
 { char *s0;
 
   if ( PL_get_chars(ref, &s0, CVT_ALL) )
     return strcmp(s0, s) == 0;
 
   throw PlTypeError("text", ref);
-  PL_THROWN(0);
 }
 
-__inline int PlTerm::operator ==(LPCWSTR s)
+__inline bool PlTerm::operator ==(LPCWSTR s)
 { LPWSTR s0;
   size_t len;
 	
@@ -944,18 +911,16 @@ __inline int PlTerm::operator ==(LPCWSTR s)
     return wcscmp(s0, s) == 0;
 
   throw PlTypeError("text", ref);
-  PL_THROWN(0);
 }
 
 
-__inline int PlTerm::operator ==(const PlAtom &a)
+__inline bool PlTerm::operator ==(const PlAtom &a)
 { atom_t v;
 
   if ( PL_get_atom(ref, &v) )
     return v == a.handle;
 
   throw PlTypeError("atom", ref);
-  PL_THROWN(0);
 }
 
 
@@ -1104,7 +1069,7 @@ PlException::cppThrow()
 		 *	    QUERY (BODY)	*
 		 *******************************/
 
-__inline int
+__inline bool
 PlQuery::next_solution()
 { int rval;
 
@@ -1114,7 +1079,7 @@ PlQuery::next_solution()
     if ( (ex = PL_exception(qid)) )
       PlException(ex).cppThrow();
   }
-  return rval;
+  return rval != FALSE;
 }
 
 

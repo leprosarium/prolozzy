@@ -34,16 +34,16 @@ struct fV2
 	fV2( float v) : x(v), y(v) {}
 	fV2( const iV2 & v );
 
-	fV2	__fastcall operator - () const { fV2(-x, -y); }
-	fV2	& __fastcall operator *=(const fV2 & v) { x *= v.x; y *= v.y; return *this; }
-	fV2	& __fastcall operator *=(float f) { x *= f; y *= f; return *this; }
-	fV2	& __fastcall operator /=(const fV2 & v) { x /= v.x; y /= v.y; return *this; }
-	fV2	& __fastcall operator /=(float f) { x /= f; y /= f; return *this; }
+	fV2		operator - () const { fV2(-x, -y); }
+	fV2	&	operator *=(const fV2 & v) { x *= v.x; y *= v.y; return *this; }
+	fV2	&	operator *=(float f) { x *= f; y *= f; return *this; }
+	fV2	&	operator /=(const fV2 & v) { x /= v.x; y /= v.y; return *this; }
+	fV2	&	operator /=(float f) { x /= f; y /= f; return *this; }
 
-	fV2 & __fastcall operator +=(const fV2 & v) { x += v.x; y += v.y; return *this; }
-	fV2 & __fastcall operator +=(float f) { x += f; y += f; return *this; }
-	fV2 & __fastcall operator -=(float f) { x -= f; y -= f; return *this; }
-	float __fastcall operator ! () { return sqrt(x*x + y*y); }
+	fV2 &	operator +=(const fV2 & v) { x += v.x; y += v.y; return *this; }
+	fV2 &	operator +=(float f) { x += f; y += f; return *this; }
+	fV2 &	operator -=(float f) { x -= f; y -= f; return *this; }
+	float	operator ! () { return sqrt(x*x + y*y); }
 
 	bool operator <(float v) const { return x < v && y < v; }
     bool operator >(float v) const { return x > v && y > v; }
@@ -52,20 +52,20 @@ struct fV2
 	bool operator ==(const fV2 & v) const { return x == v.x && y == v.y; }
 	bool operator !=(const fV2 & v) const { return ! operator==(v);}
 
-	friend fV2	__fastcall operator *	( const fV2 & v, float f )			{ return fV2( v.x * f, v.y * f ); }
-	friend fV2	__fastcall operator *	( float f, const fV2 & v )			{ return v * f; }
-	friend fV2	__fastcall operator /	( const fV2 & v, float f )			{ return fV2( v.x / f, v.y / f ); }
-	friend fV2	__fastcall operator +	( const fV2 & v1, const fV2 & v2 )		{ return fV2( v1.x + v2.x, v1.y + v2.y ); }
-	friend fV2	__fastcall operator +	( const fV2 & v, float f )		{ return fV2( v.x + f, v.y + f ); }
-	friend fV2	__fastcall operator +	( float f, const fV2 & v)		{ return v + f; }
-	friend fV2	__fastcall operator -	( const fV2& v1, const fV2 & v2 )		{ return fV2( v1.x - v2.x, v1.y - v2.y ); }
-	friend fV2	__fastcall operator -	( const fV2 & v, float f )		{ return fV2( v.x - f, v.y - f ); }
-	friend float __fastcall operator & ( const fV2 & v1, const fV2 & v2 )		{ return v1.x*v2.x + v1.y*v2.y; }
-	friend bool	__fastcall Nor			( fV2 & v1 ) { float t = !v1; if( t==0.0f ) return false; else { v1 *= (1.0f/t); return true; } }
-	friend fV2	__fastcall Unit			( const fV2 & v1 ) { fV2 v = v1; Nor(v); return v; }
-	friend fV2	__fastcall Lerp			( const fV2 & v1, const fV2 & v2, float s ) { return v1 + s * (v2 - v1); }
-	friend fV2	__fastcall Rotate		( const fV2 & v1, float angsin, float angcos )	{ return  fV2( v1.x * angcos + v1.y * -angsin, v1.x * angsin + v1.y * angcos ); }
-	friend fV2	__fastcall Rotate		( const fV2 & v1, float angle )				{ float rad = DEG2RAD(angle); return Rotate(v1, sin(rad), cos(rad)); }
+	friend fV2	operator *	( const fV2 & v, float f )			{ return fV2( v.x * f, v.y * f ); }
+	friend fV2	operator *	( float f, const fV2 & v )			{ return v * f; }
+	friend fV2	operator /	( const fV2 & v, float f )			{ return fV2( v.x / f, v.y / f ); }
+	friend fV2	operator +	( const fV2 & v1, const fV2 & v2 )		{ return fV2( v1.x + v2.x, v1.y + v2.y ); }
+	friend fV2	operator +	( const fV2 & v, float f )		{ return fV2( v.x + f, v.y + f ); }
+	friend fV2	operator +	( float f, const fV2 & v)		{ return v + f; }
+	friend fV2	operator -	( const fV2& v1, const fV2 & v2 )		{ return fV2( v1.x - v2.x, v1.y - v2.y ); }
+	friend fV2	operator -	( const fV2 & v, float f )		{ return fV2( v.x - f, v.y - f ); }
+	friend float operator & ( const fV2 & v1, const fV2 & v2 )		{ return v1.x*v2.x + v1.y*v2.y; }
+	friend bool	Nor			( fV2 & v1 ) { float t = !v1; if( t==0.0f ) return false; else { v1 *= (1.0f/t); return true; } }
+	friend fV2	Unit		( const fV2 & v1 ) { fV2 v = v1; Nor(v); return v; }
+	friend fV2	Lerp		( const fV2 & v1, const fV2 & v2, float s ) { return v1 + s * (v2 - v1); }
+	friend fV2	Rotate		( const fV2 & v1, float angsin, float angcos )	{ return  fV2( v1.x * angcos + v1.y * -angsin, v1.x * angsin + v1.y * angcos ); }
+	friend fV2	Rotate		( const fV2 & v1, float angle )				{ float rad = DEG2RAD(angle); return Rotate(v1, sin(rad), cos(rad)); }
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -81,15 +81,15 @@ struct iV2
 	iV2( float x, float y )		: x(static_cast<int>(x)), y(static_cast<int>(y)) {}
 	iV2( const fV2 & v )		: x(static_cast<int>(v.x)), y(static_cast<int>(v.y)) {}
 
-	iV2 & __fastcall operator*=	( const  iV2 & v )			{ x *= v.x; y *= v.y; return *this; }
-	iV2 & __fastcall operator*=	( int s )					{ x *= s; y *= s; return *this; }
-	iV2 & __fastcall operator/=	( const  iV2 & v )			{ x /= v.x; y /= v.y; return *this; }
-	iV2 & __fastcall operator/=	( int s )					{ x /= s; y /= s; return *this; }
-	iV2 & __fastcall operator+=	( const iV2 & v)			{ x += v.x; y += v.y; return *this; }
-	iV2 & __fastcall operator+=	( int s)					{ x += s; y += s; return *this; }
-	iV2 & __fastcall operator-=	( const iV2 & v)			{ x -= v.x; y -= v.y; return *this; }
-	iV2 & __fastcall operator-=	( int s)					{ x -= s; y -= s; return *this; }
-	iV2	__fastcall operator-	() const					{ return iV2(-x, -y); }
+	iV2 &	operator*=	( const  iV2 & v )			{ x *= v.x; y *= v.y; return *this; }
+	iV2 &	operator*=	( int s )					{ x *= s; y *= s; return *this; }
+	iV2 &	operator/=	( const  iV2 & v )			{ x /= v.x; y /= v.y; return *this; }
+	iV2 &	operator/=	( int s )					{ x /= s; y /= s; return *this; }
+	iV2 &	operator+=	( const iV2 & v)			{ x += v.x; y += v.y; return *this; }
+	iV2 &	operator+=	( int s)					{ x += s; y += s; return *this; }
+	iV2 &	operator-=	( const iV2 & v)			{ x -= v.x; y -= v.y; return *this; }
+	iV2 &	operator-=	( int s)					{ x -= s; y -= s; return *this; }
+	iV2		operator-	() const					{ return iV2(-x, -y); }
 
 	bool operator <(int v) const { return x < v && y < v; }
     bool operator >(int v) const { return x > v && y > v; }
@@ -99,22 +99,17 @@ struct iV2
 	bool operator ==(int v) const { return x == v && y == v; }
 	bool operator !=(const iV2 & v) const { return ! operator==(v);}
 
-
-
-
-
-
-	friend iV2	__fastcall operator*	( const iV2 & v, int s )			{ return iV2( v.x * s, v.y * s ); }
-	friend iV2	__fastcall operator*	( int s, const iV2 & v )			{ return v * s; }
-	friend iV2	__fastcall operator*	( const iV2 & v1, const iV2 & v2 )	{ return iV2( v1.x * v2.x, v1.y * v2.y); }
-	friend iV2	__fastcall operator/	( const iV2 & v, int s )			{ return iV2( v.x / s, v.y / s ); }
-	friend iV2	__fastcall operator/	( const iV2 & v1, const iV2 & v2 )	{ return iV2( v1.x / v2.x, v1.y / v2.y ); }
-	friend iV2	__fastcall operator+	( const iV2 & v1, const iV2 & v2 )	{ return iV2( v1.x + v2.x, v1.y + v2.y ); }
-	friend iV2	__fastcall operator+	( const iV2 & v, int s )			{ return iV2( v.x + s, v.y + s ); }
-	friend iV2	__fastcall operator+	( int s, const iV2 & v )			{ return v + s; }
-	friend iV2	__fastcall operator-	( const iV2 & v1, const iV2 & v2 )	{ return iV2( v1.x - v2.x, v1.y - v2.y ); }
-	friend iV2	__fastcall operator-	( const iV2 & v, int s )			{ return iV2( v.x - s, v.y - s ); }
-	friend iV2	__fastcall operator-	( int s, const iV2 & v )			{ return s + -v;}
+	friend iV2	operator*	( const iV2 & v, int s )			{ return iV2( v.x * s, v.y * s ); }
+	friend iV2	operator*	( int s, const iV2 & v )			{ return v * s; }
+	friend iV2	operator*	( const iV2 & v1, const iV2 & v2 )	{ return iV2( v1.x * v2.x, v1.y * v2.y); }
+	friend iV2	operator/	( const iV2 & v, int s )			{ return iV2( v.x / s, v.y / s ); }
+	friend iV2	operator/	( const iV2 & v1, const iV2 & v2 )	{ return iV2( v1.x / v2.x, v1.y / v2.y ); }
+	friend iV2	operator+	( const iV2 & v1, const iV2 & v2 )	{ return iV2( v1.x + v2.x, v1.y + v2.y ); }
+	friend iV2	operator+	( const iV2 & v, int s )			{ return iV2( v.x + s, v.y + s ); }
+	friend iV2	operator+	( int s, const iV2 & v )			{ return v + s; }
+	friend iV2	operator-	( const iV2 & v1, const iV2 & v2 )	{ return iV2( v1.x - v2.x, v1.y - v2.y ); }
+	friend iV2	operator-	( const iV2 & v, int s )			{ return iV2( v.x - s, v.y - s ); }
+	friend iV2	operator-	( int s, const iV2 & v )			{ return s + -v;}
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -146,12 +141,12 @@ struct fRect
 		bool	Intersects(const fRect & r) const			{ return x2 > r.x1 && x1 < r.x2 && y2 > r.y1 && y1 < r.y2; }
 };
 
-inline	bool	__fastcall operator==	( const fRect& r1, const fRect& r2 )	{ return (r1.x1==r2.x1 && r1.y1==r2.y1 && r1.x2==r2.x2 && r1.y2==r2.y2); }
-inline	bool	__fastcall operator!=	( const fRect& r1, const fRect& r2 )	{ return (r1.x1!=r2.x1 || r1.y1!=r2.y1 || r1.x2!=r2.x2 || r1.y2!=r2.y2); }
-inline fRect	__fastcall operator+	( const fRect& r1, const fRect& r2 )	{ return fRect( (r1.x1<r2.x1)?r1.x1:r2.x1, (r1.y1<r2.y1)?r1.y1:r2.y1, (r1.x2>r2.x2)?r1.x2:r2.x2, (r1.y2>r2.y2)?r1.y2:r2.y2 ); }
-inline fRect	__fastcall operator+=	( fRect& r1, const fRect& r2 )			{ if(r2.x1<r1.x1) r1.x1=r2.x1; if(r2.y1<r1.y1) r1.y1=r2.y1; if(r2.x2>r1.x2) r1.x2=r2.x2; if(r2.y2>r1.y2) r1.y2=r2.y2; return r1; }
-inline fRect	__fastcall operator*	( const fRect& r1, const fRect& r2 )	{ return fRect( (r1.x1>r2.x1)?r1.x1:r2.x1, (r1.y1>r2.y1)?r1.y1:r2.y1, (r1.x2<r2.x2)?r1.x2:r2.x2, (r1.y2<r2.y2)?r1.y2:r2.y2 ); }
-inline fRect	__fastcall operator*=	( fRect& r1, const fRect& r2 )			{ if(r2.x1>r1.x1) r1.x1=r2.x1; if(r2.y1>r1.y1) r1.y1=r2.y1; if(r2.x2<r1.x2) r1.x2=r2.x2; if(r2.y2<r1.y2) r1.y2=r2.y2; return r1; }
+inline	bool	operator==	( const fRect& r1, const fRect& r2 )	{ return (r1.x1==r2.x1 && r1.y1==r2.y1 && r1.x2==r2.x2 && r1.y2==r2.y2); }
+inline	bool	operator!=	( const fRect& r1, const fRect& r2 )	{ return (r1.x1!=r2.x1 || r1.y1!=r2.y1 || r1.x2!=r2.x2 || r1.y2!=r2.y2); }
+inline fRect	operator+	( const fRect& r1, const fRect& r2 )	{ return fRect( (r1.x1<r2.x1)?r1.x1:r2.x1, (r1.y1<r2.y1)?r1.y1:r2.y1, (r1.x2>r2.x2)?r1.x2:r2.x2, (r1.y2>r2.y2)?r1.y2:r2.y2 ); }
+inline fRect	operator+=	( fRect& r1, const fRect& r2 )			{ if(r2.x1<r1.x1) r1.x1=r2.x1; if(r2.y1<r1.y1) r1.y1=r2.y1; if(r2.x2>r1.x2) r1.x2=r2.x2; if(r2.y2>r1.y2) r1.y2=r2.y2; return r1; }
+inline fRect	operator*	( const fRect& r1, const fRect& r2 )	{ return fRect( (r1.x1>r2.x1)?r1.x1:r2.x1, (r1.y1>r2.y1)?r1.y1:r2.y1, (r1.x2<r2.x2)?r1.x2:r2.x2, (r1.y2<r2.y2)?r1.y2:r2.y2 ); }
+inline fRect	operator*=	( fRect& r1, const fRect& r2 )			{ if(r2.x1>r1.x1) r1.x1=r2.x1; if(r2.y1>r1.y1) r1.y1=r2.y1; if(r2.x2<r1.x2) r1.x2=r2.x2; if(r2.y2<r1.y2) r1.y2=r2.y2; return r1; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // iRect
@@ -183,12 +178,12 @@ struct iRect
 		bool	Intersects(const iRect & r) const			{ return x2 > r.x1 && x1 < r.x2 && y2 > r.y1 && y1 < r.y2; }
 };
 
-inline	bool	__fastcall operator==	( const iRect& r1, const iRect& r2 )	{ return (r1.x1==r2.x1 && r1.y1==r2.y1 && r1.x2==r2.x2 && r1.y2==r2.y2); }
-inline	bool	__fastcall operator!=	( const iRect& r1, const iRect& r2 )	{ return (r1.x1!=r2.x1 || r1.y1!=r2.y1 || r1.x2!=r2.x2 || r1.y2!=r2.y2); }
-inline iRect	__fastcall operator+	( const iRect& r1, const iRect& r2 )	{ return iRect( (r1.x1<r2.x1)?r1.x1:r2.x1, (r1.y1<r2.y1)?r1.y1:r2.y1, (r1.x2>r2.x2)?r1.x2:r2.x2, (r1.y2>r2.y2)?r1.y2:r2.y2 ); }
-inline iRect	__fastcall operator+=	( iRect& r1, const iRect& r2 )			{ if(r2.x1<r1.x1) r1.x1=r2.x1; if(r2.y1<r1.y1) r1.y1=r2.y1; if(r2.x2>r1.x2) r1.x2=r2.x2; if(r2.y2>r1.y2) r1.y2=r2.y2; return r1; }
-inline iRect	__fastcall operator*	( const iRect& r1, const iRect& r2 )	{ return iRect( (r1.x1>r2.x1)?r1.x1:r2.x1, (r1.y1>r2.y1)?r1.y1:r2.y1, (r1.x2<r2.x2)?r1.x2:r2.x2, (r1.y2<r2.y2)?r1.y2:r2.y2 ); }
-inline iRect	__fastcall operator*=	( iRect& r1, const iRect& r2 )			{ if(r2.x1>r1.x1) r1.x1=r2.x1; if(r2.y1>r1.y1) r1.y1=r2.y1; if(r2.x2<r1.x2) r1.x2=r2.x2; if(r2.y2<r1.y2) r1.y2=r2.y2; return r1; }
+inline	bool	operator==	( const iRect& r1, const iRect& r2 )	{ return (r1.x1==r2.x1 && r1.y1==r2.y1 && r1.x2==r2.x2 && r1.y2==r2.y2); }
+inline	bool	operator!=	( const iRect& r1, const iRect& r2 )	{ return (r1.x1!=r2.x1 || r1.y1!=r2.y1 || r1.x2!=r2.x2 || r1.y2!=r2.y2); }
+inline iRect	operator+	( const iRect& r1, const iRect& r2 )	{ return iRect( (r1.x1<r2.x1)?r1.x1:r2.x1, (r1.y1<r2.y1)?r1.y1:r2.y1, (r1.x2>r2.x2)?r1.x2:r2.x2, (r1.y2>r2.y2)?r1.y2:r2.y2 ); }
+inline iRect	operator+=	( iRect& r1, const iRect& r2 )			{ if(r2.x1<r1.x1) r1.x1=r2.x1; if(r2.y1<r1.y1) r1.y1=r2.y1; if(r2.x2>r1.x2) r1.x2=r2.x2; if(r2.y2>r1.y2) r1.y2=r2.y2; return r1; }
+inline iRect	operator*	( const iRect& r1, const iRect& r2 )	{ return iRect( (r1.x1>r2.x1)?r1.x1:r2.x1, (r1.y1>r2.y1)?r1.y1:r2.y1, (r1.x2<r2.x2)?r1.x2:r2.x2, (r1.y2<r2.y2)?r1.y2:r2.y2 ); }
+inline iRect	operator*=	( iRect& r1, const iRect& r2 )			{ if(r2.x1>r1.x1) r1.x1=r2.x1; if(r2.y1>r1.y1) r1.y1=r2.y1; if(r2.x2<r1.x2) r1.x2=r2.x2; if(r2.y2<r1.y2) r1.y2=r2.y2; return r1; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // fColor

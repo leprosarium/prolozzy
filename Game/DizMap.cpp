@@ -308,11 +308,8 @@ void cDizMap::PartitionAdd( int brushidx )
 	std::vector<Room>::iterator room = Rooms.begin();
 	for(iV2 r; r.y < Height(); ++r.y)
 		for(r.x = 0; r.x < Width(); ++r.x, ++room)
-		{
-			iRect rpartition = RoomBorderRect(r, Room::Border);
-			if( RECT2RECT(rbrush,rpartition) )
+			if(rbrush.Intersects(RoomBorderRect(r, Room::Border)) )
 				room->AddBrush(brushidx);
-		}
 }
 
 void cDizMap::PartitionMake()

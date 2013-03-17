@@ -792,12 +792,7 @@ void cEdiMap::BrushDrawExtra( iRect& view )
 			if(layer<0 || layer>=LAYER_MAX) continue;
 			if(EdiApp()->LayerGet(layer)==0) continue; // hidden
 
-			iRect bb;
-			bb.x1 = brush.m_data[BRUSH_X];
-			bb.y1 = brush.m_data[BRUSH_Y];
-			bb.x2 = brush.m_data[BRUSH_X] + brush.m_data[BRUSH_W];
-			bb.y2 = brush.m_data[BRUSH_Y] + brush.m_data[BRUSH_H];
-			if(!RECT2RECT(view,bb)) continue;
+			if(!view.Intersects(brush.rect())) continue;
 
 			// store in drawbuffer
 			if(m_brushviscount==m_brushvissize)
@@ -975,25 +970,14 @@ void cEdiMap::PartitionDone()
 BOOL cEdiMap::PartitionAdd( int brushidx )
 {
 	int pcountw = PartitionCountW();
-	iRect br;
-	br.x1 = m_brush[brushidx].m_data[BRUSH_X];
-	br.y1 = m_brush[brushidx].m_data[BRUSH_Y];
-	br.x2 = br.x1 + m_brush[brushidx].m_data[BRUSH_W];
-	br.y2 = br.y1 + m_brush[brushidx].m_data[BRUSH_H];
+	iRect br = m_brush[brushidx].rect();
 	BOOL ok=FALSE;
 	for(int i=0; i<m_partition.size(); i++)
-	{
-		iRect pr;
-		pr.x1 = (i%pcountw) * PARTITION_CELSIZE;
-		pr.y1 = (i/pcountw) * PARTITION_CELSIZE;
-		pr.x2 = pr.x1 + PARTITION_CELSIZE;
-		pr.y2 = pr.y1 + PARTITION_CELSIZE;
-		if( RECT2RECT(br,pr) )
+		if( br.Intersects(PartitionRect(i, pcountw)) )
 		{	
 			m_partition[i]->Add(brushidx);
 			ok = TRUE;
 		}
-	}
 	if(!ok)
 		dlog(LOGAPP, L"Brush # %d (%d, %d)-(%d, %d) out of bounds\n", brushidx, br.x1, br.y1, br.x2, br.y2);
 	return ok;
@@ -1002,21 +986,10 @@ BOOL cEdiMap::PartitionAdd( int brushidx )
 void cEdiMap::PartitionDel( int brushidx )
 {
 	int pcountw = PartitionCountW();
-	iRect br;
-	br.x1 = m_brush[brushidx].m_data[BRUSH_X];
-	br.y1 = m_brush[brushidx].m_data[BRUSH_Y];
-	br.x2 = br.x1 + m_brush[brushidx].m_data[BRUSH_W];
-	br.y2 = br.y1 + m_brush[brushidx].m_data[BRUSH_H];
+	iRect br = m_brush[brushidx].rect();
 	for(int i=0; i<m_partition.size(); i++)
-	{
-		iRect pr;
-		pr.x1 = (i%pcountw) * PARTITION_CELSIZE;
-		pr.y1 = (i/pcountw) * PARTITION_CELSIZE;
-		pr.x2 = pr.x1 + PARTITION_CELSIZE;
-		pr.y2 = pr.y1 + PARTITION_CELSIZE;
-		if( RECT2RECT(br,pr) )
+		if( br.Intersects(PartitionRect(i, pcountw)) )
 			m_partition[i]->Sub(brushidx);
-	}
 }
 
 int	cEdiMap::PartitionGet( iRect& rect, int* buffer, int buffersize )
@@ -1026,19 +999,12 @@ int	cEdiMap::PartitionGet( iRect& rect, int* buffer, int buffersize )
 	int pcountw = PartitionCountW();
 	int count = 0;
 	for(int i=0; i<m_partition.size(); i++)
-	{
-		iRect pr;
-		pr.x1 = (i%pcountw) * PARTITION_CELSIZE;
-		pr.y1 = (i/pcountw) * PARTITION_CELSIZE;
-		pr.x2 = pr.x1 + PARTITION_CELSIZE;
-		pr.y2 = pr.y1 + PARTITION_CELSIZE;
-		if( RECT2RECT(rect,pr) )
+		if(rect.Intersects(PartitionRect(i, pcountw)) )
 		{
 			buffer[count] = i;
 			count++;
 			if(count==buffersize) break;
 		}
-	}	
 	return count;
 }
 

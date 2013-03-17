@@ -81,9 +81,14 @@ struct tBrush
 {
 	int	m_data[BRUSH_MAX];
 				tBrush()											{}
-inline	int		Get( int idx )										{ return m_data[idx]; }
+inline	int		Get( int idx ) const								{ return m_data[idx]; }
 inline	void	Set( int idx, int val )								{ m_data[idx] = val; }
 inline	void	MakeBBW	( int &x1, int &y1, int &x2, int &y2 )		{ x1 = m_data[BRUSH_X]; x2 = m_data[BRUSH_X]+m_data[BRUSH_W]; y1 = m_data[BRUSH_Y]; y2 = m_data[BRUSH_Y]+m_data[BRUSH_H]; }
+
+	iV2 pos() const { return iV2(Get(BRUSH_X), Get(BRUSH_Y)); }
+	iV2 size() const { return iV2(Get(BRUSH_W), Get(BRUSH_H)); }
+	iRect rect() const { iV2 p = pos(); return iRect(p, p + size()); }
+
 };
 
 // macros to access brush width and height with respect to flip rotation and scale

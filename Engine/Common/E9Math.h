@@ -14,7 +14,6 @@
 #define DEG2RAD(d)					((d) * PI / 180.0f)			// convert from degrees to radians
 
 #define INRECT( x,y,r )				( r.left<=x && x<r.right && r.top<=y && y<r.bottom )
-#define RECT2RECT( r1,r2 )			( !( (r1.x2 <= r2.x1) || (r1.x1 >= r2.x2) || (r1.y2 <= r2.y1) || (r1.y1 >= r2.y2) ) )
 
 #define RGB2BGR( argb )				( (argb & 0xff00ff00) | ((argb & 0x00ff0000)>>16) | ((argb & 0x000000ff)<<16) )
 
@@ -143,7 +142,8 @@ struct fRect
 		fRect &	Inflate( const fV2 & v )					{ x1+=v.x; y1+=v.y; x2-=v.x; y2-=v.y; return *this; }
 		fRect &	Deflate( const fV2 & v )					{ x1-=v.x; y1-=v.y; x2+=v.x; y2+=v.y; return *this; }
 		fRect &	Offset( const fV2 & v )						{ x1+=v.x; y1+=v.y; x2+=v.x; y2+=v.y; return *this; }
-		bool	IsInside( const fV2 & v ) const				{ return (x1<=v.x && v.x<x2 && y1<=v.y && v.y<y2); }
+		bool	IsInside(const fV2 & v) const				{ return x1<=v.x && v.x<x2 && y1<=v.y && v.y<y2; }
+		bool	Intersects(const fRect & r) const			{ return x2 > r.x1 && x1 < r.x2 && y2 > r.y1 && y1 < r.y2; }
 };
 
 inline	bool	__fastcall operator==	( const fRect& r1, const fRect& r2 )	{ return (r1.x1==r2.x1 && r1.y1==r2.y1 && r1.x2==r2.x2 && r1.y2==r2.y2); }
@@ -180,6 +180,7 @@ struct iRect
 	 	iRect &	Deflate( const iV2 & v )					{ x1-=v.x; y1-=v.y; x2+=v.x; y2+=v.y; return *this; }
 	 	iRect &	Offset( const iV2 & v )						{ x1+=v.x; y1+=v.y; x2+=v.x; y2+=v.y; return *this; }
 		bool	IsInside( const iV2 & v ) const				{ return (x1<=v.x && v.x<x2 && y1<=v.y && v.y<y2); }
+		bool	Intersects(const iRect & r) const			{ return x2 > r.x1 && x1 < r.x2 && y2 > r.y1 && y1 < r.y2; }
 };
 
 inline	bool	__fastcall operator==	( const iRect& r1, const iRect& r2 )	{ return (r1.x1==r2.x1 && r1.y1==r2.y1 && r1.x2==r2.x2 && r1.y2==r2.y2); }

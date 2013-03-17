@@ -827,11 +827,8 @@ void cDizGame::ObjGather()
 		RoomBorderRect(Room::Size) :  // extended room bound to 3x3 rooms
 		RoomBorderRect(Room::Border); // room bound with small border
 	for(int i=0; i<g_map.ObjCount(); i++ )
-	{
-		iRect objbb = g_map.ObjGet(i).rect();
-		if(RECT2RECT(objbb,roombb)) ObjAdd(i); // object is present in current bordered room
-	}
-
+		if(g_map.ObjGet(i).rect().Intersects(roombb)) 
+			ObjAdd(i); // object is present in current bordered room
 }
 
 void cDizGame::ObjDraw( const tBrush & brush )

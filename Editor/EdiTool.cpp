@@ -519,7 +519,7 @@ void cEdiToolEdit::BrushSelect()
 		bb.x2 = brush.m_data[BRUSH_X] + brush.m_data[BRUSH_W];
 		bb.y2 = brush.m_data[BRUSH_Y] + brush.m_data[BRUSH_H];
 		
-		if( RECT2RECT(m_rect,bb) )
+		if( m_rect.Intersects(brush.rect()) )
 		{
 			if(m_selop==-1 && (brush.m_data[BRUSH_SELECT]!=0) )
 			{

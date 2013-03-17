@@ -306,11 +306,10 @@ void cDizMap::PartitionAdd( int brushidx )
 	int rooms[4][2] = { {brx,bry}, {brx+1,bry}, {brx,bry+1}, br
 	*/
 	std::vector<Room>::iterator room = Rooms.begin();
-	for(int ry = 0; ry < Height(); ++ry)
-		for(int rx = 0; rx < Width(); ++rx, ++room)
+	for(iV2 r; r.y < Height(); ++r.y)
+		for(r.x = 0; r.x < Width(); ++r.x, ++room)
 		{
-			iRect rpartition;
-			MakeRoomBBW( rx, ry, rpartition.x1, rpartition.y1, rpartition.x2, rpartition.y2, Room::Border );
+			iRect rpartition = RoomBorderRect(r, Room::Border);
 			if( RECT2RECT(rbrush,rpartition) )
 				room->AddBrush(brushidx);
 		}

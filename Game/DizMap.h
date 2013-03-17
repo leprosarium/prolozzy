@@ -72,7 +72,8 @@ public:
 		int			    RoomIdx(int rx, int ry) const { return rx + ry * Width(); }
 		bool			InvalidRoomCoord(int rx, int ry)	{ return rx < 0 || rx >= Width() || ry < 0 || ry >= Height(); }
 
-inline	void			MakeRoomBBW			( int rx, int ry, int &x1, int &y1, int &x2, int &y2, int border=0 )	{ x1=rx*Room::Size.x-border; y1=ry*Room::Size.y-border; x2=(rx+1)*Room::Size.x+border; y2=(ry+1)*Room::Size.y+border; }
+//inline	void			MakeRoomBBW			( int rx, int ry, int &x1, int &y1, int &x2, int &y2, int border=0 )	{ x1=rx*Room::Size.x-border; y1=ry*Room::Size.y-border; x2=(rx+1)*Room::Size.x+border; y2=(ry+1)*Room::Size.y+border; }
+inline	iRect			RoomBorderRect( const iV2 & room, const iV2 & border)	{ return Room::Rect(room).Deflate(border); }
 
 		int				Width() const { return m_mapw; }
 		int				Height() const { return m_maph; }

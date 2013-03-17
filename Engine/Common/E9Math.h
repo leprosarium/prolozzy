@@ -140,14 +140,14 @@ struct fRect
 		float 	Width()	const								{ return x2-x1; }
 		float 	Height() const								{ return y2-y1; }
 		fV2		Center() const								{ return fV2((x1+x2) * 0.5f,(y1+y2) * 0.5f); }
-		void	Inflate( const fV2 & v )					{ x1+=v.x; y1+=v.y; x2-=v.x; y2-=v.y; }
-		void	Deflate( const fV2 & v )					{ x1-=v.x; y1-=v.y; x2+=v.x; y2+=v.y; }
-		void	Offset( const fV2 & v )						{ x1+=v.x; y1+=v.y; x2+=v.x; y2+=v.y; }
-		BOOL	IsInside( const fV2 & v ) const				{ return (x1<=v.x && v.x<x2 && y1<=v.y && v.y<y2); }
+		fRect &	Inflate( const fV2 & v )					{ x1+=v.x; y1+=v.y; x2-=v.x; y2-=v.y; return *this; }
+		fRect &	Deflate( const fV2 & v )					{ x1-=v.x; y1-=v.y; x2+=v.x; y2+=v.y; return *this; }
+		fRect &	Offset( const fV2 & v )						{ x1+=v.x; y1+=v.y; x2+=v.x; y2+=v.y; return *this; }
+		bool	IsInside( const fV2 & v ) const				{ return (x1<=v.x && v.x<x2 && y1<=v.y && v.y<y2); }
 };
 
-inline	BOOL	__fastcall operator==	( const fRect& r1, const fRect& r2 )	{ return (r1.x1==r2.x1 && r1.y1==r2.y1 && r1.x2==r2.x2 && r1.y2==r2.y2); }
-inline	BOOL	__fastcall operator!=	( const fRect& r1, const fRect& r2 )	{ return (r1.x1!=r2.x1 || r1.y1!=r2.y1 || r1.x2!=r2.x2 || r1.y2!=r2.y2); }
+inline	bool	__fastcall operator==	( const fRect& r1, const fRect& r2 )	{ return (r1.x1==r2.x1 && r1.y1==r2.y1 && r1.x2==r2.x2 && r1.y2==r2.y2); }
+inline	bool	__fastcall operator!=	( const fRect& r1, const fRect& r2 )	{ return (r1.x1!=r2.x1 || r1.y1!=r2.y1 || r1.x2!=r2.x2 || r1.y2!=r2.y2); }
 inline fRect	__fastcall operator+	( const fRect& r1, const fRect& r2 )	{ return fRect( (r1.x1<r2.x1)?r1.x1:r2.x1, (r1.y1<r2.y1)?r1.y1:r2.y1, (r1.x2>r2.x2)?r1.x2:r2.x2, (r1.y2>r2.y2)?r1.y2:r2.y2 ); }
 inline fRect	__fastcall operator+=	( fRect& r1, const fRect& r2 )			{ if(r2.x1<r1.x1) r1.x1=r2.x1; if(r2.y1<r1.y1) r1.y1=r2.y1; if(r2.x2>r1.x2) r1.x2=r2.x2; if(r2.y2>r1.y2) r1.y2=r2.y2; return r1; }
 inline fRect	__fastcall operator*	( const fRect& r1, const fRect& r2 )	{ return fRect( (r1.x1>r2.x1)?r1.x1:r2.x1, (r1.y1>r2.y1)?r1.y1:r2.y1, (r1.x2<r2.x2)?r1.x2:r2.x2, (r1.y2<r2.y2)?r1.y2:r2.y2 ); }
@@ -176,14 +176,14 @@ struct iRect
 	 	int 	Width()	const								{ return x2-x1; }
 	 	int 	Height() const								{ return y2-y1; }
 	 	iV2		Center() const								{ return iV2((x1+x2)/2.0f,(y1+y2)/2.0f); }
-	 	void	Inflate( const iV2 & v )					{ x1+=v.x; y1+=v.y; x2-=v.x; y2-=v.y; }
-	 	void	Deflate( const iV2 & v )					{ x1-=v.x; y1-=v.y; x2+=v.x; y2+=v.y; }
-	 	void	Offset( const iV2 & v )						{ x1+=v.x; y1+=v.y; x2+=v.x; y2+=v.y; }
-		BOOL	IsInside( const iV2 & v ) const				{ return (x1<=v.x && v.x<x2 && y1<=v.y && v.y<y2); }
+	 	iRect &	Inflate( const iV2 & v )					{ x1+=v.x; y1+=v.y; x2-=v.x; y2-=v.y; return *this; }
+	 	iRect &	Deflate( const iV2 & v )					{ x1-=v.x; y1-=v.y; x2+=v.x; y2+=v.y; return *this; }
+	 	iRect &	Offset( const iV2 & v )						{ x1+=v.x; y1+=v.y; x2+=v.x; y2+=v.y; return *this; }
+		bool	IsInside( const iV2 & v ) const				{ return (x1<=v.x && v.x<x2 && y1<=v.y && v.y<y2); }
 };
 
-inline	BOOL	__fastcall operator==	( const iRect& r1, const iRect& r2 )	{ return (r1.x1==r2.x1 && r1.y1==r2.y1 && r1.x2==r2.x2 && r1.y2==r2.y2); }
-inline	BOOL	__fastcall operator!=	( const iRect& r1, const iRect& r2 )	{ return (r1.x1!=r2.x1 || r1.y1!=r2.y1 || r1.x2!=r2.x2 || r1.y2!=r2.y2); }
+inline	bool	__fastcall operator==	( const iRect& r1, const iRect& r2 )	{ return (r1.x1==r2.x1 && r1.y1==r2.y1 && r1.x2==r2.x2 && r1.y2==r2.y2); }
+inline	bool	__fastcall operator!=	( const iRect& r1, const iRect& r2 )	{ return (r1.x1!=r2.x1 || r1.y1!=r2.y1 || r1.x2!=r2.x2 || r1.y2!=r2.y2); }
 inline iRect	__fastcall operator+	( const iRect& r1, const iRect& r2 )	{ return iRect( (r1.x1<r2.x1)?r1.x1:r2.x1, (r1.y1<r2.y1)?r1.y1:r2.y1, (r1.x2>r2.x2)?r1.x2:r2.x2, (r1.y2>r2.y2)?r1.y2:r2.y2 ); }
 inline iRect	__fastcall operator+=	( iRect& r1, const iRect& r2 )			{ if(r2.x1<r1.x1) r1.x1=r2.x1; if(r2.y1<r1.y1) r1.y1=r2.y1; if(r2.x2>r1.x2) r1.x2=r2.x2; if(r2.y2>r1.y2) r1.y2=r2.y2; return r1; }
 inline iRect	__fastcall operator*	( const iRect& r1, const iRect& r2 )	{ return iRect( (r1.x1>r2.x1)?r1.x1:r2.x1, (r1.y1>r2.y1)?r1.y1:r2.y1, (r1.x2<r2.x2)?r1.x2:r2.x2, (r1.y2<r2.y2)?r1.y2:r2.y2 ); }

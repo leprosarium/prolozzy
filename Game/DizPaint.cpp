@@ -155,10 +155,10 @@ void cDizPaint::Unacquire()
 void cDizPaint::Layout()
 {
 	m_scale = g_cfg.m_scale;
-	if(m_scale==0)	m_scale = std::max( 0, std::min( R9_GetWidth()/g_game.m_screen_bw, R9_GetHeight()/g_game.m_screen_bh ) );
+	if(m_scale==0)	m_scale = std::max( 0, std::min( R9_GetWidth()/g_game.screenSize.x, R9_GetHeight()/g_game.screenSize.y ) );
 	if(!g_dizdebug.m_console)
 	{
-		scr = (iV2(R9_GetWidth(), R9_GetHeight()) - iV2(g_game.m_screen_w, g_game.m_screen_h) * m_scale ) / 2;
+		scr = (iV2(R9_GetWidth(), R9_GetHeight()) - g_game.screenSize * m_scale ) / 2;
 	}
 	else
 	{

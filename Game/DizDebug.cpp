@@ -227,8 +227,8 @@ bool cDizDebug::Update()
 	if(ctrl && I9_GetKeyDown(I9K_EQUALS)) // +
 	{
 		g_cfg.m_scale++;
-		if( g_game.m_screen_bw * g_cfg.m_scale > R9_GetWidth() ||
-			g_game.m_screen_bh * g_cfg.m_scale > R9_GetHeight() )
+		iV2 size = g_game.screenSizeBorder * g_cfg.m_scale;
+		if( size.x > R9_GetWidth() || size.y > R9_GetHeight() )
 			g_cfg.m_scale--;
 		g_paint.Layout();
 	}
@@ -367,13 +367,7 @@ void cDizDebug::NavigationUpdate()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 iRect cDizDebug::ConsoleGetRect()
 {
-	int scrw = g_game.m_screen_w * g_paint.m_scale;
-	int scrh = g_game.m_screen_h * g_paint.m_scale;
-	iRect rect;
-	rect.x1 = 0;
-	rect.y1 = 0;//scrh;
-	rect.x2 = m_renderw;
-	rect.y2 = m_renderh - (INFO_LINES+1)*R9_CHRH;
+	iRect rect(0, 0, m_renderw, m_renderh - (INFO_LINES+1)*R9_CHRH);
 	if(rect.y1>rect.y2) rect.y1=rect.y2;
 	return rect;
 }
@@ -475,13 +469,8 @@ void cDizDebug::Con_LogCallback( int ch, LPCWSTR msg )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 iRect cDizDebug::SlotGetRect()
 {
-	int scrw = g_game.m_screen_w*g_paint.m_scale;
-	int scrh = g_game.m_screen_h*g_paint.m_scale;
-	iRect rect;
-	rect.x1 = scrw;
-	rect.y1 = 0;
-	rect.x2 = m_renderw;
-	rect.y2 = std::min(rect.y1+R9_CHRH*SLOT_COUNT,scrh);
+	iV2 scr = g_game.screenSize * g_paint.m_scale;
+	iRect rect(scr.x, 0, m_renderw, std::min(R9_CHRH*SLOT_COUNT, scr.y));
 	if(rect.x1>rect.x2) rect.x1=rect.x2;
 	if(rect.y1>rect.y2) rect.y1=rect.y2;
 	return rect;

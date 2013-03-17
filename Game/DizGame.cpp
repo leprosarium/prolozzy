@@ -324,12 +324,14 @@ cDizGame g_game;
 
 
 
-cDizGame::cDizGame() : 	_void("void"),	soft("soft"), hard("hard"), jump("jump"), none("none"), start("start"), exit("exit"), refresh("refresh"), _command(none), 
+cDizGame::cDizGame() : 	_void("void"),	soft("soft"), hard("hard"), jump("jump"), none("none"), start("start"), exit("exit"), refresh("refresh"),
+						screenSize(GAME_SCRW, GAME_SCRH),
+						screenSizeBorder(GAME_SCRWB, GAME_SCRH),
+						_command(none), 
 						_pause(),
 						_fps(GAME_FPS),
 						_keys(),
 						_keysHit(),
-						_roomX(), _roomY(),
 						_roomW(), _roomH(),
 						_mapW(), _mapH(),
 						_viewX(GAME_VIEWX), _viewY(GAME_VIEWY),
@@ -343,13 +345,6 @@ cDizGame::cDizGame() : 	_void("void"),	soft("soft"), hard("hard"), jump("jump"),
 						_viewportFlipX(), _viewportFlipY(),
 						_fullMaterialMap()
 {
-
-
-	m_screen_bw		= GAME_SCRWB;
-	m_screen_bh		= GAME_SCRHB;
-	m_screen_w		= GAME_SCRW;
-	m_screen_h		= GAME_SCRH;
-
 	m_gameframe		= 0;
 	m_drawmode		= DRAWMODE_NORMAL;
 				
@@ -369,10 +364,10 @@ bool cDizGame::Init()
 	fps(GAME_FPS);
 
 	// load game resolution settings from inf
-	sscanf( g_cfg.GetInfoValue( "game_screen_bw" ), "%i", &m_screen_bw );
-	sscanf( g_cfg.GetInfoValue( "game_screen_bh" ), "%i", &m_screen_bh );
-	sscanf( g_cfg.GetInfoValue( "game_screen_w" ), "%i", &m_screen_w );
-	sscanf( g_cfg.GetInfoValue( "game_screen_h" ), "%i", &m_screen_h );
+	sscanf( g_cfg.GetInfoValue( "game_screen_bw" ), "%i", & screenSizeBorder.x );
+	sscanf( g_cfg.GetInfoValue( "game_screen_bh" ), "%i", & screenSizeBorder.y );
+	sscanf( g_cfg.GetInfoValue( "game_screen_w" ), "%i", & screenSize.x );
+	sscanf( g_cfg.GetInfoValue( "game_screen_h" ), "%i", & screenSize.y );
 	g_paint.Layout(); // refresh layout
 
 	return CheckVersion();
@@ -826,32 +821,14 @@ void cDizGame::ObjPresent( int idx )
 
 void cDizGame::ObjGather()
 {
-
-	int i;
 	m_obj.clear();
 	m_collider.clear();
-
-	iRect objbb;
-	iRect roombb;
-	if( viewportMode() )
+	iRect roombb = viewportMode() ? 
+		RoomBorderRect(Room::Size) :  // extended room bound to 3x3 rooms
+		RoomBorderRect(Room::Border); // room bound with small border
+	for(int i=0; i<g_map.ObjCount(); i++ )
 	{
-		// extended room bound to 3x3 rooms
-		MakeRoomBBW(roombb.x1,roombb.y1,roombb.x2,roombb.y2,0);
-		roombb.x1 -= Room::Size.x;
-		roombb.x2 += Room::Size.x;
-		roombb.y1 -= Room::Size.y;
-		roombb.y2 += Room::Size.y;
-	}
-	else
-	{
-		// room bound with small border
-		MakeRoomBBW(roombb.x1,roombb.y1,roombb.x2,roombb.y2,Room::Border);
-	}
-
-	for( i=0; i<g_map.ObjCount(); i++ )
-	{
-		tBrush & obj = g_map.ObjGet(i);
-		objbb = obj.rect();
+		iRect objbb = g_map.ObjGet(i).rect();
 		if(RECT2RECT(objbb,roombb)) ObjAdd(i); // object is present in current bordered room
 	}
 

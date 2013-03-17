@@ -80,11 +80,8 @@ public:
 		bool			CheckVersion		();					// check game version (first 2 digits)
 		
 		// settings
-		int				m_screen_bw;							// game resolution bordered width (320)
-		int				m_screen_bh;							// game resolution bordered height (200)
-		int				m_screen_w;								// game resolution width (256 - Z80 res)
-		int				m_screen_h;								// game resolution height (192 - Z80 res)
-
+		iV2				screenSize;								// game resolution (256x192 - Z80 res)
+		iV2				screenSizeBorder;						// game resolution border (320x200)
 		// game
 
 		void Resize(int w, int h);
@@ -102,7 +99,7 @@ inline	bool			KeyHit( int key )						{ return (keysHit() & (1<<key)) ? 1 : 0; }	
 
 		// map room
 		void			SetRoom				( int x, int y );	// set current room (load)
-		inline	void	MakeRoomBBW			( int &x1, int &y1, int &x2, int &y2, int border=0 )	{ g_map.MakeRoomBBW(roomX(), roomY(), x1, y1, x2, y2, border); }
+		iRect			RoomBorderRect		(const iV2 & border)	{ return g_map.RoomBorderRect(roomPos(), border); }
 
 		iV2				viewShift;								// view position (used in draw, set from G_VIEW, G_SHAKE, and G_VIEWPORT)
 		int				m_drawmode;								// 0=imgmap (normal), 1=matmap, 2=densitymap, 3=none
@@ -128,9 +125,9 @@ inline	void			FFFXStop()								{ m_fffx_magnitude=0; FFmagnitude(0); FFFXUpdate
 		int				fps() const { return _fps; }
 		int				keys() const { return _keys; }
 		int				keysHit() const { return _keysHit; }
-		iV2				roomPos() const { return iV2(roomX(), roomY()); }
-		int				roomX() const { return _roomX; }
-		int				roomY() const { return _roomY; }
+		iV2				roomPos() const { return _roomPos; }
+		int				roomX() const { return _roomPos.x; }
+		int				roomY() const { return _roomPos.y; }
 		iV2				roomSize() const { return iV2(roomW(), roomH()); }
 		int				roomW() const { return _roomW; }
 		int				roomH() const { return _roomH; }
@@ -159,8 +156,9 @@ inline	void			FFFXStop()								{ m_fffx_magnitude=0; FFmagnitude(0); FFFXUpdate
 		void			fps(int fps) { _fps = fps; }
 		void			keys(int keys) { _keys = keys; }
 		void			keysHit(int keysHit) { _keysHit = keysHit; }
-		void			roomX(int roomX) { _roomX = roomX; }
-		void			roomY(int roomY) { _roomY = roomY; }
+		void			roomPos(const iV2 &p) { _roomPos = p; }
+		void			roomX(int v) { _roomPos.x = v; }
+		void			roomY(int v) { _roomPos.y = v; }
 		void			roomW(int roomW) { _roomW = roomW; }
 		void			roomH(int roomH) { _roomH = roomH; }
 		void			mapW(int mapW) { _mapW = mapW; }
@@ -193,8 +191,9 @@ private:
 		int				_fps;
 		int				_keys;									// input keys: bit 0=KEY_LEFT, 1=KEY_RIGHT, 2=KEY_UP, 3=KEY_DOWN, 4=KEY_JUMP, 5=KEY_ACTION, 6=KEY_MENU
 		int				_keysHit;								// input keys: bit 0=KEY_LEFT, 1=KEY_RIGHT, 2=KEY_UP, 3=KEY_DOWN, 4=KEY_JUMP, 5=KEY_ACTION, 6=KEY_MENU; tells if the key was just hitted down this frame !
-		int				_roomX;									// current room x
-		int				_roomY;									// current room y
+		iV2				_roomPos;								// current room pos (x, y)
+//		int				_roomX;									// current room x
+//		int				_roomY;									// current room y
 		int				_roomW;									// room width
 		int				_roomH;									// room height
 		int				_mapW;									// current map width (in rooms)

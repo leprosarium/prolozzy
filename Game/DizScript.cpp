@@ -162,7 +162,7 @@ PREDICATE_M(core, materialDensityRead, 5)
 		for(p.x=x1;p.x<x2;p.x++)
 			dens.insert(g_game.DensMap(p));
 	PlTail l(A5);
-	for(std::set<PlAtom>::const_iterator i = dens.begin(), e = dens.end(); i != e; ++i)
+	for(auto i = dens.cbegin(), e = dens.cend(); i != e; ++i)
 		l.append(*i);
 	return l.close();
 }
@@ -279,7 +279,7 @@ PREDICATE_M(core, colliderSnapDistance, 5)
 
 	int dist = 0; // max distance from box bottom to collider top (if collider top is inside box)
 	int cx1,cy1,cx2,cy2;
-	for(std::vector<int>::const_iterator i = g_game.m_collider.begin(), e = g_game.m_collider.end(); i != e; ++i)
+	for(auto i = g_game.m_collider.cbegin(), e = g_game.m_collider.cend(); i != e; ++i)
 	{
 		tBrush & obj = g_map.ObjGet(*i);
 		if( obj.Get(BRUSH_DISABLE)!=0 ) continue; // only enabled objects
@@ -618,9 +618,8 @@ PREDICATE_M(core, dl, 1)
 
 PREDICATE_M(core, debugData, 2)
 {
-	int slot = A1;
-	char * msg = A2;
-	g_dizdebug.SlotSet(slot, msg);
+	int64 slot = A1;
+	g_dizdebug.SlotSet(static_cast<size_t>(slot), A2);
 	return true;
 }
 

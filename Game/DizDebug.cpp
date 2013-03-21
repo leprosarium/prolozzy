@@ -2,6 +2,9 @@
 // DizDebug.cpp
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
+
+#include <sstream>
+
 #include "DizDebug.h"
 #include "DizGame.h"
 #include "SWI-cpp-m.h"
@@ -37,8 +40,8 @@ void cDizDebug::PrologDraw()
 	if(R9_BeginScene())
 	{
 		R9_Clear(g_game.mapColor()|0xff000000);
-		g_dizdebug.ConsoleDraw();
-		g_dizdebug.SlotDraw();
+		g_dizdebug.con.Draw();
+		g_dizdebug.slots.Draw();
 		g_dizdebug.InputDraw();
 
 		R9_EndScene();
@@ -50,7 +53,7 @@ void cDizDebug::PrologUpdate()
 {
 	float dtime = (float)E9_AppGetInt(E9_APP_DELTATIME) / 1000.0f;
 	if(I9_IsReady()) I9_Update(dtime);
-	ConsoleUpdate();
+	if(m_console) con.Update();
 }
 
 ssize_t cDizDebug::PrologRead(char *buffer, size_t size)
@@ -58,7 +61,7 @@ ssize_t cDizDebug::PrologRead(char *buffer, size_t size)
 
 	e9AppCallback pnt = E9_AppSetCallback(E9_APP_ONPAINT, PrologDebugDraw);
 	MSG	msg;
-
+	strcpy(m_input_cmd, con.lastLine().c_str());
 	size_t sz = strlen(m_input_cmd);
 	m_input_open = true;
 	m_input_crt = sz;
@@ -118,8 +121,7 @@ static ssize_t Log_read(void *handle, char *buffer, size_t size)
 cDizDebug::cDizDebug() : con(CON_LINES)
 {
 	Soutput->functions->read = Log_read;
-;
-	memset(m_slot,0,sizeof(m_slot));
+
 	m_input_open = 0;
 	m_input_crt = 0;
 	m_input_complete = 0;
@@ -127,8 +129,6 @@ cDizDebug::cDizDebug() : con(CON_LINES)
 	m_input_historycrt = 0;
 	m_input_historycnt = 0;
 	memset(m_input_history,0,sizeof(m_input_history));
-	m_renderw = 0;
-	m_renderh = 0;
 	m_console = false;
 }
 
@@ -181,7 +181,14 @@ bool cDizDebug::Update()
 	}
 
 	// console
-	ConsoleUpdate();
+	if(I9_GetKeyDown(I9K_GRAVE) || I9_GetKeyDown(I9K_F2)) // show-hide
+	{
+		m_console=!m_console;
+		g_paint.Layout();
+		Layout();
+	}
+	if(m_console) 
+		con.Update();
 
 	// navigation
 	NavigationUpdate();
@@ -237,17 +244,20 @@ void cDizDebug::Draw()
 		R9_DrawText(fV2(4,4),"DEV-MODE",0xffffffff);
 		return;
 	}
-	InfoDraw();
-	ConsoleDraw();
-	SlotDraw();
+	info.Draw();
+	con.Draw();
+	slots.Draw();
 	InputDraw();
 
 }
 
 void cDizDebug::Layout()
 {
-	m_renderw = R9_GetWidth();
-	m_renderh = R9_GetHeight();
+	renderSize = iV2(R9_GetWidth(), R9_GetHeight());
+	iV2 scr = g_game.screenSize * g_paint.m_scale;
+	con.Layout(iRect(iV2(), renderSize - iV2(0, (INFO_LINES+1)*R9_CHRH)));
+	slots.Layout(iRect(scr.x, 0, renderSize.x, scr.y));
+	info.Layout(iRect(iV2(0, renderSize.y - INFO_LINES * R9_CHRH), renderSize));
 }
 
 bool cDizDebug::DeveloperKey()
@@ -288,28 +298,19 @@ bool cDizDebug::DeveloperKey()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // INFO
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void cDizDebug::InfoDraw()
+void Info::Draw()
 {
-	float x = 0.0f;
-	float y = (float)m_renderh - INFO_LINES*R9_CHRH;
-	char sz[256]; sz[0]=0;
-
-	R9_DrawBar(fRect(x,y,(float)m_renderw,(float)m_renderh),COLOR_BBKGR);
-
-	x+=(float)R9_CHRW;
-
+	R9_DrawBar(rect,COLOR_BBKGR);
+	fV2 p(rect.x1 + R9_CHRW, rect.y1);
+	
 	// script
-	std::string stack = g_script.UpdateStack();
-
-//	gs_cpycall(g_script.m_vm1,sz,256); sz[255]=0;
-//	char sz2[64]; sprintf(sz2," sp=%i", g_script.m_vm1->m_sp);
-//	strncat(sz,sz2,strlen(sz2));
-//	R9_DrawText( fV2(x, y), sz, COLOR_INFO); y+=R9_CHRH;
-	R9_DrawText( fV2(x, y), stack.c_str(), COLOR_INFO); y+=R9_CHRH;
+	R9_DrawText( p, g_script.UpdateStack().c_str(), COLOR_INFO);
+	p.y+=R9_CHRH;
 
 	// player
-	sprintf( sz, "rx=%i, ry=%i, px=%i, py=%i", g_game.roomX(), g_game.roomY(), g_player.x(), g_player.y() );
-	R9_DrawText( fV2(x, y), sz, COLOR_INFO); y+=R9_CHRH;
+	std::ostringstream os;
+	os << "room=(" << g_game.roomX() << "," << g_game.roomY() << "), player=(" << g_player.x() << "," << g_player.y() << ")";
+	R9_DrawText( p, os.str().c_str(), COLOR_INFO);
 
 }
 
@@ -354,86 +355,65 @@ void cDizDebug::NavigationUpdate()
 // CONSOLE
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-iRect cDizDebug::ConsoleGetRect()
+void Console::Update()
 {
-	iRect rect(0, 0, m_renderw, m_renderh - (INFO_LINES+1)*R9_CHRH);
-	if(rect.y1>rect.y2) rect.y1=rect.y2;
-	return rect;
+	int step = (I9_GetKeyValue(I9K_LSHIFT) || I9_GetKeyValue(I9K_RSHIFT)) ? 1 : lines;
+	if(I9_GetKeyDown(I9K_PGUP))		PageUp(step); else
+	if(I9_GetKeyDown(I9K_PGDN))		PageDown(step); else
+	if(I9_GetKeyDown(I9K_HOME))		PageBegin = 0; else
+	if(I9_GetKeyDown(I9K_END))		End();
 }
 
-void cDizDebug::ConsoleUpdate()
+void Console::Draw()
 {
-	if(I9_GetKeyDown(I9K_GRAVE) || I9_GetKeyDown(I9K_F2)) // show-hide
-	{
-		m_console=!m_console;
-		g_paint.Layout();
-	}
-	if(!m_console) return;
-
-	iRect rect = ConsoleGetRect();
-	int pageh=rect.Height() / R9_CHRH - 1; // page height in lines
-	int step = (I9_GetKeyValue(I9K_LSHIFT) || I9_GetKeyValue(I9K_RSHIFT)) ? 1 : pageh;
-	if(I9_GetKeyDown(I9K_PGUP))		con.PageUp(step); else
-	if(I9_GetKeyDown(I9K_PGDN))		con.PageDown(step, pageh); else
-	if(I9_GetKeyDown(I9K_HOME))		con.Begin(); else
-	if(I9_GetKeyDown(I9K_END))		con.End(pageh);
-}
-
-void cDizDebug::ConsoleDraw()
-{
-	if(con.empty()) return;
-	fRect rect = ConsoleGetRect();
+	if(empty()) return;
 	fRect oldclip = R9_GetClipping();
 	R9_SetClipping(rect);
-	R9_DrawBar(rect,COLOR_BBKGR);
-	rect.x1 += R9_CHRW;
-	rect.y1 += R9_CHRH;
-	float y=rect.y1;
-	for(auto line = con.page(); y < rect.y2 && line != con.end(); ++line) // show as many as you can
-	{
-		const Line & l = *line;
-		R9_DrawText(fV2(rect.x1,y), l.c_str(), D9_LogGetChannelColor(l.Ch));
-		y += (float)R9_CHRH;
-	}
+	R9_DrawBar(rect, COLOR_BBKGR);
+	fV2 p(rect.x1 + R9_CHRW, rect.y1 + R9_CHRH);
+	for(auto line = begin() + PageBegin; p.y < rect.y2 && line != end(); ++line, p.y += static_cast<float>(R9_CHRH)) // show as many as you can
+		R9_DrawText(p, line->c_str(), D9_LogGetChannelColor(line->Ch));
 	R9_SetClipping(oldclip);
 }
 
-void Console::Push(size_t page, int ch, const std::string & str)
+void Console::Push(int ch, const std::string & str)
 {
 	std::string::size_type st = 0, e = 0;
 	while ((e = str.find('\n', st)) != std::string::npos) {
-		PushToken(page, ch, str.substr(st, e - st));
-		last = end();
+		PushToken(Line(ch, str.substr(st, e - st)));
+		PushNewLine();
 		st = e + 1;
 	}
-	PushToken(page, ch, str.substr(st));
+	PushToken(Line(ch, str.substr(st)));
 }
 
-void Console::PushToken(size_t page, int ch, const std::string & str)
+void Console::PushToken(const Line & line)
 {
-	if(str.empty())
-		return;
-	if(last == end())
-	{
-		push_back(Line(ch, str));
-		last = --end();
-		if (size() > Cap)
-			pop_front();
-		if(PageBegin + page + 1 == size())
-			End(page);
-	}
+	if(empty())
+		push_back(line);
 	else
-		(*last) += str;
+	{
+		Line & last = back();
+		if(last.empty())
+			last.Ch = line.Ch;
+		last += line;
+	}
 }
+
+void Console::PushNewLine()
+{
+	push_back(Line());
+	if (size() > Cap)
+		pop_front();
+	if(PageBegin + lines + 1 == size())
+		End();
+}
+
 
 void cDizDebug::ConsolePush( int ch, LPCWSTR msg )
 {
-	if(msg==NULL) return;
-	std::string str = WideStringToMultiByte(msg);
-	iRect rect = ConsoleGetRect();
-	int pageh = rect.Height() / R9_CHRH - 1; // page height in lines
-	con.Push(pageh, ch, str);
+	if(msg)
+		con.Push(ch, WideStringToMultiByte(msg));
 }
 
 void cDizDebug::Con_LogCallback( int ch, LPCWSTR msg )
@@ -444,31 +424,22 @@ void cDizDebug::Con_LogCallback( int ch, LPCWSTR msg )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // SLOTS
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-iRect cDizDebug::SlotGetRect()
-{
-	iV2 scr = g_game.screenSize * g_paint.m_scale;
-	iRect rect(scr.x, 0, m_renderw, std::min(R9_CHRH*SLOT_COUNT, scr.y));
-	if(rect.x1>rect.x2) rect.x1=rect.x2;
-	if(rect.y1>rect.y2) rect.y1=rect.y2;
-	return rect;
-}
 
-void cDizDebug::SlotDraw()
+void Slots::Draw()
 {
-	fRect rect = SlotGetRect();
 	fRect oldclip = R9_GetClipping();
 	R9_SetClipping(rect);
-	R9_DrawBar(rect,COLOR_BBKGR);
-	for(int i=0;i<SLOT_COUNT;i++)
-		R9_DrawText(fV2(rect.x1+R9_CHRW,rect.y1+i*R9_CHRH),m_slot[i],0xff0040a0);
+	R9_DrawBar(rect, COLOR_BBKGR);
+	fV2 p(rect.x1 + R9_CHRW, rect.y1 + R9_CHRH);
+	for(size_t i=0; i < SLOT_COUNT && p.y < rect.y2; i++, p.y += R9_CHRH)
+		R9_DrawText(p, slots[i].c_str(), 0xff0040a0);
 	R9_SetClipping(oldclip);
 }
 
-void cDizDebug::SlotSet( int slot, char* text )
+void cDizDebug::SlotSet( size_t slot, LPCWSTR text )
 {
-	if(slot<0 || slot>=SLOT_COUNT) return;
-	strncpy(m_slot[slot],text?text:"",SLOT_SIZE);
-	m_slot[slot][SLOT_SIZE-1]=0;
+	if(text)
+		slots.Set(slot, WideStringToMultiByte(text));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -598,19 +569,15 @@ void cDizDebug::InputUpdate()
 void cDizDebug::InputDraw()
 {
 	if(!m_input_open) return;
-	fRect rect;
-	rect.x1 = 0.0f;
-	rect.y1 = (float)m_renderh - (INFO_LINES+1)*R9_CHRH;
-	rect.x2 = (float)m_renderw;
-	rect.y2 = rect.y1+R9_CHRH;
+	fRect rect(0, renderSize.y - (INFO_LINES+1)*R9_CHRH, renderSize.x, renderSize.y - INFO_LINES * R9_CHRH);
 	R9_DrawBar(rect,COLOR_BBKGR);
 	R9_DrawText(fV2(rect.x1,rect.y1),">",COLOR_INPUT);
 	rect.x1 += R9_CHRW;
 	int t = sys_gettickcount()%800;
 	float crtx = rect.x1+R9_CHRW*m_input_crt-1;
 	if(t<500) R9_DrawLine(fV2(crtx,rect.y1-1),fV2(crtx,rect.y2+1));
-	//if(t<400) R9_DrawLine(fV2(crtx,rect.y2),fV2(crtx+R9_CHRW,rect.y2));
-	//if(t<500) R9_DrawBar(fRect(crtx,rect.y1-1,crtx+R9_CHRW,rect.y2+1),0xff808080);
+//	if(t<400) R9_DrawLine(fV2(crtx,rect.y2),fV2(crtx+R9_CHRW,rect.y2));
+//	if(t<500) R9_DrawBar(fRect(crtx,rect.y1-1,crtx+R9_CHRW,rect.y2+1),0xff808080);
 	R9_DrawText(fV2(rect.x1,rect.y1),m_input_cmd,COLOR_INPUT);
 }
 
@@ -621,15 +588,6 @@ void cDizDebug::InputExecute()
 	memmove(m_input_history[1],m_input_history[0],(INPUT_HISTORY-1)*INPUT_SIZE);
 	strcpy(m_input_history[0],m_input_cmd);
 	if(m_input_historycnt<INPUT_HISTORY) m_input_historycnt++;
-
-	// run
-	//dlog(m_input_cmd); dlog("\n");
-	//gsVM* vm = g_script.m_vm0;
-	//int debug = gs_getdebug(vm);
-	//gs_setdebug(vm,GSDBG_LOGDESC);
-	//gs_dostring(vm,m_input_cmd);
-	//gs_setdebug(vm,debug);
-
 
 	try
 	{
@@ -758,15 +716,6 @@ found:
 		}
 	}
 	m_input_complete = 0;
-}
-
-
-void cDizDebug::ConsumeInput()
-{
-	// wait until latent keys are consummed
-	while(	I9_GetKeyValue(I9K_ESCAPE) ||
-			I9_GetKeyValue(I9K_RETURN) )
-			I9_Update(0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

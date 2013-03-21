@@ -2,6 +2,7 @@
 // GUIDlg.cpp
 //////////////////////////////////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
+#include <algorithm>
 #include "GUIDlg.h"
 #include "E9String.h"
 
@@ -19,10 +20,7 @@ cGUIDlg::cGUIDlg()
 cGUIDlg::~cGUIDlg()
 {
 	SetTxt(DV_CLOSECMD,NULL);
-	for(; !m_item.empty(); m_item.pop_back()) {
-		m_item.back()->m_dlg = NULL;
-		delete m_item.back();
-	}
+	std::for_each(m_item.begin(), m_item.end(), [](cGUIItem *i) { i->m_dlg = NULL; delete i; });
 	m_item.clear();
 	m_keys.clear();
 }
@@ -35,19 +33,18 @@ void cGUIDlg::Update()
 	m_mousein = INRECT( g_gui->m_mousex, g_gui->m_mousey, rc);
 
 	// update children
-	for(size_t i=0;i<m_item.size();i++)
+	std::for_each(m_item.begin(), m_item.end(), [](cGUIItem*i)
 	{
-		cGUIItem* item = m_item[i];
-		if(!item->GetInt(IV_DISABLE))
+		if(!i->GetInt(IV_DISABLE))
 		{
-			item->Update();
-			if( item->m_mousein && 
-				item->GetInt(IV_HIDDEN)==0 &&
-				item->GetInt(IV_DISABLE)==0 &&
-				item->GetTxt(IV_TOOLTIP) )
-				g_gui->SetTooltip(item->GetTxt(IV_TOOLTIP));
+			i->Update();
+			if( i->m_mousein && 
+				i->GetInt(IV_HIDDEN)==0 &&
+				i->GetInt(IV_DISABLE)==0 &&
+				i->GetTxt(IV_TOOLTIP) )
+				g_gui->SetTooltip(i->GetTxt(IV_TOOLTIP));
 		}
-	}
+	});
 
 	// test key
 	if( (GetInt(DV_TESTKEY) == 1) || 
@@ -62,9 +59,7 @@ void cGUIDlg::Update()
 
 void cGUIDlg::Draw()
 {
-	for(size_t i=0;i<m_item.size();i++)
-		if(!m_item[i]->GetInt(IV_HIDDEN))
-			m_item[i]->Draw();
+	std::for_each(m_item.begin(), m_item.end(), [](cGUIItem *i){ if(!i->GetInt(IV_HIDDEN)) i->Draw(); } );
 }
 
 void cGUIDlg::Close(int ret)
@@ -155,18 +150,14 @@ RECT cGUIDlg::GetRect( int idx )
 
 int cGUIDlg::ItemFind( int id )
 {
-	for(size_t i=0;i<m_item.size();i++)
-		if(m_item[i]->GetInt(IV_ID) == id)
-			return i;
-	return -1;
+	auto i = std::find_if(m_item.begin(), m_item.end(), [id](cGUIItem *i){ return i->GetInt(IV_ID) == id; });
+	return i == m_item.end() ? -1 : i - m_item.begin();
 }
 
 int cGUIDlg::ItemFind( cGUIItem* item )
 {
-	for(size_t i=0;i<m_item.size();i++)
-		if(m_item[i] == item)
-			return i;
-	return -1;
+	auto i = std::find(m_item.begin(), m_item.end(), item);
+	return i == m_item.end() ? -1 : i - m_item.begin();
 }
 
 void cGUIDlg::AddKey( int key, int flags, const std::string & cmd )
@@ -176,26 +167,22 @@ void cGUIDlg::AddKey( int key, int flags, const std::string & cmd )
 
 void cGUIDlg::TestKey()
 {
-
-	for(std::vector<tDlgKey>::const_iterator k = m_keys.begin(), e = m_keys.end(); k != e; ++k)
+	auto k = std::find_if(m_keys.begin(), m_keys.end(), [](const tDlgKey & k) -> bool
 	{
-		if(I9_GetKeyDown(k->m_key))
-		{
-			int keyflags = k->m_flags;
-			int flags = 0;
-			if( I9_GetKeyValue(I9K_LSHIFT) || I9_GetKeyValue(I9K_RSHIFT) )		flags |= GUIKEYFLAG_SHIFT;
-			if( I9_GetKeyValue(I9K_LCONTROL) || I9_GetKeyValue(I9K_RCONTROL) )	flags |= GUIKEYFLAG_CTRL;
-			if( I9_GetKeyValue(I9K_LALT) || I9_GetKeyValue(I9K_RALT) )			flags |= GUIKEYFLAG_ALT;
-
-			if( keyflags == flags ) // flags match exactly
-			{
-				// select this dialog when we call OnKey command
-				g_gui->m_lastdlg = g_gui->DlgFind(this);
-				g_gui->m_lastitem = -1;
-				g_gui->ScriptPrologDo(k->cmd);	
-				return;
-			}
-		}
+		if(!I9_GetKeyDown(k.m_key))
+			return false;
+		int flags = 0;
+		if( I9_GetKeyValue(I9K_LSHIFT) || I9_GetKeyValue(I9K_RSHIFT) )		flags |= GUIKEYFLAG_SHIFT;
+		if( I9_GetKeyValue(I9K_LCONTROL) || I9_GetKeyValue(I9K_RCONTROL) )	flags |= GUIKEYFLAG_CTRL;
+		if( I9_GetKeyValue(I9K_LALT) || I9_GetKeyValue(I9K_RALT) )			flags |= GUIKEYFLAG_ALT;
+		return k.m_flags == flags; // flags match exactly
+	});
+	if (k != m_keys.end())
+	{
+		// select this dialog when we call OnKey command
+		g_gui->m_lastdlg = g_gui->DlgFind(this);
+		g_gui->m_lastitem = -1;
+		g_gui->ScriptPrologDo(k->cmd);	
 	}
 }
 

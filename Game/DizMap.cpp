@@ -303,7 +303,7 @@ void cDizMap::PartitionAdd( int brushidx )
 	int bry = rbrush.y1 / m_maph; // roomy for top-left brush corner
 	int rooms[4][2] = { {brx,bry}, {brx+1,bry}, {brx,bry+1}, br
 	*/
-	std::vector<Room>::iterator room = Rooms.begin();
+	auto room = Rooms.begin();
 	for(iV2 r; r.y < Height(); ++r.y)
 		for(r.x = 0; r.x < Width(); ++r.x, ++room)
 			if(rbrush.Intersects(RoomBorderRect(r, Room::Border)) )

@@ -34,9 +34,9 @@
 #include "R9Render.h"
 #include "SWI-cpp-m.h"
 
-#include <hash_map>
+#include <unordered_map>
 
-typedef std::hash_map<PlAtom, int> IntIndex;
+typedef std::unordered_map<PlAtom, int> IntIndex;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // System

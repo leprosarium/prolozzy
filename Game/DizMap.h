@@ -9,7 +9,6 @@
 #include "DizPaint.h"
 
 #include <vector>
-#include <hash_map> 
 #include <algorithm>
 
 #define MAP_SIZEMIN		128

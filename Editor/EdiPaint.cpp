@@ -2,6 +2,7 @@
 // EdiPaint.cpp
 //////////////////////////////////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
+#include <algorithm>
 #include "EdiPaint.h"
 
 cEdiPaint g_paint;
@@ -170,12 +171,7 @@ void cEdiPaint::TileUnload()
 {
 	// done
 	index.clear();
-	for(size_t i=0; i<m_tile.size();i++) 
-	{
-		R9_TextureDestroy(m_tile[i]->m_tex);
-		if(m_tile[i]->m_name) free(m_tile[i]->m_name);
-		delete m_tile[i];
-	}
+	std::for_each(m_tile.begin(), m_tile.end(), [](cTile *t) {t->Destroy(); delete t; });
 	m_tile.clear();
 }
 

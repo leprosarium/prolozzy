@@ -504,7 +504,7 @@ bool cDizGame::Update()
 	// update present objects
 	if(!pause())
 	{
-		for(std::vector<int>::const_iterator i = m_obj.begin(), e = m_obj.end(); i != e; ++i)
+		for(auto i = m_obj.cbegin(), e = m_obj.cend(); i != e; ++i)
 		{
 			tBrush & obj = g_map.ObjGet(*i);
 			if( obj.Get(BRUSH_DISABLE)!=0 ) continue; // only enabled objects
@@ -592,8 +592,8 @@ void cDizGame::Draw()
 	fRect clip;// draw room area (for viewportmode=1)
 	// visible room area
 	iV2 view = viewPos();
-	fRect rect( g_paint.scr + view * g_paint.m_scale,
-				g_paint.scr + (view + Room::Size) * g_paint.m_scale);
+	fRect rect( g_paint.scrOffs + view * g_paint.m_scale,
+				g_paint.scrOffs + (view + Room::Size) * g_paint.m_scale);
 
 	// view ofset with shake option and optional viewport for scrolling
 	viewShift = view + shake();
@@ -608,13 +608,13 @@ void cDizGame::Draw()
 	if( viewportFlipX())
 	{
 		flip |= R9_FLIPX;
-		int vx = g_paint.scr.x + view.x * g_paint.m_scale;
+		int vx = g_paint.scrOffs.x + view.x * g_paint.m_scale;
 		viewx = R9_GetWidth() - vx - roomW() * g_paint.m_scale - vx + 1; // magic +1
 	}
 	if( viewportFlipY())
 	{
 		flip |= R9_FLIPY;
-		int vy = g_paint.scr.y + view.y * g_paint.m_scale;
+		int vy = g_paint.scrOffs.y + view.y * g_paint.m_scale;
 		viewy = R9_GetHeight() - vy - roomH() * g_paint.m_scale - vy + 1; // magic +1
 	}
 
@@ -641,8 +641,8 @@ void cDizGame::Draw()
 					// clip here to avoid duplicate draw (brushes shared in neighbour rooms)
 					// Note: brushes order must also be perserved (so the drawframe trick didn't work)
 					R9_SetClipping( rect );
-					clip.x1 = (float)g_paint.scr.x + (viewShift.x+(r.x-1)*Room::Size.x)*g_paint.m_scale,
-					clip.y1 = (float)g_paint.scr.y + (viewShift.y+(r.y-1)*Room::Size.y)*g_paint.m_scale,
+					clip.x1 = (float)g_paint.scrOffs.x + (viewShift.x+(r.x-1)*Room::Size.x)*g_paint.m_scale,
+					clip.y1 = (float)g_paint.scrOffs.y + (viewShift.y+(r.y-1)*Room::Size.y)*g_paint.m_scale,
 					clip.x2 = clip.x1 + Room::Size.x*g_paint.m_scale;
 					clip.y2 = clip.y1 + Room::Size.y*g_paint.m_scale;
 					R9_AddClipping( clip );
@@ -660,7 +660,7 @@ void cDizGame::Draw()
 
 		// objects present
 		R9_SetClipping( rect );
-		for(std::vector<int>::const_iterator i = m_obj.begin(), e = m_obj.end(); i != e; ++i)
+		for(auto i = m_obj.cbegin(), e = m_obj.cend(); i != e; ++i)
 		{
 			tBrush & obj = g_map.ObjGet( *i );
 			if( obj.Get(BRUSH_LAYER)!=layer ) continue;
@@ -741,9 +741,9 @@ void MatMap::Update(const iV2 & room, bool full)
 	memset(map, 0, Cap);
 	
 	// prepare coordinates
-	iV2 scr(g_paint.scr);
+	iV2 scr(g_paint.scrOffs);
 	int scale = g_paint.m_scale;
-	g_paint.scr = iV2();
+	g_paint.scrOffs = iV2();
 	g_paint.m_scale = 1;
 
 	// clipping
@@ -787,7 +787,7 @@ void MatMap::Update(const iV2 & room, bool full)
 
 	// rollback
 	g_paint.m_drawtilesoft = false;
-	g_paint.scr = scr;
+	g_paint.scrOffs = scr;
 	g_paint.m_scale = scale;
 	R9_SetClipping(oldclip);
 

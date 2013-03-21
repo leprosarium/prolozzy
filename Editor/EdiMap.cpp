@@ -2,6 +2,8 @@
 // EdiMap.cpp
 //////////////////////////////////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
+#include <algorithm>
+
 #include "I9Input.h"
 
 #include "EdiMap.h"
@@ -963,7 +965,7 @@ void cEdiMap::PartitionInit()
 
 void cEdiMap::PartitionDone()
 {
-	for(; !m_partition.empty(); m_partition.pop_back()) delete m_partition.back();
+	std::for_each(m_partition.begin(), m_partition.end(), [](cPartitionCel * c) {delete c;});
 	m_partition.clear(); 
 }
 
@@ -1024,8 +1026,7 @@ void cEdiMap::PartitionFix( int brushidx1, int brushidx2, int delta )
 BOOL cEdiMap::PartitionRepartition()
 {
 	// force all clean
-	for(size_t i=0; i<m_partition.size(); i++)
-		m_partition[i]->m_count = 0;
+	std::for_each(m_partition.begin(), m_partition.end(), [](cPartitionCel *c) {c->m_count = 0;});
 	// repartition all brushes
 	BOOL ok = TRUE;
 	for(int i=0; i<m_brushcount; i++)

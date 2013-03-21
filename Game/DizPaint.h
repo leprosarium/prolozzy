@@ -7,7 +7,6 @@
 #include "R9Font.h"
 #include "DizDef.h"
 
-#include <hash_map>
 #include <deque> 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -222,7 +221,7 @@ public:
 		int				m_huddraw;		// draw allowed
 
 		// screen props
-		iV2				scr;			// screen offset
+		iV2				scrOffs;			// screen offset
 		int				m_scale;		// scale factor
 
 		// fonts

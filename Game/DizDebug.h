@@ -6,16 +6,15 @@
 
 #include "E9System.h"
 #include "D9Debug.h"
+#include "R9Render.h"
 #include "E9Math.h"
 #include "SWI-Stream.h"
 
 #include <deque>
 
-#define CON_LINESIZE		80		// characters per line
-#define CON_LINES			2048	// total lines
-#define SLOT_COUNT			16		// total slots
-#define SLOT_SIZE			48		// slot line size
-#define	INFO_LINES			2		// info slot lines
+const size_t CON_LINES = 2048;	// total lines
+const size_t SLOT_COUNT = 16;	// total slots
+const size_t INFO_LINES = 2;	// info slot lines
 #define INPUT_SIZE			256		// input cmd size
 #define INPUT_HISTORY		16		// input history count
 
@@ -27,34 +26,50 @@
 class Line : public std::string
 {
 public:
+	Line() : Ch(0) {}
 	Line(int Ch, const std::string & str) : std::string(str), Ch(Ch) {}  
 	int Ch;
 };
 
 class Console : std::deque<Line>
 {
-	typedef std::deque<Line> Strings; 
 	size_t Cap;
 	size_t PageBegin;
-	iterator last;
+	fRect rect;
+	size_t lines;
 
-	void PagePosUp(size_t pos, size_t step) { if (pos < step) Begin(); else PageBegin = pos - step; }
-	void PushToken(size_t page, int ch, const std::string & str);
-public:
-	using Strings::empty;
-	using Strings::begin;
-	using Strings::end;
-	using Strings::const_iterator;
-	
-	Console(size_t Cap) : Cap(Cap), PageBegin(0), last(end()) {}
-
+	void PagePosUp(size_t pos, size_t step) { PageBegin = pos < step ? 0 : pos - step; }
+	void PushToken(const Line & line);
+	void PushNewLine();
 	void PageUp(size_t step) { PagePosUp(PageBegin, step); } 
-	void PageDown(size_t step, size_t page) { if (PageBegin + step + page >= size()) End(page); else PageBegin += step; }
-	void Begin() {	PageBegin = 0; }
-	void End(size_t page) {	PagePosUp(size(), page); }
+	void PageDown(size_t step) { if (PageBegin + step + lines >= size()) End(); else PageBegin += step; }
+	void End() { PagePosUp(size(), lines); }
 
-	const_iterator page() const { return begin() + PageBegin; }
-	void Push(size_t page, int ch, const std::string & str);
+public:
+	Console(size_t Cap) : Cap(Cap), PageBegin(), lines() {}
+	void Layout(const iRect & r) { rect = r; int h = r.Height(); lines = h < R9_CHRH ? 0 : (h / R9_CHRH - 1);}
+	void Update();
+	void Draw();
+	void Push(int ch, const std::string & str);
+	std::string lastLine() const { return empty() ? std::string() : back(); }
+};
+
+class Slots
+{
+	std::string slots[SLOT_COUNT];
+	fRect rect;
+public:
+	void Layout(const iRect & r) { rect = r; }
+	void Draw();
+	void Set( size_t slot, const std::string & str) { if(slot < SLOT_COUNT) slots[slot] = str; }
+};
+
+class Info
+{
+	fRect rect;
+public:
+	void Layout(const iRect & r) { rect = r; }
+	void Draw();
 };
 
 class cDizDebug
@@ -74,25 +89,21 @@ public:
 
 		bool	DeveloperKey();
 
-		// info
-		void	InfoDraw();
-
 		// navigation
 		void	NavigationUpdate();
 
 		// console
-		iRect	ConsoleGetRect();
-		void	ConsoleUpdate();
-		void	ConsoleDraw();
+
+
+
 		void	ConsolePush( int ch, LPCWSTR msg );
 static	void	Con_LogCallback( int ch, LPCWSTR msg );
-		Console	con;
+		void	SlotSet( size_t slot, LPCWSTR text );
 
-		// slots
-		iRect	SlotGetRect();
-		void	SlotDraw();
-		void	SlotSet( int slot, char* text );
-		char	m_slot[SLOT_COUNT][SLOT_SIZE];
+		Console	con;
+		Slots	slots;
+		Info	info;
+
 
 		// input
 inline	bool	InputIsOpened()								{ return m_input_open; }
@@ -109,11 +120,7 @@ inline	bool	InputIsOpened()								{ return m_input_open; }
 		char	m_input_historycnt;							// current history count
 		char	m_input_history[INPUT_HISTORY][INPUT_SIZE];	// input history list of commands
 
-		// util
-		void	ConsumeInput();
-
-		int		m_renderw;
-		int		m_renderh;
+		iV2		renderSize;
 		bool	m_console;									// developer console active
 static	BOOL	m_developer;								// developer debug active (set from ini)
 };

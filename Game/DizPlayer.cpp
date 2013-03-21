@@ -869,7 +869,7 @@ void cDizPlayer::CheckColliders()
 	int x1,y1,x2,y2;
 	int cx1,cy1,cx2,cy2;
 	MakeBBW(x1,y1,x2,y2);
-	for(std::vector<int>::const_iterator i = g_game.m_collider.begin(), e = g_game.m_collider.end(); i != e; ++i)
+	for(auto i = g_game.m_collider.cbegin(), e = g_game.m_collider.cend(); i != e; ++i)
 	{
 		tBrush & obj = g_map.ObjGet(*i);
 		if( obj.Get(BRUSH_DISABLE)!=0 ) continue; // only enabled objects
@@ -903,7 +903,7 @@ bool cDizPlayer::CheckCollidersSnap()
 
 	bool snap=false;
 
-	for(std::vector<int>::const_iterator i = g_game.m_collider.begin(), e = g_game.m_collider.end(); i != e; ++i)
+	for(auto i = g_game.m_collider.cbegin(), e = g_game.m_collider.cend(); i != e; ++i)
 	{
 		tBrush & obj = g_map.ObjGet(*i);
 		if( obj.Get(BRUSH_DISABLE)!=0 ) continue; // only enabled objects
@@ -988,7 +988,7 @@ void cDizPlayer::Draw()
 		src.x2 = (float)((fx+1)*w);
 		src.y1 = float(fy * h);
 		src.y2 = float((fy + 1) * h);
-		fV2 pos = g_paint.scr + g_paint.m_scale * iV2(x, y);
+		fV2 pos = g_paint.scrOffs + g_paint.m_scale * iV2(x, y);
 		R9_SetState(R9_STATE_BLEND,blend);
 		dword flip = ((flipX() ? 1 : 0 ) | (flipY() ? 2 : 0));
 		R9_DrawSprite( pos, src, tile->m_tex, color(), flip, (float)SCALE );

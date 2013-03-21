@@ -40,6 +40,7 @@ public:
 		int         GetFy(int frame) const { return frame / fx; }
 inline	int		GetWidth	()					{ return fx > 0 ? R9_TextureGetWidth(m_tex) / fx : R9_TextureGetWidth(m_tex); }
 inline	int		GetHeight	()					{ return fy > 0 ? R9_TextureGetHeight(m_tex) / fy : R9_TextureGetHeight(m_tex); }
+		void Destroy() { R9_TextureDestroy(m_tex); if(m_name) free(m_name); }
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

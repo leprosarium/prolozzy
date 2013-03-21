@@ -62,7 +62,7 @@ BOOL cGUI::Init()
 	
 void cGUI::Done()
 {
-	for(; !m_dlg.empty(); m_dlg.pop_back()) delete m_dlg.back();
+	std::for_each(m_dlg.begin(), m_dlg.end(), [](cGUIDlg *d){delete d;});
 	m_dlg.clear();
 	m_capture = NULL;
 	if(m_font) 
@@ -72,14 +72,6 @@ void cGUI::Done()
 	}
 	m_texturepool.Done();
 	GUIDoneResources();
-}
-
-namespace 
-{
-	bool ModalDialog (cGUIDlg * dlg) 
-	{
-		return dlg->GetInt(DV_MODAL) != 0;
-	}
 }
 
 void cGUI::Update()
@@ -95,7 +87,7 @@ void cGUI::Update()
 	{
 		// serach top most modal
 		bool modal = false;
-		auto i = find_if(m_dlg.rbegin(), m_dlg.rend(), ModalDialog);
+		auto i = std::find_if(m_dlg.rbegin(), m_dlg.rend(), [](cGUIDlg * d) {return d->GetInt(DV_MODAL)!=0;});
 		if ( i != m_dlg.rend())
 		{
 			(*i)->Update();
@@ -103,8 +95,7 @@ void cGUI::Update()
 		}
 		else // no modal -> update all
 		{
-			for(size_t i=0;i<m_dlg.size();i++)
-				m_dlg[i]->Update();
+			std::for_each(m_dlg.begin(), m_dlg.end(), [](cGUIDlg * d) {d->Update();});
 		}
 	}
 	// delete mustclose dialogs
@@ -125,12 +116,7 @@ void cGUI::Draw()
 {
 	R9_SetState(R9_STATE_BLEND,R9_BLEND_ALPHA);
 
-	for(size_t i=0;i<m_dlg.size();i++)
-	{
-		// if(m_dlg[i]->GetInt(DV_MODAL))
-		//	R9_DrawBar(fRect(0,0,R9_GetWidth(),R9_GetHeight()),0x60000000); 
-		m_dlg[i]->Draw();
-	}
+	std::for_each(m_dlg.begin(), m_dlg.end(), [](cGUIDlg * d){ d->Draw(); });
 	
 	// tooltip
 	if(m_tooltip[0])
@@ -207,18 +193,14 @@ void cGUI::ReadInput()
 
 int cGUI::DlgFind( int id )
 {
-	for(size_t i=0;i<m_dlg.size();i++)
-		if(m_dlg[i]->GetInt(DV_ID) == id)
-			return i;
-	return -1;
+	auto i = std::find_if(m_dlg.begin(), m_dlg.end(), [&id](cGUIDlg * d) { return d->GetInt(DV_ID) == id;});
+	return i == m_dlg.end() ? -1 : i - m_dlg.begin();
 }
 
 int cGUI::DlgFind( cGUIDlg *dlg )
 {
-	for(size_t i=0;i<m_dlg.size();i++)
-		if(m_dlg[i] == dlg)
-			return i;
-	return -1;
+	auto i = std::find(m_dlg.begin(), m_dlg.end(), dlg);
+	return i == m_dlg.end() ? -1 : i - m_dlg.begin();
 }
 
 

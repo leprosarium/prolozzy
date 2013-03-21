@@ -122,7 +122,7 @@ bool cDizPaint::Reacquire()
 {
 	dlog(LOGAPP, L"Paint reaquire.\n");
 	bool ok=true;
-	for(Tiles::iterator i = tiles.begin(), e = tiles.end(); i != e; ++i) 
+	for(auto i = tiles.begin(), e = tiles.end(); i != e; ++i) 
 	{
 		cTile * tile = *i;
 		tile->m_tex = R9_TextureLoad(tile->m_name.c_str());
@@ -138,7 +138,7 @@ bool cDizPaint::Reacquire()
 void cDizPaint::Unacquire()
 {
 	dlog(LOGAPP, L"Paint unaquire.\n");
-	for(Tiles::iterator i = tiles.begin(), e = tiles.end(); i != e; ++i) 
+	for(auto i = tiles.begin(), e = tiles.end(); i != e; ++i) 
 	{
 		cTile * tile = *i;
 		R9_TextureDestroy(tile->m_tex);
@@ -155,14 +155,7 @@ void cDizPaint::Layout()
 {
 	m_scale = g_cfg.m_scale;
 	if(m_scale==0)	m_scale = std::max( 0, std::min( R9_GetWidth()/g_game.screenSize.x, R9_GetHeight()/g_game.screenSize.y ) );
-	if(!g_dizdebug.m_console)
-	{
-		scr = (iV2(R9_GetWidth(), R9_GetHeight()) - g_game.screenSize * m_scale ) / 2;
-	}
-	else
-	{
-		scr = iV2();
-	}
+	scrOffs = g_dizdebug.m_console ? iV2() : (iV2(R9_GetWidth(), R9_GetHeight()) - g_game.screenSize * m_scale ) / 2;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -363,7 +356,7 @@ void cDizPaint::DrawTile( int idx,const iV2 & p, iRect& map, dword color, int fl
 	src.x2 += fx * w;
 	src.y1 += fy * h;
 	src.y2 += fy * h;
-	fV2 pos = scr + p * m_scale;
+	fV2 pos = scrOffs + p * m_scale;
 	R9_SetState(R9_STATE_BLEND,blend);
 	R9_DrawSprite( pos, src, tile->m_tex, color, flip, (float)m_scale*scale );
 }
@@ -384,7 +377,7 @@ void cDizPaint::DrawTile( int idx, const iV2 & p, dword color, int flip, int fra
 	src.x2 = (float)((fx+1) * w);
 	src.y1 = float(fy * h);
 	src.y2 = float((fy + 1) * h);
-	fV2 pos = scr + p * m_scale;
+	fV2 pos = scrOffs + p * m_scale;
 	R9_SetState(R9_STATE_BLEND,blend);
 	R9_DrawSprite( pos, src, tile->m_tex, color, flip, (float)m_scale*scale );
 
@@ -398,7 +391,7 @@ void cDizPaint::DrawChar( int fontidx, const iV2 & p, char c, dword color )
 	float tsize = font->GetSize();
 	font->SetSize( tsize*m_scale );
 	font->SetColor( color );
-	font->Char(scr + p * m_scale, c);
+	font->Char(scrOffs + p * m_scale, c);
 	font->SetSize(tsize);
 }
 
@@ -415,7 +408,7 @@ void cDizPaint::DrawBrush( const tBrush & brush, const iV2 & p0, int frame )
 	float ms = brush.mapScale();
 
 	fRect oldclip = R9_GetClipping();
-	iV2 p1 = scr + p0 * m_scale;
+	iV2 p1 = scrOffs + p0 * m_scale;
 	fRect newclip(p1, p1 + m_scale * sz); 
 	R9_AddClipping(newclip);
 	if(R9_IsClipping())
@@ -847,10 +840,10 @@ void cDizPaint::HUDDrawTile( int tileid, iRect& dst, iRect& src, dword flags, in
 	if(m_hudshader<0 || m_hudshader>=SHADER_MAX) return;
 
 	fRect oldclip = R9_GetClipping();
-	fRect newclip = fRect(	scr.x+dst.x1*m_scale, 
-							scr.y+dst.y1*m_scale, 
-							scr.x+dst.x2*m_scale, 
-							scr.y+dst.y2*m_scale );
+	fRect newclip = fRect(	scrOffs.x+dst.x1*m_scale, 
+							scrOffs.y+dst.y1*m_scale, 
+							scrOffs.x+dst.x2*m_scale, 
+							scrOffs.y+dst.y2*m_scale );
 	R9_AddClipping(newclip);
 	if(R9_IsClipping())
 	{
@@ -883,8 +876,8 @@ void cDizPaint::HudClipping( iRect& dst )
 		R9_ResetClipping();
 		return;
 	}
-	fRect rect(scr + iV2(dst.x1, dst.y1) * m_scale,
-			   scr + iV2(dst.x2, dst.y2) * m_scale);
+	fRect rect(scrOffs + iV2(dst.x1, dst.y1) * m_scale,
+			   scrOffs + iV2(dst.x2, dst.y2) * m_scale);
 	R9_SetClipping(rect);	
 }
 

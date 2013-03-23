@@ -72,6 +72,34 @@ public:
 	void Draw();
 };
 
+class Input
+{
+	bool	open;										// input dialog opend
+	int		complete;									// auto-complete count (0=first, 1=next, etc)
+	std::string cmd;									// input command string
+	std::string::const_iterator crt;					// input currsor
+	std::deque<std::string> hist;					// input history list of commands
+	std::deque<std::string>::const_iterator histcrt;// current history cursor
+	fRect	rect;
+	std::string::const_iterator CmdWordBegin() const;
+	std::string::const_iterator CmdWordEnd() const;
+	bool MoveCrt(std::string::const_iterator v) { bool moved = v != crt; crt = v; return moved; }
+
+public:
+	Input() : open(), crt(cmd.end()), complete(), histcrt(hist.begin()) {}
+	void Layout(const iRect & r) { rect = r; }
+	void Open() { open = true; }
+	bool IsOpened() const { return open; }
+	void Update();
+	void Draw();
+		
+	void Execute();										// execute command
+	bool SkipWordLeft() { return MoveCrt(CmdWordBegin()); }	// move cursor left over a word
+	bool SkipWordRight() { return MoveCrt(CmdWordEnd()); }	// move cursor left over a word
+	void AutoComplete();								// auto-complete function
+	void setCmd(const std::string & c) { cmd = c; crt = cmd.end(); complete = 0;}
+};
+
 class cDizDebug
 {
 public:
@@ -103,22 +131,7 @@ static	void	Con_LogCallback( int ch, LPCWSTR msg );
 		Console	con;
 		Slots	slots;
 		Info	info;
-
-
-		// input
-inline	bool	InputIsOpened()								{ return m_input_open; }
-		void	InputUpdate();
-		void	InputDraw();
-		void	InputExecute();								// execute command
-		void	InputSkipWord( int dir );					// move cursor over a word; dir=-1/1
-		void	InputAutoComplete();						// auto-complete function
-		bool	m_input_open;								// input dialog opend
-		int		m_input_crt;								// input currsor
-		int		m_input_complete;							// auto-complete count (0=first, 1=next, etc)
-		char	m_input_cmd[INPUT_SIZE];					// input command string
-		char	m_input_historycrt;							// current history cursor
-		char	m_input_historycnt;							// current history count
-		char	m_input_history[INPUT_HISTORY][INPUT_SIZE];	// input history list of commands
+		Input	input;
 
 		iV2		renderSize;
 		bool	m_console;									// developer console active

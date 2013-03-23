@@ -42,7 +42,7 @@ void cDizDebug::PrologDraw()
 		R9_Clear(g_game.mapColor()|0xff000000);
 		g_dizdebug.con.Draw();
 		g_dizdebug.slots.Draw();
-		g_dizdebug.InputDraw();
+		g_dizdebug.input.Draw();
 
 		R9_EndScene();
 		R9_Present();
@@ -61,10 +61,9 @@ ssize_t cDizDebug::PrologRead(char *buffer, size_t size)
 
 	e9AppCallback pnt = E9_AppSetCallback(E9_APP_ONPAINT, PrologDebugDraw);
 	MSG	msg;
-	strcpy(m_input_cmd, con.lastLine().c_str());
-	size_t sz = strlen(m_input_cmd);
-	m_input_open = true;
-	m_input_crt = sz;
+	std::string cmd = con.lastLine();
+	input.setCmd(cmd);
+	input.Open();
  	while(true)
 	{
 		while( PeekMessage( &msg, NULL, 0, 0, PM_NOREMOVE ) )
@@ -94,13 +93,11 @@ ssize_t cDizDebug::PrologRead(char *buffer, size_t size)
 			if(!ascii) 
 				continue;
 			buffer[pos++]=ascii;
-			m_input_cmd[sz] = ascii;
-			m_input_cmd[++sz] = 0;
-			m_input_crt = sz;
-			m_input_complete = false;
+			cmd += ascii;
 		}
 		if(pos)
 		{
+			input.setCmd(cmd);
 			D9_LogBuf(LOGDBG, buffer, pos);
 			E9_AppSetCallback(E9_APP_ONPAINT, pnt);
 			return pos;
@@ -109,7 +106,6 @@ ssize_t cDizDebug::PrologRead(char *buffer, size_t size)
 	}
 	return 0;
 }
-
 
 static ssize_t Log_read(void *handle, char *buffer, size_t size)
 {
@@ -121,14 +117,6 @@ static ssize_t Log_read(void *handle, char *buffer, size_t size)
 cDizDebug::cDizDebug() : con(CON_LINES)
 {
 	Soutput->functions->read = Log_read;
-
-	m_input_open = 0;
-	m_input_crt = 0;
-	m_input_complete = 0;
-	memset(m_input_cmd,0,sizeof(m_input_cmd));
-	m_input_historycrt = 0;
-	m_input_historycnt = 0;
-	memset(m_input_history,0,sizeof(m_input_history));
 	m_console = false;
 }
 
@@ -165,7 +153,7 @@ bool cDizDebug::Update()
 	if(!I9_IsReady()) return true;
 
 	// debug developer hidden key
-	if(DeveloperKey() && !InputIsOpened())
+	if(DeveloperKey() && !input.IsOpened())
 	{
 		m_developer = !m_developer; 
 		g_paint.Layout();
@@ -173,8 +161,8 @@ bool cDizDebug::Update()
 	if(!m_developer) return true;
 
 	// console input
-	InputUpdate(); // update console input command
-	if(InputIsOpened()) // if during console input command
+	if(m_console) input.Update(); // update console input command
+	if(input.IsOpened())	// if during console input command
 	{
 		g_player.m_debug = 1; // don't update player
 		return true;
@@ -247,7 +235,7 @@ void cDizDebug::Draw()
 	info.Draw();
 	con.Draw();
 	slots.Draw();
-	InputDraw();
+	input.Draw();
 
 }
 
@@ -258,6 +246,7 @@ void cDizDebug::Layout()
 	con.Layout(iRect(iV2(), renderSize - iV2(0, (INFO_LINES+1)*R9_CHRH)));
 	slots.Layout(iRect(scr.x, 0, renderSize.x, scr.y));
 	info.Layout(iRect(iV2(0, renderSize.y - INFO_LINES * R9_CHRH), renderSize));
+	input.Layout(iRect(0, renderSize.y - (INFO_LINES+1)*R9_CHRH, renderSize.x, renderSize.y - INFO_LINES * R9_CHRH));
 }
 
 bool cDizDebug::DeveloperKey()
@@ -445,20 +434,16 @@ void cDizDebug::SlotSet( size_t slot, LPCWSTR text )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // INPUT
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void cDizDebug::InputUpdate()
+void Input::Update()
 {
-	if(!m_console) return;
-	if(I9_GetKeyDown(I9K_INSERT) && !m_input_open) 
+	if(I9_GetKeyDown(I9K_INSERT) && !open) 
 	{ 
-		m_input_open = true; 
-		m_input_complete = 0; 
-		m_input_historycrt=-1; 
+		open = true; 
+		complete = 0; 
+		histcrt = hist.end();
 		return;
 	}
-	if(!m_input_open) return;
-
-	int i;
-	int len = (int)strlen(m_input_cmd);
+	if(!open) return;
 
 	// action keys
 	bool ctrl = I9_GetKeyValue(I9K_LCONTROL) || I9_GetKeyValue(I9K_RCONTROL);
@@ -466,256 +451,178 @@ void cDizDebug::InputUpdate()
 
 	if(I9_GetKeyUp(I9K_ESCAPE) || I9_GetKeyDown(I9K_INSERT))
 	{	
-		m_input_open = false; 
-		m_input_complete = 0; 
+		open = false; 
+		complete = 0; 
 		return; 
 	}
-	else
 	if(I9_GetKeyUp(I9K_RETURN)) 
 	{ 
-		m_input_open = false; 
-		m_input_complete = 0; 
-		InputExecute(); 
+		open = false; 
+		complete = 0; 
+		Execute(); 
 		return; 
 	}
-	else
-	if(I9_GetKeyDown(I9K_LEFT) && m_input_crt>0)	
+	if(I9_GetKeyDown(I9K_LEFT) && crt > cmd.begin())	
 	{
-		if(ctrl) 
-			InputSkipWord(-1); 
-		else 
-			m_input_crt--;
-		m_input_complete = 0;
+		if(!ctrl || !SkipWordLeft())
+			crt--;
+		complete = 0;
 	}
 	else
-	if(I9_GetKeyDown(I9K_RIGHT) && m_input_crt<len)
+	if(I9_GetKeyDown(I9K_RIGHT) && crt < cmd.end())
 	{
-		if(ctrl) 
-			InputSkipWord(1); 
-		else 
-			m_input_crt++;
-		m_input_complete = 0;
+		if(!ctrl || !SkipWordRight()) 
+			crt++;
+		complete = 0;
 	}
 	else
-	if(I9_GetKeyDown(I9K_BACKSPACE) && m_input_crt>0) // delete back - shift left
+	if(I9_GetKeyDown(I9K_BACKSPACE) && crt > cmd.begin()) // delete back - shift left
 	{
-		m_input_crt--;
-		for(int j=m_input_crt;j<len;j++)
-			m_input_cmd[j] = m_input_cmd[j+1];
-		m_input_complete = 0;
+		crt = cmd.erase(--crt);
+		complete = 0;
 	}
 	else
-	if(I9_GetKeyDown(I9K_DELETE) && m_input_crt<len) // delete - shift left
+	if(I9_GetKeyDown(I9K_DELETE) && crt < cmd.end()) // delete - shift left
 	{
+		auto c = crt - cmd.begin();
 		if(ctrl)
-			m_input_cmd[m_input_crt]=0; // crop
+			cmd = cmd.substr(0, c); 
 		else
-			for(int j=m_input_crt;j<len;j++)
-				m_input_cmd[j] = m_input_cmd[j+1];
-		m_input_complete = 0;
+			cmd.erase(crt);
+		crt = cmd.begin() + c;
+		complete = 0;
 	}
 	else
-	if(I9_GetKeyDown(I9K_HOME)) { m_input_crt=0; m_input_complete = 0; }
+	if(I9_GetKeyDown(I9K_HOME)) { crt = cmd.begin(); complete = 0; }
 	else
-	if(I9_GetKeyDown(I9K_END)) { m_input_crt=len; m_input_complete = 0; }
+	if(I9_GetKeyDown(I9K_END)) { crt = cmd.end(); complete = 0; }
 	else
-	if(I9_GetKeyDown(I9K_TAB) ) // autocomplete
-	{
-		InputAutoComplete();
-	}
+	if(I9_GetKeyDown(I9K_TAB) )	{ AutoComplete(); }
 	else
 	if(I9_GetKeyDown(I9K_DOWN))
 	{
-		if(m_input_historycrt==-1) m_input_historycrt=0; else m_input_historycrt--;
-		if( m_input_historycrt<0 ) m_input_historycrt=0;
-		strcpy(m_input_cmd,m_input_history[m_input_historycrt]);
-		m_input_crt = (int)strlen(m_input_cmd);
-		m_input_complete = 0;
+		if(histcrt < hist.end()) ++histcrt;
+		if(histcrt != hist.end())
+		{
+			cmd = *histcrt;
+			crt = cmd.end();
+		}
+		complete = 0;
 	}
 	else
 	if(I9_GetKeyDown(I9K_UP))
 	{
-		if(m_input_historycrt==-1) m_input_historycrt=0; else m_input_historycrt++;
-		if( m_input_historycrt>m_input_historycnt-1 ) m_input_historycrt=m_input_historycnt-1;
-		strcpy(m_input_cmd,m_input_history[m_input_historycrt]);
-		m_input_crt = (int)strlen(m_input_cmd);
-		m_input_complete = 0;
+		if(histcrt > hist.begin()) --histcrt;
+		if(histcrt != hist.end())
+		{
+			cmd = *histcrt;
+			crt = cmd.end();
+		}
+		complete = 0;
 	}
 	else
 	{
 		// char keys
-		if(len==INPUT_SIZE) return; // full
-		for(i=0;i<I9_GetKeyQCount();i++)
+		for(int i=0;i<I9_GetKeyQCount();i++)
 		{
 			if(!I9_GetKeyQValue(i)) continue;
 			int key = I9_GetKeyQCode(i);
 			char ascii = shift ? I9_GetKeyShifted(key) : I9_GetKeyAscii(key);
 			if(!ascii) continue;
-			// shift right (including 0)
-			if(m_input_crt<len)	
-				memmove( m_input_cmd+m_input_crt+1, m_input_cmd+m_input_crt, len-m_input_crt);
-			// insert
-			len++;
-			m_input_cmd[m_input_crt]=ascii;
-			m_input_cmd[len]=0;
-			m_input_crt++;
-			m_input_complete = 0;
+			crt = cmd.insert(crt, ascii);
+			crt++;
+			complete = 0;
 		}
 	}
 
 	
 }
 
-void cDizDebug::InputDraw()
+void Input::Draw()
 {
-	if(!m_input_open) return;
-	fRect rect(0, renderSize.y - (INFO_LINES+1)*R9_CHRH, renderSize.x, renderSize.y - INFO_LINES * R9_CHRH);
+	if(!open) return;
 	R9_DrawBar(rect,COLOR_BBKGR);
-	R9_DrawText(fV2(rect.x1,rect.y1),">",COLOR_INPUT);
-	rect.x1 += R9_CHRW;
-	int t = sys_gettickcount()%800;
-	float crtx = rect.x1+R9_CHRW*m_input_crt-1;
-	if(t<500) R9_DrawLine(fV2(crtx,rect.y1-1),fV2(crtx,rect.y2+1));
-//	if(t<400) R9_DrawLine(fV2(crtx,rect.y2),fV2(crtx+R9_CHRW,rect.y2));
-//	if(t<500) R9_DrawBar(fRect(crtx,rect.y1-1,crtx+R9_CHRW,rect.y2+1),0xff808080);
-	R9_DrawText(fV2(rect.x1,rect.y1),m_input_cmd,COLOR_INPUT);
+	fV2 p(rect.x1, rect.y1);
+	R9_DrawText(p, ">", COLOR_INPUT);
+	p.x += R9_CHRW;
+	int t = sys_gettickcount() % 800;
+	float crtx = p.x + R9_CHRW * (crt-cmd.begin())-1;
+	if(t<500) R9_DrawLine(fV2(crtx, p.y-1), fV2(crtx, rect.y2 + 1));
+//	if(t<400) R9_DrawLine(fV2(crtx, rect.y2), fV2(crtx+R9_CHRW, rect.y2));
+//	if(t<500) R9_DrawBar(fRect(crtx, p.y-1, crtx + R9_CHRW, rect.y2 + 1), 0xff808080);
+	R9_DrawText(p, cmd.c_str(), COLOR_INPUT);
 }
 
-void cDizDebug::InputExecute()
+void Input::Execute()
 {
-	if(m_input_cmd[0]==0) return; // empty
-	// history
-	memmove(m_input_history[1],m_input_history[0],(INPUT_HISTORY-1)*INPUT_SIZE);
-	strcpy(m_input_history[0],m_input_cmd);
-	if(m_input_historycnt<INPUT_HISTORY) m_input_historycnt++;
+	if(cmd.empty()) return;
+	hist.push_back(cmd);
+	if(hist.size() == INPUT_HISTORY) hist.pop_front();
+	histcrt = --hist.end();
 
 	try
 	{
-		PlCall(m_input_cmd);
+		PlCall(cmd.c_str());
 	}
 	catch(PlException const & e)
 	{
 		PlException ee(e);
 		dlog(L"PlException: %s", static_cast<LPCWSTR>(ee));
 	}
-
-	// clear cmd
-	m_input_cmd[0]=0;
-	m_input_crt=0;
+	cmd.clear();
+	crt = cmd.begin();
 }
 
-void cDizDebug::InputSkipWord( int dir )
+std::string::const_iterator Input::CmdWordBegin() const
 {
-	int len = (int)strlen(m_input_cmd);
-	int cnt = 0;
-	while( (dir<0 && 0<m_input_crt) || (dir>0 && m_input_crt<len) )
+	std::string::const_iterator b = crt;
+	while(b > cmd.begin())
 	{
-		char c = m_input_cmd[m_input_crt];
-		if(!IS_WORD_CHAR(c)) break;
-		m_input_crt += dir;
-		cnt++;
+		--b;		
+		if(!IS_WORD_CHAR(*b)) { ++b; break; }
 	}
-	if(cnt==0)
-	{
-		m_input_crt += dir;
-		if(m_input_crt<0) m_input_crt=0;
-		if(m_input_crt>len) m_input_crt=len;
-	}
+	return b;
+
+}
+std::string::const_iterator Input::CmdWordEnd() const {
+
+	std::string::const_iterator e = crt;
+	for(;e < cmd.end() && IS_WORD_CHAR(*e); ++e);
+	return e;
 }
 
-int common(const char *s1, const char *s2, int insensitive)
-{ int n = 0;
-
-  if ( !insensitive )
-  { while(*s1 && *s1 == *s2)
-    { s1++, s2++;
-      n++;
-    }
-    return n;
-  } else
-  { while(*s1)
-    { if ( tolower(*s1) == tolower(*s2) )
-      { s1++, s2++;
-	n++;
-      } else
-	break;
-    }
-    return n;
-  }
-}
-
-void cDizDebug::InputAutoComplete()
+void Input::AutoComplete()
 {
-	// find word begining and ending
-	int start = m_input_crt;
-	while(start>0 && IS_WORD_CHAR(m_input_cmd[start-1])) start--;
-	if(m_input_crt-start<=0) return; // nothing to start with
-	int end = m_input_crt;
-	while(IS_WORD_CHAR(m_input_cmd[end])) end++;
+	auto cmpl = complete;
+	complete = 0;
 
-	
+	auto start = CmdWordBegin();
+	if(start == cmd.end() || !islower(*start)) return;
+	std::string buf = cmd.substr(start - cmd.begin(), crt - start);
+	auto name = PL_atom_generator(buf.c_str(), 0);
+	if (!name) return;
+	std::string prefix = cmd.substr(0, start - cmd.begin());
+	std::string suffix = cmd.substr(CmdWordEnd() - cmd.begin());
+	std::string match = name;
+	size_t nmatches = 1;
+	for(;name = PL_atom_generator(buf.c_str(), 1); nmatches++)
+		match = match.substr(0, 
+					std::mismatch(match.begin(), match.end(), name, 
+					[](char c1, char c2) { return tolower(c1) == tolower(c2); }).first - match.begin());
 
-	if ( islower(m_input_cmd[start]) )
-	{
-		char buf_handle[INPUT_SIZE];
-		size_t patlen = m_input_crt - start;
-
-		strncpy(buf_handle, m_input_cmd + start, patlen);
-		buf_handle[patlen] = 0;
-		if(char * name = PL_atom_generator(buf_handle, 0))
+	cmd = prefix + match + suffix;
+	auto crtDif = prefix.size() + match.size();
+	crt = cmd.begin() + crtDif;
+	if(nmatches <= 1) return;
+	for(;name = PL_atom_generator(match.c_str(), complete ? 1 : 0); ++complete)
+		if(cmpl == complete) 
 		{
-			char match[INPUT_SIZE];
-			int nmatches = 1;
-			size_t replace_from = start;
-			size_t ncommon = strlen(name);
-			size_t patlen = m_input_crt - replace_from;
-			strcpy(match, name); 
-
-			while(name = PL_atom_generator(buf_handle, 1) )
-			{ 
-				ncommon = common(match, name, 1);//data->case_insensitive);
-				match[ncommon] = 0;
-				nmatches++;
-			}
-			// insert found
-			int len=(int)strlen(m_input_cmd);
-			if(start+ncommon+(len-end)>=INPUT_SIZE) return; // no room
-	
-			// remove old word and insert new one
-			if(len-end)	memmove(m_input_cmd+start+ncommon,m_input_cmd+end,len-end);
-			memcpy(m_input_cmd+start,match,ncommon);
-			m_input_cmd[start+ncommon+len-end]=0;
-			m_input_crt = end = start+ncommon;
-			int complete = 0; // counter
-			if(nmatches > 1 && (name = PL_atom_generator(match, 0))) {
-				if(complete == m_input_complete) 
-					goto found; 
-				else 
-					complete++;
-
-				while(name = PL_atom_generator(match, 1))
-					if(complete == m_input_complete) 
-						goto found; 
-					else 
-						complete++;
-			}
-			m_input_complete = 0;
+			++complete;
+			cmd = prefix + name + suffix;
+			crt = cmd.begin() + crtDif;
 			return;
-found:
-			m_input_complete++;
-			if(!name) return; // safe
-			int nlen = (int)strlen(name);
-			len=(int)strlen(m_input_cmd);
-			if(start+nlen+(len-end)>=INPUT_SIZE) return; // no room
-	
-			// remove old word and insert new one
-			if(len-end)	memmove(m_input_cmd+start+nlen,m_input_cmd+end,len-end);
-			memcpy(m_input_cmd+start,name,nlen);
-			m_input_cmd[start+nlen+len-end]=0;
-			return;
-		}
-	}
-	m_input_complete = 0;
+		}	
+	complete = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

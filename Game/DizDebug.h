@@ -11,14 +11,13 @@
 #include "SWI-Stream.h"
 
 #include <deque>
+#include <functional>
 
 const size_t CON_LINES = 2048;	// total lines
 const size_t SLOT_COUNT = 16;	// total slots
 const size_t INFO_LINES = 2;	// info slot lines
 #define INPUT_SIZE			256		// input cmd size
 #define INPUT_HISTORY		16		// input history count
-
-#define	IS_DEVELOPER()		(cDizDebug::m_developer)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // cDizDebug
@@ -74,8 +73,10 @@ public:
 
 class Input
 {
+	typedef std::function<void(const std::string &)> ActionType;
 	bool	open;										// input dialog opend
 	int		complete;									// auto-complete count (0=first, 1=next, etc)
+	std::string prompt;
 	std::string cmd;									// input command string
 	std::string::const_iterator crt;					// input currsor
 	std::deque<std::string> hist;					// input history list of commands
@@ -84,58 +85,74 @@ class Input
 	std::string::const_iterator CmdWordBegin() const;
 	std::string::const_iterator CmdWordEnd() const;
 	bool MoveCrt(std::string::const_iterator v) { bool moved = v != crt; crt = v; return moved; }
+	ActionType Action;
+	bool SkipWordLeft() { return MoveCrt(CmdWordBegin()); }	// move cursor left over a word
+	bool SkipWordRight() { return MoveCrt(CmdWordEnd()); }	// move cursor left over a word
+	void AutoComplete();								// auto-complete function
+	void Execute();
 
 public:
-	Input() : open(), crt(cmd.end()), complete(), histcrt(hist.begin()) {}
+	Input(const std::string & prompt = ">") : open(), prompt(prompt), crt(cmd.end()), complete(), histcrt(hist.begin()) {}
 	void Layout(const iRect & r) { rect = r; }
 	void Open() { open = true; }
 	bool IsOpened() const { return open; }
 	void Update();
 	void Draw();
-		
-	void Execute();										// execute command
-	bool SkipWordLeft() { return MoveCrt(CmdWordBegin()); }	// move cursor left over a word
-	bool SkipWordRight() { return MoveCrt(CmdWordEnd()); }	// move cursor left over a word
-	void AutoComplete();								// auto-complete function
 	void setCmd(const std::string & c) { cmd = c; crt = cmd.end(); complete = 0;}
+	void setPrompt(const std::string & p) { prompt = p; }
+	void setAction(ActionType a) { Action = a; }
+};
+
+class Prolog
+{
+	Console & con;
+	Slots & slots;
+	Input input;
+	int Draw();
+	void Ready(const std::string & cmd) { Cmd = cmd; CmdReady = true; }
+	std::string Cmd;
+	bool CmdReady;
+public:
+	Prolog(Console & con, Slots & slots);
+	ssize_t Read(char *buffer, size_t size);
+	void Layout( const iRect & rect) { input.Layout(rect); }
+	void Open(bool o);
+};
+
+class Developer
+{
+	int tickold;
+	std::string buf;
+public:
+	Developer() : tickold() {}
+	bool Update();
 };
 
 class cDizDebug
 {
+	Console	con;
+	Slots slots;
+	Info info;
+	Input input;
+	Prolog prolog;
+	Developer dev;
+	bool _visible;									// developer console active
+	bool _active;								// developer debug active (set from ini)
+	static void Call(const std::string & cmd);
+	void NavigationUpdate();
 public:
-				cDizDebug();
+	cDizDebug();
 
-		bool	Init();
-		void	Done();
-		bool	Update();
-		void	Draw();
-		void	Layout();					// get render size from render; call it if render changes
+	bool Init();
+	bool Update();
+	void Draw();
+	void Layout();					
 
-		ssize_t PrologRead(char *buffer, size_t size);
-		void PrologUpdate();
-		void PrologDraw();
+	void ConsolePush( int ch, LPCWSTR msg );
+	void SlotSet( size_t slot, LPCWSTR text );
 
-		bool	DeveloperKey();
-
-		// navigation
-		void	NavigationUpdate();
-
-		// console
-
-
-
-		void	ConsolePush( int ch, LPCWSTR msg );
-static	void	Con_LogCallback( int ch, LPCWSTR msg );
-		void	SlotSet( size_t slot, LPCWSTR text );
-
-		Console	con;
-		Slots	slots;
-		Info	info;
-		Input	input;
-
-		iV2		renderSize;
-		bool	m_console;									// developer console active
-static	BOOL	m_developer;								// developer debug active (set from ini)
+	bool active() const { return _active; }
+	bool visible() const { return _visible; }
 };
 
 extern cDizDebug g_dizdebug;

@@ -174,9 +174,6 @@ void cDizApp::Done()
 	g_paint.Done();
 	g_cfg.Done();
 
-	// debug
-	g_dizdebug.Done();
-
 	// engine
 	R9_Done();
 	R9_DoneInterface();
@@ -288,7 +285,7 @@ bool cDizApp::Update()
 		// game
 		if(!g_game.Update()) return false;
 
-		if( IS_DEVELOPER() )
+		if(g_dizdebug.active())
 			g_script.debug(); // debug script callback
 
 	}

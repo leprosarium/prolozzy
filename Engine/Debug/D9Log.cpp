@@ -8,7 +8,7 @@ char			d9Log::m_logfile[D9_LOG_NAMESIZE] = "";
 d9LogChannel	d9Log::m_logc[D9_LOG_CHANNELMAX];
 BOOL			d9Log::m_store = FALSE;
 std::wstring 	d9Log::m_buffer;
-d9LogCallback	d9Log::m_callback = NULL;
+d9LogCallback	d9Log::m_callback;
 
 d9LogChannel::d9LogChannel()				
 {	

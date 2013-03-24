@@ -14,7 +14,7 @@
 #include "E9Engine.h"
 
 #include <string>
-
+#include <functional>
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Defines
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -32,7 +32,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // d9Log class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-typedef void (*d9LogCallback)( int ch, LPCWSTR msg );
+typedef std::function<void(int,LPCWSTR)> d9LogCallback;
 
 struct d9LogChannel
 {
@@ -47,7 +47,7 @@ class d9Log
 {
 public:
 
-static	void			Init( const char* logfile, d9LogCallback callback=NULL );
+static	void			Init( const char* logfile, d9LogCallback callback = nullptr_t );
 static	void			Clear();
 static	void			SetChannel( int ch, const char* name, dword flags, dword color );
 static	void			Store( BOOL enable );

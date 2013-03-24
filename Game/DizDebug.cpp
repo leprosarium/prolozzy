@@ -15,8 +15,6 @@
 
 cDizDebug g_dizdebug;
 
-BOOL cDizDebug::m_developer = false;
-
 bool IS_WORD_CHAR(char c)
 {
 	return ('0'<=c && c<='9') || ('A'<=c && c<='Z') || ('a'<=c && c<='z') || c=='_';
@@ -27,43 +25,53 @@ bool IS_WORD_CHAR(char c)
 #define COLOR_BBKGR		0xa0000000
 
 
-int PrologDebugDraw()
+int Prolog::Draw()
 {
-	g_dizdebug.PrologDraw();
-	return 0;
-}
-
-void cDizDebug::PrologDraw()
-{
-	if(!R9_IsReady()) return; // avoid painting if render is not ready
+	if(!R9_IsReady()) return 0; // avoid painting if render is not ready
 	R9_CheckDevice(); // check for lost device
 	if(R9_BeginScene())
 	{
 		R9_Clear(g_game.mapColor()|0xff000000);
-		g_dizdebug.con.Draw();
-		g_dizdebug.slots.Draw();
-		g_dizdebug.input.Draw();
+		con.Draw();
+		slots.Draw();
+		input.Draw();
 
 		R9_EndScene();
 		R9_Present();
 	}
+	return 0;
 }
 
-void cDizDebug::PrologUpdate()
+static ssize_t Log_read(void *handle, char *buffer, size_t size)
 {
-	float dtime = (float)E9_AppGetInt(E9_APP_DELTATIME) / 1000.0f;
-	if(I9_IsReady()) I9_Update(dtime);
-	if(m_console) con.Update();
+	return static_cast<Prolog *>(handle)->Read(buffer, size);
 }
 
-ssize_t cDizDebug::PrologRead(char *buffer, size_t size)
-{
+Prolog::Prolog(Console & con, Slots & slots) : 
+	con(con), 
+	slots(slots)
+{ 	
+	input.setAction([this](const std::string &s){ this->Ready(s); });
+}
 
-	e9AppCallback pnt = E9_AppSetCallback(E9_APP_ONPAINT, PrologDebugDraw);
+void Prolog::Open(bool o) {
+	PL_set_prolog_flag("tty_control", PL_BOOL, o ? TRUE : FALSE);
+	Sinput->functions->read = o ? Log_read : 0;
+	Sinput->handle = this;
+}
+
+ssize_t Prolog::Read(char *buffer, size_t size)
+{
+	e9AppCallback pnt = E9_AppSetCallback(E9_APP_ONPAINT, [this]() { return this->Draw(); });
+
 	MSG	msg;
-	std::string cmd = con.lastLine();
-	input.setCmd(cmd);
 	input.Open();
+
+	int mode = PL_ttymode(Suser_input);
+	bool single = mode == PL_RAWTTY;
+	if(auto prompt = PL_prompt_string(0))
+		input.setPrompt(prompt);
+
  	while(true)
 	{
 		while( PeekMessage( &msg, NULL, 0, 0, PM_NOREMOVE ) )
@@ -78,46 +86,54 @@ ssize_t cDizDebug::PrologRead(char *buffer, size_t size)
 				return 0;
 			}
 		}
-		PrologDraw();
-		PrologUpdate();
+		e9App::UpdateClocks();
+		if(I9_IsReady()) { I9_Update(E9_AppGetInt(E9_APP_DELTATIME) / 1000.0f); }
+		con.Update();
+		if(!single) input.Update();
+		Draw();
 		bool shift = I9_GetKeyValue(I9K_LSHIFT) || I9_GetKeyValue(I9K_RSHIFT);
-		size_t pos = 0;
-		for(int i=0;i<I9_GetKeyQCount();i++)
+		if(single)
 		{
-			if(!I9_GetKeyQValue(i))
-				continue;
-			int key = I9_GetKeyQCode(i);
-			char ascii = shift ? I9_GetKeyShifted(key) : I9_GetKeyAscii(key);
-			if(key == I9K_RETURN)
-				ascii = '\n';
-			if(!ascii) 
-				continue;
-			buffer[pos++]=ascii;
-			cmd += ascii;
+			for(int i=0;i<I9_GetKeyQCount();i++)
+			{
+				if(!I9_GetKeyQValue(i))
+					continue;
+				int key = I9_GetKeyQCode(i);
+				char ascii = shift ? I9_GetKeyShifted(key) : I9_GetKeyAscii(key);
+				if(key == I9K_RETURN)
+					ascii = '\n';
+				if(!ascii) 
+					continue;
+				buffer[0]=ascii;
+				E9_AppSetCallback(E9_APP_ONPAINT, pnt);
+				return 1;
+			}
 		}
-		if(pos)
+		else
 		{
-			input.setCmd(cmd);
-			D9_LogBuf(LOGDBG, buffer, pos);
-			E9_AppSetCallback(E9_APP_ONPAINT, pnt);
-			return pos;
+			if(CmdReady) {
+				CmdReady = false;
+				Cmd += "\n";
+				size_t sz = std::min(Cmd.size(), size);
+				memcpy(buffer, Cmd.c_str(), sz);
+				Cmd = "";
+				PL_prompt_next(0);
+				D9_LogBuf(LOGDBG, buffer, sz);
+				E9_AppSetCallback(E9_APP_ONPAINT, pnt);
+				return sz;
+			}
 		}
 		Sleep(10);
 	}
 	return 0;
 }
 
-static ssize_t Log_read(void *handle, char *buffer, size_t size)
-{
-	return g_dizdebug.PrologRead(buffer, size);
 
-}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-cDizDebug::cDizDebug() : con(CON_LINES)
+cDizDebug::cDizDebug() : con(CON_LINES), _visible(), _active(), prolog(con, slots)
 {
-	Soutput->functions->read = Log_read;
-	m_console = false;
+	input.setAction(Call);
 }
 
 
@@ -126,26 +142,22 @@ bool cDizDebug::Init()
 	Layout();
 	
 	// config
-	char inifile[256];
-	strcpy( inifile, file_getfullpath(GetIniFile()) );
-	ini_getint( inifile, "ADVANCED",	"dev",		&m_developer );
+	int dev;
+	ini_getint( file_getfullpath(GetIniFile()), "ADVANCED",	"dev",		&dev);
+	_active = dev != 0;
 	if(*g_cfg.GetInfoValue("game_protection")) 
-		m_developer=false; // no developer for protected games
+		_active=false; // no developer for protected games
 
 	// console
-	m_console = false;
-	D9_LogSetCallback( Con_LogCallback );
+	_visible = false;
+	D9_LogSetCallback([this](int ch,LPCWSTR msg) {this->ConsolePush( ch, msg );});
 
 	//log
 	dlog(LOGAPP, L"%S v%S\n",GAME_NAME,GAME_VERSION);
 	R9_LogCfg(R9_GetCfg(),R9_GetApi());
-	if(m_developer) dlog(LOGAPP, L"Developer mode on.\n");
+	if(_active) dlog(LOGAPP, L"Developer mode on.\n");
 
 	return true;
-}
-
-void cDizDebug::Done()
-{
 }
 
 bool cDizDebug::Update()
@@ -153,15 +165,15 @@ bool cDizDebug::Update()
 	if(!I9_IsReady()) return true;
 
 	// debug developer hidden key
-	if(DeveloperKey() && !input.IsOpened())
+	if(dev.Update() && !input.IsOpened())
 	{
-		m_developer = !m_developer; 
+		_active = !_active; 
 		g_paint.Layout();
 	}
-	if(!m_developer) return true;
+	if(!_active) return true;
 
 	// console input
-	if(m_console) input.Update(); // update console input command
+	if(_visible) input.Update(); // update console input command
 	if(input.IsOpened())	// if during console input command
 	{
 		g_player.m_debug = 1; // don't update player
@@ -171,11 +183,12 @@ bool cDizDebug::Update()
 	// console
 	if(I9_GetKeyDown(I9K_GRAVE) || I9_GetKeyDown(I9K_F2)) // show-hide
 	{
-		m_console=!m_console;
+		_visible=!_visible;
 		g_paint.Layout();
 		Layout();
+		prolog.Open(_visible);
 	}
-	if(m_console) 
+	if(_visible) 
 		con.Update();
 
 	// navigation
@@ -219,14 +232,10 @@ bool cDizDebug::Update()
 	return true;
 }
 
-#ifdef _DEBUG
-//#define GAME_DRAWDEBUG				// draw debug (only on developper mode)
-#endif
-
 void cDizDebug::Draw()
 {
-	if(!m_developer) return;
-	if(!m_console)
+	if(!_active) return;
+	if(!_visible)
 	{
 		R9_DrawBar(fRect(2,2,4+8*R9_CHRW,4+R9_CHRH),0xffff0000);
 		R9_DrawText(fV2(4,4),"DEV-MODE",0xffffffff);
@@ -241,36 +250,31 @@ void cDizDebug::Draw()
 
 void cDizDebug::Layout()
 {
-	renderSize = iV2(R9_GetWidth(), R9_GetHeight());
+	iV2 renderSize(R9_GetWidth(), R9_GetHeight());
 	iV2 scr = g_game.screenSize * g_paint.m_scale;
 	con.Layout(iRect(iV2(), renderSize - iV2(0, (INFO_LINES+1)*R9_CHRH)));
 	slots.Layout(iRect(scr.x, 0, renderSize.x, scr.y));
 	info.Layout(iRect(iV2(0, renderSize.y - INFO_LINES * R9_CHRH), renderSize));
-	input.Layout(iRect(0, renderSize.y - (INFO_LINES+1)*R9_CHRH, renderSize.x, renderSize.y - INFO_LINES * R9_CHRH));
+	iRect inp = iRect(0, renderSize.y - (INFO_LINES+1)*R9_CHRH, renderSize.x, renderSize.y - INFO_LINES * R9_CHRH);
+	input.Layout(inp);
+	prolog.Layout(inp);
 }
 
-bool cDizDebug::DeveloperKey()
+bool Developer::Update()
 {
 	// quick type D E V E L O P E R to toggle
-	static int tickold = 0;
-	static char keybuf[16] = {32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,0};
-	int keycnt = 16;
 	if( I9_GetKeyQCount() )
 	{
 		for(int i=0;i<I9_GetKeyQCount();i++)
-		{
 			if(!I9_GetKeyQValue(i)) // up
 			{
 				char chr = I9_GetKeyAscii(I9_GetKeyQCode(i));
 				if(chr<=0) chr=32;
-				keybuf[keycnt-1] = chr; 
-				memmove(keybuf,keybuf+1,keycnt-1);
-				keybuf[keycnt-1]=0;
+				buf+=chr;
 			}
-		}
-		if(strstr(keybuf,"developer"))
+		if(buf.find("developer") != std::string::npos)
 		{
-			memset(keybuf,32,keycnt-1);
+			buf.clear();
 			return true;
 		}
 	}
@@ -278,8 +282,8 @@ bool cDizDebug::DeveloperKey()
 	int tick = sys_gettickcount();
 	if(tick-tickold<10000)
 	{
-		tickold=tick;
-		memset(keybuf,32,keycnt-1);
+		tickold = tick;
+		buf.clear();
 	}
 	return false;
 }
@@ -338,6 +342,19 @@ void cDizDebug::NavigationUpdate()
 	g_player.x(px);
 	g_player.y(py);
 	g_player.m_debug = (ctrl||shift);
+}
+
+void cDizDebug::Call(const std::string & cmd)
+{
+	try
+	{
+		PlCall(cmd.c_str());
+	}
+	catch(PlException const & e)
+	{
+		PlException ee(e);
+		dlog(L"PlException: %s", static_cast<LPCWSTR>(ee));
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -403,11 +420,6 @@ void cDizDebug::ConsolePush( int ch, LPCWSTR msg )
 {
 	if(msg)
 		con.Push(ch, WideStringToMultiByte(msg));
-}
-
-void cDizDebug::Con_LogCallback( int ch, LPCWSTR msg )
-{
-	g_dizdebug.ConsolePush( ch, msg );
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -543,8 +555,8 @@ void Input::Draw()
 	if(!open) return;
 	R9_DrawBar(rect,COLOR_BBKGR);
 	fV2 p(rect.x1, rect.y1);
-	R9_DrawText(p, ">", COLOR_INPUT);
-	p.x += R9_CHRW;
+	R9_DrawText(p, prompt.c_str(), COLOR_INPUT);
+	p.x += prompt.size() * R9_CHRW;
 	int t = sys_gettickcount() % 800;
 	float crtx = p.x + R9_CHRW * (crt-cmd.begin())-1;
 	if(t<500) R9_DrawLine(fV2(crtx, p.y-1), fV2(crtx, rect.y2 + 1));
@@ -559,19 +571,13 @@ void Input::Execute()
 	hist.push_back(cmd);
 	if(hist.size() == INPUT_HISTORY) hist.pop_front();
 	histcrt = --hist.end();
-
-	try
-	{
-		PlCall(cmd.c_str());
-	}
-	catch(PlException const & e)
-	{
-		PlException ee(e);
-		dlog(L"PlException: %s", static_cast<LPCWSTR>(ee));
-	}
+	if(Action)
+		Action(cmd);
 	cmd.clear();
 	crt = cmd.begin();
 }
+
+
 
 std::string::const_iterator Input::CmdWordBegin() const
 {

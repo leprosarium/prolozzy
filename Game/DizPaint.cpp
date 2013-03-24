@@ -155,7 +155,7 @@ void cDizPaint::Layout()
 {
 	m_scale = g_cfg.m_scale;
 	if(m_scale==0)	m_scale = std::max( 0, std::min( R9_GetWidth()/g_game.screenSize.x, R9_GetHeight()/g_game.screenSize.y ) );
-	scrOffs = g_dizdebug.m_console ? iV2() : (iV2(R9_GetWidth(), R9_GetHeight()) - g_game.screenSize * m_scale ) / 2;
+	scrOffs = g_dizdebug.visible() ? iV2() : (iV2(R9_GetWidth(), R9_GetHeight()) - g_game.screenSize * m_scale ) / 2;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -259,7 +259,7 @@ bool Tiles::LoadFile( const char* filepath, int group )
 
 	R9_ImgDestroy(&img);
 
-	if(IS_DEVELOPER()) // log for developers
+	if(g_dizdebug.active()) // log for developers
 		dlog(LOGAPP, L"  %S [%i]\n", filepath, frames );
 	
 	return true;
@@ -943,7 +943,7 @@ bool cDizPaint::FontLoadFile( const char* filepath, int group )
 	}
 	m_font.push_back(font);
 
-	if(IS_DEVELOPER()) // log for developers
+	if(g_dizdebug.active()) // log for developers
 		dlog(LOGAPP, L"  %S\n", filepath );
 	
 	return true;

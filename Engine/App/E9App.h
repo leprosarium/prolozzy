@@ -9,6 +9,8 @@
 #ifndef __E9APP_H__
 #define __E9APP_H__
 
+#include <functional>
+
 #include "E9System.h"
 #include "E9Engine.h"
 
@@ -47,7 +49,9 @@
 
 #define E9_APP_CLASSNAME		"E9_APPCLASS"
 
-typedef int	(*e9AppCallback)();
+//typedef int	(*e9AppCallback)();
+typedef std::function<int ()> e9AppCallback;
+
 
 class e9App
 {
@@ -64,11 +68,11 @@ static	int			GetInt( int prop );			  					// get integer property
 static	void		SetVoid( int prop, void* value );				// set void* property
 static	void*		GetVoid( int prop );			 				// get void* property
 static	void		SetCursor( int cursor );						// set mouse cursor
-
+static	void		UpdateClocks();
 protected:
 
 static	int			InitWindow();
-static	void		UpdateClocks();
+
 static	LRESULT CALLBACK WndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
 
 // members

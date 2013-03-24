@@ -147,7 +147,7 @@ bool cDizSound::SampleLoadFile( const char* filepath, int group )
 	tSoundProto* proto = new tSoundProto(id, group, instances, bufferproto);
 	m_sampleproto.push_back(proto);
 
-	if(IS_DEVELOPER()) // log for developers
+	if(g_dizdebug.active()) // log for developers
 		dlog(LOGAPP, L"  %S [%i]\n", filepath, instances );
 
 	return true;
@@ -332,7 +332,7 @@ bool cDizSound::MusicLoadFile( const char* filepath, int group )
 	tMusicProto* proto = new tMusicProto(id, group, stream);
 	m_musicproto.push_back(proto);
 
-	if(IS_DEVELOPER()) // log for developers
+	if(g_dizdebug.active()) // log for developers
 		dlog(LOGAPP, L"  %S\n", filepath );
 
 	return true;

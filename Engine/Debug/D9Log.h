@@ -47,7 +47,7 @@ class d9Log
 {
 public:
 
-static	void			Init( const char* logfile, d9LogCallback callback = nullptr_t );
+static	void			Init( const char* logfile, d9LogCallback callback = nullptr );
 static	void			Clear();
 static	void			SetChannel( int ch, const char* name, dword flags, dword color );
 static	void			Store( BOOL enable );

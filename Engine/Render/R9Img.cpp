@@ -52,8 +52,8 @@ void R9_ImgDestroy( r9Img* img )
 
 BOOL R9_ImgDuplicate( r9Img* src, r9Img* dst )
 {
-	if(!src || !R9_ImgIsValid(src)) return FALSE;
-	if(!dst || R9_ImgIsValid(dst)) return FALSE;
+	if(!src || !src->isValid()) return FALSE;
+	if(!dst || dst->isValid()) return FALSE;
 	dst->m_width = src->m_width;
 	dst->m_height = src->m_height;
 	dst->m_pf = src->m_pf;
@@ -65,8 +65,8 @@ BOOL R9_ImgDuplicate( r9Img* src, r9Img* dst )
 
 BOOL R9_ImgFlipV( r9Img* img )
 {
-	if(!img || !R9_ImgIsValid(img)) return FALSE;
-	int linesize = R9_ImgLineSize(img);
+	if(!img || !img->isValid()) return FALSE;
+	int linesize = img->lineSize();
 	byte* temp = (byte*)malloc(linesize);
 	for(int i=0;i<img->m_height/2;i++)
 	{
@@ -80,7 +80,7 @@ BOOL R9_ImgFlipV( r9Img* img )
 
 BOOL R9_ImgFlipRGB( r9Img* img )
 {
-	if(!img || !R9_ImgIsValid(img)) return FALSE;
+	if(!img || !img->isValid()) return FALSE;
 	int spp = R9_PFSpp(img->m_pf);
 	if( spp!=3 && spp!=4 ) return FALSE;
 	for(int i=0;i<(int)img->m_size;i+=spp)
@@ -94,8 +94,8 @@ BOOL R9_ImgFlipRGB( r9Img* img )
 
 BOOL R9_ImgScale( r9Img* src, r9Img* dst )
 {
-	if(!src || !R9_ImgIsValid(src)) return FALSE;
-	if(!dst || R9_ImgIsValid(dst)) return FALSE; // dst must not be valid (only width, height are needed)
+	if(!src || !src->isValid()) return FALSE;
+	if(!dst || dst->isValid()) return FALSE; // dst must not be valid (only width, height are needed)
 
 	int spp = R9_PFSpp(src->m_pf);
 	if( spp!=3 && spp!=4 ) return FALSE; // only 24 and 32 bits supported
@@ -292,20 +292,20 @@ BOOL R9_ImgScale( r9Img* src, r9Img* dst )
 
 BOOL R9_ImgScale( r9Img* img, int w, int h )
 {
-	if(!img || !R9_ImgIsValid(img)) return FALSE;
+	if(!img || !img->isValid()) return FALSE;
 	r9Img imgnew;
 	imgnew.m_width = w;
 	imgnew.m_height = h;
 	if(!R9_ImgScale(img, &imgnew)) return FALSE;
 	R9_ImgDestroy(img);
-	*img = imgnew;
+	*img = std::move(imgnew);
 	return TRUE;
 }
 
 BOOL R9_ImgCrop( r9Img* src, int x, int y, r9Img* dst )
 {
-	if(!src || !R9_ImgIsValid(src)) return FALSE;
-	if(!dst || R9_ImgIsValid(dst)) return FALSE; // dst must not be valid (only width, height are needed)
+	if(!src || !src->isValid()) return FALSE;
+	if(!dst || dst->isValid()) return FALSE; // dst must not be valid (only width, height are needed)
 
 	int spp = R9_PFSpp(src->m_pf);
 	if( spp!=3 && spp!=4 ) return FALSE; // only 24 and 32 bits supported
@@ -332,20 +332,20 @@ BOOL R9_ImgCrop( r9Img* src, int x, int y, r9Img* dst )
 
 BOOL R9_ImgCrop( r9Img* img, int x, int y, int w, int h )
 {
-	if(!img || !R9_ImgIsValid(img)) return FALSE;
+	if(!img || !img->isValid()) return FALSE;
 	r9Img imgnew;
 	imgnew.m_width = w;
 	imgnew.m_height = h;
 	if(!R9_ImgCrop(img, x, y, &imgnew)) return FALSE;
 	R9_ImgDestroy(img);
-	*img = imgnew;
+	 *img = std::move(imgnew);
 	return TRUE;
 }
 
 BOOL R9_ImgConvertPF( r9Img* src, r9Img* dst, int pf )
 {
-	if(!src || !R9_ImgIsValid(src)) return FALSE;
-	if(!dst || R9_ImgIsValid(dst)) return FALSE;
+	if(!src || !src->isValid()) return FALSE;
+	if(!dst || dst->isValid()) return FALSE;
 	dst->m_width = src->m_width;
 	dst->m_height = src->m_height;
 	dst->m_pf = pf;
@@ -363,10 +363,10 @@ BOOL R9_ImgConvertPF( r9Img* src, r9Img* dst, int pf )
 
 BOOL R9_ImgCopy2Mem( r9Img* img, void* buffer, int pitch )
 {
-	if(!img || !R9_ImgIsValid(img)) return FALSE;
+	if(!img || !img->isValid()) return FALSE;
 	byte* mdata = (byte*)buffer;
 	byte* idata = img->m_data;
-	int lnsize = R9_ImgLineSize(img);
+	int lnsize = img->lineSize();
 	for(int i=0; i<img->m_height; i++)
 	{
 		memcpy(mdata,idata,lnsize);
@@ -378,8 +378,8 @@ BOOL R9_ImgCopy2Mem( r9Img* img, void* buffer, int pitch )
 
 BOOL R9_ImgCopy( r9Img* src, r9Img* dst, int x, int y )
 {
-	if(!src || !R9_ImgIsValid(src)) return FALSE;
-	if(!dst || !R9_ImgIsValid(dst)) return FALSE;
+	if(!src || !src->isValid()) return FALSE;
+	if(!dst || !dst->isValid()) return FALSE;
 	if(R9_PFSpp(src->m_pf)!=R9_PFSpp(src->m_pf)) return FALSE;
 	int spp = R9_PFSpp(dst->m_pf);
 	int pitch = dst->m_width * spp;
@@ -389,8 +389,8 @@ BOOL R9_ImgCopy( r9Img* src, r9Img* dst, int x, int y )
 
 BOOL R9_ImgBitBlt( r9Img* src, int sx, int sy, int sw, int sh, r9Img* dst, int dx, int dy )
 {
-	if(!src || !R9_ImgIsValid(src)) return FALSE;
-	if(!dst || !R9_ImgIsValid(dst)) return FALSE;
+	if(!src || !src->isValid()) return FALSE;
+	if(!dst || !dst->isValid()) return FALSE;
 	if(R9_PFSpp(src->m_pf)!=R9_PFSpp(src->m_pf)) return FALSE;
 	int spp = R9_PFSpp(dst->m_pf);
 	
@@ -415,8 +415,8 @@ BOOL R9_ImgBitBlt( r9Img* src, int sx, int sy, int sw, int sh, r9Img* dst, int d
 
 BOOL R9_ImgBitBltSafe( r9Img* src, int sx, int sy, int sw, int sh, r9Img* dst, int dx, int dy )
 {
-	if(!src || !R9_ImgIsValid(src)) return FALSE;
-	if(!dst || !R9_ImgIsValid(dst)) return FALSE;
+	if(!src || !src->isValid()) return FALSE;
+	if(!dst || !dst->isValid()) return FALSE;
 	for(int i=0; i<sh; i++)
 	{
 		for(int j=0; j<sw; j++)
@@ -430,7 +430,7 @@ BOOL R9_ImgBitBltSafe( r9Img* src, int sx, int sy, int sw, int sh, r9Img* dst, i
 
 BOOL R9_ImgWriteBuffer( r9Img* img, void* buffer, r9PFInfo* pfinfo, int pitch )
 {
-	if(!img || !R9_ImgIsValid(img)) return FALSE;
+	if(!img || !img->isValid()) return FALSE;
 	byte* idata = img->m_data;
 	r9PFInfo* pfinfoimg = &r9_pfinfo[img->m_pf];
 	float argb[4];
@@ -450,7 +450,7 @@ BOOL R9_ImgWriteBuffer( r9Img* img, void* buffer, r9PFInfo* pfinfo, int pitch )
 
 BOOL R9_ImgReadBuffer( r9Img* img, void* buffer, r9PFInfo* pfinfo, int pitch )
 {
-	if(!img || !R9_ImgIsValid(img)) return FALSE;
+	if(!img || !img->isValid()) return FALSE;
 	byte* idata = img->m_data;
 	r9PFInfo* pfinfoimg = &r9_pfinfo[img->m_pf];
 	float argb[4];

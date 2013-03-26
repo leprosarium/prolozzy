@@ -60,17 +60,35 @@ inline	void	R9_PFSetARGB( void* dst, r9PFInfo* pfinfo, float* argb );	// writes 
 
 struct r9Img
 {
-					r9Img();			// initialize with 0
+	r9Img();			// initialize with 0
+
 	int				m_width;		// w
 	int				m_height;		// h
 	int				m_pf;			// pixel format
 	dword			m_size;			// size of the data buffer 
 	byte*			m_data;			// pixel data
+	bool isValid() const { return m_width > 0 && m_height > 0 && m_pf != R9_PF_UNKNOWN && m_size > 0  && m_data; }
+	void clear() { memset(this, 0, sizeof(r9Img) ); }
+	dword lineSize() const { return m_size / m_height; }
+	r9Img(r9Img && i) : m_width(i.m_width), m_height(i.m_height), m_pf(i.m_pf), m_size(i.m_size), m_data(i.m_data)
+	{
+		i.m_size = 0;
+		i.m_data = 0; 
+	}
+	r9Img & operator =(r9Img && i) {
+		m_width = i.m_width;
+		m_height = i.m_height;
+		m_pf = i.m_pf;
+		m_size = i.m_size;
+		m_data = i.m_data;
+		i.m_size = 0;
+		i.m_data = 0; 
+		return *this;
+	}
+private:
+	r9Img(const r9Img &);
+	r9Img & operator =(const r9Img & i);
 };
-
-inline	BOOL	R9_ImgIsValid		( r9Img* img )									{ return (img->m_width>0 && img->m_height>0 && img->m_pf!=R9_PF_UNKNOWN && img->m_size>0 && img->m_data!=NULL ); }
-inline	void	R9_ImgClear			( r9Img* img )									{ memset( img, 0, sizeof(img) ); }
-inline	dword	R9_ImgLineSize		( r9Img* img )									{ return img->m_size / img->m_height; }
 
 		BOOL	R9_ImgCreate		( r9Img* img, BOOL clear=FALSE );				// from m_width, m_height and m_pf
 		void	R9_ImgDestroy		( r9Img* img );									// free m_data and clear

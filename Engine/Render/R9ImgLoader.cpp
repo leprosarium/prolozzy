@@ -36,8 +36,8 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL R9_ImgLoadFile( const char* name, r9Img* img )
 {
-	if(!name || !img || R9_ImgIsValid(img) ) return FALSE;
-	R9_ImgClear(img);
+	if(!name || !img || img->isValid() ) return FALSE;
+	img->clear();
 
 	// type
 	int type = R9_IMG_UNKNOWN;
@@ -64,7 +64,7 @@ BOOL R9_ImgLoadFile( const char* name, r9Img* img )
 
 BOOL R9_ImgSaveFile( const char* name, r9Img* img )
 {
-	if(!name || !img || !R9_ImgIsValid(img)) return FALSE;
+	if(!name || !img || !img->isValid()) return FALSE;
 
 	// type
 	int type = R9_IMG_UNKNOWN;
@@ -91,8 +91,8 @@ BOOL R9_ImgSaveFile( const char* name, r9Img* img )
 
 BOOL R9_ImgLoadHeader( const char* name, r9Img* img )
 {
-	if(!name || !img || R9_ImgIsValid(img) ) return FALSE;
-	R9_ImgClear(img);
+	if(!name || !img || img->isValid() ) return FALSE;
+	img->clear();
 
 	// type
 	int type = R9_IMG_UNKNOWN;
@@ -121,8 +121,8 @@ BOOL R9_ImgLoadHeader( const char* name, r9Img* img )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL R9_ImgReadTGA( F9FILE file, r9Img* img )
 {
-	if(!file || !img || R9_ImgIsValid(img)) return FALSE;
-	R9_ImgClear(img);
+	if(!file || !img || img->isValid()) return FALSE;
+	img->clear();
 
 	int size;
 	r9ImgHeaderTGA header;
@@ -153,7 +153,7 @@ BOOL R9_ImgReadTGA( F9FILE file, r9Img* img )
 
 BOOL R9_ImgWriteTGA( F9FILE file, r9Img* img )
 {
-	if(!file || !img || !R9_ImgIsValid(img)) return FALSE;
+	if(!file || !img || !img->isValid()) return FALSE;
 
 	R9_ImgFlipV(img);
 
@@ -184,8 +184,8 @@ BOOL R9_ImgWriteTGA( F9FILE file, r9Img* img )
 
 BOOL R9_ImgReadHeaderTGA( F9FILE file, r9Img* img )
 {
-	if(!file || !img || R9_ImgIsValid(img)) return FALSE;
-	R9_ImgClear(img);
+	if(!file || !img || img->isValid()) return FALSE;
+	img->clear();
 
 	int size;
 	r9ImgHeaderTGA header;
@@ -440,7 +440,7 @@ BOOL R9_ImgWritePNG( F9FILE file, r9Img* img )
 	png_write_info(png_ptr, info_ptr);
 	png_bytep* rowpointers = (png_bytep*)malloc(img->m_height*sizeof(png_bytep));
 	for(int i=0; i<img->m_height; i++)
-		rowpointers[i] = (png_bytep)(img->m_data+(i*R9_ImgLineSize(img)));
+		rowpointers[i] = (png_bytep)(img->m_data+(i*img->lineSize()));
 
 	png_write_image(png_ptr, rowpointers);
 

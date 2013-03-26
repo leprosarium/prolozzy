@@ -39,22 +39,49 @@
 class cTile
 {
 	cTile(const cTile &);
+	cTile & operator = (const cTile &);
 public:
-		int			m_id;						// unique id >=0
-		int			m_group;					// resource group
-		int			m_frames;					// number of frames
+		int			id;						// unique id >=0
+		int			group;					// resource group
+		int			frames;					// number of frames
 		int         fx;
 		int			fy;
-		R9TEXTURE	m_tex;						// texture
-		r9Img		m_img;						// img alpha mask
-		std::string	m_name;						// tile name
+		R9TEXTURE	tex;						// texture
+		r9Img		img;						// img alpha mask
+		std::string	name;						// tile name
 		
-					cTile(int m_id) : m_id(m_id), m_group(), m_frames(1), fx(1), fy(1), m_tex(NULL) { }
-					~cTile() { if(m_tex)  R9_TextureDestroy(m_tex);  R9_ImgDestroy(&m_img); }
+		cTile(int id) : id(id), group(), frames(1), fx(1), fy(1), tex(nullptr) { }
+		cTile(cTile && t) : 
+			id(t.id),
+			group(t.group),
+			frames(t.frames),
+			fx(t.fx),
+			fy(t.fy),
+			tex(t.tex),
+			img(std::move(t.img)),
+			name(std::move(t.name))
+		{
+			t.tex = 0; 
+		}
+
+		cTile & operator = (cTile && t) 
+		{
+			id = t.id;
+			group = t.group;
+			frames = t.frames;
+			fx = t.fx;
+			fy = t.fy;
+			tex = t.tex;
+			name = std::move(t.name);
+			img = std::move(t.img);
+			t.tex = 0;
+			return *this;
+		}
+		~cTile() { if(tex) R9_TextureDestroy(tex);  R9_ImgDestroy(&img); }
 		int         GetFx(int frame) const		{ return frame % fx; }
 		int         GetFy(int frame) const		{ return frame / fx; }
-		int			GetWidth()					{ return fx > 0 ? R9_TextureGetWidth(m_tex) / fx : R9_TextureGetWidth(m_tex); }
-		int			GetHeight()					{ return fy > 0 ? R9_TextureGetHeight(m_tex) / fy : R9_TextureGetHeight(m_tex); }
+		int			GetWidth()					{ return fx > 0 ? R9_TextureGetWidth(tex) / fx : R9_TextureGetWidth(tex); }
+		int			GetHeight()					{ return fy > 0 ? R9_TextureGetHeight(tex) / fy : R9_TextureGetHeight(tex); }
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -62,18 +89,24 @@ public:
 //////////////////////////////////////////////////////////////////////////////////////////////////
 class cFont
 {
+	cFont(const cFont &);
+	cFont & operator = (const cFont &);
 public:
-		int			m_id;						// unique id >=0
-		int			m_group;					// resource group
-		r9Font*		m_font;						// font
+	int id;						// unique id >=0
+	int group;					// resource group
+	r9Font * font;						// font
 		
-					cFont()						{ m_id=0; m_group=0; m_font=NULL; }
-					~cFont()					{ if(m_font) delete m_font; }
-inline	int			GetSize()					{ return (int)m_font->GetSize(); }
-inline	int			GetCharWidth( char c )		{ return (int)m_font->GetCharWidth(c); }
-inline	int			GetTextWidth( const char* text )	{ return (int)m_font->GetTextWidth(text); }
-inline	int			GetOfsX()					{ return (int)m_font->GetOfsX(); }
-inline	int			GetOfsY()					{ return (int)m_font->GetOfsY(); }
+	cFont() : id(), group(), font() {}
+	cFont(int id, int group, r9Font * font) : id(id), group(group), font(font) {}
+	~cFont() { if(font) delete font; }
+	cFont(cFont && f) : id(f.id), group(f.group), font(f.font) { f.font = 0; }
+	cFont & operator = (cFont && f) { id = f.id; group = f.group; font = f.font; f.font = 0; return *this; }
+
+	int GetSize()					{ return (int)font->GetSize(); }
+	int GetCharWidth( char c )		{ return (int)font->GetCharWidth(c); }
+	int GetTextWidth( const char* text )	{ return (int)font->GetTextWidth(text); }
+	int	GetOfsX() { return (int)font->GetOfsX(); }
+	int GetOfsY() { return (int)font->GetOfsY(); }
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -140,10 +173,10 @@ public:
 // DIZPAINT
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-class Tiles : std::vector<cTile*>
+class Tiles : std::vector<cTile>
 {
 	IntIndex Index;
-	typedef std::vector<cTile*> Cont;
+	typedef std::vector<cTile> Cont;
 public:
 	using Cont::size;
 	using Cont::iterator;
@@ -151,28 +184,19 @@ public:
 	using Cont::begin;
 	using Cont::end;
 
-	~Tiles() { 
-		clear(); 
-	}
 	void clear() {  
-		for(iterator i = begin(), e = end(); i != e; ++i) {
-			delete *i; 
-		}
 		Index.clear(); 
 		Cont::clear(); 
 	}
 	void erase(iterator i) { 
-		value_type tile = *i; 
-		Index.erase(tile->m_id);
-		delete tile; 
+		Index.erase(i->id);
 		Cont::erase(i); 
 	}
-
 
 	void Done();
 	bool InvalidIdx(int idx) {return idx < 0 && static_cast<size_type>(idx) >= size(); }
 
-	cTile * Get(int idx) { if(InvalidIdx(idx)) return 0; return (*this)[idx];}
+	cTile * Get(int idx) { if(InvalidIdx(idx)) return 0; return &(*this)[idx];}
 	int Add(int id);								// add a new empty tile; id must be unique
 	void Del(int idx);								// delete tile by index
 	int Find(int id) { IntIndex::iterator i = Index.find(id); return i != Index.end() ? i->second : -1; }
@@ -225,14 +249,14 @@ public:
 		int				m_scale;		// scale factor
 
 		// fonts
-		cFont*			FontGet			( int idx )						{ if(0<=idx && static_cast<size_t>(idx) < m_font.size()) return m_font[idx]; else return 0; }
+		cFont*			FontGet			( int idx )						{ if(0<=idx && static_cast<size_t>(idx) < m_font.size()) return &m_font[idx]; else return 0; }
 		void			FontDel			( int idx );
 		bool			FontLoad		( char* path, int group=0 );	// load fonts from a path and set the specified group
 		bool			FontLoadFile	( const char* filepath, int group=0 );// load a font file
 		void			FontUnload		( int group=0 );				// unload fonts (destroy) from the specified group
-		int				FontFind		( int id )						{ for(size_t i=0;i<m_font.size(); i++) if(m_font[i]->m_id==id) return i; return -1; }
+		int				FontFind		( int id )						{ for(size_t i=0;i<m_font.size(); i++) if(m_font[i].id==id) return i; return -1; }
 
-		std::vector<cFont*> m_font;			// fonts list
+		std::vector<cFont> m_font;			// fonts list
 		Tiles tiles;
 };
 

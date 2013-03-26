@@ -45,35 +45,35 @@ PREDICATE_M(tile, unload, 1)
 PREDICATE_M(tile, id, 2) 
 {
 	if(cTile* tile = g_paint.tiles.Get(A1))
-		return A2 = tile->m_id;
+		return A2 = tile->id;
 	throw PlDomainError("invalid tile index", A1); 
 }
 
 PREDICATE_M(tile, width, 2) 
 {
 	if(cTile* tile = g_paint.tiles.Get(A1))
-		return A2 = R9_TextureGetWidth(tile->m_tex);
+		return A2 = R9_TextureGetWidth(tile->tex);
 	throw PlDomainError("invalid tile index", A1); 
 }
 
 PREDICATE_M(tile, height, 2) 
 {
 	if(cTile* tile = g_paint.tiles.Get(A1))
-		return A2 = R9_TextureGetHeight(tile->m_tex);
+		return A2 = R9_TextureGetHeight(tile->tex);
 	throw PlDomainError("invalid tile index", A1); 
 }
 
 PREDICATE_M(tile, frames, 2) 
 {
 	if(cTile* tile = g_paint.tiles.Get(A1))
-		return A2 = tile->m_frames;
+		return A2 = tile->frames;
 	throw PlDomainError("invalid tile index", A1); 
 }
 
 PREDICATE_M(tile, name, 2) 
 {
 	if(cTile* tile = g_paint.tiles.Get(A1))
-		return A2 = tile->m_name.c_str();
+		return A2 = tile->name.c_str();
 	throw PlDomainError("invalid tile index", A1); 
 }
 
@@ -110,12 +110,8 @@ bool cDizPaint::Init()
 
 void cDizPaint::Done()
 {
-
 	tiles.Done();
-	// fonts
-	for(;!m_font.empty(); m_font.pop_back()) delete m_font.back();
 	m_font.clear();
-
 }
 
 bool cDizPaint::Reacquire()
@@ -124,11 +120,11 @@ bool cDizPaint::Reacquire()
 	bool ok=true;
 	for(auto i = tiles.begin(), e = tiles.end(); i != e; ++i) 
 	{
-		cTile * tile = *i;
-		tile->m_tex = R9_TextureLoad(tile->m_name.c_str());
-		if(tile->m_tex==NULL)
+		cTile & tile = *i;
+		tile.tex = R9_TextureLoad(tile.name.c_str());
+		if(tile.tex==NULL)
 		{
-			dlog(LOGSYS, L"error reacquireing tile %S.\n",tile->m_name.c_str());
+			dlog(LOGSYS, L"error reacquireing tile %S.\n",tile.name.c_str());
 			ok = false;
 		}
 	}
@@ -140,14 +136,14 @@ void cDizPaint::Unacquire()
 	dlog(LOGAPP, L"Paint unaquire.\n");
 	for(auto i = tiles.begin(), e = tiles.end(); i != e; ++i) 
 	{
-		cTile * tile = *i;
-		R9_TextureDestroy(tile->m_tex);
-		tile->m_tex = 0;
+		cTile & tile = *i;
+		R9_TextureDestroy(tile.tex);
+		tile.tex = 0;
 	}
 	for(size_t i = 0; i < m_font.size(); i++)
 	{
-		if(m_font[i]->m_font)
-			m_font[i]->m_font->SetTexture(NULL); // safe
+		if(m_font[i].font)
+			m_font[i].font->SetTexture(NULL); // safe
 	}
 }
 
@@ -238,7 +234,7 @@ bool Tiles::LoadFile( const char* filepath, int group )
 		// create new tile
 		idx = Add(id);
 		tile = Get(idx);
-		tile->m_tex = tex;
+		tile->tex = tex;
 	}
 	else 
 	{
@@ -248,14 +244,14 @@ bool Tiles::LoadFile( const char* filepath, int group )
 	}
 
 	// set current options
-	tile->m_group	= group;
-	tile->m_frames	= frames;
+	tile->group	= group;
+	tile->frames	= frames;
 	tile->fx = fpl;
 	tile->fy = frames / fpl;
 	if(frames % fpl)
 		tile->fy += 1;
-	tile->m_img		= imga;
-	tile->m_name	= sstrdup(filepath);
+	tile->img = std::move(imga);
+	tile->name	= sstrdup(filepath);
 
 	R9_ImgDestroy(&img);
 
@@ -312,7 +308,7 @@ bool Tiles::Load( char* path, int group )
 void Tiles::Unload( int group )
 {
 	for(size_t i=0;i<size();)
-		if((*this)[i]->m_group == group)
+		if((*this)[i].group == group)
 			Del(i);
 		else
 			++i;
@@ -322,7 +318,7 @@ int Tiles::Add( int id )
 {
 	if(id<0) return -1; // negative ids not accepted
 	if(Find(id)!=-1) return -1; // duplicate id
-	push_back(new cTile(id));
+	push_back(cTile(id));
 	int idx = size() - 1;
 
 	Index.insert(IntIndex::value_type(id, idx));
@@ -348,7 +344,7 @@ void cDizPaint::DrawTile( int idx,const iV2 & p, iRect& map, dword color, int fl
 	int w = tile->GetWidth();
 	int h = tile->GetHeight();
 	if(frame<0) frame=0;
-	frame = frame % tile->m_frames;
+	frame = frame % tile->frames;
 	int fx = tile->GetFx(frame);
 	int fy = tile->GetFy(frame);
 	fRect src = map;
@@ -358,7 +354,7 @@ void cDizPaint::DrawTile( int idx,const iV2 & p, iRect& map, dword color, int fl
 	src.y2 += fy * h;
 	fV2 pos = scrOffs + p * m_scale;
 	R9_SetState(R9_STATE_BLEND,blend);
-	R9_DrawSprite( pos, src, tile->m_tex, color, flip, (float)m_scale*scale );
+	R9_DrawSprite( pos, src, tile->tex, color, flip, (float)m_scale*scale );
 }
 	
 void cDizPaint::DrawTile( int idx, const iV2 & p, dword color, int flip, int frame, int blend, float scale )
@@ -369,7 +365,7 @@ void cDizPaint::DrawTile( int idx, const iV2 & p, dword color, int flip, int fra
 	int w = tile->GetWidth();
 	int h = tile->GetHeight();
 	if(frame<0) frame=0;
-	frame = frame % tile->m_frames;
+	frame = frame % tile->frames;
 	int fx = tile->GetFx(frame);
 	int fy = tile->GetFy(frame);
 	fRect src;
@@ -379,14 +375,14 @@ void cDizPaint::DrawTile( int idx, const iV2 & p, dword color, int flip, int fra
 	src.y2 = float((fy + 1) * h);
 	fV2 pos = scrOffs + p * m_scale;
 	R9_SetState(R9_STATE_BLEND,blend);
-	R9_DrawSprite( pos, src, tile->m_tex, color, flip, (float)m_scale*scale );
+	R9_DrawSprite( pos, src, tile->tex, color, flip, (float)m_scale*scale );
 
 }
 
 void cDizPaint::DrawChar( int fontidx, const iV2 & p, char c, dword color )
 {
 	if(!FontGet(fontidx)) return;
-	r9Font* font = FontGet(fontidx)->m_font;
+	r9Font* font = FontGet(fontidx)->font;
 	if(!font) return;
 	float tsize = font->GetSize();
 	font->SetSize( tsize*m_scale );
@@ -462,7 +458,7 @@ void cDizPaint::DrawTileSoft( int idx, int x, int y, iRect& map, dword color, in
 	int h = tile->GetHeight();
 	// assert(frame==0);
 	if( frame<0 ) frame=0;
-	frame = frame % tile->m_frames;
+	frame = frame % tile->frames;
 	bool rotated = (flip & R9_FLIPR) != FALSE;
 	int fx = tile->GetFx(frame);
 	int fy = tile->GetFy(frame);
@@ -496,9 +492,9 @@ void cDizPaint::DrawTileSoft( int idx, int x, int y, iRect& map, dword color, in
 
 	int rw = rdst.x2-rdst.x1;
 	int rh = rdst.y2-rdst.y1;
-	int srcw = tile->m_img.m_width;
-	int srch = tile->m_img.m_height;
-	byte* src = tile->m_img.m_data; assert(src!=NULL);
+	int srcw = tile->img.m_width;
+	int srch = tile->img.m_height;
+	byte* src = tile->img.m_data; assert(src!=NULL);
 	src += rsrc.x1 + rsrc.y1 * srcw; // start
 	int srcsx = 1; // step x;
 	if(flip & 1)
@@ -537,7 +533,7 @@ void cDizPaint::DrawTileSoft2( int idx, int x, int y, iRect& map, dword color, i
 	int th = tile->GetHeight();
 	// assert(frame==0);
 	if( frame<0 ) frame=0;
-	frame = frame % tile->m_frames;
+	frame = frame % tile->frames;
 	int fx = tile->GetFx(frame);
 	int fy = tile->GetFy(frame);
 	// source rectangle safe
@@ -574,9 +570,9 @@ void cDizPaint::DrawTileSoft2( int idx, int x, int y, iRect& map, dword color, i
 	dstdata += (int)dst.x1 + (int)dst.y1 * dstw; // start
 	float sw = src.Width();
 	float sh = src.Height();
-	int srcw = tile->m_img.m_width;
-	int srch = tile->m_img.m_height;
-	byte* srcdata = tile->m_img.m_data;
+	int srcw = tile->img.m_width;
+	int srch = tile->img.m_height;
+	byte* srcdata = tile->img.m_data;
 	byte mat = m_drawtilemat;
 
 	// draw
@@ -729,8 +725,8 @@ void cDizPaint::HUDDrawText( int tileid, iRect& dst, char* text, int m_align )
 	if(!font) return; // no font
 
 	// overwrite font's texture and shader
-	font->m_font->SetTexture(tile->m_tex);
-	font->m_font->SetBlend(m_hudshader);
+	font->font->SetTexture(tile->tex);
+	font->font->SetBlend(m_hudshader);
 
 	// draw process
 	iV2 p(dst.x1, dst.y1);
@@ -929,19 +925,15 @@ bool cDizPaint::FontLoadFile( const char* filepath, int group )
 	}
 
 	// add to list
-	cFont* font = new cFont();
-	font->m_id = id;
-	font->m_group = group;
-	font->m_font = new r9Font();
-	font->m_font->Create(8,8,8,32,128);
-	if(!font->m_font->Create(filepath))
+	cFont font(id, group, new r9Font());
+	font.font->Create(8,8,8,32,128);
+	if(!font.font->Create(filepath))
 	{
 		gsfont_fail++;
 		dlog(LOGSYS, L"! %S (failed to load)\n", filepath);
-		delete font;
 		return false;
 	}
-	m_font.push_back(font);
+	m_font.push_back(std::move(font));
 
 	if(g_dizdebug.active()) // log for developers
 		dlog(LOGAPP, L"  %S\n", filepath );
@@ -996,7 +988,7 @@ bool cDizPaint::FontLoad( char* path, int group )
 void cDizPaint::FontUnload( int group )
 {
 	for(size_t i=0;i<m_font.size();)
-		if(m_font[i]->m_group==group)
+		if(m_font[i].group==group)
 			FontDel(i);
 		else
 			++i;

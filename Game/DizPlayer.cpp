@@ -600,7 +600,7 @@ void cDizPlayer::EnterRoll()
 		cTile* tile = FindTile();
 		if(tile)
 		{
-			int frame = ComputeFrame( _frame, tile->m_frames, anim() );
+			int frame = ComputeFrame( _frame, tile->frames, anim() );
 			//if( frame < tile->m_frames-1 ) return; // don't enter idle unless last frame reached; untill then stay in roll
 			if( frame != 0 ) return; // don't enter idle unless last frame reached; untill then stay in roll
 		}
@@ -973,7 +973,7 @@ void cDizPlayer::Draw()
 	cTile* tile = FindTile();
 	if(tile)
 	{
-		int frame = ComputeFrame(_frame,tile->m_frames,anim());
+		int frame = ComputeFrame(_frame,tile->frames,anim());
 		int blend = shader();
 		int w = tile->GetWidth();
 		int h = tile->GetHeight();
@@ -991,7 +991,7 @@ void cDizPlayer::Draw()
 		fV2 pos = g_paint.scrOffs + g_paint.m_scale * iV2(x, y);
 		R9_SetState(R9_STATE_BLEND,blend);
 		dword flip = ((flipX() ? 1 : 0 ) | (flipY() ? 2 : 0));
-		R9_DrawSprite( pos, src, tile->m_tex, color(), flip, (float)SCALE );
+		R9_DrawSprite( pos, src, tile->tex, color(), flip, (float)SCALE );
 	}
 
 }

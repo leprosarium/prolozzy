@@ -27,7 +27,7 @@ void cGUIColorPick::Update()
 	int mx = g_gui->m_mousex - rc.left;
 	int my = g_gui->m_mousey - rc.top;
 	
-	if(m_mousein && R9_ImgIsValid(&m_img))
+	if(m_mousein && m_img.isValid())
 	{
 		float x = ((float)mx / (rc.right-rc.left))*m_img.m_width;
 		float y = ((float)my / (rc.bottom-rc.top))*m_img.m_height;

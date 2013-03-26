@@ -258,7 +258,7 @@ R9TEXTURE r9RenderDX::TextureCreate( r9Img* img )
 	HRESULT hr;
 	// check image
 	if(img==NULL) return NULL;
-	if(!R9_ImgIsValid(img)) return NULL;
+	if(!img->isValid()) return NULL;
 	int imgbpp = R9_PFBpp(img->m_pf);
 	if(imgbpp!=24 && imgbpp!=32) return NULL;
 
@@ -822,7 +822,7 @@ BOOL r9RenderDX::CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )
 	assert(img); 
 	assert(rect);
 	assert(target);
-	if(!R9_ImgIsValid(img)) return FALSE;
+	if(!img->isValid()) return FALSE;
 
 	int x = (int)rect->x1;
 	int y = (int)rect->y1;

@@ -338,7 +338,7 @@ R9TEXTURE r9RenderGL::TextureCreate( r9Img* img )
 {
 	// check image
 	if(img==NULL) return NULL;
-	if(!R9_ImgIsValid(img)) return NULL;
+	if(!img->isValid()) return NULL;
 	int imgbpp = R9_PFBpp(img->m_pf);
 	if(imgbpp!=24 && imgbpp!=32) return NULL;
 
@@ -375,7 +375,7 @@ R9TEXTURE r9RenderGL::TextureCreate( r9Img* img )
 	else
 		m_glTexImage2D(GL_TEXTURE_2D, 0, 4, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, imgdata);
 
-	if(R9_ImgIsValid(&img2)) R9_ImgDestroy(&img2); // destroy resized if needed
+	if(img2.isValid()) R9_ImgDestroy(&img2); // destroy resized if needed
 
 	// create R9 texture
 	r9Texture* tex		= new r9Texture;
@@ -787,7 +787,7 @@ BOOL r9RenderGL::CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )
 	assert(img); 
 	assert(rect);
 	assert(target);
-	if(!R9_ImgIsValid(img)) return FALSE;
+	if(!img->isValid()) return FALSE;
 
 	int x = (int)rect->x1;
 	int y = (int)rect->y1;

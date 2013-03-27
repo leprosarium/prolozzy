@@ -433,23 +433,23 @@ PREDICATE_M(core, musicVolume, 1)
 //////////////////////////////////////////////////////////////////////////////////////////////////
 PREDICATE_M(core, fontLoad, 1)
 {
-	return g_paint.FontLoad(A1, 0);
+	return g_paint.fonts.Load(A1, 0);
 }
 
 PREDICATE_M(core, fontLoad, 2)
 {
-	return g_paint.FontLoad(A1, A2);
+	return g_paint.fonts.Load(A1, A2);
 }
 
 PREDICATE_M(core, fontUnload, 1)
 {
-	g_paint.FontUnload(A1);
+	g_paint.fonts.Unload(A1);
 	return true;
 }
 
 PREDICATE_M(core, fontUnload, 0)
 {
-	g_paint.FontUnload(0);
+	g_paint.fonts.Unload(0);
 	return true;
 }
 

@@ -991,7 +991,7 @@ void cDizPlayer::Draw()
 		fV2 pos = g_paint.scrOffs + g_paint.m_scale * iV2(x, y);
 		R9_SetState(R9_STATE_BLEND,blend);
 		dword flip = ((flipX() ? 1 : 0 ) | (flipY() ? 2 : 0));
-		R9_DrawSprite( pos, src, tile->tex, color(), flip, (float)SCALE );
+		R9_DrawSprite( pos, src, tile->tex, color(), flip, (float)g_paint.m_scale );
 	}
 
 }

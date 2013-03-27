@@ -111,14 +111,14 @@ bool cDizPaint::Init()
 void cDizPaint::Done()
 {
 	tiles.Done();
-	m_font.clear();
+	fonts.clear();
 }
 
-bool cDizPaint::Reacquire()
+bool Tiles::Reacquire()
 {
 	dlog(LOGAPP, L"Paint reaquire.\n");
 	bool ok=true;
-	for(auto i = tiles.begin(), e = tiles.end(); i != e; ++i) 
+	for(auto i = begin(), e = end(); i != e; ++i) 
 	{
 		cTile & tile = *i;
 		tile.tex = R9_TextureLoad(tile.name.c_str());
@@ -131,21 +131,17 @@ bool cDizPaint::Reacquire()
 	return ok;
 }
 
+void Tiles::Unacquire()
+{
+	std::for_each(begin(), end(), [](cTile & t) { t.Destroy(); });
+}
 void cDizPaint::Unacquire()
 {
 	dlog(LOGAPP, L"Paint unaquire.\n");
-	for(auto i = tiles.begin(), e = tiles.end(); i != e; ++i) 
-	{
-		cTile & tile = *i;
-		R9_TextureDestroy(tile.tex);
-		tile.tex = 0;
-	}
-	for(size_t i = 0; i < m_font.size(); i++)
-	{
-		if(m_font[i].font)
-			m_font[i].font->SetTexture(NULL); // safe
-	}
+	tiles.Unacquire();
+	fonts.Unacquire();
 }
+
 
 void cDizPaint::Layout()
 {
@@ -381,19 +377,19 @@ void cDizPaint::DrawTile( int idx, const iV2 & p, dword color, int flip, int fra
 
 void cDizPaint::DrawChar( int fontidx, const iV2 & p, char c, dword color )
 {
-	if(!FontGet(fontidx)) return;
-	r9Font* font = FontGet(fontidx)->font;
-	if(!font) return;
-	float tsize = font->GetSize();
-	font->SetSize( tsize*m_scale );
-	font->SetColor( color );
-	font->Char(scrOffs + p * m_scale, c);
-	font->SetSize(tsize);
+	if(cFont * f = fonts.Get(fontidx))
+		if(r9Font* font = f->font)
+		{
+			float tsize = font->GetSize();
+			font->SetSize( tsize*m_scale );
+			font->SetColor( color );
+			font->Char(scrOffs + p * m_scale, c);
+			font->SetSize(tsize);
+		}
 }
 
 void cDizPaint::DrawBrush( const tBrush & brush, const iV2 & p0, int frame )
 {
-//	if(brush==NULL) return;
 	int idx = tiles.Find(brush.Get(BRUSH_TILE));
 	if(idx==-1) return;
 
@@ -659,8 +655,8 @@ void cDizPaint::HUDGetTextSize( char* text, int& w, int& h, int& c, int& r )
 {
 	w = h = c = r = 0;
 	if(text==NULL) return; // invalid text
-	int fontidx = FontFind(m_hudfont); // find font
-	cFont* font = FontGet(fontidx);
+	int fontidx = fonts.Find(m_hudfont); // find font
+	cFont* font = fonts.Get(fontidx);
 	if(!font) return; // no font
 
 	int m=0;
@@ -720,8 +716,8 @@ void cDizPaint::HUDDrawText( int tileid, iRect& dst, char* text, int m_align )
 	int tileidx = tiles.Find(tileid);
 	cTile* tile = tiles.Get(tileidx); 
 	if(tile==NULL) return; // invalid tile
-	int fontidx = FontFind(m_hudfont); // find font
-	cFont* font = FontGet(fontidx);
+	int fontidx = fonts.Find(m_hudfont); // find font
+	cFont* font = fonts.Get(fontidx);
 	if(!font) return; // no font
 
 	// overwrite font's texture and shader
@@ -880,20 +876,13 @@ void cDizPaint::HudClipping( iRect& dst )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // Fonts
 //////////////////////////////////////////////////////////////////////////////////////////////////
-void cDizPaint::FontDel( int idx )
-{
-	if(cFont* font = FontGet(idx)) {
-		delete font;
-		m_font.erase(m_font.begin() + idx);
-	}
-}
 
 int		gsfont_total;			// status report on total fonts declared (load+failed)
 int		gsfont_fail;			// status report on fonts failed to load
 int		gsfont_duplicates;		// status report on id duplicates
 int		gsfont_group;			// current font group
 
-bool cDizPaint::FontLoadFile( const char* filepath, int group )
+bool Fonts::LoadFile( const char* filepath, int group )
 {
 
 	// check file type (not counted if unaccepted);
@@ -915,7 +904,7 @@ bool cDizPaint::FontLoadFile( const char* filepath, int group )
 	}
 	
 	// check unique id
-	int idx = FontFind(id);
+	int idx = Find(id);
 	if( idx!=-1 )
 	{
 		gsfont_fail++;
@@ -933,7 +922,7 @@ bool cDizPaint::FontLoadFile( const char* filepath, int group )
 		dlog(LOGSYS, L"! %S (failed to load)\n", filepath);
 		return false;
 	}
-	m_font.push_back(std::move(font));
+	push_back(std::move(font));
 
 	if(g_dizdebug.active()) // log for developers
 		dlog(LOGAPP, L"  %S\n", filepath );
@@ -944,10 +933,10 @@ bool cDizPaint::FontLoadFile( const char* filepath, int group )
 void FFCallback_Font( const char* filepath, BOOL dir )
 {
 	if(dir) return;
-	bool ret = g_paint.FontLoadFile(filepath,gsfont_group);
+	bool ret = g_paint.fonts.LoadFile(filepath, gsfont_group);
 }
 
-bool cDizPaint::FontLoad( char* path, int group )
+bool Fonts::Load( char* path, int group )
 {
 	if(!path || !path[0]) return false; // invalid path
 	int szlen = (int)strlen(path);
@@ -985,13 +974,14 @@ bool cDizPaint::FontLoad( char* path, int group )
 	return true;
 }
 
-void cDizPaint::FontUnload( int group )
+void Fonts::Unload( int group )
 {
-	for(size_t i=0;i<m_font.size();)
-		if(m_font[i].group==group)
-			FontDel(i);
+	for(size_t i=0;i<size();)
+		if((*this)[i].group==group)
+			Del(i);
 		else
 			++i;
 }
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

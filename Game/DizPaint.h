@@ -8,14 +8,7 @@
 #include "DizDef.h"
 
 #include <deque> 
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// DEFINES
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-// colors
-#define INK_BLACK		0xff000000
-#define INK_WHITE		0xffffffff
+#include <algorithm>
 
 // shaders
 #define SHADER_OPAQUE	0		// BLEND_OPAQUE
@@ -25,12 +18,6 @@
 #define SHADER_MOD2		4		// BLEND_MOD2
 #define SHADER_ALPHAREP	5		// BLEND_ALPHAREP
 #define SHADER_MAX		6
-
-// macros
-#define SCALE			( g_paint.m_scale )
-//#define SCALEX(x)		( g_paint.m_scrx+(x)*g_paint.m_scale )
-//#define SCALEY(y)		( g_paint.m_scry+(y)*g_paint.m_scale )
-#define SCALESIZE(w)	( (w)*g_paint.m_scale )
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // TILE
@@ -77,7 +64,9 @@ public:
 			t.tex = 0;
 			return *this;
 		}
-		~cTile() { if(tex) R9_TextureDestroy(tex);  R9_ImgDestroy(&img); }
+		~cTile() { Destroy();  R9_ImgDestroy(&img); }
+		void Destroy() { if(tex) { R9_TextureDestroy(tex); tex = 0; } }
+
 		int         GetFx(int frame) const		{ return frame % fx; }
 		int         GetFy(int frame) const		{ return frame / fx; }
 		int			GetWidth()					{ return fx > 0 ? R9_TextureGetWidth(tex) / fx : R9_TextureGetWidth(tex); }
@@ -156,7 +145,6 @@ public:
 	void MakeBBW	( int &x1, int &y1, int &x2, int &y2 ) const{ x1 = Get(BRUSH_X); x2 = x1 + Get(BRUSH_W); y1 = Get(BRUSH_Y); y2 = y1 + Get(BRUSH_H); }
 	void MakeBBW	( iV2 & p1, iV2 & p2 ) const { p1 = pos(); p2 = p1 + size(); }
 
-//	iRect MakeBBW() const { iV2 p1(m_data[BRUSH_X], m_data[BRUSH_Y]); return iRect(p1, p1 + iV2(m_data[BRUSH_W], m_data[BRUSH_H])); }
 	float mapScale() const { return Get(BRUSH_SCALE) > 0 ? Get(BRUSH_SCALE) / 100.0f : 1.0f; }		
 	float mapWith() const   { return ( (Get(BRUSH_FLIP) & R9_FLIPR) ? (Get(BRUSH_MAP+3) - Get(BRUSH_MAP+1)) : (Get(BRUSH_MAP+2) - Get(BRUSH_MAP+0)) ) * mapScale(); }
 	float mapHeight() const { return ( (Get(BRUSH_FLIP) & R9_FLIPR) ? (Get(BRUSH_MAP+2) - Get(BRUSH_MAP+0)) : (Get(BRUSH_MAP+3) - Get(BRUSH_MAP+1)) ) * mapScale(); }
@@ -179,10 +167,6 @@ class Tiles : std::vector<cTile>
 	typedef std::vector<cTile> Cont;
 public:
 	using Cont::size;
-	using Cont::iterator;
-	using Cont::const_iterator;
-	using Cont::begin;
-	using Cont::end;
 
 	void clear() {  
 		Index.clear(); 
@@ -194,16 +178,38 @@ public:
 	}
 
 	void Done();
-	bool InvalidIdx(int idx) {return idx < 0 && static_cast<size_type>(idx) >= size(); }
+	bool InvalidIdx(int idx) const {return idx < 0 && static_cast<size_type>(idx) >= size(); }
 
-	cTile * Get(int idx) { if(InvalidIdx(idx)) return 0; return &(*this)[idx];}
+	cTile * Get(int idx) { return InvalidIdx(idx) ? nullptr : &(*this)[idx]; }
 	int Add(int id);								// add a new empty tile; id must be unique
 	void Del(int idx);								// delete tile by index
 	int Find(int id) { IntIndex::iterator i = Index.find(id); return i != Index.end() ? i->second : -1; }
 	bool Load(char* path, int group = 0);			// load tiles from a path, and set the specified group
 	bool LoadFile(const char* filepath, int group = 0);	// load a tile file
 	void Unload(int group=0 );						// unload load tiles (destroy) from a specified group
+
+	bool Reacquire(); // called before render reset to reload render resources
+	void Unacquire(); // called before render reset to free render resources
 };
+
+class Fonts : std::vector<cFont>
+{
+	typedef std::vector<cFont> Cont;
+public:
+	using Cont::clear;
+
+	bool InvalidIdx(int idx) const {return idx < 0 && static_cast<size_type>(idx) >= size(); }
+	cFont * Get(int idx) { return InvalidIdx(idx)? nullptr : &(*this)[idx]; }
+	void Del(int idx) {	if(!InvalidIdx(idx)) erase(begin() + idx); }
+	bool LoadFile(const char* filepath, int group = 0);
+	int	Find(int id) { for(size_type i=0;i<size(); i++) if((*this)[i].id==id) return i; return -1; }
+	bool Load(char * path, int group = 0);	// load fonts from a path and set the specified group
+	void Unload(int group = 0);				// unload fonts (destroy) from the specified group
+
+	void Unacquire() { std::for_each(begin(), end(), [](cFont &f) { if(f.font) f.font->SetTexture(nullptr); }); }
+
+};
+
 
 class cDizPaint
 {
@@ -213,9 +219,10 @@ public:
 	
 		bool			Init			();
 		void			Done			();
-		bool			Reacquire		();								// called before render reset to reload render resources
-		void			Unacquire		();								// called before render reset to free render resources
 		void			Layout			();								// compute layout position (scale,scrx,scry)
+		
+		bool Reacquire() { return tiles.Reacquire(); } // called before render reset to reload render resources
+		void Unacquire();								// called before render reset to free render resources
 
 		// Draw scaled
 		void			DrawTile		( int idx, const iV2 & p, iRect& map, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f );	// tile scale (in editor paint it was full scale)
@@ -248,16 +255,8 @@ public:
 		iV2				scrOffs;			// screen offset
 		int				m_scale;		// scale factor
 
-		// fonts
-		cFont*			FontGet			( int idx )						{ if(0<=idx && static_cast<size_t>(idx) < m_font.size()) return &m_font[idx]; else return 0; }
-		void			FontDel			( int idx );
-		bool			FontLoad		( char* path, int group=0 );	// load fonts from a path and set the specified group
-		bool			FontLoadFile	( const char* filepath, int group=0 );// load a font file
-		void			FontUnload		( int group=0 );				// unload fonts (destroy) from the specified group
-		int				FontFind		( int id )						{ for(size_t i=0;i<m_font.size(); i++) if(m_font[i].id==id) return i; return -1; }
-
-		std::vector<cFont> m_font;			// fonts list
 		Tiles tiles;
+		Fonts fonts;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -267,24 +266,9 @@ extern	cDizPaint	g_paint;
 
 inline int ComputeFrame( int frame, int framecount, int anim )
 {
-	if( anim==1 )
-	{
-		if( frame>framecount-1 ) 
-			frame=framecount-1;
-		else
-		if( frame<0 )
-			frame=0;
-	}
-	else
-	if( anim==2 )
-	{
-		if( framecount>0 ) 
-			frame = frame % framecount;
-		else
-			frame = 0; // @TODO work on this negative looping !!!
-	}
-	
-	return frame;
+	if( anim==1 )		return std::max(std::min(frame, framecount - 1), 0);
+	else if( anim==2 )	return framecount>0 ? frame % framecount : 0; // @TODO work on the negative looping !!!
+	else				return frame;
 }
 
 #endif

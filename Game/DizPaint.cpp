@@ -348,9 +348,8 @@ void cDizPaint::DrawTile( int idx,const iV2 & p, iRect& map, dword color, int fl
 	src.x2 += fx * w;
 	src.y1 += fy * h;
 	src.y2 += fy * h;
-	fV2 pos = scrOffs + p * m_scale;
 	R9_SetState(R9_STATE_BLEND,blend);
-	R9_DrawSprite( pos, src, tile->tex, color, flip, (float)m_scale*scale );
+	R9_DrawSprite( scrOffs + p * m_scale, src, tile->tex, color, flip, (float)m_scale*scale );
 }
 	
 void cDizPaint::DrawTile( int idx, const iV2 & p, dword color, int flip, int frame, int blend, float scale )
@@ -369,9 +368,8 @@ void cDizPaint::DrawTile( int idx, const iV2 & p, dword color, int flip, int fra
 	src.x2 = (float)((fx+1) * w);
 	src.y1 = float(fy * h);
 	src.y2 = float((fy + 1) * h);
-	fV2 pos = scrOffs + p * m_scale;
 	R9_SetState(R9_STATE_BLEND,blend);
-	R9_DrawSprite( pos, src, tile->tex, color, flip, (float)m_scale*scale );
+	R9_DrawSprite( scrOffs + p * m_scale, src, tile->tex, color, flip, (float)m_scale*scale );
 
 }
 

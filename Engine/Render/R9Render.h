@@ -153,7 +153,7 @@ inline	void		DrawTriangle( fV2& a, fV2& b, fV2& c, fV2& ta, fV2& tb, fV2& tc, R9
 inline	void		DrawBar( fRect& dst, dword color=0xffffffff );
 inline	void		DrawQuad( fRect& dst, fRect& src, R9TEXTURE tex, dword color=0xffffffff );
 		void		DrawQuadRot( fV2& pos, fV2& size, fV2& center, float angle, fRect& src, R9TEXTURE tex, dword color=0xffffffff ); // center is relative to the middle of the rectangle
-		void		DrawSprite( fV2& pos, fRect& src, R9TEXTURE tex, dword color=0xffffffff, dword flip=0, float scale=1.0f ); // does clipping
+		void		DrawSprite( const fV2 & pos, const fRect & src, R9TEXTURE tex, dword color=0xffffffff, dword flip=0, float scale=1.0f ); // does clipping
 
 // clipping
 inline	BOOL		IsClipping()										{ return ( (m_cliprect.x1<m_cliprect.x2) && (m_cliprect.y1<m_cliprect.y2) ); }
@@ -420,7 +420,7 @@ inline	void		R9_DrawTriangle( fV2& a, fV2& b,fV2& c, fV2& ta, fV2& tb, fV2& tc, 
 inline	void		R9_DrawBar( fRect& dst, dword color=0xffffffff ) {  assert(r9_render); r9_render->DrawBar(dst,color); }
 inline	void		R9_DrawQuad( fRect& dst, fRect& src, R9TEXTURE tex, dword color=0xffffffff ) {  assert(r9_render); r9_render->DrawQuad(dst,src,tex,color); }
 inline	void		R9_DrawQuadRot( fV2& pos, fV2& size, fV2& center, float angle, fRect& src, R9TEXTURE tex, dword color=0xffffffff ) {  assert(r9_render); r9_render->DrawQuadRot(pos,size,center,angle,src,tex,color); }
-inline	void		R9_DrawSprite( fV2& pos, fRect& src, R9TEXTURE tex, dword color=0xffffffff, dword flip=0, float scale=1.0f ) {  assert(r9_render); r9_render->DrawSprite(pos,src,tex,color,flip,scale); }
+inline	void		R9_DrawSprite( const fV2 & pos, const fRect & src, R9TEXTURE tex, dword color=0xffffffff, dword flip=0, float scale=1.0f ) {  assert(r9_render); r9_render->DrawSprite(pos,src,tex,color,flip,scale); }
 		void		R9_DrawText( fV2& pos, const char* text, dword color=0xffffffff, float scale=1.0f );
 
 inline	BOOL		R9_IsClipping()											{ assert(r9_render); return r9_render->IsClipping(); }

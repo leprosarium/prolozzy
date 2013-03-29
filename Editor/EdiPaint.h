@@ -120,7 +120,7 @@ public:
 		void			TileUnload		();					// unload load tiles (destroy)
 
 		// Draw scaled
-		void			DrawTile		( int idx, int x, int y, iRect& map, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f );
+		void			DrawTile		( int idx, int x, int y, const iRect & map, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f );
 		void			DrawTile		( int idx, int x, int y, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f );
 		void			DrawBrushAt		( tBrush* brush, int x, int y, float zoom=1.0f, BOOL anim=FALSE );
 		void			DrawBrushFlashAt( tBrush* brush, int x, int y, float zoom=1.0f, BOOL anim=FALSE );

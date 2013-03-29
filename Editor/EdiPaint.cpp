@@ -206,7 +206,7 @@ void cEdiPaint::TileDel( int idx )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // Draw functions
 //////////////////////////////////////////////////////////////////////////////////////////////////
-void cEdiPaint::DrawTile( int idx, int x, int y, iRect& map, dword color, int flip, int frame, int blend, float scale )
+void cEdiPaint::DrawTile( int idx, int x, int y, const iRect & map, dword color, int flip, int frame, int blend, float scale )
 {
 	cTile* tile = TileGet(idx); 
 	if(tile==NULL) return;
@@ -222,10 +222,8 @@ void cEdiPaint::DrawTile( int idx, int x, int y, iRect& map, dword color, int fl
 	src.x2 += fx * w;
 	src.y1 += fy * h;
 	src.y2 += fy * h;
-	fV2 pos( x, y );
-
 	R9_SetState(R9_STATE_BLEND,blend);
-	R9_DrawSprite( pos, src, tile->m_tex, color, flip, (float)scale );
+	R9_DrawSprite( fV2(x, y), src, tile->m_tex, color, flip, (float)scale );
 
 }
 	
@@ -245,10 +243,8 @@ void cEdiPaint::DrawTile( int idx, int x, int y, dword color, int flip, int fram
 	src.x2 = (float)((fx+1) * w);
 	src.y1 = float(fy * h);
 	src.y2 = float((fy + 1) * h);
-	fV2 pos( x, y );
-
 	R9_SetState(R9_STATE_BLEND,blend);
-	R9_DrawSprite( pos, src, tile->m_tex, color, flip, scale );
+	R9_DrawSprite( fV2(x, y), src, tile->m_tex, color, flip, scale );
 
 }
 

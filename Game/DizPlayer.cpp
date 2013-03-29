@@ -988,10 +988,8 @@ void cDizPlayer::Draw()
 		src.x2 = (float)((fx+1)*w);
 		src.y1 = float(fy * h);
 		src.y2 = float((fy + 1) * h);
-		fV2 pos = g_paint.scrOffs + g_paint.m_scale * iV2(x, y);
 		R9_SetState(R9_STATE_BLEND,blend);
-		dword flip = ((flipX() ? 1 : 0 ) | (flipY() ? 2 : 0));
-		R9_DrawSprite( pos, src, tile->tex, color(), flip, (float)g_paint.m_scale );
+		R9_DrawSprite( g_paint.scrOffs + g_paint.m_scale * iV2(x, y), src, tile->tex, color(), ((flipX() ? 1 : 0 ) | (flipY() ? 2 : 0)), (float)g_paint.m_scale );
 	}
 
 }

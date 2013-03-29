@@ -152,7 +152,7 @@ void r9Render::DrawQuadRot( fV2& pos, fV2& size, fV2& center, float angle, fRect
 	Push(vx,6,R9_PRIMITIVE_TRIANGLE);
 }
 
-void r9Render::DrawSprite( fV2& pos, fRect& src, R9TEXTURE tex, dword color, dword flip, float scale )
+void r9Render::DrawSprite( const fV2 & pos, const fRect & src, R9TEXTURE tex, dword color, dword flip, float scale )
 {
 
 	BOOL rotated = flip & R9_FLIPR;

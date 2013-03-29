@@ -44,6 +44,7 @@ struct fV2
 	fV2 &	operator +=(float f) { x += f; y += f; return *this; }
 	fV2 &	operator -=(float f) { x -= f; y -= f; return *this; }
 	float	operator ! () { return sqrt(x*x + y*y); }
+	fV2	Tran() const { return fV2(y, x); }
 
 	bool operator <(float v) const { return x < v && y < v; }
     bool operator >(float v) const { return x > v && y > v; }
@@ -90,6 +91,7 @@ struct iV2
 	iV2 &	operator-=	( const iV2 & v)			{ x -= v.x; y -= v.y; return *this; }
 	iV2 &	operator-=	( int s)					{ x -= s; y -= s; return *this; }
 	iV2		operator-	() const					{ return iV2(-x, -y); }
+	iV2	Tran() const { return iV2(y, x); }
 
 	bool operator <(int v) const { return x < v && y < v; }
     bool operator >(int v) const { return x > v && y > v; }
@@ -137,6 +139,15 @@ struct fRect
 		fRect &	Inflate( const fV2 & v )					{ x1+=v.x; y1+=v.y; x2-=v.x; y2-=v.y; return *this; }
 		fRect &	Deflate( const fV2 & v )					{ x1-=v.x; y1-=v.y; x2+=v.x; y2+=v.y; return *this; }
 		fRect &	Offset( const fV2 & v )						{ x1+=v.x; y1+=v.y; x2+=v.x; y2+=v.y; return *this; }
+		fRect & Clip(const fRect & c)
+		{ 
+			if(x1 < c.x1) x1 = c.x1;
+			if(y1 < c.y1) y1 = c.y1;
+			if(x2 > c.x2) x2 = c.x2;
+			if(y2 > c.y2) y2 = c.y2; 
+			return *this;
+		}
+
 		bool	IsInside(const fV2 & v) const				{ return x1<=v.x && v.x<x2 && y1<=v.y && v.y<y2; }
 		bool	Intersects(const fRect & r) const			{ return x2 > r.x1 && x1 < r.x2 && y2 > r.y1 && y1 < r.y2; }
 };
@@ -174,6 +185,14 @@ struct iRect
 	 	iRect &	Inflate( const iV2 & v )					{ x1+=v.x; y1+=v.y; x2-=v.x; y2-=v.y; return *this; }
 	 	iRect &	Deflate( const iV2 & v )					{ x1-=v.x; y1-=v.y; x2+=v.x; y2+=v.y; return *this; }
 	 	iRect &	Offset( const iV2 & v )						{ x1+=v.x; y1+=v.y; x2+=v.x; y2+=v.y; return *this; }
+		iRect & Clip(const iRect & c)
+		{ 
+			if(x1 < c.x1) x1 = c.x1;
+			if(y1 < c.y1) y1 = c.y1;
+			if(x2 > c.x2) x2 = c.x2;
+			if(y2 > c.y2) y2 = c.y2; 
+			return *this;
+		}
 		bool	IsInside( const iV2 & v ) const				{ return (x1<=v.x && v.x<x2 && y1<=v.y && v.y<y2); }
 		bool	Intersects(const iRect & r) const			{ return x2 > r.x1 && x1 < r.x2 && y2 > r.y1 && y1 < r.y2; }
 };

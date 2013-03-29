@@ -42,9 +42,9 @@
 #define	R9_CHRW					6		// system font chr width
 #define	R9_CHRH					9		// system font chr height
 
-#define	R9_FLIPX				(1<<0)	// flip horizontal
-#define	R9_FLIPY				(1<<1)	// flip vertical
-#define	R9_FLIPR				(1<<2)	// flip rotation
+#define	R9_FLIPX				1		// flip horizontal
+#define	R9_FLIPY				2		// flip vertical
+#define	R9_FLIPR				4		// flip rotation
 #define	R9_FLIPXY				(R9_FLIPX|R9_FLIPY)
 #define	R9_FLIPXR				(R9_FLIPX|R9_FLIPR)
 #define	R9_FLIPYR				(R9_FLIPY|R9_FLIPR)
@@ -160,7 +160,7 @@ inline	BOOL		IsClipping()										{ return ( (m_cliprect.x1<m_cliprect.x2) && (
 inline	void		SetClipping( fRect& rect )							{ m_cliprect = rect; }
 inline	fRect&		GetClipping()										{ return m_cliprect; }
 inline 	void		ClipBar( fRect& dst );								// clip destination rect (dst must be ordered)
-inline 	void		ClipQuad( fRect& dst, fRect& src );					// clip destination rect and source mapping rect (dst must be ordered, src coordinates can be flipped)
+inline 	void		ClipQuad(fRect & dst, fRect & src );				// clip destination rect and source mapping rect (dst must be ordered, src coordinates can be flipped)
 inline 	void		ClipSprite( fRect& dst, fRect& src, int flip=0 );	// clip destination rect and source mapping rect (dst and src must have the same sizes; src coordinates can't be flipped); rotation not supported
 
 // screen shot
@@ -310,33 +310,27 @@ inline void r9Render::ClipBar( fRect& dst )
 
 }
 
-inline void r9Render::ClipQuad( fRect& dst, fRect& src )
+inline void r9Render::ClipQuad( fRect & dst, fRect & src )
 {
 	if(!IsClipping()) return;
 	
 	float f;
 	fRect dst0 = dst;
-	float srcw = src.x2-src.x1;
-	float srch = src.y2-src.y1;
-	float dstw = dst.x2-dst.x1;
-	float dsth = dst.y2-dst.y1;
+	fV2 ssz = src.Size();
+	fV2 dsz = dst.Size();
 
-	if(dst.x1<m_cliprect.x1) dst.x1=m_cliprect.x1;
-	if(dst.y1<m_cliprect.y1) dst.y1=m_cliprect.y1;
-	if(dst.x2>m_cliprect.x2) dst.x2=m_cliprect.x2;
-	if(dst.y2>m_cliprect.y2) dst.y2=m_cliprect.y2;
+	dst.Clip(m_cliprect);
 
-	if(dstw>0.0f) f=(dst.x1 - dst0.x1)/dstw; else f=0.0f;
-	src.x1 += srcw*f;
-
-	if(dstw>0.0f) f=(dst0.x2 - dst.x2)/dstw; else f=0.0f;
-	src.x2 -= srcw*f;
-
-	if(dsth>0.0f) f=(dst.y1 - dst0.y1)/dsth; else f=0.0f;
-	src.y1 += srch*f;
-
-	if(dsth>0.0f) f=(dst0.y2 - dst.y2)/dsth; else f=0.0f;
-	src.y2 -= srch*f;
+	if(dsz.x>0.0f) {
+		f = ssz.x / dsz.x;
+		src.x1 += f * (dst.x1 - dst0.x1);
+		src.x2 += f * (dst.x2 - dst0.x2);
+	}
+	if(dsz.y>0.0f) {
+		f = ssz.y / dsz.y;
+		src.y1 += f * (dst.y1 - dst0.y1);
+		src.y2 += f * (dst.y2 - dst0.y2);
+	}
 
 }
 

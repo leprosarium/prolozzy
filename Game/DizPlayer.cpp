@@ -963,38 +963,15 @@ void cDizPlayer::ReadMatInfo()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cDizPlayer::Draw()
 {
-	
 	if( disable()) return; // disabled
-
-	int rx = Room::PosX2Room(_x);
-	int ry = Room::PosY2Room(_y);
-	
-	// tile	
-	cTile* tile = FindTile();
-	if(tile)
+	if(cTile* tile = FindTile())
 	{
-		int frame = ComputeFrame(_frame,tile->frames,anim());
-		int blend = shader();
-		int w = tile->GetWidth();
-		int h = tile->GetHeight();
-		int x = _x-rx*Room::Size.x - w/2; // @TODO need -1 to the MatchX offset because of the 25 vs 24 width bla bla
-		int y = _y-ry*Room::Size.y + _h/2 - h;
-		x += g_game.viewShift.x;
-		y += g_game.viewShift.y;
-		fRect src;
-		int fx = tile->GetFx(frame);
-		int fy = tile->GetFy(frame);
-		src.x1 = (float)(fx*w);
-		src.x2 = (float)((fx+1)*w);
-		src.y1 = float(fy * h);
-		src.y2 = float((fy + 1) * h);
-		R9_SetState(R9_STATE_BLEND,blend);
-		R9_DrawSprite( g_paint.scrOffs + g_paint.m_scale * iV2(x, y), src, tile->tex, color(), ((flipX() ? 1 : 0 ) | (flipY() ? 2 : 0)), (float)g_paint.m_scale );
+		iV2 sz = tile->GetSize();
+		R9_SetState(R9_STATE_BLEND, shader());
+		iV2 p = pos() - Room::Pos2Room(pos()) * Room::Size + iV2(-sz.x/2, h()/2 - sz.y) + g_game.viewShift;
+		R9_DrawSprite(g_paint.scrPos(p), tile->FrameRect(ComputeFrame(frame(), tile->frames, anim())), tile->tex, color(), flip(), static_cast<float>(g_paint.m_scale));
 	}
-
 }
-
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////

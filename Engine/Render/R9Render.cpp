@@ -157,11 +157,7 @@ void r9Render::DrawSprite( const fV2 & pos, const fRect & src, R9TEXTURE tex, dw
 
 	BOOL rotated = flip & R9_FLIPR;
 
-	fRect dst;
-	dst.x1 = pos.x;
-	dst.y1 = pos.y;
-	dst.x2 = pos.x + (rotated ? src.Height() : src.Width())*scale;
-	dst.y2 = pos.y + (rotated ? src.Width() : src.Height())*scale;
+	fRect dst(pos, pos + (rotated ? src.Size().Tran() : src.Size()) * scale);
 	fRect src0 = src;
 	if(flip & 1)	{ src0.x1=src.x2; src0.x2=src.x1; }
 	if(flip & 2)	{ src0.y1=src.y2; src0.y2=src.y1; }

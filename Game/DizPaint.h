@@ -22,6 +22,14 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // TILE
 //////////////////////////////////////////////////////////////////////////////////////////////////
+inline int ComputeFrameOnce(int frame, int count) { return std::max(std::min(frame, count - 1), 0); }
+inline int ComputeFrameLoop(int frame, int count) { return count > 0 ? frame % count : 0; }
+inline int ComputeFrame( int frame, int framecount, int anim )
+{
+	if( anim==1 ) return ComputeFrameOnce(frame, framecount);
+	if( anim==2 ) return ComputeFrameLoop(frame, framecount);
+	return frame;
+}
 
 class cTile
 {
@@ -69,8 +77,13 @@ public:
 
 		int         GetFx(int frame) const		{ return frame % fx; }
 		int         GetFy(int frame) const		{ return frame / fx; }
-		int			GetWidth()					{ return fx > 0 ? R9_TextureGetWidth(tex) / fx : R9_TextureGetWidth(tex); }
-		int			GetHeight()					{ return fy > 0 ? R9_TextureGetHeight(tex) / fy : R9_TextureGetHeight(tex); }
+		iV2			GetF(int frame) const		{ return iV2(GetFx(frame), GetFy(frame)); }
+		int			GetWidth() const			{ return fx > 0 ? R9_TextureGetWidth(tex) / fx : R9_TextureGetWidth(tex); }
+		int			GetHeight()	const			{ return fy > 0 ? R9_TextureGetHeight(tex) / fy : R9_TextureGetHeight(tex); }
+		iV2			GetSize() const { return iV2(GetWidth(), GetHeight()); }
+		iV2			TexSize() const { return iV2(R9_TextureGetWidth(tex), R9_TextureGetHeight(tex)); }
+		fRect		FrameRect(int frame, const iRect & map) const { fRect src = map; return src.Offset(GetF(frame) * GetSize()); }
+		fRect		FrameRect(int frame) const { iV2 sz = GetSize(); iV2 p = GetF(frame) * sz; return fRect(p, p + sz); }
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -221,11 +234,11 @@ public:
 		void			Done			();
 		void			Layout			();								// compute layout position (scale,scrx,scry)
 		
-		bool Reacquire() { return tiles.Reacquire(); } // called before render reset to reload render resources
+		bool Reacquire() { return tiles.Reacquire(); }	// called before render reset to reload render resources
 		void Unacquire();								// called before render reset to free render resources
 
 		// Draw scaled
-		void			DrawTile		( int idx, const iV2 & p, iRect& map, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f );	// tile scale (in editor paint it was full scale)
+		void			DrawTile		( int idx, const iV2 & p, const iRect & map, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f );	// tile scale (in editor paint it was full scale)
 		void			DrawTile		( int idx, const iV2 & p, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f );				// tile scale (in editor paint it was full scale)
 		void			DrawChar		( int fontidx, const iV2 & p, char c, dword color=0xffffffff );
 
@@ -233,18 +246,18 @@ public:
 		void			DrawBrush		( const tBrush & brush, const iV2 & p, int frame=-1 ); // if frame is -1, tile is automatic animated
 
 		// Tile material draw (software)
-		void			DrawTileSoft	( int idx, int x, int y, iRect& map, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f );	// paints tile in the image target map (faster, no rotation, no scale)
-		void			DrawTileSoft2	( int idx, int x, int y, iRect& map, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f );	// paints tile in the image target map (accept rotation and scale)
+		void			DrawTileSoft	( int idx, const iV2 & p, const iRect & map, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f );	// paints tile in the image target map (faster, no rotation, no scale)
+		void			DrawTileSoft2	( int idx, const iV2 & p, const iRect & map, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f );	// paints tile in the image target map (accept rotation and scale)
 		r9Img			m_imgtarget;	// target image in PF_A8 format (pointing to material map data)
 		bool			m_drawtilesoft;	// true for DrawBrush to call DrawTileSoft
 		byte			m_drawtilemat;	// material to draw the tile
 
 		// HUD draw functions
-		void			HudClipping		( iRect& dst );																	// set a clipping rect
-		void			HUDDrawTile		( int tileid, iRect& dst, iRect& src, dword flags, int frame );				// draw tile
-		void			HUDDrawText		( int tileid, iRect& dst, char* text, int align );								// draw text with escape commands
-		void			HUDGetTextSize	( char* text, int& w, int& h, int&c, int&r );						// in text's width and height in pixels and the number of columns and rows
-		int				HUDScanText		( char* text, int start, int& end, int* data );									// helper for hud text; scans for command and return command and data info
+		void			HudClipping		( const iRect & dst );														// set a clipping rect
+		void			HUDDrawTile		( int tileid, const iRect & dst, const iRect & src, dword flags, int frame );	// draw tile
+		void			HUDDrawText		( int tileid, const iRect & dst, char* text, int align );					// draw text with escape commands
+		void			HUDGetTextSize	( char* text, int& w, int& h, int&c, int&r );								// in text's width and height in pixels and the number of columns and rows
+		int				HUDScanText		( char* text, int start, int& end, int* data );								// helper for hud text; scans for command and return command and data info
 		
 		int				m_hudfont;		// current font id
 		int				m_hudshader;	// current hud shader
@@ -252,6 +265,7 @@ public:
 		int				m_huddraw;		// draw allowed
 
 		// screen props
+		iV2				scrPos(const iV2 & p) { return scrOffs + p * m_scale; }
 		iV2				scrOffs;			// screen offset
 		int				m_scale;		// scale factor
 
@@ -264,12 +278,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////////////////////////
 extern	cDizPaint	g_paint;
 
-inline int ComputeFrame( int frame, int framecount, int anim )
-{
-	if( anim==1 )		return std::max(std::min(frame, framecount - 1), 0);
-	else if( anim==2 )	return framecount>0 ? frame % framecount : 0; // @TODO work on the negative looping !!!
-	else				return frame;
-}
+
 
 #endif
 //////////////////////////////////////////////////////////////////////////////////////////////////

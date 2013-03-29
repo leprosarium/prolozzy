@@ -92,6 +92,7 @@ inline	cTile*		FindTile			()											{ return g_paint.tiles.Get(g_paint.tiles.
 		int			y() const { return _y; }
 		int			w() const { return _w; }
 		int			h() const { return _h; }
+		iV2			size() const { return iV2(w(), h()); }
 		int			life() const { return _life; }
 		int			pow() const { return _pow; }
 		int			tile() const { return _tile; }
@@ -107,6 +108,7 @@ inline	cTile*		FindTile			()											{ return g_paint.tiles.Get(g_paint.tiles.
 		int			shader() const { return _shader; }
 		bool		flipX() const { return _flipX; }
 		bool		flipY() const { return _flipY; }
+		dword		flip() const { return (flipX() ? 1 : 0 ) | (flipY() ? 2 : 0); }
 		int			dir() const { return _dir; }
 		int			tileIdle() const { return _tileIdle; }
 		int			tileWalk() const { return _tileWalk; }

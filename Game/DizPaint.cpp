@@ -332,45 +332,23 @@ void Tiles::Del( int idx )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // Draw functions
 //////////////////////////////////////////////////////////////////////////////////////////////////
-void cDizPaint::DrawTile( int idx,const iV2 & p, iRect& map, dword color, int flip, int frame, int blend, float scale )
-{
-	cTile* tile = tiles.Get(idx); 
-	if(tile==NULL) return;
 
-	int w = tile->GetWidth();
-	int h = tile->GetHeight();
-	if(frame<0) frame=0;
-	frame = frame % tile->frames;
-	int fx = tile->GetFx(frame);
-	int fy = tile->GetFy(frame);
-	fRect src = map;
-	src.x1 += fx * w;
-	src.x2 += fx * w;
-	src.y1 += fy * h;
-	src.y2 += fy * h;
-	R9_SetState(R9_STATE_BLEND,blend);
-	R9_DrawSprite( scrOffs + p * m_scale, src, tile->tex, color, flip, (float)m_scale*scale );
+void cDizPaint::DrawTile( int idx,const iV2 & p, const iRect & map, dword color, int flip, int frame, int blend, float scale )
+{
+	if(cTile* tile = tiles.Get(idx))
+	{
+		R9_SetState(R9_STATE_BLEND,blend);
+		R9_DrawSprite( scrPos(p), tile->FrameRect(ComputeFrameLoop(frame, tile->frames), map), tile->tex, color, flip, static_cast<float>(m_scale * scale));
+	}
 }
 	
 void cDizPaint::DrawTile( int idx, const iV2 & p, dword color, int flip, int frame, int blend, float scale )
 {
-	cTile* tile = tiles.Get(idx); 
-	if(tile==NULL) return;
-
-	int w = tile->GetWidth();
-	int h = tile->GetHeight();
-	if(frame<0) frame=0;
-	frame = frame % tile->frames;
-	int fx = tile->GetFx(frame);
-	int fy = tile->GetFy(frame);
-	fRect src;
-	src.x1 = (float)(fx * w);
-	src.x2 = (float)((fx+1) * w);
-	src.y1 = float(fy * h);
-	src.y2 = float((fy + 1) * h);
-	R9_SetState(R9_STATE_BLEND,blend);
-	R9_DrawSprite( scrOffs + p * m_scale, src, tile->tex, color, flip, (float)m_scale*scale );
-
+	if(cTile* tile = tiles.Get(idx))
+	{
+		R9_SetState(R9_STATE_BLEND,blend);
+		R9_DrawSprite( scrPos(p), tile->FrameRect(ComputeFrameLoop(frame, tile->frames)), tile->tex, color, flip, static_cast<float>(m_scale * scale));
+	}
 }
 
 void cDizPaint::DrawChar( int fontidx, const iV2 & p, char c, dword color )
@@ -379,9 +357,9 @@ void cDizPaint::DrawChar( int fontidx, const iV2 & p, char c, dword color )
 		if(r9Font* font = f->font)
 		{
 			float tsize = font->GetSize();
-			font->SetSize( tsize*m_scale );
+			font->SetSize( tsize * m_scale );
 			font->SetColor( color );
-			font->Char(scrOffs + p * m_scale, c);
+			font->Char(scrPos(p), c);
 			font->SetSize(tsize);
 		}
 }
@@ -398,7 +376,7 @@ void cDizPaint::DrawBrush( const tBrush & brush, const iV2 & p0, int frame )
 	float ms = brush.mapScale();
 
 	fRect oldclip = R9_GetClipping();
-	iV2 p1 = scrOffs + p0 * m_scale;
+	iV2 p1 = scrPos(p0);
 	fRect newclip(p1, p1 + m_scale * sz); 
 	R9_AddClipping(newclip);
 	if(R9_IsClipping())
@@ -410,24 +388,23 @@ void cDizPaint::DrawBrush( const tBrush & brush, const iV2 & p0, int frame )
 		int color = brush.Get(BRUSH_COLOR);
 		int flip = brush.Get(BRUSH_FLIP);
 		bool soft2 = (flip & R9_FLIPR) || (bs != 0 && bs != 100);
-		
+
 		iV2 p = p0;
+		std::function<void()> draw;
+		if(m_drawtilesoft)
+			if(soft2)
+				draw = [this, idx, &p, map, color, flip, frame, blend, ms]() { DrawTileSoft2(idx, p, map, color, flip, frame, blend, ms); };
+			else
+				draw = [this, idx, &p, map, color, flip, frame, blend, ms]() { DrawTileSoft(idx, p, map, color, flip, frame, blend, ms); };
+		else 
+			draw = [this, idx, &p, map, color, flip, frame, blend, ms]() { DrawTile(idx, p, map, color, flip, frame, blend, ms); };
+
 		for(int i=0;i<c.y;i++)
 		{
 			p.x = p0.x;
 			for(int j=0;j<c.x;j++)
 			{
-				if(m_drawtilesoft)
-				{
-					if(soft2)
-						DrawTileSoft2( idx, p.x, p.y, map, color, flip, frame, blend, ms );
-					else
-						DrawTileSoft( idx, p.x, p.y, map, color, flip, frame, blend, ms );
-				}
-				else
-				{
-					DrawTile( idx, p, map, color, flip, frame, blend, ms );
-				}
+				draw();
 				p.x+=msz.x;
 			}
 			p.y+=msz.y;
@@ -444,35 +421,26 @@ void cDizPaint::DrawBrush( const tBrush & brush, const iV2 & p0, int frame )
 // use imgtarget, drawtilemat and correct clipping
 // rotated and scalled sprites go through DrawTileSoft2
 //////////////////////////////////////////////////////////////////////////////////////////////////
-void cDizPaint::DrawTileSoft( int idx, int x, int y, iRect& map, dword color, int flip, int frame, int blend, float scale )
+void cDizPaint::DrawTileSoft( int idx, const iV2 & p, const iRect & map, dword color, int flip, int frame, int blend, float scale )
 {
 	cTile* tile = tiles.Get(idx); 
 	if(tile==NULL) return;
-	int w = tile->GetWidth();
-	int h = tile->GetHeight();
+	iV2 sz = tile->GetSize();
 	// assert(frame==0);
-	if( frame<0 ) frame=0;
-	frame = frame % tile->frames;
+	frame = ComputeFrameLoop(frame, tile->frames);
 	bool rotated = (flip & R9_FLIPR) != FALSE;
-	int fx = tile->GetFx(frame);
-	int fy = tile->GetFy(frame);
+	iV2 f = tile->GetF(frame);
 	// source rectangle safe
 	iRect rsrc = map;
-	rsrc.Offset(iV2(fx * w, fy * h));
-	if(rsrc.x1<0) rsrc.x1=0;
-	if(rsrc.y1<0) rsrc.y1=0;
-	if(rsrc.x2 > w * tile->fx) rsrc.x2 = w * tile->fx;
-	if(rsrc.y2 > h * tile->fy) rsrc.y2 = h * tile->fy;
+	rsrc.Offset(f * sz).Clip(iRect(iV2(), tile->TexSize()));
 
 	// destination rectangle
-	iRect rdst(x, y, x + rsrc.Width(), y + rsrc.Height());
+	iRect rdst(p, p + rsrc.Size());
 
 	// clip by clipping (clipping must be already clipped by imgtarget)
 	fRect frdst = rdst;
 	fRect frsrc = rsrc;
-//	if(rotated)	{ fRect frsrc1 = frsrc; frsrc.x1=frsrc1.y2; frsrc.y1=frsrc1.x1; frsrc.x2=frsrc1.y1; frsrc.y2=frsrc1.x2; } // rotate for clipping
 	R9_ClipSprite(frdst,frsrc,flip); // must always clip !!!
-//	if(rotated)	{ fRect frsrc1 = frsrc; frsrc.y2=frsrc1.x1; frsrc.x1=frsrc1.y1; frsrc.y1=frsrc1.x2; frsrc.x2=frsrc1.y2; } // rotate back
 	rdst = frdst;
 	rsrc = frsrc;
 
@@ -519,39 +487,28 @@ void cDizPaint::DrawTileSoft( int idx, int x, int y, iRect& map, dword color, in
 
 }
 
-void cDizPaint::DrawTileSoft2( int idx, int x, int y, iRect& map, dword color, int flip, int frame, int blend, float scale )
+void cDizPaint::DrawTileSoft2( int idx, const iV2 & p, const iRect & map, dword color, int flip, int frame, int blend, float scale )
 {
 	cTile* tile = tiles.Get(idx); 
 	if(tile==NULL) return;
-	int tw = tile->GetWidth();
-	int th = tile->GetHeight();
+	iV2 sz = tile->GetSize();
 	// assert(frame==0);
-	if( frame<0 ) frame=0;
-	frame = frame % tile->frames;
-	int fx = tile->GetFx(frame);
-	int fy = tile->GetFy(frame);
+	frame = ComputeFrameLoop(frame, tile->frames);
+	iV2 f = tile->GetF(frame);
 	// source rectangle safe
 	iRect rsrc = map;
-	rsrc.Offset(iV2(fx * tw, fy * th));
-	if(rsrc.x1<0) rsrc.x1=0;
-	if(rsrc.y1<0) rsrc.y1=0;
-	if(rsrc.x2 > tw * tile->fx) rsrc.x2 = tw * tile->fx;
-	if(rsrc.y2 > th * tile->fy) rsrc.y2 = th * tile->fy;
+	rsrc.Offset(f* sz).Clip(iRect(iV2(), tile->TexSize()));
 
 	// DRAW SPRITE SOFTWARE
-	bool rotated = (flip & R9_FLIPR) != FALSE;
+	bool rotated = (flip & R9_FLIPR) != 0;
 
-	fRect dst(	static_cast<float>(x), 
-				static_cast<float>(y),
-				x + (rotated ? rsrc.Height() : rsrc.Width()) * scale,
-				y + (rotated ? rsrc.Width() : rsrc.Height()) * scale);
+	fV2 pf(p);
+	fRect dst(pf, pf + fV2(rotated ? rsrc.Size().Tran() : rsrc.Size() ) * scale);
 	
 	fRect src(rsrc);
-	if(flip & 1)	{ src.x1=(float)rsrc.x2; src.x2=(float)rsrc.x1; }
-	if(flip & 2)	{ src.y1=(float)rsrc.y2; src.y2=(float)rsrc.y1; }
+	if(flip & R9_FLIPX)	{ src.x1=(float)rsrc.x2; src.x2=(float)rsrc.x1; }
+	if(flip & R9_FLIPY)	{ src.y1=(float)rsrc.y2; src.y2=(float)rsrc.y1; }
 	if(rotated)		{ fRect src1 = src; src.x1=src1.y2; src.y1=src1.x1; src.x2=src1.y1; src.y2=src1.x2; }
-
-	// src: normal={x1y1,x2y2}; rotated={y2x1,y1x2};
 
 	R9_ClipQuad(dst,src);
 	if(dst.x2<=dst.x1 || dst.y2<=dst.y1) return;
@@ -706,7 +663,7 @@ void cDizPaint::HUDGetTextSize( char* text, int& w, int& h, int& c, int& r )
 	r = rowcount;
 }
 
-void cDizPaint::HUDDrawText( int tileid, iRect& dst, char* text, int m_align )
+void cDizPaint::HUDDrawText( int tileid, const iRect & dst, char* text, int m_align )
 {
 	if( m_huddraw==0 ) return; // not in draw
 	if( m_hudshader<0 || m_hudshader>=SHADER_MAX ) return; // invalid shader
@@ -724,8 +681,7 @@ void cDizPaint::HUDDrawText( int tileid, iRect& dst, char* text, int m_align )
 
 	// draw process
 	iV2 p(dst.x1, dst.y1);
-	int w = dst.x2-dst.x1;
-	int h = dst.y2-dst.y1;
+	iV2 sz = dst.Size();
 
 	int linecount = 0;				// line count
 	int lnstart=0;					// start of current line (chr scan pos)
@@ -776,8 +732,8 @@ void cDizPaint::HUDDrawText( int tileid, iRect& dst, char* text, int m_align )
 		lnend = m;
 
 		// compute aligniament
-		if(align==0) p.x+=((w-linesize)/2); else
-		if(align==1) p.x+=(w-linesize);
+		if(align==0) p.x+=((sz.x-linesize)/2); else
+		if(align==1) p.x+=(sz.x-linesize);
 
 		// PASS2: print characters to the end of the line
 		m = lnstart;
@@ -819,56 +775,45 @@ void cDizPaint::HUDDrawText( int tileid, iRect& dst, char* text, int m_align )
 }
 
 
-void cDizPaint::HUDDrawTile( int tileid, iRect& dst, iRect& src, dword flags, int frame )
+void cDizPaint::HUDDrawTile( int tileid, const iRect & dst, const iRect & src, dword flags, int frame )
 {
 	if( m_huddraw==0 ) return; // not in draw
 	int tileidx = tiles.Find(tileid);
 	if(tileidx==-1) return;
-	int w = src.x2-src.x1;
-	int h = src.y2-src.y1;
-	if( w==0 || h==0 ) return;
+	iV2 sz = src.Size();
+	if( sz.x==0 || sz.y==0 ) return;
 	if(m_hudshader<0 || m_hudshader>=SHADER_MAX) return;
 
 	fRect oldclip = R9_GetClipping();
-	fRect newclip = fRect(	scrOffs.x+dst.x1*m_scale, 
-							scrOffs.y+dst.y1*m_scale, 
-							scrOffs.x+dst.x2*m_scale, 
-							scrOffs.y+dst.y2*m_scale );
+	fRect newclip = fRect(scrPos(iV2(dst.x1, dst.y1)), scrPos(iV2(dst.x2, dst.y2)));
 	R9_AddClipping(newclip);
 	if(R9_IsClipping())
 	{
-		int cx = (dst.x2-dst.x1+w-1) / w;
-		int cy = (dst.y2-dst.y1+h-1) / h;
-
+		iV2 c = (dst.Size() + sz - 1) / sz;
 		int blend = m_hudshader;
-
 		iV2 p(dst.x1, dst.y1);
-		for(int i=0;i<cy;i++)
+		for(int i=0;i<c.y;i++)
 		{
 			p.x = dst.x1;
-			for(int j=0;j<cx;j++)
+			for(int j=0;j<c.x;j++)
 			{
 				DrawTile( tileidx, p, src, m_hudcolor, flags, frame, blend );
-				p.x+=w;
+				p.x+=sz.x;
 			}
-			p.y+=h;
+			p.y+=sz.y;
 		}
 	}
 
 	R9_SetClipping(oldclip);	
 }
 
-void cDizPaint::HudClipping( iRect& dst )
+void cDizPaint::HudClipping( const iRect & dst )
 {
-	if( m_huddraw==0 ) return; // not in draw
-	if(dst.x2<dst.x1 || dst.y2<dst.y1)
-	{
-		R9_ResetClipping();
-		return;
-	}
-	fRect rect(scrOffs + iV2(dst.x1, dst.y1) * m_scale,
-			   scrOffs + iV2(dst.x2, dst.y2) * m_scale);
-	R9_SetClipping(rect);	
+	if( m_huddraw )
+		if(dst.x2<dst.x1 || dst.y2<dst.y1)
+			R9_ResetClipping();
+		else
+			R9_SetClipping(fRect(scrPos(iV2(dst.x1, dst.y1)), scrPos(iV2(dst.x2, dst.y2))));	
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

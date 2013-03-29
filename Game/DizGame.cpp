@@ -586,14 +586,9 @@ bool cDizGame::Update()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cDizGame::Draw()
 {
-	//int i;
-
-	// clipping
-	fRect clip;// draw room area (for viewportmode=1)
 	// visible room area
 	iV2 view = viewPos();
-	fRect rect( g_paint.scrOffs + view * g_paint.m_scale,
-				g_paint.scrOffs + (view + Room::Size) * g_paint.m_scale);
+	fRect rect( g_paint.scrPos(view), g_paint.scrPos(view + Room::Size));
 
 	// view ofset with shake option and optional viewport for scrolling
 	viewShift = view + shake();
@@ -602,25 +597,23 @@ void cDizGame::Draw()
 	
 	// viewport flipping
 	dword flip = 0;
-	int viewx = 0;
-	int viewy = 0;
+	iV2 vv;
 
+	iV2 v = g_paint.scrPos(view);
 	if( viewportFlipX())
 	{
 		flip |= R9_FLIPX;
-		int vx = g_paint.scrOffs.x + view.x * g_paint.m_scale;
-		viewx = R9_GetWidth() - vx - roomW() * g_paint.m_scale - vx + 1; // magic +1
+		vv.x = R9_GetWidth() - v.x - roomW() * g_paint.m_scale - v.x + 1; // magic +1
 	}
 	if( viewportFlipY())
 	{
 		flip |= R9_FLIPY;
-		int vy = g_paint.scrOffs.y + view.y * g_paint.m_scale;
-		viewy = R9_GetHeight() - vy - roomH() * g_paint.m_scale - vy + 1; // magic +1
+		vv.y = R9_GetHeight() - v.y - roomH() * g_paint.m_scale - v.y + 1; // magic +1
 	}
 
 	if( flip )
 	{
-		R9_SetView( viewx, viewy, flip );
+		R9_SetView( vv.x, vv.y, flip );
 	}
 
 	m_visible_brushes = 0;
@@ -641,11 +634,8 @@ void cDizGame::Draw()
 					// clip here to avoid duplicate draw (brushes shared in neighbour rooms)
 					// Note: brushes order must also be perserved (so the drawframe trick didn't work)
 					R9_SetClipping( rect );
-					clip.x1 = (float)g_paint.scrOffs.x + (viewShift.x+(r.x-1)*Room::Size.x)*g_paint.m_scale,
-					clip.y1 = (float)g_paint.scrOffs.y + (viewShift.y+(r.y-1)*Room::Size.y)*g_paint.m_scale,
-					clip.x2 = clip.x1 + Room::Size.x*g_paint.m_scale;
-					clip.y2 = clip.y1 + Room::Size.y*g_paint.m_scale;
-					R9_AddClipping( clip );
+					iV2 p1 = g_paint.scrPos(viewShift + (r - 1) * Room::Size);
+					R9_AddClipping( fRect(p1, p1 + Room::Size * g_paint.m_scale));
 					iV2 rr = r - 1;
 					g_map.DrawRoom( roomPos() + rr, layer, m_drawmode, viewShift + rr * Room::Size);
 				}

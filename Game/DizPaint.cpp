@@ -88,30 +88,9 @@ cDizPaint::cDizPaint()
 	m_drawtilesoft = false;
 	m_drawtilemat = 0;
 	m_hudfont = 0;
-	m_hudshader = SHADER_BLEND;
+	m_hudshader = ShaderBlend;
 	m_hudcolor = 0xffffffff;
 	m_huddraw = false;
-}
-
-cDizPaint::~cDizPaint()
-{
-	// nothing - use Done
-}
-
-bool cDizPaint::Init()
-{
-	bool ok = true;
-
-	// screen
-	Layout();
-
-	return ok;
-}
-
-void cDizPaint::Done()
-{
-	tiles.Done();
-	fonts.clear();
 }
 
 bool Tiles::Reacquire()
@@ -158,13 +137,6 @@ int		gstile_total;			// status report on total tiles declared (load+failed)
 int		gstile_fail;			// status report on tiles failed to load
 int		gstile_duplicates;		// status report on id duplicates
 int		gstile_group;			// current loading group
-
-
-void Tiles::Done()
-{
-	clear();
-	int sz = size();
-}
 
 bool Tiles::LoadFile( const char* filepath, int group )
 {
@@ -338,7 +310,7 @@ void cDizPaint::DrawTile( int idx,const iV2 & p, const iRect & map, dword color,
 	if(cTile* tile = tiles.Get(idx))
 	{
 		R9_SetState(R9_STATE_BLEND,blend);
-		R9_DrawSprite( scrPos(p), tile->FrameRect(ComputeFrameLoop(frame, tile->frames), map), tile->tex, color, flip, static_cast<float>(m_scale * scale));
+		R9_DrawSprite( scrPos(p), tile->FrameRect(tile->ComputeFrameLoop(frame), map), tile->tex, color, flip, static_cast<float>(m_scale * scale));
 	}
 }
 	
@@ -347,7 +319,7 @@ void cDizPaint::DrawTile( int idx, const iV2 & p, dword color, int flip, int fra
 	if(cTile* tile = tiles.Get(idx))
 	{
 		R9_SetState(R9_STATE_BLEND,blend);
-		R9_DrawSprite( scrPos(p), tile->FrameRect(ComputeFrameLoop(frame, tile->frames)), tile->tex, color, flip, static_cast<float>(m_scale * scale));
+		R9_DrawSprite( scrPos(p), tile->FrameRect(tile->ComputeFrameLoop(frame)), tile->tex, color, flip, static_cast<float>(m_scale * scale));
 	}
 }
 
@@ -427,7 +399,7 @@ void cDizPaint::DrawTileSoft( int idx, const iV2 & p, const iRect & map, dword c
 	if(tile==NULL) return;
 	iV2 sz = tile->GetSize();
 	// assert(frame==0);
-	frame = ComputeFrameLoop(frame, tile->frames);
+	frame = tile->ComputeFrameLoop(frame);
 	bool rotated = (flip & R9_FLIPR) != FALSE;
 	iV2 f = tile->GetF(frame);
 	// source rectangle safe
@@ -493,7 +465,7 @@ void cDizPaint::DrawTileSoft2( int idx, const iV2 & p, const iRect & map, dword 
 	if(tile==NULL) return;
 	iV2 sz = tile->GetSize();
 	// assert(frame==0);
-	frame = ComputeFrameLoop(frame, tile->frames);
+	frame = tile->ComputeFrameLoop(frame);
 	iV2 f = tile->GetF(frame);
 	// source rectangle safe
 	iRect rsrc = map;
@@ -666,7 +638,7 @@ void cDizPaint::HUDGetTextSize( char* text, int& w, int& h, int& c, int& r )
 void cDizPaint::HUDDrawText( int tileid, const iRect & dst, char* text, int m_align )
 {
 	if( m_huddraw==0 ) return; // not in draw
-	if( m_hudshader<0 || m_hudshader>=SHADER_MAX ) return; // invalid shader
+	if( m_hudshader<0 || m_hudshader>=ShaderMax ) return; // invalid shader
 	if( text==NULL ) return; // invalid text
 	int tileidx = tiles.Find(tileid);
 	cTile* tile = tiles.Get(tileidx); 
@@ -782,7 +754,7 @@ void cDizPaint::HUDDrawTile( int tileid, const iRect & dst, const iRect & src, d
 	if(tileidx==-1) return;
 	iV2 sz = src.Size();
 	if( sz.x==0 || sz.y==0 ) return;
-	if(m_hudshader<0 || m_hudshader>=SHADER_MAX) return;
+	if(m_hudshader<0 || m_hudshader>=ShaderMax) return;
 
 	fRect oldclip = R9_GetClipping();
 	fRect newclip = fRect(scrPos(iV2(dst.x1, dst.y1)), scrPos(iV2(dst.x2, dst.y2)));

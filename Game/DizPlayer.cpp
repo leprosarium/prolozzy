@@ -425,7 +425,7 @@ cDizPlayer::~cDizPlayer()
 void cDizPlayer::Reset()
 {
 
-	shader(SHADER_BLEND);
+	shader(ShaderBlend);
 	status(idle);
 	delay(3);
 	layer(7);
@@ -596,15 +596,8 @@ void cDizPlayer::EnterRoll()
 	pow(1); // cut fall power to roll on ground
 	
 	if( _tile==_costume+tileUp() || _tile==_costume+tileJump() ) // only when jumping
-	{
-		cTile* tile = FindTile();
-		if(tile)
-		{
-			int frame = ComputeFrame( _frame, tile->frames, anim() );
-			//if( frame < tile->m_frames-1 ) return; // don't enter idle unless last frame reached; untill then stay in roll
-			if( frame != 0 ) return; // don't enter idle unless last frame reached; untill then stay in roll
-		}
-	}
+		if(cTile* tile = FindTile())
+			if(tile->ComputeFrame(frame(), anim()) != 0) return; // don't enter idle unless last frame reached; untill then stay in roll
 
 	EnterKeyState(); // be sure to stop the fall, just in case the fall handler doesn't
 
@@ -969,7 +962,7 @@ void cDizPlayer::Draw()
 		iV2 sz = tile->GetSize();
 		R9_SetState(R9_STATE_BLEND, shader());
 		iV2 p = pos() - Room::Pos2Room(pos()) * Room::Size + iV2(-sz.x/2, h()/2 - sz.y) + g_game.viewShift;
-		R9_DrawSprite(g_paint.scrPos(p), tile->FrameRect(ComputeFrame(frame(), tile->frames, anim())), tile->tex, color(), flip(), static_cast<float>(g_paint.m_scale));
+		R9_DrawSprite(g_paint.scrPos(p), tile->FrameRect(tile->ComputeFrame(frame(), anim())), tile->tex, color(), flip(), static_cast<float>(g_paint.m_scale));
 	}
 }
 

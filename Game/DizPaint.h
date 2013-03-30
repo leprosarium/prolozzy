@@ -11,25 +11,21 @@
 #include <algorithm>
 
 // shaders
-#define SHADER_OPAQUE	0		// BLEND_OPAQUE
-#define	SHADER_BLEND	1		// BLEND_ALPHA
-#define SHADER_ADD		2		// BLEND_ADD
-#define SHADER_MOD		3		// BLEND_MOD
-#define SHADER_MOD2		4		// BLEND_MOD2
-#define SHADER_ALPHAREP	5		// BLEND_ALPHAREP
-#define SHADER_MAX		6
+enum Shader
+{
+	ShaderOpaque,
+	ShaderBlend,
+	ShaderAdd,
+	ShaderMod,
+	ShaderMod2,
+	ShaderAlpharep,
+	ShaderMax
+};
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // TILE
 //////////////////////////////////////////////////////////////////////////////////////////////////
-inline int ComputeFrameOnce(int frame, int count) { return std::max(std::min(frame, count - 1), 0); }
-inline int ComputeFrameLoop(int frame, int count) { return count > 0 ? frame % count : 0; }
-inline int ComputeFrame( int frame, int framecount, int anim )
-{
-	if( anim==1 ) return ComputeFrameOnce(frame, framecount);
-	if( anim==2 ) return ComputeFrameLoop(frame, framecount);
-	return frame;
-}
+
 
 class cTile
 {
@@ -84,6 +80,17 @@ public:
 		iV2			TexSize() const { return iV2(R9_TextureGetWidth(tex), R9_TextureGetHeight(tex)); }
 		fRect		FrameRect(int frame, const iRect & map) const { fRect src = map; return src.Offset(GetF(frame) * GetSize()); }
 		fRect		FrameRect(int frame) const { iV2 sz = GetSize(); iV2 p = GetF(frame) * sz; return fRect(p, p + sz); }
+
+		int ComputeFrameOnce(int frame) { return std::max(std::min(frame, frames - 1), 0); }
+		int ComputeFrameLoop(int frame) { return frames > 0 ? frame % frames : 0; }
+		int ComputeFrame( int frame, int anim )
+		{
+			if( anim==1 ) return ComputeFrameOnce(frame);
+			if( anim==2 ) return ComputeFrameLoop(frame);
+			return frame;
+		}
+
+
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -190,7 +197,6 @@ public:
 		Cont::erase(i); 
 	}
 
-	void Done();
 	bool InvalidIdx(int idx) const {return idx < 0 && static_cast<size_type>(idx) >= size(); }
 
 	cTile * Get(int idx) { return InvalidIdx(idx) ? nullptr : &(*this)[idx]; }
@@ -228,10 +234,9 @@ class cDizPaint
 {
 public:
 						cDizPaint		();
-						~cDizPaint		();
 	
-		bool			Init			();
-		void			Done			();
+	bool Init()	{ Layout(); return true; }
+	void Done() { tiles.clear(); fonts.clear(); }
 		void			Layout			();								// compute layout position (scale,scrx,scry)
 		
 		bool Reacquire() { return tiles.Reacquire(); }	// called before render reset to reload render resources

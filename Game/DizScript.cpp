@@ -534,8 +534,8 @@ PREDICATE_M(core, hudFont, 1)
 PREDICATE_M(core, hudShader, 1)
 {
 	int shd = A1;
-	if(shd < 0 || shd < SHADER_MAX) 
-		shd = SHADER_BLEND;
+	if(shd < 0 || shd < ShaderMax) 
+		shd = ShaderBlend;
 	g_paint.m_hudshader = shd;
 	return true;
 }

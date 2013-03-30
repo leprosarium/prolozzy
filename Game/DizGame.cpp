@@ -826,7 +826,7 @@ void cDizGame::ObjDraw( const tBrush & brush )
 	// draw current tile frame
 	int idx = g_paint.tiles.Find(brush.Get(BRUSH_TILE));
 	cTile* tile = g_paint.tiles.Get(idx); if(!tile) return;
-	int frame = ComputeFrame(brush.Get(BRUSH_FRAME),tile->frames,brush.Get(BRUSH_ANIM));
+	int frame = tile->ComputeFrame(brush.Get(BRUSH_FRAME),brush.Get(BRUSH_ANIM));
 	g_paint.DrawBrush( brush, viewShift + brush.pos() - roomPos() * Room::Size, frame );
 }
 

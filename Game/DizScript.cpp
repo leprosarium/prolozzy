@@ -459,30 +459,22 @@ PREDICATE_M(core, fontUnload, 0)
 
 PREDICATE_M(core, hudDrawTile, 5)
 {
-	int tileid = A1; 
 	PlTerm r1 = A2;
 	PlTerm r2 = A3;
-	int flip  = A4;
-	int frame = A5;
-
-
-	iRect dst( r1[1], r1[2], r1[3], r1[4] );
-	dst.x2 += dst.x1;
-	dst.y2 += dst.y1;
-	iRect src( r2[1], r2[2], r2[3], r2[4] );
-	src.x2 += src.x1;
-	src.y2 += src.y1;
-	g_paint.hud.DrawTile( tileid, dst, src, flip, frame );
+	iV2 p1(r1[1], r1[2]);
+	iV2 p2(r2[1], r2[2]);
+	g_paint.hud.DrawTile(A1,
+		iRect(p1, p1 + iV2(r1[3], r1[4])),
+		iRect(p2, p2 + iV2(r2[3], r2[4])),
+		static_cast<int>(A4), A5 );
 	return true;
 }
 
 PREDICATE_M(core, hudDrawText, 4)
 {
 	PlTerm r = A2;
-	iRect dst( r[1], r[2], r[3], r[4] );
-	dst.x2 += dst.x1;
-	dst.y2 += dst.y1;
-	g_paint.hud.DrawText( A1, dst, A3, A4 );
+	iV2 p(r[1], r[2]);
+	g_paint.hud.DrawText( A1, iRect(p, p + iV2(r[3], r[4])), A3, A4 );
 	return true;
 }
 

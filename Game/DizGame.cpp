@@ -603,12 +603,12 @@ void cDizGame::Draw()
 	if( viewportFlipX())
 	{
 		flip |= R9_FLIPX;
-		vv.x = R9_GetWidth() - v.x - roomW() * g_paint.m_scale - v.x + 1; // magic +1
+		vv.x = R9_GetWidth() - v.x - roomW() * g_paint.scale() - v.x + 1; // magic +1
 	}
 	if( viewportFlipY())
 	{
 		flip |= R9_FLIPY;
-		vv.y = R9_GetHeight() - v.y - roomH() * g_paint.m_scale - v.y + 1; // magic +1
+		vv.y = R9_GetHeight() - v.y - roomH() * g_paint.scale() - v.y + 1; // magic +1
 	}
 
 	if( flip )
@@ -635,7 +635,7 @@ void cDizGame::Draw()
 					// Note: brushes order must also be perserved (so the drawframe trick didn't work)
 					R9_SetClipping( rect );
 					iV2 p1 = g_paint.scrPos(viewShift + (r - 1) * Room::Size);
-					R9_AddClipping( fRect(p1, p1 + Room::Size * g_paint.m_scale));
+					R9_AddClipping( fRect(p1, p1 + Room::Size * g_paint.scale()));
 					iV2 rr = r - 1;
 					g_map.DrawRoom( roomPos() + rr, layer, m_drawmode, viewShift + rr * Room::Size);
 				}
@@ -730,22 +730,8 @@ void MatMap::Update(const iV2 & room, bool full)
 	// clear
 	memset(map, 0, Cap);
 	
-	// prepare coordinates
-	iV2 scr(g_paint.scrOffs);
-	int scale = g_paint.m_scale;
-	g_paint.scrOffs = iV2();
-	g_paint.m_scale = 1;
-
-	// clipping
-	fRect oldclip = R9_GetClipping();
-	
 	// prepare for software rendering
-	g_paint.m_drawtilesoft = true;
-	g_paint.m_imgtarget.m_pf = R9_PF_A;
-	g_paint.m_imgtarget.m_width = Size3.x;
-	g_paint.m_imgtarget.m_height = Size3.y;
-	g_paint.m_imgtarget.m_size = Cap;
-	g_paint.m_imgtarget.m_data = map;
+	g_paint.BeginSoftwareRendering(Size3, Cap, map);
 
 	// draw room
 	for(int layer=0; layer<GAME_LAYERS; layer++)
@@ -774,12 +760,7 @@ void MatMap::Update(const iV2 & room, bool full)
 			g_map.DrawRoom( room, layer, DRAWMODE_MATERIAL, Size);
 		}
 	}
-
-	// rollback
-	g_paint.m_drawtilesoft = false;
-	g_paint.scrOffs = scr;
-	g_paint.m_scale = scale;
-	R9_SetClipping(oldclip);
+	g_paint.EndSoftwareRendering();
 
 	// @DBG material (dark colors)
 	//R9_ImgSaveFile("matdump.tga",&g_paint.m_imgtarget);

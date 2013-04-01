@@ -222,7 +222,7 @@ void cDizMap::DrawRoom( const iV2 & rp, int layer, int mode, const iV2 & ofs)
 	if(InvalidRoomCoord(rp.x, rp.y)) return;
 
 	// viewport clipping test
-	if( !g_paint.m_drawtilesoft )
+	if( !g_paint.drawtilesoft() )
 	{
 		iV2 p1 = g_game.roomPos() * Room::Size - g_game.viewportPos();
 		iRect viewport(p1, p1 + Room::Size);
@@ -252,7 +252,7 @@ void cDizMap::DrawRoom( const iV2 & rp, int layer, int mode, const iV2 & ofs)
 			shader	= brush.Get(BRUSH_SHADER);
 			brush.Set(BRUSH_COLOR, g_game.materials[brush.Get(BRUSH_MATERIAL)].color | 0xff000000);
 			brush.Set(BRUSH_SHADER, ShaderAlpharep);
-			g_paint.m_drawtilemat = brush.Get(BRUSH_MATERIAL); // software use this
+			g_paint.drawtilemat(brush.Get(BRUSH_MATERIAL)); // software use this
 			g_paint.DrawBrush( brush, p, frame );
 			brush.Set(BRUSH_COLOR, color);
 			brush.Set(BRUSH_SHADER, shader);

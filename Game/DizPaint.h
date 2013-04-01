@@ -81,9 +81,9 @@ public:
 		fRect		FrameRect(int frame, const iRect & map) const { fRect src = map; return src.Offset(GetF(frame) * GetSize()); }
 		fRect		FrameRect(int frame) const { iV2 sz = GetSize(); iV2 p = GetF(frame) * sz; return fRect(p, p + sz); }
 
-		int ComputeFrameOnce(int frame) { return std::max(std::min(frame, frames - 1), 0); }
-		int ComputeFrameLoop(int frame) { return frames > 0 ? frame % frames : 0; }
-		int ComputeFrame( int frame, int anim )
+		int ComputeFrameOnce(int frame) const { return std::max(std::min(frame, frames - 1), 0); }
+		int ComputeFrameLoop(int frame) const { return frames > 0 ? frame % frames : 0; }
+		int ComputeFrame( int frame, int anim ) const
 		{
 			if( anim==1 ) return ComputeFrameOnce(frame);
 			if( anim==2 ) return ComputeFrameLoop(frame);
@@ -200,9 +200,10 @@ public:
 	bool InvalidIdx(int idx) const {return idx < 0 && static_cast<size_type>(idx) >= size(); }
 
 	cTile * Get(int idx) { return InvalidIdx(idx) ? nullptr : &(*this)[idx]; }
+	const cTile * Get(int idx) const { return InvalidIdx(idx) ? nullptr : &(*this)[idx]; }
 	int Add(int id);								// add a new empty tile; id must be unique
 	void Del(int idx);								// delete tile by index
-	int Find(int id) { IntIndex::iterator i = Index.find(id); return i != Index.end() ? i->second : -1; }
+	int Find(int id) const { auto i = Index.find(id); return i != Index.end() ? i->second : -1; }
 	bool Load(char* path, int group = 0);			// load tiles from a path, and set the specified group
 	bool LoadFile(const char* filepath, int group = 0);	// load a tile file
 	void Unload(int group=0 );						// unload load tiles (destroy) from a specified group
@@ -219,6 +220,7 @@ public:
 
 	bool InvalidIdx(int idx) const {return idx < 0 && static_cast<size_type>(idx) >= size(); }
 	cFont * Get(int idx) { return InvalidIdx(idx)? nullptr : &(*this)[idx]; }
+	const cFont * Get(int idx) const { return InvalidIdx(idx)? nullptr : &(*this)[idx]; }
 	void Del(int idx) {	if(!InvalidIdx(idx)) erase(begin() + idx); }
 	bool LoadFile(const char* filepath, int group = 0);
 	int	Find(int id) const { for(size_type i=0;i<size(); i++) if((*this)[i].id==id) return i; return -1; }
@@ -231,18 +233,19 @@ public:
 
 class HUD
 {
+	enum Cmd { None, Align, Color, Focus, Tile };
 	int _font;		// current font id
 	int _shader;	// current hud shader
 	dword _color;	// current hud color
 	bool _isDrawing;		// draw allowed
-	int ScanText(char* text, int start, int& end, int* data);								// helper for hud text; scans for command and return command and data info
+	Cmd ScanText(std::string::const_iterator start, std::string::const_iterator end, std::string::const_iterator & res, int* data);								// helper for hud text; scans for command and return command and data info
 
 public:
 	HUD() : _font(), _shader(ShaderBlend), _color(0xffffffff), _isDrawing() {}
 	void SetClipping(const iRect & dst);														// set a clipping rect
 	void DrawTile(int tileid, const iRect & dst, const iRect & src, dword flags, int frame);	// draw tile
-	void DrawText(int tileid, const iRect & dst, char* text, int align);						// draw text with escape commands
-	void GetTextSize(char* text, int& w, int& h, int&c, int&r);								// in text's width and height in pixels and the number of columns and rows
+	void DrawText(int tileid, const iRect & dst, const std::string & text, int align);						// draw text with escape commands
+	void GetTextSize(const std::string & text, int& w, int& h, int&c, int&r);								// in text's width and height in pixels and the number of columns and rows
 
 	void font(int f) { _font = f; }
 	void shader(int s) { _shader = s; }
@@ -257,51 +260,65 @@ public:
 
 class cDizPaint
 {
+	r9Img _imgtarget;	// target image in PF_A8 format (pointing to material map data)
+	bool _drawtilesoft;	// true for DrawBrush to call DrawTileSoft
+	byte _drawtilemat;	// material to draw the tile
+	int _scale;		// scale factor
+	iV2 _scrOffs;			// screen offset
+
+	struct
+	{
+		int scale;
+		iV2 offs;
+		fRect clip;
+	} rollback;
+
+	void DrawTileSoft(int idx, const iV2 & p, const iRect & map, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f ) const;	// paints tile in the image target map (faster, no rotation, no scale)
+	void DrawTileSoft2(int idx, const iV2 & p, const iRect & map, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f ) const;	// paints tile in the image target map (accept rotation and scale)
+
+	std::function<void(const iV2&)> selectDrawMethod(const tBrush & brush, int idx, int frame) const;
+
 public:
-						cDizPaint		();
+	cDizPaint() : _scale(1), _drawtilesoft(), _drawtilemat() {}
 	
 	bool Init()	{ Layout(); return true; }
 	void Done() { tiles.clear(); fonts.clear(); }
-		void			Layout			();								// compute layout position (scale,scrx,scry)
+	void Layout();								// compute layout position (scale,scrx,scry)
 		
-		bool Reacquire() { return tiles.Reacquire(); }	// called before render reset to reload render resources
-		void Unacquire();								// called before render reset to free render resources
+	bool Reacquire() { return tiles.Reacquire(); }	// called before render reset to reload render resources
+	void Unacquire();								// called before render reset to free render resources
 
-		// Draw scaled
-		void			DrawTile		( int idx, const iV2 & p, const iRect & map, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f );	// tile scale (in editor paint it was full scale)
-		void			DrawTile		( int idx, const iV2 & p, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f );				// tile scale (in editor paint it was full scale)
-		void			DrawChar		( int fontidx, const iV2 & p, char c, dword color=0xffffffff );
+	// Draw scaled
+	void DrawTile(int idx, const iV2 & p, const iRect & map, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f ) const;	// tile scale (in editor paint it was full scale)
+	void DrawTile(int idx, const iV2 & p, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f) const;				// tile scale (in editor paint it was full scale)
+	void DrawChar(int fontidx, const iV2 & p, char c, dword color=0xffffffff ) const;
 
-		// Draw brush 
-		void			DrawBrush		( const tBrush & brush, const iV2 & p, int frame=-1 ); // if frame is -1, tile is automatic animated
+	// Draw brush 
+	void DrawBrush( const tBrush & brush, const iV2 & p, int frame=-1 ) const; // if frame is -1, tile is automatic animated
 
-		// Tile material draw (software)
-		void			DrawTileSoft	( int idx, const iV2 & p, const iRect & map, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f );	// paints tile in the image target map (faster, no rotation, no scale)
-		void			DrawTileSoft2	( int idx, const iV2 & p, const iRect & map, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f );	// paints tile in the image target map (accept rotation and scale)
-		r9Img			m_imgtarget;	// target image in PF_A8 format (pointing to material map data)
-		bool			m_drawtilesoft;	// true for DrawBrush to call DrawTileSoft
-		byte			m_drawtilemat;	// material to draw the tile
-
-		// HUD draw functions
-		
+	void BeginSoftwareRendering(const iV2 & size, dword cap, byte * data);
+	void EndSoftwareRendering();
 
 
-		// screen props
-		iV2				scrPos(const iV2 & p) { return scrOffs + p * m_scale; }
-		iV2				scrOffs;			// screen offset
-		int				m_scale;		// scale factor
+	// screen props
+	iV2 scrPos(const iV2 & p) const { return scrOffs() + p * scale(); }
+	int scale() const { return _scale; }
+	void scale(int s) { _scale = s; }
 
-		Tiles tiles;
-		Fonts fonts;
-		HUD hud;
+	const iV2 & scrOffs() const { return _scrOffs; }
+	void scrOffs(const iV2 & v) { _scrOffs = v; }
+
+	void drawtilemat(int mat) { _drawtilemat = mat; }
+	int drawtilemat() const { return _drawtilemat; }
+
+	bool drawtilesoft() const { return _drawtilesoft; }
+
+	Tiles tiles;
+	Fonts fonts;
+	HUD hud;
 };
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// UTILS
-//////////////////////////////////////////////////////////////////////////////////////////////////
 extern	cDizPaint	g_paint;
-
-
 
 #endif
 //////////////////////////////////////////////////////////////////////////////////////////////////

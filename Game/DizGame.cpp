@@ -681,9 +681,9 @@ void cDizGame::Draw()
 */
 	// HUD (cover, dialogs, menus, etc)
 	R9_ResetClipping();
-	g_paint.m_huddraw = true;
+	g_paint.hud.draw(true);
 	g_script.drawHud();
-	g_paint.m_huddraw = false;
+	g_paint.hud.draw(false);
 	R9_ResetClipping();
 
 }

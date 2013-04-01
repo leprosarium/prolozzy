@@ -52,23 +52,23 @@ virtual	BOOL		Create( const char* fontfile );						// create from a .fnt file
 virtual void		Destroy();											// destroy font (not the texture!)
 
 // config
-inline	void		SetTexture( R9TEXTURE texture )						{ m_tex = texture; } // set a texture for the font
-inline	R9TEXTURE	GetTexture()										{ return m_tex; }
-inline	void		SetBlend( int blend )								{ m_blend = blend; }
-inline	int			GetBlend()											{ return m_blend; }
-inline	void		SetColor( dword color )								{ m_color = color; }
-inline	void		SetSize( float size )								{ m_scale = size / m_chrh; }
-inline	void		SetSpace( int width )								{ m_char[32].w = width; }
-inline  BOOL		IsValid( char c )									{ return ( m_char[(byte)c].w>0 ); }
+		void		SetTexture( R9TEXTURE texture )						{ m_tex = texture; } // set a texture for the font
+		R9TEXTURE	GetTexture() const									{ return m_tex; }
+		void		SetBlend( int blend )								{ m_blend = blend; }
+		int			GetBlend() const									{ return m_blend; }
+		void		SetColor( dword color )								{ m_color = color; }
+		void		SetSize( float size )								{ m_scale = size / m_chrh; }
+		void		SetSpace( int width )								{ m_char[32].w = width; }
+		BOOL		IsValid( char c ) const								{ return ( m_char[(byte)c].w>0 ); }
 
-inline	dword		GetColor()											{ return m_color; }
-inline	float		GetSize()											{ return m_scale * m_chrh; }
-inline	float		GetOfsX()											{ return m_scale * m_aspect * m_ofsx; }
-inline	float		GetOfsY()											{ return m_scale * m_ofsy; }
-inline	float		GetItalic()											{ return m_scale * m_aspect * m_italic; }
+		dword		GetColor() const									{ return m_color; }
+		float		GetSize() const										{ return m_scale * m_chrh; }
+		float		GetOfsX() const										{ return m_scale * m_aspect * m_ofsx; }
+		float		GetOfsY() const										{ return m_scale * m_ofsy; }
+		float		GetItalic() const									{ return m_scale * m_aspect * m_italic; }
 
 // sizes
-inline	float		GetCharWidth()										{ return m_scale * m_aspect * m_chrw; }
+		float		GetCharWidth() const								{ return m_scale * m_aspect * m_chrw; }
 		float		GetCharWidth( char c );								// gets the current width of a char (in pixels) - italic not included
 		float		GetTextWidth( const char* text );					// gets the current width of a string (in pixels) - italic included, newlines ignored
 		float		GetTextWidth( const char* text, int size );				// gets the current width of a string (in pixels) - italic included, newlines ignored

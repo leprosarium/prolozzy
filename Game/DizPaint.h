@@ -111,11 +111,11 @@ public:
 	cFont(cFont && f) : id(f.id), group(f.group), font(f.font) { f.font = 0; }
 	cFont & operator = (cFont && f) { id = f.id; group = f.group; font = f.font; f.font = 0; return *this; }
 
-	int GetSize()					{ return (int)font->GetSize(); }
-	int GetCharWidth( char c )		{ return (int)font->GetCharWidth(c); }
-	int GetTextWidth( const char* text )	{ return (int)font->GetTextWidth(text); }
-	int	GetOfsX() { return (int)font->GetOfsX(); }
-	int GetOfsY() { return (int)font->GetOfsY(); }
+	int GetSize() const { return (int)font->GetSize(); }
+	int GetCharWidth( char c ) const { return (int)font->GetCharWidth(c); }
+	int GetTextWidth( const char* text ) const { return (int)font->GetTextWidth(text); }
+	int	GetOfsX() const { return (int)font->GetOfsX(); }
+	int GetOfsY() const { return (int)font->GetOfsY(); }
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -221,7 +221,7 @@ public:
 	cFont * Get(int idx) { return InvalidIdx(idx)? nullptr : &(*this)[idx]; }
 	void Del(int idx) {	if(!InvalidIdx(idx)) erase(begin() + idx); }
 	bool LoadFile(const char* filepath, int group = 0);
-	int	Find(int id) { for(size_type i=0;i<size(); i++) if((*this)[i].id==id) return i; return -1; }
+	int	Find(int id) const { for(size_type i=0;i<size(); i++) if((*this)[i].id==id) return i; return -1; }
 	bool Load(char * path, int group = 0);	// load fonts from a path and set the specified group
 	void Unload(int group = 0);				// unload fonts (destroy) from the specified group
 
@@ -229,6 +229,31 @@ public:
 
 };
 
+class HUD
+{
+	int _font;		// current font id
+	int _shader;	// current hud shader
+	dword _color;	// current hud color
+	bool _isDrawing;		// draw allowed
+	int ScanText(char* text, int start, int& end, int* data);								// helper for hud text; scans for command and return command and data info
+
+public:
+	HUD() : _font(), _shader(ShaderBlend), _color(0xffffffff), _isDrawing() {}
+	void SetClipping(const iRect & dst);														// set a clipping rect
+	void DrawTile(int tileid, const iRect & dst, const iRect & src, dword flags, int frame);	// draw tile
+	void DrawText(int tileid, const iRect & dst, char* text, int align);						// draw text with escape commands
+	void GetTextSize(char* text, int& w, int& h, int&c, int&r);								// in text's width and height in pixels and the number of columns and rows
+
+	void font(int f) { _font = f; }
+	void shader(int s) { _shader = s; }
+	void color(dword c) { _color = c; }
+	void draw(bool d) { _isDrawing = d; }
+
+	int font() const { return _font; }
+	int shader() const { return _shader; }
+	dword color() const { return _color; }
+	bool isDrawing() const { return _isDrawing; }
+};
 
 class cDizPaint
 {
@@ -258,16 +283,8 @@ public:
 		byte			m_drawtilemat;	// material to draw the tile
 
 		// HUD draw functions
-		void			HudClipping		( const iRect & dst );														// set a clipping rect
-		void			HUDDrawTile		( int tileid, const iRect & dst, const iRect & src, dword flags, int frame );	// draw tile
-		void			HUDDrawText		( int tileid, const iRect & dst, char* text, int align );					// draw text with escape commands
-		void			HUDGetTextSize	( char* text, int& w, int& h, int&c, int&r );								// in text's width and height in pixels and the number of columns and rows
-		int				HUDScanText		( char* text, int start, int& end, int* data );								// helper for hud text; scans for command and return command and data info
 		
-		int				m_hudfont;		// current font id
-		int				m_hudshader;	// current hud shader
-		dword			m_hudcolor;		// current hud color
-		int				m_huddraw;		// draw allowed
+
 
 		// screen props
 		iV2				scrPos(const iV2 & p) { return scrOffs + p * m_scale; }
@@ -276,6 +293,7 @@ public:
 
 		Tiles tiles;
 		Fonts fonts;
+		HUD hud;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

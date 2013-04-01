@@ -87,10 +87,6 @@ cDizPaint::cDizPaint()
 	m_scale = 1;
 	m_drawtilesoft = false;
 	m_drawtilemat = 0;
-	m_hudfont = 0;
-	m_hudshader = ShaderBlend;
-	m_hudcolor = 0xffffffff;
-	m_huddraw = false;
 }
 
 bool Tiles::Reacquire()
@@ -532,7 +528,7 @@ void cDizPaint::DrawTileSoft2( int idx, const iV2 & p, const iRect & map, dword 
 #define DLGCMD_TILE		4
 
 // command format can be: {a:l} or {a:left}, {a:c}, {a:r}, {c:ff0080}, {f:0}, {f:1}, {t:10 16 18}
-int	cDizPaint::HUDScanText( char* text, int start, int& end, int* data )
+int	HUD::ScanText( char* text, int start, int& end, int* data )
 {
 	end = start;
 	data[0]=0;
@@ -578,12 +574,12 @@ int	cDizPaint::HUDScanText( char* text, int start, int& end, int* data )
 	return DLGCMD_NONE;
 }
 
-void cDizPaint::HUDGetTextSize( char* text, int& w, int& h, int& c, int& r )
+void HUD::GetTextSize( char* text, int& w, int& h, int& c, int& r )
 {
 	w = h = c = r = 0;
 	if(text==NULL) return; // invalid text
-	int fontidx = fonts.Find(m_hudfont); // find font
-	cFont* font = fonts.Get(fontidx);
+	int fontidx = g_paint.fonts.Find(font()); // find font
+	const cFont* font = g_paint.fonts.Get(fontidx);
 	if(!font) return; // no font
 
 	int m=0;
@@ -598,7 +594,7 @@ void cDizPaint::HUDGetTextSize( char* text, int& w, int& h, int& c, int& r )
 		// escape command
 		int m2;
 		int cmd=DLGCMD_NONE;
-		if( text[m]=='{')	cmd = HUDScanText(text,m,m2,data); // read command
+		if( text[m]=='{')	cmd = ScanText(text,m,m2,data); // read command
 		if(cmd!=DLGCMD_NONE) m=m2+1; // step over it
 		else 
 		{
@@ -635,21 +631,21 @@ void cDizPaint::HUDGetTextSize( char* text, int& w, int& h, int& c, int& r )
 	r = rowcount;
 }
 
-void cDizPaint::HUDDrawText( int tileid, const iRect & dst, char* text, int m_align )
+void HUD::DrawText( int tileid, const iRect & dst, char* text, int m_align )
 {
-	if( m_huddraw==0 ) return; // not in draw
-	if( m_hudshader<0 || m_hudshader>=ShaderMax ) return; // invalid shader
+	if(!isDrawing()) return; // not in draw
+	if( shader()<0 || shader()>=ShaderMax ) return; // invalid shader
 	if( text==NULL ) return; // invalid text
-	int tileidx = tiles.Find(tileid);
-	cTile* tile = tiles.Get(tileidx); 
+	int tileidx = g_paint.tiles.Find(tileid);
+	cTile* tile = g_paint.tiles.Get(tileidx); 
 	if(tile==NULL) return; // invalid tile
-	int fontidx = fonts.Find(m_hudfont); // find font
-	cFont* font = fonts.Get(fontidx);
+	int fontidx = g_paint.fonts.Find(font()); // find font
+	cFont* font = g_paint.fonts.Get(fontidx);
 	if(!font) return; // no font
 
 	// overwrite font's texture and shader
 	font->font->SetTexture(tile->tex);
-	font->font->SetBlend(m_hudshader);
+	font->font->SetBlend(shader());
 
 	// draw process
 	iV2 p(dst.x1, dst.y1);
@@ -661,7 +657,7 @@ void cDizPaint::HUDDrawText( int tileid, const iRect & dst, char* text, int m_al
 	int size = (int)strlen(text);	// text size
 	int align = m_align;			// lign align mode
 	int focus = 0;					// focus mode 1/0
-	dword color = m_hudcolor;		// color
+	dword clr = color();			// color
 	dword colorfocus;				// color when focus=1
 	dword focuscolors[8] = { 0xffc80000, 0xffc800c8, 0xff00c800, 0xff00c8c8, 0xffc8c800,  0xff00c8c8, 0xff00c800, 0xffc800c8 };
 //	dword focuscolors[6] = { 0xffff8000, 0xffffa000, 0xffffc000, 0xffffe000, 0xffffc000, 0xffffa000 }; // some orange version
@@ -686,7 +682,7 @@ void cDizPaint::HUDDrawText( int tileid, const iRect & dst, char* text, int m_al
 			// escape command
 			int m2;
 			cmd=DLGCMD_NONE;
-			if( text[m]=='{') cmd = HUDScanText(text,m,m2,data); // read command
+			if( text[m]=='{') cmd = ScanText(text,m,m2,data); // read command
 			if(cmd!=DLGCMD_NONE) // only if command found and valid
 			{
 				if(cmd==DLGCMD_ALIGN) align=data[0];
@@ -716,20 +712,20 @@ void cDizPaint::HUDDrawText( int tileid, const iRect & dst, char* text, int m_al
 			// escape command
 			int m2;
 			cmd=DLGCMD_NONE;
-			if( text[m]=='{')	cmd = HUDScanText(text,m,m2,data); // read command
+			if( text[m]=='{')	cmd = ScanText(text,m,m2,data); // read command
 			if(cmd!=DLGCMD_NONE) // only if command found and valid
 			{
-				if(cmd==DLGCMD_COLOR) 	color=0xff000000 | data[0];
+				if(cmd==DLGCMD_COLOR) 	clr=0xff000000 | data[0];
 				else
 				if(cmd==DLGCMD_FOCUS)	focus=data[0];
 				else
-				if(cmd==DLGCMD_TILE)	DrawTile( tiles.Find(data[0]), p.x+data[1], p.y+data[2], focus?colorfocus:color, 0, 0 );
+				if(cmd==DLGCMD_TILE)	g_paint.DrawTile( g_paint.tiles.Find(data[0]), p.x+data[1], p.y+data[2], focus ? colorfocus : clr, 0, 0 );
 				m=m2+1; // step over it
 			}
 			else
 			{
 				// print character
-				DrawChar( fontidx, p, text[m], focus?colorfocus:color );
+				g_paint.DrawChar( fontidx, p, text[m], focus ? colorfocus : clr );
 				p.x+=font->GetCharWidth(text[m])+font->GetOfsX();
 				chrcount--;
 				m++;
@@ -747,29 +743,29 @@ void cDizPaint::HUDDrawText( int tileid, const iRect & dst, char* text, int m_al
 }
 
 
-void cDizPaint::HUDDrawTile( int tileid, const iRect & dst, const iRect & src, dword flags, int frame )
+void HUD::DrawTile( int tileid, const iRect & dst, const iRect & src, dword flags, int frame )
 {
-	if( m_huddraw==0 ) return; // not in draw
-	int tileidx = tiles.Find(tileid);
+	if(!isDrawing()) return; // not in draw
+	int tileidx = g_paint.tiles.Find(tileid);
 	if(tileidx==-1) return;
 	iV2 sz = src.Size();
 	if( sz.x==0 || sz.y==0 ) return;
-	if(m_hudshader<0 || m_hudshader>=ShaderMax) return;
+	if(shader()<0 || shader()>=ShaderMax) return;
 
 	fRect oldclip = R9_GetClipping();
-	fRect newclip = fRect(scrPos(iV2(dst.x1, dst.y1)), scrPos(iV2(dst.x2, dst.y2)));
+	fRect newclip = fRect(g_paint.scrPos(iV2(dst.x1, dst.y1)), g_paint.scrPos(iV2(dst.x2, dst.y2)));
 	R9_AddClipping(newclip);
 	if(R9_IsClipping())
 	{
 		iV2 c = (dst.Size() + sz - 1) / sz;
-		int blend = m_hudshader;
+		int blend = shader();
 		iV2 p(dst.x1, dst.y1);
 		for(int i=0;i<c.y;i++)
 		{
 			p.x = dst.x1;
 			for(int j=0;j<c.x;j++)
 			{
-				DrawTile( tileidx, p, src, m_hudcolor, flags, frame, blend );
+				g_paint.DrawTile( tileidx, p, src, color(), flags, frame, blend );
 				p.x+=sz.x;
 			}
 			p.y+=sz.y;
@@ -779,13 +775,13 @@ void cDizPaint::HUDDrawTile( int tileid, const iRect & dst, const iRect & src, d
 	R9_SetClipping(oldclip);	
 }
 
-void cDizPaint::HudClipping( const iRect & dst )
+void HUD::SetClipping( const iRect & dst )
 {
-	if( m_huddraw )
+	if( isDrawing() )
 		if(dst.x2<dst.x1 || dst.y2<dst.y1)
 			R9_ResetClipping();
 		else
-			R9_SetClipping(fRect(scrPos(iV2(dst.x1, dst.y1)), scrPos(iV2(dst.x2, dst.y2))));	
+			R9_SetClipping(fRect(g_paint.scrPos(iV2(dst.x1, dst.y1)), g_paint.scrPos(iV2(dst.x2, dst.y2))));	
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

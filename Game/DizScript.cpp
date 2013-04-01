@@ -472,7 +472,7 @@ PREDICATE_M(core, hudDrawTile, 5)
 	iRect src( r2[1], r2[2], r2[3], r2[4] );
 	src.x2 += src.x1;
 	src.y2 += src.y1;
-	g_paint.HUDDrawTile( tileid, dst, src, flip, frame );
+	g_paint.hud.DrawTile( tileid, dst, src, flip, frame );
 	return true;
 }
 
@@ -482,14 +482,14 @@ PREDICATE_M(core, hudDrawText, 4)
 	iRect dst( r[1], r[2], r[3], r[4] );
 	dst.x2 += dst.x1;
 	dst.y2 += dst.y1;
-	g_paint.HUDDrawText( A1, dst, A3, A4 );
+	g_paint.hud.DrawText( A1, dst, A3, A4 );
 	return true;
 }
 
 PREDICATE_M(core, hudGetTextWidth, 2)
 {
 	int w,h,c,r;
-	g_paint.HUDGetTextSize(A1, w, h, c, r);
+	g_paint.hud.GetTextSize(A1, w, h, c, r);
 	return A2 = w;
 }
 
@@ -497,21 +497,21 @@ PREDICATE_M(core, hudGetTextWidth, 2)
 PREDICATE_M(core, hudGetTextHeight, 2)
 {
 	int w,h,c,r;
-	g_paint.HUDGetTextSize(A1, w, h, c, r);
+	g_paint.hud.GetTextSize(A1, w, h, c, r);
 	return A2 = h;
 }
 
 PREDICATE_M(core, hudGetTextColumns, 2)
 {
 	int w,h,c,r;
-	g_paint.HUDGetTextSize(A1, w, h, c, r);
+	g_paint.hud.GetTextSize(A1, w, h, c, r);
 	return A2 = c;
 }
 
 PREDICATE_M(core, hudGetTextRows, 2)
 {
 	int w,h,c,r;
-	g_paint.HUDGetTextSize(A1, w, h, c, r);
+	g_paint.hud.GetTextSize(A1, w, h, c, r);
 	return A2 = r;
 }
 
@@ -521,13 +521,13 @@ PREDICATE_M(core, hudClipping, 1)
 	iRect dst( r[0], r[1], r[2], r[3] );
 	dst.x2 += dst.x1;
 	dst.y2 += dst.y1;
-	g_paint.HudClipping( dst );
+	g_paint.hud.SetClipping( dst );
 	return true;
 }
 
 PREDICATE_M(core, hudFont, 1)
 {
-	g_paint.m_hudfont = A1;
+	g_paint.hud.font(A1);
 	return true;
 }
 
@@ -536,7 +536,7 @@ PREDICATE_M(core, hudShader, 1)
 	int shd = A1;
 	if(shd < 0 || shd < ShaderMax) 
 		shd = ShaderBlend;
-	g_paint.m_hudshader = shd;
+	g_paint.hud.shader(shd);
 	return true;
 }
 
@@ -545,7 +545,7 @@ PREDICATE_M(core, hudColor, 1)
 	int64 v;
 	if(!PL_get_int64(A1, &v))
 		return false;
-	g_paint.m_hudcolor = static_cast<int>(v);
+	g_paint.hud.color(static_cast<dword>(v));
 	return true;
 }
 

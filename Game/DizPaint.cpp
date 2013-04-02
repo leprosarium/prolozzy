@@ -350,18 +350,14 @@ void cDizPaint::DrawBrush( const tBrush & brush, const iV2 & p0, int frame ) con
 	if(R9_IsClipping())
 	{
 		g_game.m_visible_brushes++;
-		iV2 c = (sz + msz - 1) / msz;
+		iV2 c = (sz - 1) / msz;
 		iV2 p = p0;
 		auto draw = selectDrawMethod(brush, idx, frame);
-		for(int i=0;i<c.y;i++)
+		for(int i = 0; i <= c.y; ++i, p.y+=msz.y)
 		{
 			p.x = p0.x;
-			for(int j=0;j<c.x;j++)
-			{
+			for(int j = 0;j<=c.x;j++, p.x+=msz.x)
 				draw(p);
-				p.x+=msz.x;
-			}
-			p.y+=msz.y;
 		}
 	}
 

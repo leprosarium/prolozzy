@@ -16,8 +16,8 @@
 const size_t CON_LINES = 2048;	// total lines
 const size_t SLOT_COUNT = 16;	// total slots
 const size_t INFO_LINES = 2;	// info slot lines
-#define INPUT_SIZE			256		// input cmd size
-#define INPUT_HISTORY		16		// input history count
+const size_t INPUT_SIZE = 256;	// input cmd size
+const size_t INPUT_HISTORY = 16;// input history count
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // cDizDebug

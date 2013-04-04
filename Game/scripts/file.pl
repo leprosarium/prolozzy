@@ -40,7 +40,7 @@ saveGameToStream(S) :-
 	%saveUserData(S).
 
 saveOk :-
-	core:samplePlay(coin),
+	sample:play(coin),
 	def:color(yellow, Color),
 	update:push(yes),
 	dialog:openMessage('SAVE SUCCESSFUL!', Color).
@@ -129,7 +129,7 @@ saveBrush(F, Id) :-
 saveMusic(F) :-
 	core:musicPlaying(M),
 	core:musicPosition(P),
-	writet(F, core:sampleStopAll),
+	writet(F, sample:stopAll),
 	writet(F, core:musicStop),
 	writet(F, core:musicFade(0, 3)),
 	writet(F, core:musicPlay(M, P)).
@@ -152,7 +152,7 @@ loadTerms(Term, S) :-
 loadOk :-
 	game:command(refresh),
 	core:objPresentGather, % refresh present list
-	core:samplePlay(respawn),
+	sample:play(respawn),
 	def:color(yellow, Color),
 	update:push(yes),
 	dialog:openMessage('LOAD SUCCESSFUL!', Color).

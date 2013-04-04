@@ -7,6 +7,7 @@
 
 #include "DizDebug.h"
 #include "DizGame.h"
+#include "DizSound.h"
 #include "SWI-cpp-m.h"
 
 #include "SWI-Stream.h"
@@ -303,6 +304,7 @@ void Info::Draw()
 	// player
 	std::ostringstream os;
 	os << "room=(" << g_game.roomX() << "," << g_game.roomY() << "), player=(" << g_player.x() << "," << g_player.y() << ")";
+	os << " voices=" << g_sound.samples.playingVoices();
 	R9_DrawText( p, os.str().c_str(), COLOR_INFO);
 
 }

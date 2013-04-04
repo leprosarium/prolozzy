@@ -73,7 +73,7 @@ doPickupObject(Idx) :-
 doPickupObject(Idx, item) :- % items are to be picked up in the inventory
 	(   \+ inventory:add(Idx)
 	->  dialog:openMessage('YOUR HANDS\nARE FULL!')
-	;   core:samplePlay(beep1),
+	;   sample:play(beep1),
 	    obj:disable(Idx, 1),
 	    update:regPop(ui, action:useObject),
 	    menu:openDialogInventory(exit)).
@@ -83,7 +83,7 @@ doPickupObject(Idx, coin) :- % coins are to be collected
 	Coins1 is Coins + 1,
 	obj:disable(Idx, 1), % make disabled (picked up)
 	player:coins(Coins1), % store coins counter
-	core:samplePlay(coin),
+	sample:play(coin),
 	gamedef:maxCoins(Max),
 	(   Coins1 = Max
 	->  Text = 'YOU HAVE FOUND\nALL THE COINS'
@@ -95,7 +95,7 @@ doPickupObject(Idx, food) :- % food gives energy
 	(   Life >= 100
 	->  dialog:openMessage('MAYBE LATER...')
 	;   obj:disable(Idx, 1), % make disabled (picked up)
-	    core:samplePlay(coin),
+	    sample:play(coin),
 	    playEat(0, Life)).
 
 doPickupObject(Idx, life) :- % gives one credit
@@ -104,7 +104,7 @@ doPickupObject(Idx, life) :- % gives one credit
 	(   Credits >= Max
 	->  dialog:openMessage('MAYBE LATER...')
 	;   obj:disable(Idx, 1), % make disabled (picked up)
-	    core:samplePlay(coin),
+	    sample:play(coin),
 	    Credits1 is Credits + 1,
 	    player:credits(Credits1),
 	    dialog:openMessage('YOU HAVE FOUND\nONE LIFE')).
@@ -157,7 +157,7 @@ dropObject(Idx) :-
 % without calling the drop object callback, so it can be used inside this callback.
 % Called by DropObject().
 doDropObject(Idx) :-
-	core:samplePlay(beep2),
+	sample:play(beep2),
 	inventory:sub(Idx),
 	obj:disable(Idx, 0),
 	player:pos(Px, Py),

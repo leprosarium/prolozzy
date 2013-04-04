@@ -148,7 +148,7 @@ damageLife(Damage) :-
 hurt(Damage) :-
 	%doRumble(6),
 	util:doShake(2),
-	core:samplePlay(hurt),
+	sample:play(hurt),
 	damageLife(Damage),
 	safe(0).
 hurt(_).
@@ -217,7 +217,7 @@ playStun :-
 	stable,
 	live,
 	util:doShake(20),
-	core:samplePlay(stun),
+	sample:play(stun),
 	update:register(player, player:enterIdle),
 	playAnimFrames(stun, [0,1,0,1,0,1,0,1,2,3,2,3,2,3,2,3,4,4,4,4], true), !.
 playStun.
@@ -335,13 +335,13 @@ touchObjectInRoom(Idx) :-
 %Dead event requested by HandlerPlayerUpdate when player died on ground.
 playDead:-
 	core:dl(playDead),
-	core:samplePlay(death),
+	sample:play(death),
 	update:register(player, player:loseLife),
 	player:playAnim(dead).
 
 % Dead in water event requested by HandlerPlayerUpdate() when player died in water.
 playDeadWater :-
-	core:samplePlay(death),
+	sample:play(death),
 	setStatus(scripted),
 	def:ptile(drawn, TILEi),
 	costume(Costume),
@@ -388,7 +388,7 @@ loseLifeNext(Death, Credits) :-
 % Can also be called at the beginning of the PlayerRespawn_DEATH respawn callbacks,
 % since it resets some general properties
 respawn :-
-	core:samplePlay(respawn),
+	sample:play(respawn),
 	death(def),
 	setLife(100),
 	posSafe(XSafe, YSafe),

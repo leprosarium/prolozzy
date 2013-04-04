@@ -228,7 +228,7 @@ event(_, jump(Mat, _Clean, Pow)) :-
 	jump(Mat, Pow0),
 	( Pow0 =< 2 -> Pow = 0 ; Pow = Pow0),
 	player:stopStun,
-	( Pow > 0 -> core:samplePlay(jump) ; true).
+	( Pow > 0 -> sample:play(jump) ; true).
 
 
 % Handler PlayerUpdate

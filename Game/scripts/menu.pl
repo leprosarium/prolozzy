@@ -248,8 +248,8 @@ openDialogOptionsSelect(fx) :-
 	getOpt('dizzy.ini', 'AUDIO', 'volfx', 100, Vol),
 	addVol(Vol, Vol1),
 	core:ini('dizzy.ini', 'AUDIO', 'volfx', Vol1),
-	core:sampleVolume(Vol1),
-	core:samplePlay(beep2),
+	sample:volume(Vol1),
+	sample:play(beep2),
 	openDialogOptionsLoop(fx).
 openDialogOptionsSelect(music) :-
 	getOpt('dizzy.ini', 'AUDIO', 'volmusic', 100, Vol),

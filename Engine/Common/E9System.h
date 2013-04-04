@@ -6,6 +6,8 @@
 #ifndef __E9SYSTEM_H__
 #define __E9SYSTEM_H__
 
+#include <functional>
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // basic types
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -105,7 +107,7 @@ void	ini_setbin	( const char* file, const char* group, const char* key, void* va
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #define	FILE_FINDDIR		(1<<0)								// request directories list
 #define	FILE_FINDREC		(1<<1)								// request to go recursive on found directories
-typedef void (*file_ffcallback) ( const char* filepath, BOOL dir );	// filepath=found file including requested path, dir=1 if filepath is a directory
+typedef std::function<void(const char *, BOOL)> file_ffcallback;		// filepath=found file including requested path, dir=1 if filepath is a directory
 
 const char*	file_getfullpath	( const char* file );
 const char*	file_path2file		( const char* path );

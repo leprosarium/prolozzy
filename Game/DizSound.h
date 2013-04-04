@@ -10,25 +10,41 @@
 
 #include "SWI-cpp-m.h"
 
-#define	SOUND_VOICES		16		// max number of samples playing at once
+const size_t SOUND_VOICES = 16;		// max number of samples playing at once
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // structs
 //////////////////////////////////////////////////////////////////////////////////////////////////
-struct tSoundProto
+class tSoundProto
 {
+	tSoundProto(const tSoundProto &);
+	tSoundProto & operator = (const tSoundProto &);
+public:
 	tSoundProto(PlAtom id, int group, int instances, A9BUFFERPROTO bufferproto) : m_id(id), m_group(group), m_instances(instances),  m_bufferproto(bufferproto) {}
-	~tSoundProto()			{ if(m_bufferproto) A9_BufferDeprecache(m_bufferproto); }
+	~tSoundProto()			{ if(valid()) A9_BufferDeprecache(m_bufferproto); }
+
+	tSoundProto(tSoundProto && p) : m_id(p.m_id), m_group(p.m_group), m_instances(p.m_instances), m_bufferproto(p.m_bufferproto) { p.m_bufferproto = 0; }
+	tSoundProto & operator = (tSoundProto && p) { m_id = p.m_id; m_group = p.m_group; m_instances = p.m_instances; m_bufferproto = p.m_bufferproto; p.m_bufferproto = 0; return *this; }
+
+	bool valid() const { return m_bufferproto != nullptr; }
+
 	PlAtom					m_id;			// sample id
 	int						m_group;		// resource group
 	int						m_instances;	// how many instances of this proto are allowed to play simultaneous
 	A9BUFFERPROTO			m_bufferproto;	// bufferproto
 };
 
-struct tMusicProto
+class tMusicProto
 {
+	tMusicProto(const tMusicProto &);
+	tMusicProto & operator = (const tMusicProto &);
+public:
 	tMusicProto(PlAtom id, int group, A9STREAM stream) : m_id(id), m_group(group),  m_stream(stream) {}
 	~tMusicProto()			{ if(m_stream) A9_StreamDestroy(m_stream); }
+
+	tMusicProto(tMusicProto && p) : m_id(p.m_id), m_group(p.m_group), m_stream(p.m_stream) { p.m_stream = 0; }
+	tMusicProto & operator = (tMusicProto && p) { m_id = p.m_id; m_group = p.m_group; m_stream = p.m_stream; p.m_stream = 0; return *this; }
+	
 	PlAtom					m_id;			// music id
 	int						m_group;		// resource group
 	A9STREAM				m_stream;		// stream proto
@@ -38,40 +54,43 @@ struct tMusicProto
 // Sound manager
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
+bool isSupportedExt(const char * ext);
+
+class Samples : std::vector<tSoundProto>
+{
+	bool LoadFile(const char* filepath, size_t & total, size_t & fail, size_t & duplicates, int group);	// load a sample file (proto)
+	int	Find(PlAtom id) { for(size_t i = 0; i < size(); i++) if((*this)[i].m_id == id) return i; return -1; }
+
+	A9BUFFER m_voice[SOUND_VOICES];						// list with voices buffers
+	int _playingVoices;									// playing voices (debug info)
+	static PlAtom all;
+
+	bool invalidVoice(size_t voiceidx) { return m_voice[voiceidx] == nullptr; }
+public:
+	Samples();
+	void Done() { StopAll(); clear(); }
+	void Update();
+
+	bool Load(const char* path, int group=0);		// load samples from a path (protos)
+	void Unload(int group = 0);							// destroy all samples (proto)
+	int Play(PlAtom id, int loop = 0);					// play a proto sample; return voiceidx or -1 if failed
+	int Playing(size_t voiceidx);						// return sample id if playing or -1 if not playing
+	void Stop(size_t voiceidx);							// stop a voice
+	void StopAll(PlAtom id = all);						// stop all voices of a sample id, or all voices if id is -1
+	void Volume(int volume);							// set samples volume
+	size_t playingVoices() const { return _playingVoices; }
+};
+
 class cDizSound
 {
 public:
 							cDizSound			();
 							~cDizSound			();
 
-		static bool			isSupportedExt(const char * ext);
-
-
-		// init			
 		bool				Init				();								// init
 		void				Done				();								// done
 		void				Update				();								// update called every frame
 						
-		// samples		
-		bool				SampleLoad			( const char* path, int group=0 );	// load samples from a path (protos)
-		bool				SampleLoadFile		( const char* filepath, int group=0 );// load a sample file (proto)
-		void				SampleUnload		( int group=0 );				// destroy all samples (proto)
-		int					SamplePlay			( PlAtom id, int loop=0 );		// play a proto sample; return voiceidx or -1 if failed
-		int					SamplePlaying		( int voiceidx );				// return sample id if playing or -1 if not playing
-		void				SampleStop			( int voiceidx );				// stop a voice
-		void				SampleStopAll		( PlAtom id = all);				// stop all voices of a sample id, or all voices if id is -1
-		void				SampleVolume		( int volume );					// set samples volume
-inline	int					SampleFind			( PlAtom id )						{ for(size_t i=0;i<m_sampleproto.size();i++) if(m_sampleproto[i]->m_id==id) return i; return -1; }
-
-		A9BUFFER			m_voice[SOUND_VOICES];								// list with voices buffers
-		std::vector<tSoundProto *> m_sampleproto;								// list with loaded samples
-		int					m_voicecount;										// playing voices (debug info)
-
-		int					m_sample_total;										// status report on total samples declared (load+failed)
-		int					m_sample_fail;										// status report on samples failed to load
-		int					m_sample_duplicates;								// status report on id duplicates
-		int					m_sample_group;										// current loading group
-
 		// music
 		bool				MusicLoad			( const char* path, int group=0 );	// load all musics from a path (protos)
 		bool				MusicLoadFile		( const char* filename, int group=0 );// load a music file (proto)
@@ -84,7 +103,7 @@ inline	int					SampleFind			( PlAtom id )						{ for(size_t i=0;i<m_sampleproto.
 		void				MusicPause			( bool pause );					// music pause; stop, but remember where it was
 		void				MusicUpdate			( float dtime );				// deals with the play, stop and volume management
 		void				MusicVolume			( int volume );					// set music volume
-inline	int					MusicFind			( PlAtom id )						{ for(size_t i=0;i<m_musicproto.size();i++) if(m_musicproto[i]->m_id==id) return i; return -1; }
+inline	int					MusicFind			( PlAtom id )						{ for(size_t i=0;i<m_musicproto.size();i++) if(m_musicproto[i].m_id==id) return i; return -1; }
 
 		A9STREAM			m_music;											// music stream
 		int					m_musicidx;											// current playing music index in proto list (-1 if none)
@@ -95,14 +114,15 @@ inline	int					MusicFind			( PlAtom id )						{ for(size_t i=0;i<m_musicproto.si
 		int					m_musicpos;											// current music position (used to know when music ends) in samples
 		bool				m_musicpaused;										// music paused
 		float				m_musicvol;											// current playing music volume factor [0..1] (used for fades)
-		std::vector<tMusicProto *> m_musicproto;								// list with loaded musics
+		std::vector<tMusicProto> m_musicproto;								// list with loaded musics
 
 		int					m_music_total;										// status report on total musics declared (load+failed)
 		int					m_music_fail;										// status report on musics failed to load
 		int					m_music_duplicates;									// status report on id duplicates
 		int					m_music_group;										// current loading group
 
-	static PlAtom all;
+
+	Samples samples;
 };
 
 extern cDizSound g_sound;

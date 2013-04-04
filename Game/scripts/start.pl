@@ -31,7 +31,7 @@ load(0, _) :-
 	game:command(exit).
 load(_, Start) :-
 	core:musicLoad("data\\music"),
-	core:sampleLoad("data\\samples"),
+	sample:load("data\\samples"),
 	core:fontLoad("data\\fonts"), !,
 	core:ticktime(End),
 	loaded(Start, End).
@@ -61,7 +61,7 @@ restart :-
 	resetStaticVars,
 %	game:setViewportMode(true),
 	initPlayer,
-	core:sampleStopAll,
+	sample:stopAll,
 	reloadMap.
 
 

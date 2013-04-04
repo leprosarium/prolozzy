@@ -19,4 +19,4 @@ fx(beep2,	9).
 
 playFx(Fx) :-
 	fx(Fx, FxIdx),
-	core:samplePlay(FxIdx).
+	sample:play(FxIdx).

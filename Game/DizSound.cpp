@@ -10,22 +10,86 @@
 #include "E9App.h"
 #include "A9Codec.h"
 
-PlAtom cDizSound::all("all");
+PlAtom Samples::all("all");
 cDizSound g_sound;
+
+
+PREDICATE_M(sample, load, 1)
+{
+	return g_sound.samples.Load(A1, 0);
+}
+
+PREDICATE_M(sample, load, 2)
+{
+	return g_sound.samples.Load(A1, A2);
+}
+
+PREDICATE_M(sample, unload, 0)
+{
+	g_sound.samples.Unload();
+	return true;
+}
+
+PREDICATE_M(sample, unload, 1)
+{
+	int group = A1;
+	g_sound.samples.Unload(group);
+	return true;
+}
+
+
+PREDICATE_M(sample, play, 1)
+{
+	g_sound.samples.Play(PlAtom(A1));
+	return true;
+}
+
+PREDICATE_M(sample, play, 2)
+{
+	return A2 = g_sound.samples.Play(PlAtom(A1));
+}
+
+PREDICATE_M(sample, play, 3)
+{
+	return A3 = g_sound.samples.Play(PlAtom(A1), A2);
+}
+
+PREDICATE_M(sample, playing, 2)
+{
+	return A2 = g_sound.samples.Playing(static_cast<int>(A1));
+}
+
+PREDICATE_M(sample, stop, 1)
+{
+	g_sound.samples.Stop(static_cast<int>(A1));
+	return true;
+}
+
+PREDICATE_M(sample, stopAll, 0)
+{
+	g_sound.samples.StopAll();
+	return true;
+}
+
+PREDICATE_M(sample, stopAll, 1)
+{
+	g_sound.samples.StopAll(PlAtom(A1));
+	return true;
+}
+
+PREDICATE_M(sample, volume, 1)
+{
+	g_sound.samples.Volume(A1);
+	return true;
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // INIT
 //////////////////////////////////////////////////////////////////////////////////////////////////
 cDizSound::cDizSound()
 {
-	// samples
-	for(int i=0;i<SOUND_VOICES;i++)	m_voice[i] = NULL;
-	m_voicecount = 0;
 
-	m_sample_total = 0;		
-	m_sample_fail = 0;		
-	m_sample_duplicates = 0;
-	m_sample_group = 0;
 
 	// music
 	m_music			= NULL;
@@ -56,11 +120,8 @@ bool cDizSound::Init()
 
 void cDizSound::Done()
 {
-	SampleStopAll();
+	samples.Done();
 	MusicStop();
-	for(; !m_sampleproto.empty(); m_sampleproto.pop_back()) delete m_sampleproto.back();
-	m_sampleproto.clear();
-	for(; !m_musicproto.empty(); m_musicproto.pop_back()) delete m_musicproto.back();
 	m_musicproto.clear();
 }
 
@@ -69,29 +130,12 @@ void cDizSound::Update()
 	if(!A9_IsReady()) return;
 	
 	// samples - stop (remove) those that have finished playing
-	int i;
-	m_voicecount = 0;
-	for(i=0;i<SOUND_VOICES;i++)
-	{
-		if(SamplePlaying(i)!=-1) m_voicecount++;
-	}
-	
+	samples.Update();	
 	// music
-	float dtime = (float)E9_AppGetInt(E9_APP_DELTATIME) / 1000.f;
-	MusicUpdate( dtime );
+	MusicUpdate( E9_AppGetInt(E9_APP_DELTATIME) / 1000.f);
 
 	A9_Update();
 
-}
-
-bool cDizSound::isSupportedExt(const char * ext) 
-{
-	static const char * supported_ext[] = {".wav",".ogg",".ym",".mod",".it",".xm",".s3m"};
-	static const size_t count = sizeof(supported_ext) / sizeof(*supported_ext);
-	for(size_t i = 0, e = count; i < e; ++i) {
-		if(strcmp(supported_ext[i], ext) == 0) return true;
-	}
-	return false;
 }
 
 
@@ -99,16 +143,37 @@ bool cDizSound::isSupportedExt(const char * ext)
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // SAMPLES
 //////////////////////////////////////////////////////////////////////////////////////////////////
-bool cDizSound::SampleLoadFile( const char* filepath, int group )
-{
 
+bool isSupportedExt(const char * ext) 
+{
+	static const char * supported_ext[] = {".wav",".ogg",".ym",".mod",".it",".xm",".s3m"};
+	static const size_t count = sizeof(supported_ext) / sizeof(*supported_ext);
+	for(size_t i = 0, e = count; i < e; ++i)
+		if(strcmp(supported_ext[i], ext) == 0) return true;
+	return false;
+}
+
+Samples::Samples() : _playingVoices()
+{
+	for(size_t i = 0; i < SOUND_VOICES; i++)	m_voice[i] = nullptr;
+}
+
+void Samples::Update()
+{
+	_playingVoices = 0;
+	for(size_t i = 0; i < SOUND_VOICES; i++)
+		if(Playing(i) != -1) _playingVoices++;
+}
+
+bool Samples::LoadFile(const char* filepath, size_t & total, size_t & fail, size_t & duplicates, int group)
+{
 	char fname[_MAX_FNAME];
 	char ext[_MAX_EXT];
 	file_pathsplit(filepath, 0, 0, fname, ext);
 	
 	if(!isSupportedExt(ext)) return false; // ignore files with unsupported extensions
 
-	m_sample_total++;
+	total++;
 
 	// check name format
 	char nm[_MAX_FNAME];
@@ -116,7 +181,7 @@ bool cDizSound::SampleLoadFile( const char* filepath, int group )
 	int ret = sscanf(fname,"%s %i",nm,&instances);
 	if(ret==0) 
 	{ 
-		m_sample_fail++; 
+		fail++; 
 		dlog(LOGAPP, L"! %S (bad name)\n", filepath); 
 		return false; 
 	}
@@ -124,13 +189,11 @@ bool cDizSound::SampleLoadFile( const char* filepath, int group )
 
 	// check unique id
 	PlAtom id(nm);
-
-	int idx = SampleFind(id);
-	if( idx!=-1 )
+	if(Find(id) != -1)
 	{
-		m_sample_fail++;
-		m_sample_duplicates++;
-		dlog(LOGSYS, L"! %S (duplicate id)\n", filepath, id);
+		fail++;
+		duplicates++;
+		dlog(LOGSYS, L"! %S (duplicate id)\n", filepath);
 		return false;
 	}
 
@@ -138,14 +201,13 @@ bool cDizSound::SampleLoadFile( const char* filepath, int group )
 	A9BUFFERPROTO bufferproto = A9_BufferPrecache(filepath);
 	if(!bufferproto)
 	{
-		m_sample_fail++;
+		fail++;
 		dlog(LOGSYS, L"! %S (failed to load)\n", filepath);
 		return false;
 	}
 
 	// add to list
-	tSoundProto* proto = new tSoundProto(id, group, instances, bufferproto);
-	m_sampleproto.push_back(proto);
+	push_back(tSoundProto(id, group, instances, bufferproto));
 
 	if(g_dizdebug.active()) // log for developers
 		dlog(LOGAPP, L"  %S [%i]\n", filepath, instances );
@@ -153,13 +215,7 @@ bool cDizSound::SampleLoadFile( const char* filepath, int group )
 	return true;
 }
 
-void FFCallback_Sample( const char* filepath, BOOL dir )
-{
-	if(dir) return;
-	bool ret = g_sound.SampleLoadFile(filepath,g_sound.m_sample_group);
-}
-
-bool cDizSound::SampleLoad( const char* path, int group )
+bool Samples::Load(const char* path, int group)
 {
 	if(!A9_IsReady()) { dlog(LOGAPP, L"Sound disabled - no samples are loaded.\n"); return false; }
 
@@ -173,69 +229,62 @@ bool cDizSound::SampleLoad( const char* path, int group )
 	dlog(LOGAPP, L"Loading samples from \"%S\" (group=%i)\n", spath, group);
 
 	// init
-	m_sample_total		= 0;
-	m_sample_fail		= 0;
-	m_sample_duplicates	= 0;
-	m_sample_group		= group;
+	size_t total = 0;
+	size_t fail = 0;
+	size_t duplicates = 0;
+
+	auto Callback = [this, &total, &fail, &duplicates, group](const char* filepath, BOOL dir) { if(!dir) LoadFile(filepath, total, fail, duplicates, group); };
 
 	// find files on disk
 	int archivefiles = F9_ArchiveGetFileCount(0);
-	if(archivefiles==0) // if no archive found then open from disk
-	{
-		file_findfiles( spath, FFCallback_Sample, FILE_FINDREC );
-	}
+	if(archivefiles == 0) // if no archive found then open from disk
+		file_findfiles( spath, Callback, FILE_FINDREC );
 	else // if archive opened, load from it
-	{
 		for(int i=0;i<archivefiles;i++)
 		{
 			std::string filename = F9_ArchiveGetFileName(0,i);
 			if(strstr(filename.c_str(), spath)==filename)
-			{
-				FFCallback_Sample(filename.c_str(),false);
-			}
+				Callback(filename.c_str(),false);
 		}
-	}
 
 	// report
-	dlog(LOGAPP, L"Samples report: total=%i, failed=%i (duplicates=%i)\n\n", m_sample_total, m_sample_fail, m_sample_duplicates );
+	dlog(LOGAPP, L"Samples report: total=%i, failed=%i (duplicates=%i)\n\n", total, fail, duplicates);
 
 	return true;
 }
 
-void cDizSound::SampleUnload( int group )
+void Samples::Unload( int group )
 {
-	for(size_t i=0;i<m_sampleproto.size();)
-		if(m_sampleproto[i]->m_group == group)
+	for(size_t i=0;i<size();)
+		if((*this)[i].m_group == group)
 		{
-			SampleStopAll(m_sampleproto[i]->m_id);
-			delete m_sampleproto[i];
-			m_sampleproto.erase(m_sampleproto.begin() + i);
+			StopAll((*this)[i].m_id);
+			erase(begin() + i);
 		}
 		else
 			++i;
 }
 
-int	cDizSound::SamplePlay( PlAtom id, int loop )
+int	Samples::Play(PlAtom id, int loop)
 {
-	int i;
-	int protoidx = SampleFind(id);
+	int protoidx = Find(id);
 	if(protoidx==-1) return -1; // invalid id
-	tSoundProto* proto = m_sampleproto[protoidx];
-	if( proto->m_bufferproto == NULL ) return -1; // invalid proto
+	tSoundProto & proto = (*this)[protoidx];
+	if( !proto.valid() ) return -1; // invalid proto
 
 	// find instances and free voice
 	int count = 0;
 	int voiceidx=-1;
-	for(i=0;i<SOUND_VOICES;i++)
+	for(size_t i = 0; i < SOUND_VOICES; i++)
 	{
-		if(SamplePlaying(i)==id.handle) count++; // destroy if stopped
-		if(m_voice[i]==NULL) voiceidx = i;
+		if(Playing(i)==id.handle) count++; // destroy if stopped
+		if(m_voice[i] == nullptr) voiceidx = i;
 	}
-	if(count>=proto->m_instances) return -1; // too many instances playing
+	if(count>=proto.m_instances) return -1; // too many instances playing
 	if(voiceidx==-1) return -1; // no free voices
 	
 	// add new voice
-	A9BUFFER buffer = A9_BufferCreateFromProto(proto->m_bufferproto);
+	A9BUFFER buffer = A9_BufferCreateFromProto(proto.m_bufferproto);
 	if(!buffer) return -1; // wrong format
 	A9_BufferSet(buffer,A9_USER,id.handle);
 	A9_BufferSet(buffer,A9_VOLUME,A9_VolumePercentToDecibel(g_cfg.m_volfx));
@@ -245,53 +294,46 @@ int	cDizSound::SamplePlay( PlAtom id, int loop )
 	return voiceidx;
 }
 
-int	cDizSound::SamplePlaying( int voiceidx )
+int	Samples::Playing(size_t voiceidx)
 {
-	assert(0<=voiceidx && voiceidx<SOUND_VOICES);
-	if(m_voice[voiceidx]==NULL) return -1;
+	assert(voiceidx < SOUND_VOICES); 
+	if(invalidVoice(voiceidx)) return -1;
 	if(!A9_BufferIsPlaying(m_voice[voiceidx]))
 	{
 		A9_BufferDestroy(m_voice[voiceidx]);
-		m_voice[voiceidx] = NULL;
+		m_voice[voiceidx] = nullptr;
 		return -1;
 	}
-	return A9_BufferGet(m_voice[voiceidx],A9_USER);
+	return A9_BufferGet(m_voice[voiceidx], A9_USER);
 }
 
-void cDizSound::SampleStop( int voiceidx )
+void Samples::Stop(size_t voiceidx)
 {
-	assert(0<=voiceidx && voiceidx<SOUND_VOICES);
-	if(m_voice[voiceidx]==NULL) return;
+	assert(voiceidx < SOUND_VOICES); 
+	if(invalidVoice(voiceidx)) return;
 	A9_BufferStop(m_voice[voiceidx]);
 	A9_BufferDestroy(m_voice[voiceidx]);
-	m_voice[voiceidx] = NULL;
+	m_voice[voiceidx] = nullptr;
 }
 
-void cDizSound::SampleStopAll( PlAtom id )
+void Samples::StopAll( PlAtom id )
 {
-	for(int i=0;i<SOUND_VOICES;i++)
-	{
-		A9BUFFER buffer = m_voice[i];
-		if( buffer && (id == all || A9_BufferGet(buffer,A9_USER)==id.handle) )
-			SampleStop(i);
-	}
+	for(size_t i = 0; i < SOUND_VOICES; i++)
+		if(A9BUFFER buffer = m_voice[i])
+			if(id == all || A9_BufferGet(buffer, A9_USER) == id.handle)
+				Stop(i);
 }
 
-void cDizSound::SampleVolume( int volume )
+void Samples::Volume( int volume )
 {
-	if(volume<0) volume=0;
-	if(volume>100) volume=100;
-	if(volume==g_cfg.m_volfx) return; // same volume
+	volume = std::max(std::min(volume, 100), 0);
+	if(volume == g_cfg.m_volfx) return; // same volume
 	g_cfg.m_volfx = volume;
 
 	int volumedb = A9_VolumePercentToDecibel(volume);
-	for(int i=0;i<SOUND_VOICES;i++)
-	{
-		A9BUFFER buffer = m_voice[i];
-		if(!buffer) continue;
-		A9_BufferSet(buffer,A9_VOLUME,volumedb);
-	}
-
+	for(size_t i = 0; i < SOUND_VOICES; i++)
+		if(A9BUFFER buffer = m_voice[i])
+			A9_BufferSet(buffer,A9_VOLUME,volumedb);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -329,8 +371,7 @@ bool cDizSound::MusicLoadFile( const char* filepath, int group )
 	}
 
 	// add to list
-	tMusicProto* proto = new tMusicProto(id, group, stream);
-	m_musicproto.push_back(proto);
+	m_musicproto.push_back(tMusicProto(id, group, stream));
 
 	if(g_dizdebug.active()) // log for developers
 		dlog(LOGAPP, L"  %S\n", filepath );
@@ -390,11 +431,10 @@ bool cDizSound::MusicLoad( const char* path, int group )
 void cDizSound::MusicUnload( int group )
 {
 	for(size_t i=0;i<m_musicproto.size();)
-		if(m_musicproto[i]->m_group == group)
+		if(m_musicproto[i].m_group == group)
 		{
 			if(i==m_musicidx) MusicStop(); // stop if current
 			if(m_musicnext==i) m_musicnext=-1; // clear if next
-			delete m_musicproto[i];
 			m_musicproto.erase(m_musicproto.begin() + i);
 		}
 		else
@@ -426,7 +466,7 @@ PlAtom cDizSound::MusicPlaying()
 {
 	// we are interested in what is the scheduled song, ignoring the short fadeout of the current one
 	if(m_musicnext==-1) return -1;
-	return m_musicproto[m_musicnext]->m_id;
+	return m_musicproto[m_musicnext].m_id;
 }
 
 int	cDizSound::MusicPosition()
@@ -475,7 +515,7 @@ void cDizSound::MusicUpdate( float dtime )
 		if(m_musicnext!=-1) // music scheduled
 		{
 			// set current stream
-			m_music = m_musicproto[m_musicnext]->m_stream;
+			m_music = m_musicproto[m_musicnext].m_stream;
 			if(!m_music) { m_musicnext=-1; return; } // cration failure (invalid music file)
 
 			// prepare volume

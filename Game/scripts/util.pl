@@ -166,17 +166,17 @@ objIsAction(Idx) :-
 
 % Stores music id and music position to use when player dies and gets respawned
 musicStore :-
-	core:musicPlaying(Safe),
-	core:musicPosition(Pos),
+	music:playing(Safe),
+	music:position(Pos),
 	game:musicSafe(Safe),
 	game:musicPosSafe(Pos).
 
 % Restores and play music, used when player gets respawned
 musicRestore :-
-	core:musicStop,
+	music:stop,
 	game:musicSafe(Safe),
 	game:musicPosSafe(Pos),
-	core:musicPlay(Safe, Pos).
+	music:play(Safe, Pos).
 
 
 

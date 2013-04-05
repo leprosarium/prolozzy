@@ -81,48 +81,46 @@ public:
 	size_t playingVoices() const { return _playingVoices; }
 };
 
+class Music : std::vector<tMusicProto>
+{
+	bool LoadFile(const char * filename, size_t & total, size_t & fail, size_t & duplicates, int group);			// load a music file (proto)
+	int Find(PlAtom id) { for(size_t i = 0; i < size(); i++) if((*this)[i].m_id == id) return i; return -1; }
+
+	A9STREAM _stream;	// music stream
+	int	_idx;			// current playing music index in proto list (-1 if none)
+	int _next;			// next music programmed to play (-1 if none); this is considered the current music by the logic
+	int _start;			// position where the next music will start in miliseconds; 0=begining of music
+	int _fadein;		// music fade in (seconds)
+	int _fadeout;		// music fade out (seconds)
+	int _pos;			// current music position (used to know when music ends) in samples
+	bool _paused;		// music paused
+	float _volume;		// current playing music volume factor [0..1] (used for fades)
+public:
+	Music();
+
+	void Done() { Stop(); clear(); }
+
+	bool Load(const char* path, int group = 0);			// load all musics from a path (protos)
+	void Update(float dtime);							// deals with the play, stop and volume management
+	void Unload(int group = 0);							// destroy all musics (proto)
+	void Fade(int out, int in) { _fadeout = out; _fadein = in; }	// set fade values
+	int Play(PlAtom id, int start = 0);					// set a music to play next from a specified position; returns -1 if failed; don't necessarily plays at once
+	PlAtom Playing() const { if(_next==-1) return -1; return (*this)[_next].m_id; }	// return id of next music (-1 if none) = _next
+	int Position();										// return position of next music in miliseconds; -1 if no next music programmed
+	void Stop();										// music stop immediately
+	void Volume(int volume);							// set music volume
+	void Pause(bool pause);								// music pause; stop, but remember where it was
+	bool paused() const { return _paused; }
+};
+
 class cDizSound
 {
 public:
-							cDizSound			();
-							~cDizSound			();
-
-		bool				Init				();								// init
-		void				Done				();								// done
-		void				Update				();								// update called every frame
+	void Done() { samples.Done(); music.Done(); }
+	void Update();		// update called every frame
 						
-		// music
-		bool				MusicLoad			( const char* path, int group=0 );	// load all musics from a path (protos)
-		bool				MusicLoadFile		( const char* filename, int group=0 );// load a music file (proto)
-		void				MusicUnload			( int group=0 );				// destroy all musics (proto)
-		void				MusicFade			( int out, int in );			// set fade values
-		int					MusicPlay			( PlAtom id, int start=0 );		// set a music to play next from a specified position; returns -1 if failed; don't necessarily plays at once
-		PlAtom				MusicPlaying		();								// return id of next music (-1 if none) = m_musicnext
-		int					MusicPosition		();								// return position of next music in miliseconds; -1 if no next music programmed
-		void				MusicStop			();								// music stop immediately
-		void				MusicPause			( bool pause );					// music pause; stop, but remember where it was
-		void				MusicUpdate			( float dtime );				// deals with the play, stop and volume management
-		void				MusicVolume			( int volume );					// set music volume
-inline	int					MusicFind			( PlAtom id )						{ for(size_t i=0;i<m_musicproto.size();i++) if(m_musicproto[i].m_id==id) return i; return -1; }
-
-		A9STREAM			m_music;											// music stream
-		int					m_musicidx;											// current playing music index in proto list (-1 if none)
-		int					m_musicnext;										// next music programmed to play (-1 if none); this is considered the current music by the logic
-		int					m_musicstart;										// position where the next music will start in miliseconds; 0=begining of music
-		int					m_musicfadein;										// music fade in (seconds)
-		int					m_musicfadeout;										// music fade out (seconds)
-		int					m_musicpos;											// current music position (used to know when music ends) in samples
-		bool				m_musicpaused;										// music paused
-		float				m_musicvol;											// current playing music volume factor [0..1] (used for fades)
-		std::vector<tMusicProto> m_musicproto;								// list with loaded musics
-
-		int					m_music_total;										// status report on total musics declared (load+failed)
-		int					m_music_fail;										// status report on musics failed to load
-		int					m_music_duplicates;									// status report on id duplicates
-		int					m_music_group;										// current loading group
-
-
 	Samples samples;
+	Music	music;
 };
 
 extern cDizSound g_sound;

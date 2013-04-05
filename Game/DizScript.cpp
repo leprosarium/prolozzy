@@ -76,14 +76,6 @@ bool cDizScript::Init()
 	return true;
 }
 
-void cDizScript::Start()
-{
-	gameStart();
-}
-
-void cDizScript::Update()
-{
-}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // HANDLERS
@@ -291,75 +283,6 @@ PREDICATE_M(core, colliderSnapDistance, 5)
 	return A5 = dist;
 }
 
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// Sound
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-PREDICATE_M(core, musicLoad, 1)
-{
-	return g_sound.MusicLoad(A1, 0);
-}
-
-
-PREDICATE_M(core, musicLoad, 2)
-{
-	return g_sound.MusicLoad(A1, A2);
-}
-
-PREDICATE_M(core, musicUnload, 1)
-{
-	g_sound.MusicUnload(A1);
-	return true;
-}
-
-PREDICATE_M(core, musicUnload, 0)
-{
-	g_sound.MusicUnload(0);
-	return true;
-}
-
-PREDICATE_M(core, musicFade, 2)
-{
-	g_sound.MusicFade(A1, A2);
-	return true;
-}
-
-PREDICATE_M(core, musicPlay, 1)
-{
-	return  g_sound.MusicPlay(PlAtom(A1), 0) == 0;
-}
-
-PREDICATE_M(core, musicPlay, 2)
-{
-	return  g_sound.MusicPlay(PlAtom(A1), A2) == 0;
-}
-
-PREDICATE_M(core, musicPlaying, 1)
-{
-	return A1 = g_sound.MusicPlaying();
-}
-
-PREDICATE_M(core, musicPosition, 1)
-{
-	return A1 = g_sound.MusicPosition();
-}
-
-PREDICATE_M(core, musicStop, 0)
-{
-	g_sound.MusicStop();
-	g_sound.m_musicnext = -1;
-	g_sound.m_musicvol = 0.0;
-	return true;
-}
-
-PREDICATE_M(core, musicVolume, 1)
-{
-	g_sound.MusicVolume(A1);
-	return true;
-}
-
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // FONT
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -546,58 +469,6 @@ PREDICATE_M(core, debugData, 2)
 	g_dizdebug.SlotSet(static_cast<size_t>(slot), A2);
 	return true;
 }
-
-//int gsDebugCool( gsVM* vm )
-//{
-////	if(gs_params(vm)==0)
-//	{
-//		gs_pushint(vm,E9_AppGetInt(E9_APP_COOL));
-//		return 1;
-//	}
-//	if(!gs_ckparams(vm,1))		return 0;
-//	if(!gs_cktype(vm,0,GS_INT)) return 0;
-//	dlog(LOGAPP,"DebugCool %s\n", gs_toint(vm,0)?"on":"off");
-//	int val = gs_toint(vm,0);
-//	E9_AppSetInt(E9_APP_COOL,val);
-//	return 0;
-////}
-//
-//int gsDebugLog( gsVM* vm )
-//{
-////	if(!gs_ckparams(vm,1))		GS_RETURNINT(vm,0);
-//	if(!gs_cktype(vm,0,GS_INT)) GS_RETURNINT(vm,0);
-//	int i;
-//	if(gs_toint(vm,0))
-//	{
-//		for(i=0;i<=D9_LOG_CHANNELMAX;i++) D9_LogOpenChannel(i,true);
-//		dlog(LOGAPP,"DebugLog on\n");
-//	}
-//	else
-//	{
-//		dlog(LOGAPP,"DebugLog off\n");
-//		for(i=0;i<=D9_LOG_CHANNELMAX;i++) D9_LogOpenChannel(i,false);
-//		D9_LogOpenChannel(LOGSYS,true); // always open
-//		D9_LogOpenChannel(LOGERR,true); // always open
-//	}
-//	return 0;
-////}
-//
-//int gsDebugDev( gsVM* vm )
-//{
-////	if(gs_params(vm)==0)
-//	{
-//		gs_pushint(vm,cDizDebug::m_developer);
-//		return 1;
-//	}
-//	if(!gs_ckparams(vm,1))		return 0;
-//	if(!gs_cktype(vm,0,GS_INT)) return 0;
-//	dlog(LOGAPP,"DebugDev %s\n", gs_toint(vm,0)?"on":"off");
-//	int val = gs_toint(vm,0);
-//	cDizDebug::m_developer = val;
-//	g_paint.Layout();
-//	return 0;
-////}
-//
 
 PREDICATE_M(core, ini, 4)
 {

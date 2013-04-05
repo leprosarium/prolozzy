@@ -21,10 +21,10 @@
 
 main :-
 	game:unpause,
-	core:musicStop,
-	core:musicFade(0, 0),
+	music:stop,
+	music:fade(0, 0),
 	gamedef:musicDefault(MD),
-	core:musicPlay(MD),
+	music:play(MD),
 	cover.
 
 cover :-
@@ -255,7 +255,7 @@ openDialogOptionsSelect(music) :-
 	getOpt('dizzy.ini', 'AUDIO', 'volmusic', 100, Vol),
 	addVol(Vol, Vol1),
 	core:ini('dizzy.ini', 'AUDIO', 'volmusic', Vol1),
-	core:musicVolume(Vol1),
+	music:volume(Vol1),
 	openDialogOptionsLoop(music).
 openDialogOptionsSelect(control) :-
 	openDialogControls.

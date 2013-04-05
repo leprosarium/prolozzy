@@ -84,61 +84,77 @@ PREDICATE_M(sample, volume, 1)
 }
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// INIT
-//////////////////////////////////////////////////////////////////////////////////////////////////
-cDizSound::cDizSound()
+PREDICATE_M(music, load, 1)
 {
-
-
-	// music
-	m_music			= NULL;
-	m_musicidx		= -1;
-	m_musicnext		= -1;
-	m_musicstart	= 0;
-	m_musicfadein	= 0;
-	m_musicfadeout	= 0;
-	m_musicpos		= 0;
-	m_musicpaused	= 0;
-	m_musicvol		= 0.0f;
-
-	m_music_total = 0;
-	m_music_fail = 0;	
-	m_music_duplicates = 0;
-	m_music_group = 0;
-
+	return g_sound.music.Load(A1);
 }
 
-cDizSound::~cDizSound()
+
+PREDICATE_M(music, load, 2)
 {
+	return g_sound.music.Load(A1, A2);
 }
 
-bool cDizSound::Init()
+PREDICATE_M(music, unload, 1)
 {
+	g_sound.music.Unload(A1);
 	return true;
 }
 
-void cDizSound::Done()
+PREDICATE_M(music, Unload, 0)
 {
-	samples.Done();
-	MusicStop();
-	m_musicproto.clear();
+	g_sound.music.Unload(0);
+	return true;
 }
+
+PREDICATE_M(music, fade, 2)
+{
+	g_sound.music.Fade(A1, A2);
+	return true;
+}
+
+PREDICATE_M(music, play, 1)
+{
+	return  g_sound.music.Play(PlAtom(A1)) == 0;
+}
+
+PREDICATE_M(music, play, 2)
+{
+	return  g_sound.music.Play(PlAtom(A1), A2) == 0;
+}
+
+PREDICATE_M(music, playing, 1)
+{
+	return A1 = g_sound.music.Playing();
+}
+
+PREDICATE_M(music, position, 1)
+{
+	return A1 = g_sound.music.Position();
+}
+
+PREDICATE_M(music, stop, 0)
+{
+	g_sound.music.Stop();
+	return true;
+}
+
+PREDICATE_M(music, volume, 1)
+{
+	g_sound.music.Volume(A1);
+	return true;
+}
+
 
 void cDizSound::Update()
 {
-	if(!A9_IsReady()) return;
-	
-	// samples - stop (remove) those that have finished playing
-	samples.Update();	
-	// music
-	MusicUpdate( E9_AppGetInt(E9_APP_DELTATIME) / 1000.f);
-
-	A9_Update();
-
+	if(A9_IsReady())
+	{
+		samples.Update();	
+		music.Update( E9_AppGetInt(E9_APP_DELTATIME) / 1000.f);
+		A9_Update();
+	}
 }
-
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // SAMPLES
@@ -248,7 +264,7 @@ bool Samples::Load(const char* path, int group)
 		}
 
 	// report
-	dlog(LOGAPP, L"Samples report: total=%i, failed=%i (duplicates=%i)\n\n", total, fail, duplicates);
+	dlog(LOGAPP, L"Samples report: total=%u, failed=%u (duplicates=%u)\n\n", total, fail, duplicates);
 
 	return true;
 }
@@ -339,7 +355,20 @@ void Samples::Volume( int volume )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // MUSIC
 //////////////////////////////////////////////////////////////////////////////////////////////////
-bool cDizSound::MusicLoadFile( const char* filepath, int group )
+Music::Music() :_stream(nullptr),
+				_idx(-1),
+				_next(-1),
+				_start(),
+				_fadein(),
+				_fadeout(),
+				_pos(),
+				_paused(),
+				_volume()
+{
+}
+
+
+bool Music::LoadFile( const char* filepath, size_t & total, size_t & fail, size_t & duplicates, int group)
 {
 	// check name and extension
 	char fname[_MAX_FNAME];
@@ -348,16 +377,15 @@ bool cDizSound::MusicLoadFile( const char* filepath, int group )
 	
 	if(!isSupportedExt(ext)) return false; // ignore files with unsupported extensions
 
-	m_music_total++;
+	total++;
 
 	PlAtom id(fname);
 	// check unique id
-	int idx = MusicFind(id);
-	if( idx!=-1 )
+	if(Find(id) != -1)
 	{
-		m_music_fail++;
-		m_music_duplicates++;
-		dlog(LOGSYS, L"! %S (duplicate id)\n", filepath, id);
+		fail++;
+		duplicates++;
+		dlog(LOGSYS, L"! %S (duplicate id)\n", filepath);
 		return false;
 	}
 
@@ -365,13 +393,13 @@ bool cDizSound::MusicLoadFile( const char* filepath, int group )
 	A9STREAM stream = A9_StreamCreate(filepath);
 	if(!stream)
 	{
-		m_music_fail++;
+		fail++;
 		dlog(LOGSYS, L"! %S (failed to load)\n", filepath);
 		return false;
 	}
 
 	// add to list
-	m_musicproto.push_back(tMusicProto(id, group, stream));
+	push_back(tMusicProto(id, group, stream));
 
 	if(g_dizdebug.active()) // log for developers
 		dlog(LOGAPP, L"  %S\n", filepath );
@@ -379,13 +407,7 @@ bool cDizSound::MusicLoadFile( const char* filepath, int group )
 	return true;
 }
 
-void FFCallback_Music( const char* filepath, BOOL dir )
-{
-	if(dir) return;
-	bool ret = g_sound.MusicLoadFile(filepath,g_sound.m_music_group);
-}
-
-bool cDizSound::MusicLoad( const char* path, int group )
+bool Music::Load(const char* path, int group)
 {
 	if(!A9_IsReady()) { dlog(LOGAPP, L"Sound disabled - no musics are loaded.\n"); return false; }
 
@@ -399,183 +421,158 @@ bool cDizSound::MusicLoad( const char* path, int group )
 	dlog(LOGAPP, L"Loading musics from \"%S\" (group=%i)\n", spath, group);
 
 	// init
-	m_music_total		= 0;
-	m_music_fail		= 0;
-	m_music_duplicates	= 0;
-	m_music_group		= group;
+	size_t total = 0;
+	size_t fail	= 0;
+	size_t duplicates = 0;
+
+	auto callback = [this, &total, &fail, &duplicates, group](const char* filepath, BOOL dir) { if(!dir) LoadFile(filepath, total, fail, duplicates, group); };
 
 	// find files on disk
 	int archivefiles = F9_ArchiveGetFileCount(0);
 	if(archivefiles==0) // if no archive found then open from disk
-	{
-		file_findfiles( spath, FFCallback_Music, FILE_FINDREC );
-	}
+		file_findfiles( spath, callback, FILE_FINDREC );
 	else // if archive opened, load from it
-	{
 		for(int i=0;i<archivefiles;i++)
 		{
 			std::string filename = F9_ArchiveGetFileName(0,i);
 			if(strstr(filename.c_str(), spath)==filename)
-			{
-				FFCallback_Music(filename.c_str(),false);
-			}
+				callback(filename.c_str(), false);
 		}
-	}
 
 	// report
-	dlog(LOGAPP, L"Music report: total=%i, failed=%i (duplicates=%i)\n\n", m_music_total, m_music_fail, m_music_duplicates );
+	dlog(LOGAPP, L"Music report: total=%u, failed=%u (duplicates=%u)\n\n", total, fail, duplicates );
 
 	return true;
 }
 
-void cDizSound::MusicUnload( int group )
+void Music::Unload(int group)
 {
-	for(size_t i=0;i<m_musicproto.size();)
-		if(m_musicproto[i].m_group == group)
+	for(size_t i = 0; i < size();)
+		if((*this)[i].m_group == group)
 		{
-			if(i==m_musicidx) MusicStop(); // stop if current
-			if(m_musicnext==i) m_musicnext=-1; // clear if next
-			m_musicproto.erase(m_musicproto.begin() + i);
+			if(i==_idx) Stop(); // stop if current
+			if(_next==i) _next=-1; // clear if next
+			erase(begin() + i);
 		}
 		else
 			++i;
 }
 
-void cDizSound::MusicFade( int out, int in )
+int Music::Play( PlAtom id, int start )
 {
-	m_musicfadeout = out;
-	m_musicfadein = in;
-}
-
-int cDizSound::MusicPlay( PlAtom id, int start )
-{
-
-	int protoidx = MusicFind(id);
-//@	if(protoidx==-1) return -1; // invalid id >> allow -1 for next music, to stop with fade
-	m_musicnext = protoidx; // store for later play
-	m_musicstart = start>=0 ? start : 0; // store valid for later start
-	if(m_musicfadeout==0)  // @HM
-	{
-		if(m_musicnext!=m_musicidx)
-			m_musicvol = 0.0f; // update will stop current music immediately, if any
-	}
+	int protoidx = Find(id);
+	_next = protoidx; // store for later play
+	_start = start>=0 ? start : 0; // store valid for later start
+	if(_fadeout==0)  // @HM
+		if(_next!=_idx)
+			_volume = 0.0f; // update will stop current music immediately, if any
 	return 0; // ok
 }
 
-PlAtom cDizSound::MusicPlaying()
+int	Music::Position()
 {
-	// we are interested in what is the scheduled song, ignoring the short fadeout of the current one
-	if(m_musicnext==-1) return -1;
-	return m_musicproto[m_musicnext].m_id;
-}
-
-int	cDizSound::MusicPosition()
-{
-	if(m_musicnext==-1) return -1; // no next music
-	if(m_musicidx!=m_musicnext) return m_musicstart; // current is fading, next is about to start from m_musicstart
+	if(_next==-1) return -1; // no next music
+	if(_idx!=_next) return _start; // current is fading, next is about to start from _start
 	// we are playing the next music, report curent position
-	if(!m_music) return m_musicstart; // should not happend
-	int musicpos = (int)( (float)A9_StreamGetPosition(m_music) / (float)A9_StreamGet(m_music,A9_FREQUENCY) * 1000.0f );
+	if(!_stream) return _start; // should not happend
+	int musicpos = (int)( (float)A9_StreamGetPosition(_stream) / (float)A9_StreamGet(_stream,A9_FREQUENCY) * 1000.0f );
 	return musicpos; // in ms
 }
 
-void cDizSound::MusicStop()
+void Music::Stop()
 {
-	if(m_musicidx==-1) return;
-	if(!m_music) { m_musicidx=-1; return; } // should not happened
-	A9_StreamSet(m_music,A9_VOLUME,A9_VOLUMEMIN); // silence
-	A9_StreamStop(m_music);
-	m_music = NULL;
-	m_musicidx = -1;
-	m_musicpaused = false;
+	if(_idx==-1) return;
+	if(!_stream) { _idx=-1; return; } // should not happened
+	A9_StreamSet(_stream,A9_VOLUME,A9_VOLUMEMIN); // silence
+	A9_StreamStop(_stream);
+	_stream = NULL;
+	_idx = -1;
+	_paused = false;
+	_next = -1;
+	_volume = 0.0;
 }
 
-void cDizSound::MusicPause( bool pause )
+void Music::Pause(bool pause)
 {
-	if( m_musicidx==-1) return;
-	if(!m_music) { m_musicidx=-1; return; } // should not happened
+	if( _idx==-1) return;
+	if(!_stream) { _idx=-1; return; } // should not happened
+	if (pause == paused()) return;
 	if(pause)
-	{
-		if(m_musicpaused) return; // already paused
-		A9_StreamStop(m_music); // stop
-	}
+		A9_StreamStop(_stream);
 	else
-	{
-		if(!m_musicpaused) return; // not paused
-		A9_StreamPlay(m_music,true); // play
-	}
-	m_musicpaused = pause;
+		A9_StreamPlay(_stream, true);
+	_paused = pause;
 }
 
-void cDizSound::MusicUpdate( float dtime )
+void Music::Update(float dtime)
 {
 
-	if(m_musicidx==-1) // nothing is playing
+	if(_idx==-1) // nothing is playing
 	{
-		if(m_musicnext!=-1) // music scheduled
+		if(_next!=-1) // music scheduled
 		{
 			// set current stream
-			m_music = m_musicproto[m_musicnext].m_stream;
-			if(!m_music) { m_musicnext=-1; return; } // cration failure (invalid music file)
+			_stream = (*this)[_next].m_stream;
+			if(!_stream) { _next=-1; return; } // cration failure (invalid music file)
 
 			// prepare volume
-			if(m_musicfadein>0)
+			if(_fadein>0)
 			{
-				A9_StreamSet(m_music,A9_VOLUME,A9_VOLUMEMIN); //start from silence
-				m_musicvol = 0.0f;
+				A9_StreamSet(_stream,A9_VOLUME,A9_VOLUMEMIN); //start from silence
+				_volume = 0.0f;
 			}
 			else
 			{
-				A9_StreamSet(m_music,A9_VOLUME,A9_VolumePercentToDecibel(g_cfg.m_volmusic));
-				m_musicvol = 1.0f;
+				A9_StreamSet(_stream,A9_VOLUME,A9_VolumePercentToDecibel(g_cfg.m_volmusic));
+				_volume = 1.0f;
 			}
 
 			// play stream (always looping)
-			int start = (int)( (float)m_musicstart / 1000.0f * (float)A9_StreamGet(m_music,A9_FREQUENCY) );
-			if(start<0 || start>=A9_StreamGet(m_music,A9_SIZE)) start=0;
-			A9_StreamSetPosition(m_music,start);
-			A9_StreamPlay(m_music,true);
-			m_musicidx = m_musicnext;
-			m_musicpos = start;
+			int start = (int)( (float)_start / 1000.0f * (float)A9_StreamGet(_stream,A9_FREQUENCY) );
+			if(start<0 || start>=A9_StreamGet(_stream,A9_SIZE)) start=0;
+			A9_StreamSetPosition(_stream,start);
+			A9_StreamPlay(_stream,true);
+			_idx = _next;
+			_pos = start;
 		}
 	}
 	else // music is playing
 	{
-		if(!m_music) { m_musicidx=-1; return; } // should not happened
-		if(m_musicpaused) return; // don't update volumes if paused
-		if(!A9_StreamIsPlaying(m_music)) return; // don't update volumes if it's not yet playing
+		if(!_stream) { _idx=-1; return; } // should not happened
+		if(_paused) return; // don't update volumes if paused
+		if(!A9_StreamIsPlaying(_stream)) return; // don't update volumes if it's not yet playing
 
-		float fadeoutstep	= (m_musicfadeout>0) ? (dtime / (float)m_musicfadeout) : 1.0f;
-		float fadeinstep	= (m_musicfadein>0)  ? (dtime / (float)m_musicfadein)  : 1.0f;
+		float fadeoutstep	= (_fadeout>0) ? (dtime / (float)_fadeout) : 1.0f;
+		float fadeinstep	= (_fadein>0)  ? (dtime / (float)_fadein)  : 1.0f;
 
-		if( m_musicidx == m_musicnext ) // we are keeping this song
+		if( _idx == _next ) // we are keeping this song
 		{
-			if(m_musicvol<1.0f) // have not reached full volume yet so we have fadein
+			if(_volume<1.0f) // have not reached full volume yet so we have fadein
 			{
-				m_musicvol+=fadeinstep;
-				if(m_musicvol>1.0f) m_musicvol=1.0f;
-				A9_StreamSet(m_music, A9_VOLUME, A9_VolumePercentToDecibel( (int)(m_musicvol * g_cfg.m_volmusic) ));
+				_volume+=fadeinstep;
+				if(_volume>1.0f) _volume=1.0f;
+				A9_StreamSet(_stream, A9_VOLUME, A9_VolumePercentToDecibel( (int)(_volume * g_cfg.m_volmusic) ));
 			}
 			// else we are very happy
 
 			// check music end
-			int musicpos = A9_StreamGetPosition(m_music);
-			int musicsize = A9_StreamGet(m_music,A9_SIZE);
-			if( musicpos < m_musicpos ) // reached the end of loop and it just started from the begining
+			int musicpos = A9_StreamGetPosition(_stream);
+			int musicsize = A9_StreamGet(_stream,A9_SIZE);
+			if( musicpos < _pos ) // reached the end of loop and it just started from the begining
 				g_script.musicLoop(); // notify scripts; user can stop or play other music in the handler
-			m_musicpos = musicpos;
+			_pos = musicpos;
 		}
 		else // we must fade this one out, because a another is waiting next
 		{
-			if(m_musicvol>0.0f) // have not reached silence yet, but we have fade out
+			if(_volume>0.0f) // have not reached silence yet, but we have fade out
 			{
-				m_musicvol-=fadeoutstep;
-				if(m_musicvol<0.0f) m_musicvol=0.0f;
-				A9_StreamSet(m_music, A9_VOLUME, A9_VolumePercentToDecibel( (int)(m_musicvol * g_cfg.m_volmusic) ));
+				_volume-=fadeoutstep;
+				if(_volume<0.0f) _volume=0.0f;
+				A9_StreamSet(_stream, A9_VOLUME, A9_VolumePercentToDecibel( (int)(_volume * g_cfg.m_volmusic) ));
 			}
 			else
 			{
-				MusicStop(); // stop and destroy current music
+				Stop(); // stop and destroy current music
 				// in the next update the next song will be made current and played
 			}
 		}
@@ -583,18 +580,16 @@ void cDizSound::MusicUpdate( float dtime )
 
 }
 
-void cDizSound::MusicVolume( int volume )
+void Music::Volume( int volume )
 {
 	if(volume<0) volume=0;
 	if(volume>100) volume=100;
 	if(volume==g_cfg.m_volmusic) return; // same volume
 	g_cfg.m_volmusic = volume;
 
-	int volumedb = A9_VolumePercentToDecibel( (int)(m_musicvol * g_cfg.m_volmusic) );
-	if(m_musicidx!=-1 && m_music)
-	{
-		A9_StreamSet(m_music,A9_VOLUME,volumedb);
-	}
+	int volumedb = A9_VolumePercentToDecibel( (int)(_volume * g_cfg.m_volmusic) );
+	if(_idx!=-1 && _stream)
+		A9_StreamSet(_stream,A9_VOLUME,volumedb);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

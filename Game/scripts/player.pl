@@ -394,7 +394,7 @@ respawn :-
 	posSafe(XSafe, YSafe),
 	setPos(XSafe, YSafe),
 	enterIdle,
-	core:musicFade(0, 3),
+	music:fade(0, 3),
 	util:musicRestore.
 
 update :-

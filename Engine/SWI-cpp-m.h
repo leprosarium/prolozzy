@@ -697,7 +697,7 @@ __inline PlTerm::operator void *(void) const
 __inline PlTerm::operator std::string() const
 { char *s;
 
-  if ( PL_get_chars(ref, &s, CVT_ALL|CVT_WRITE|BUF_RING) )
+  if ( PL_get_chars(ref, &s, CVT_ALL|CVT_WRITE|BUF_DISCARDABLE) )
     return std::string(s);
 
   throw PlTypeError("text", ref);

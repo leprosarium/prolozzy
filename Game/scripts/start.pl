@@ -30,7 +30,7 @@ load(Start) :-
 load(0, _) :-
 	game:command(exit).
 load(_, Start) :-
-	core:musicLoad("data\\music"),
+	music:load("data\\music"),
 	sample:load("data\\samples"),
 	core:fontLoad("data\\fonts"), !,
 	core:ticktime(End),

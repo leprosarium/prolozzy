@@ -127,12 +127,12 @@ saveBrush(F, Id) :-
 	forall(brush:var(B, Var, Val), writet(F, brush:var(B, Var, Val))).
 
 saveMusic(F) :-
-	core:musicPlaying(M),
-	core:musicPosition(P),
+	music:playing(M),
+	music:position(P),
 	writet(F, sample:stopAll),
-	writet(F, core:musicStop),
-	writet(F, core:musicFade(0, 3)),
-	writet(F, core:musicPlay(M, P)).
+	writet(F, music:stop),
+	writet(F, music:fade(0, 3)),
+	writet(F, music:play(M, P)).
 
 loadGame(File) :-
 	setup_call_cleanup(open(File, read, S),

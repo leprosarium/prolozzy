@@ -8,10 +8,20 @@
 gameSupportJump :-
 	gamedef:supportJumpUp -> util:useUpForJump ; true.
 
+nearRoom(X, Y, Xn, Yn) :-
+	(   game:viewportMode
+	->  X1 is X - 1,
+	    X2 is X + 1,
+	    Y1 is Y - 1,
+	    Y2 is Y + 1,
+	    between(X1, X2, Xn),
+	    between(Y1, Y2, Yn)
+	;   Xn = X, Yn = Y).
+
 
 updateRoom :-
 	game:roomPos(X, Y),
-	catch(game:updateRoom(X, Y), _, true).
+	forall(nearRoom(X, Y, Xn, Yn), catch(game:updateRoom(Xn, Yn), _, true)).
 updateRoom.
 
 afterUpdateRoom :-

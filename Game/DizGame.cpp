@@ -498,9 +498,6 @@ bool cDizGame::Update()
 	// game update
 	g_script.gameUpdate();
 
-	// script update
-	g_script.Update();
-
 	// update present objects
 	if(!pause())
 	{
@@ -546,19 +543,11 @@ bool cDizGame::Update()
 
 	// menu
 	if( KeyHit(KEY_MENU) && !pause() )
-	{
 		g_script.menu();
-	}
 
 	// action
-	if( KeyHit(KEY_ACTION) && !pause() )
-	{
-		if(	g_player.life() > 0 && 
-			!g_player.disable() )
-		{
-			g_script.action();
-		}
-	}
+	if( KeyHit(KEY_ACTION) && !pause() && g_player.life() > 0 && !g_player.disable() )
+		g_script.action();
 
 	// fffx rumble
 	bool update = false;

@@ -60,7 +60,6 @@ bool cDizApp::Init()
 	g_dizdebug.Init();
 	g_paint.Init();
 	g_game.Init();
-	g_sound.Init();
 	if(!g_script.Init()) { ERRORMESSAGE(L"Script compiling error."); return false; }
 
 	// game start
@@ -191,13 +190,13 @@ void cDizApp::Activate( BOOL active )
 	{
 		if(I9_IsReady()) I9_Acquire();
 		g_game.FFFXUpdate();
-		if(!m_musicwaspaused) g_sound.MusicPause(false); // unpause
+		if(!m_musicwaspaused) g_sound.music.Pause(false); // unpause
 	}
 	else
 	{
 		if(I9_IsReady()) I9_Unacquire();
-		m_musicwaspaused = g_sound.m_musicpaused;
-		if(!m_musicwaspaused) g_sound.MusicPause(true); // pause
+		m_musicwaspaused = g_sound.music.paused();
+		if(!m_musicwaspaused) g_sound.music.Pause(true); // pause
 	}
 }
 

@@ -13,7 +13,7 @@
 // shaders
 enum Shader
 {
-	ShaderOpaque,
+	ShaderOpaque = 0,
 	ShaderBlend,
 	ShaderAdd,
 	ShaderMod,
@@ -185,6 +185,8 @@ class Tiles : std::vector<cTile>
 {
 	IntIndex Index;
 	typedef std::vector<cTile> Cont;
+	bool LoadFile(const char* filepath, size_t & total, size_t & fail, size_t & duplicates, int group);	// load a tile file
+
 public:
 	using Cont::size;
 
@@ -205,7 +207,6 @@ public:
 	void Del(int idx);								// delete tile by index
 	int Find(int id) const { auto i = Index.find(id); return i != Index.end() ? i->second : -1; }
 	bool Load(char* path, int group = 0);			// load tiles from a path, and set the specified group
-	bool LoadFile(const char* filepath, int group = 0);	// load a tile file
 	void Unload(int group=0 );						// unload load tiles (destroy) from a specified group
 
 	bool Reacquire(); // called before render reset to reload render resources

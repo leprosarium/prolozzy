@@ -117,12 +117,7 @@ void cDizPaint::Layout()
 // TILES
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-int		gstile_total;			// status report on total tiles declared (load+failed)
-int		gstile_fail;			// status report on tiles failed to load
-int		gstile_duplicates;		// status report on id duplicates
-int		gstile_group;			// current loading group
-
-bool Tiles::LoadFile( const char* filepath, int group )
+bool Tiles::LoadFile( const char* filepath, size_t & total, size_t & fail, size_t & duplicates, int group)
 {
 	
 	// check file type (not counted if unaccepted); only TGA and PNG files accepted
@@ -130,7 +125,7 @@ bool Tiles::LoadFile( const char* filepath, int group )
 	if( 0!=stricmp(ext,"tga") && 0!=strcmp(ext,"png") ) return false;
 	const char* name = file_path2file(filepath); if(!name) return false;
 	
-	gstile_total++;
+	total++;
 
 	// check name format
 	char szt[128];
@@ -140,7 +135,7 @@ bool Tiles::LoadFile( const char* filepath, int group )
 	int ret = sscanf(name,"%i %s %i %i",&id,szt,&frames,&fpl);
 	if(ret==0 || id==-1) 
 	{ 
-		gstile_fail++; 
+		fail++; 
 		dlog(LOGSYS, L"! %S (bad name)\n", filepath); 
 		return false; 
 	}
@@ -151,8 +146,8 @@ bool Tiles::LoadFile( const char* filepath, int group )
 	int idx = Find(id);
 	if( idx!=-1 )
 	{
-		gstile_fail++;
-		gstile_duplicates++;
+		fail++;
+		duplicates++;
 		dlog(LOGSYS, L"! %S (duplicate id)\n", filepath, id);
 		return false;
 	}
@@ -161,7 +156,7 @@ bool Tiles::LoadFile( const char* filepath, int group )
 	r9Img img;
 	if(!R9_ImgLoadFile(filepath,&img))
 	{
-		gstile_fail++;
+		fail++;
 		dlog(LOGSYS, L"! %S (load failed)\n", filepath);
 		return false;
 	}
@@ -174,7 +169,7 @@ bool Tiles::LoadFile( const char* filepath, int group )
 	if( !R9_ImgCreate(&imga) ||
 		!R9_ImgBitBltSafe(&img,0,0,img.m_width,img.m_height,&imga,0,0) ) 
 	{
-		gstile_fail++;
+		fail++;
 		dlog(LOGSYS, L"! %S (alpha failed)\n", filepath);
 		R9_ImgDestroy(&img);
 		return false;
@@ -190,7 +185,7 @@ bool Tiles::LoadFile( const char* filepath, int group )
 	}
 	else 
 	{
-		gstile_fail++;
+		fail++;
 		dlog(LOGSYS, L"! %S (texture failed)\n", filepath);
 		return false;
 	}
@@ -213,12 +208,6 @@ bool Tiles::LoadFile( const char* filepath, int group )
 	return true;
 }
 
-void FFCallback_Tile( const char* filepath, BOOL dir )
-{
-	if(dir) return;
-	bool ret = g_paint.tiles.LoadFile(filepath,gstile_group);
-}
-
 bool Tiles::Load( char* path, int group )
 {
 	if(!path || !path[0]) return false; // invalid path
@@ -228,16 +217,16 @@ bool Tiles::Load( char* path, int group )
 	dlog(LOGAPP, L"Loading tiles from \"%S\" (group=%i)\n", path, group);
 
 	// init
-	gstile_total		= 0;
-	gstile_fail			= 0;
-	gstile_duplicates	= 0;
-	gstile_group		= group;
+	size_t total = 0;
+	size_t fail = 0;
+	size_t duplicates = 0;
+	auto callback = [this, &total, &fail, &duplicates, group](const char* filepath, BOOL dir) { if(!dir) LoadFile(filepath, total, fail, duplicates, group); };
 
 	// find files on disk
 	int archivefiles = F9_ArchiveGetFileCount(0);
 	if(archivefiles==0) // if no archive found then open from disk
 	{
-		file_findfiles( path, FFCallback_Tile, FILE_FINDREC );
+		file_findfiles( path, callback, FILE_FINDREC );
 	}
 	else // if archive opened, load from it
 	{
@@ -245,14 +234,12 @@ bool Tiles::Load( char* path, int group )
 		{
 			std::string filename = F9_ArchiveGetFileName(0,i);
 			if(strstr(filename.c_str(),path)==filename)
-			{
-				FFCallback_Tile(filename.c_str(),false);
-			}
+				callback(filename.c_str(),false);
 		}
 	}
 
 	// report
-	dlog(LOGAPP, L"Tiles report: total=%i, failed=%i (duplicates=%i)\n\n", gstile_total, gstile_fail, gstile_duplicates );
+	dlog(LOGAPP, L"Tiles report: total=%u, failed=%u (duplicates=%u)\n\n", total, fail, duplicates );
 
 	return true;
 }

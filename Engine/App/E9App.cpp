@@ -23,7 +23,7 @@ float		e9App::m_fps						= 0;
 
 void*		e9App::m_param[4]					= {NULL,NULL,NULL,NULL};
 
-e9AppCallback e9App::m_callback[E9_APP_CALLBACKS] = { NULL, NULL, NULL, NULL, NULL, NULL };
+e9AppCallback e9App::m_callback[E9_APP_CALLBACKS] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 
 e9AppCallback e9App::SetCallback( int idx, e9AppCallback callback )
 {

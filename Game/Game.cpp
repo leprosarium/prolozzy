@@ -66,7 +66,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	// init debug
 	BOOL openlog = false;
 	ini_getint( file_getfullpath(GetIniFile()), "ADVANCED", "log",  &openlog );
-	D9_INIT(GetLogFile(),NULL,openlog);
+	D9_INIT(GetLogFile(),nullptr,openlog);
 
 
 	// init engine

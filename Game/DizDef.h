@@ -36,7 +36,7 @@
 
 #include <unordered_map>
 
-typedef std::unordered_map<PlAtom, int> IntIndex;
+typedef std::unordered_map<atom_t, int> IntIndex;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // System

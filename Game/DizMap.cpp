@@ -123,7 +123,7 @@ PREDICATE_M(map, objName, 2)
 	if(val.type() == PL_VARIABLE) {
 		return val = g_map.ObjGet(idx).Name().c_str();
 	}
-	g_map.ObjGet(idx).Name(std::string(val)); 
+	g_map.ObjGet(idx).Name(val); 
 	return true;
 }
 

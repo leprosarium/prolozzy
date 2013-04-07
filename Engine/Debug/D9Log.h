@@ -71,7 +71,7 @@ static	d9LogCallback	m_callback;						// log user callback
 #define	dlog	D9_LogPrintF
 
 inline	void	D9_LogBuf( int ch, LPCSTR buffer, size_t size) { d9Log::PrintBuf(ch, buffer, size); }
-inline	void	D9_LogInit( const char* logfile, d9LogCallback callback=NULL  )											{ d9Log::Init( logfile, callback ); }
+inline	void	D9_LogInit( const char* logfile, d9LogCallback callback=nullptr  )											{ d9Log::Init( logfile, callback ); }
 inline	void	D9_LogPrintV( int ch, LPCWSTR fmt, va_list args )													{ d9Log::PrintV( ch, fmt, args ); }
 inline	void	D9_LogPrintF( int ch, LPCWSTR fmt, ... )															{ va_list args;	va_start(args, fmt); D9_LogPrintV(ch, fmt, args); va_end(args); }
 inline	void	D9_LogPrintF( LPCWSTR fmt, ... )																	{ va_list args; va_start(args, fmt); D9_LogPrintV(0, fmt, args); va_end(args); }

@@ -120,7 +120,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
 	// init debug
 	BOOL openlog = TRUE;
-	D9_INIT("editor.log",NULL,openlog);
+	D9_INIT("editor.log",nullptr,openlog);
 	
 	// init engine
 	if(!E9_Init()) goto done;

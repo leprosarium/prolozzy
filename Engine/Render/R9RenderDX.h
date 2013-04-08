@@ -54,6 +54,7 @@ virtual void		SetState( int state, int value );
 virtual	void		SetViewport( fRect& rect );
 virtual	void		SetView( int x, int y, dword flip );
 virtual	void		SetDefaultStates();
+	virtual void SetBlend(Blend b);
 
 virtual	void		Clear( dword color );
 virtual	BOOL		BeginScene( R9TEXTURE target=NULL );

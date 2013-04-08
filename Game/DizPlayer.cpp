@@ -202,15 +202,16 @@ PREDICATE_M(player, setColor, 1)
 
 PREDICATE_M(player, shader, 1)
 {
-	return A1 = g_player.shader();
+	return A1 = static_cast<int>(g_player.shader());
 }
 
 PREDICATE_M(player, setShader, 1)
 {
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_player.shader(v); 
+	int v = A1;
+	if (v <  static_cast<int>(Blend::Min) || 
+		v >= static_cast<int>(Blend::Max))
+		return false;
+	g_player.shader(static_cast<Blend>(v)); 
 	return true;
 }
 
@@ -425,7 +426,7 @@ cDizPlayer::~cDizPlayer()
 void cDizPlayer::Reset()
 {
 
-	shader(ShaderBlend);
+	shader(Blend::Alpha);
 	status(idle);
 	delay(3);
 	layer(7);
@@ -960,7 +961,7 @@ void cDizPlayer::Draw()
 	if(cTile* tile = FindTile())
 	{
 		iV2 sz = tile->GetSize();
-		R9_SetState(R9_STATE_BLEND, shader());
+		R9_SetBlend(shader());
 		iV2 p = pos() - Room::Pos2Room(pos()) * Room::Size + iV2(-sz.x/2, h()/2 - sz.y) + g_game.viewShift;
 		R9_DrawSprite(g_paint.scrPos(p), tile->FrameRect(tile->ComputeFrame(frame(), anim())), tile->tex, color(), flip(), static_cast<float>(g_paint.scale()));
 	}

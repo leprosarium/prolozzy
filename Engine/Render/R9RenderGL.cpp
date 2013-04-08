@@ -456,28 +456,7 @@ void r9RenderGL::SetState( int state, int value )
 			break;
 		case R9_STATE_BLEND:
 		{
-			switch(value)
-			{
-				case R9_BLEND_OPAQUE:
-					m_glBlendFunc(GL_ONE, GL_ZERO);
-					break;
-				case R9_BLEND_ALPHA:
-					m_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-					break;
-				case R9_BLEND_ADD:
-					m_glBlendFunc(GL_ONE, GL_ONE);
-					break;
-				case R9_BLEND_MOD:
-					m_glBlendFunc(GL_DST_COLOR, GL_ZERO);
-					break;
-				case R9_BLEND_MOD2:
-					m_glBlendFunc(GL_DST_COLOR, GL_SRC_COLOR);
-					break;
-				case R9_BLEND_ALPHAREP:
-					m_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-					break;
-			}
-			GL_BindTexture(); // apply texture env states
+			assert(true);
 			break;
 		}
 		case R9_STATE_TADDRESS:
@@ -527,6 +506,38 @@ void r9RenderGL::SetView( int x, int y, dword flip )
 
 
 }
+
+void r9RenderGL::SetBlend(Blend b)
+{
+	if(blend == b) return;
+	if(NeedFlush()) Flush();
+	blend = b;
+
+	switch(blend)
+	{
+	case Blend::Opaque:
+		m_glBlendFunc(GL_ONE, GL_ZERO);
+		break;
+	case Blend::Alpha:
+		m_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		break;
+	case Blend::Add:
+		m_glBlendFunc(GL_ONE, GL_ONE);
+		break;
+	case Blend::Mod:
+		m_glBlendFunc(GL_DST_COLOR, GL_ZERO);
+		break;
+	case Blend::Mod2:
+		m_glBlendFunc(GL_DST_COLOR, GL_SRC_COLOR);
+		break;
+	case Blend::AlphaRep:
+		m_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		break;
+	}
+	GL_BindTexture(); // apply texture env states
+}
+
+
 
 void r9RenderGL::SetDefaultStates()
 {

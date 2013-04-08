@@ -398,45 +398,7 @@ void r9RenderDX::SetState( int state, int value )
 			break;
 		case R9_STATE_BLEND:
 		{
-			switch(value)
-			{
-				case R9_BLEND_OPAQUE:
-					m_d3dd->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_ONE);
-					m_d3dd->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_ZERO);
-					m_d3dd->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_MODULATE);
-					m_d3dd->SetTextureStageState(0,D3DTSS_COLORARG1,D3DTA_TEXTURE);
-					break;
-				case R9_BLEND_ALPHA:
-					m_d3dd->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_SRCALPHA);
-					m_d3dd->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_INVSRCALPHA);
-					m_d3dd->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_MODULATE);
-					m_d3dd->SetTextureStageState(0,D3DTSS_COLORARG1,D3DTA_TEXTURE);
-					break;
-				case R9_BLEND_ADD:
-					m_d3dd->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_ONE);
-					m_d3dd->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_ONE);
-					m_d3dd->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_MODULATE);
-					m_d3dd->SetTextureStageState(0,D3DTSS_COLORARG1,D3DTA_TEXTURE);
-					break;
-				case R9_BLEND_MOD:
-					m_d3dd->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_DESTCOLOR);
-					m_d3dd->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_ZERO);
-					m_d3dd->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_MODULATE);
-					m_d3dd->SetTextureStageState(0,D3DTSS_COLORARG1,D3DTA_TEXTURE);
-					break;
-				case R9_BLEND_MOD2:
-					m_d3dd->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_DESTCOLOR);
-					m_d3dd->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_SRCCOLOR);
-					m_d3dd->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_MODULATE);
-					m_d3dd->SetTextureStageState(0,D3DTSS_COLORARG1,D3DTA_TEXTURE);
-					break;
-				case R9_BLEND_ALPHAREP:
-					m_d3dd->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_SRCALPHA);
-					m_d3dd->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_INVSRCALPHA);
-					m_d3dd->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_SELECTARG1);
-					m_d3dd->SetTextureStageState(0,D3DTSS_COLORARG1,D3DTA_DIFFUSE);
-					break;
-			}
+			assert(true);
 			break;
 		}
 		case R9_STATE_TADDRESS:
@@ -484,6 +446,54 @@ void r9RenderDX::SetView( int x, int y, dword flip )
 	m_d3dd->SetTransform( D3DTS_VIEW, &mat );	
 	// I could also have it software at Push, like I do with x and y
 }
+
+void r9RenderDX::SetBlend(Blend b)
+{
+	if(blend == b) return;
+	if(NeedFlush()) Flush();
+	blend = b;
+	switch(blend)
+	{
+	case Blend::Opaque:
+		m_d3dd->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_ONE);
+		m_d3dd->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_ZERO);
+		m_d3dd->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_MODULATE);
+		m_d3dd->SetTextureStageState(0,D3DTSS_COLORARG1,D3DTA_TEXTURE);
+		break;
+	case Blend::Alpha:
+		m_d3dd->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_SRCALPHA);
+		m_d3dd->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_INVSRCALPHA);
+		m_d3dd->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_MODULATE);
+		m_d3dd->SetTextureStageState(0,D3DTSS_COLORARG1,D3DTA_TEXTURE);
+		break;
+	case Blend::Add:
+		m_d3dd->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_ONE);
+		m_d3dd->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_ONE);
+		m_d3dd->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_MODULATE);
+		m_d3dd->SetTextureStageState(0,D3DTSS_COLORARG1,D3DTA_TEXTURE);
+		break;
+	case Blend::Mod:
+		m_d3dd->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_DESTCOLOR);
+		m_d3dd->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_ZERO);
+		m_d3dd->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_MODULATE);
+		m_d3dd->SetTextureStageState(0,D3DTSS_COLORARG1,D3DTA_TEXTURE);
+		break;
+	case Blend::Mod2:
+		m_d3dd->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_DESTCOLOR);
+		m_d3dd->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_SRCCOLOR);
+		m_d3dd->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_MODULATE);
+		m_d3dd->SetTextureStageState(0,D3DTSS_COLORARG1,D3DTA_TEXTURE);
+		break;
+	case Blend::AlphaRep:
+		m_d3dd->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_SRCALPHA);
+		m_d3dd->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_INVSRCALPHA);
+		m_d3dd->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_SELECTARG1);
+		m_d3dd->SetTextureStageState(0,D3DTSS_COLORARG1,D3DTA_DIFFUSE);
+		break;
+	}
+}
+
+
 
 void r9RenderDX::SetDefaultStates()
 {

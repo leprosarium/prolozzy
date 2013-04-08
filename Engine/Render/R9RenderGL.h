@@ -54,6 +54,9 @@ virtual void		SetState( int state, int value );
 virtual	void		SetViewport( fRect& rect );
 virtual	void		SetView( int x, int y, dword flip );
 virtual	void		SetDefaultStates();
+virtual void		SetBlend(Blend b);
+
+
 
 virtual	void		Clear( dword color );
 virtual	BOOL		BeginScene( R9TEXTURE target=NULL );
@@ -168,7 +171,7 @@ inline void r9RenderGL::GL_BindTexture()
 	// alpha replicate
 	if(m_caps.m_texture_env_combine)
 	{
-		if(GetState(R9_STATE_BLEND)==R9_BLEND_ALPHAREP)
+		if(GetBlend()==Blend::AlphaRep)
 		{
 			m_glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE );
 			m_glTexEnvi( GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE );

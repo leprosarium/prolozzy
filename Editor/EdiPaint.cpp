@@ -14,7 +14,7 @@ cEdiPaint g_paint;
 cEdiPaint::cEdiPaint()
 {
 	m_tilepath[0] = 0;
-	m_shadersel = R9_BLEND_ALPHAREP;
+	m_shadersel = Blend::AlphaRep;
 	m_brushrect = 0;
 }
 
@@ -206,7 +206,7 @@ void cEdiPaint::TileDel( int idx )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // Draw functions
 //////////////////////////////////////////////////////////////////////////////////////////////////
-void cEdiPaint::DrawTile( int idx, int x, int y, const iRect & map, dword color, int flip, int frame, int blend, float scale )
+void cEdiPaint::DrawTile( int idx, int x, int y, const iRect & map, dword color, int flip, int frame, Blend blend, float scale )
 {
 	cTile* tile = TileGet(idx); 
 	if(tile==NULL) return;
@@ -222,12 +222,12 @@ void cEdiPaint::DrawTile( int idx, int x, int y, const iRect & map, dword color,
 	src.x2 += fx * w;
 	src.y1 += fy * h;
 	src.y2 += fy * h;
-	R9_SetState(R9_STATE_BLEND,blend);
+	R9_SetBlend(blend);
 	R9_DrawSprite( fV2(x, y), src, tile->m_tex, color, flip, (float)scale );
 
 }
 	
-void cEdiPaint::DrawTile( int idx, int x, int y, dword color, int flip, int frame, int blend, float scale )
+void cEdiPaint::DrawTile( int idx, int x, int y, dword color, int flip, int frame, Blend blend, float scale )
 {
 	cTile* tile = TileGet(idx); 
 	if(tile==NULL) return;
@@ -243,7 +243,7 @@ void cEdiPaint::DrawTile( int idx, int x, int y, dword color, int flip, int fram
 	src.x2 = (float)((fx+1) * w);
 	src.y1 = float(fy * h);
 	src.y2 = float((fy + 1) * h);
-	R9_SetState(R9_STATE_BLEND,blend);
+	R9_SetBlend(blend);
 	R9_DrawSprite( fV2(x, y), src, tile->m_tex, color, flip, scale );
 
 }
@@ -285,8 +285,10 @@ void cEdiPaint::DrawBrushAt( tBrush* brush, int x, int y, float zoom, BOOL anim 
 	int cx = (brush->m_data[BRUSH_W]+mw-1) / mw;
 	int cy = (brush->m_data[BRUSH_H]+mh-1) / mh;
 
-	int shader = brush->m_data[BRUSH_SHADER];
-	if(shader<0 || shader>=SHADER_MAX) shader = m_shadersel;
+	int sh = brush->m_data[BRUSH_SHADER];
+	Blend shader;
+	if(sh < static_cast<int>(Blend::Min) || sh >= static_cast<int>(Blend::Max)) shader = m_shadersel;
+	else shader = static_cast<Blend>(sh);
 
 	int frame = brush->m_data[BRUSH_FRAME];
 	//@ if(!anim) frame=0;

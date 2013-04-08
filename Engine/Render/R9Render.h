@@ -25,12 +25,23 @@
 #define	R9_PRIMITIVE_LINE		0		// line primitive with 2 vertexes
 #define	R9_PRIMITIVE_TRIANGLE	1		// triangle primitive with 3 vertexes
 
-#define	R9_BLEND_OPAQUE			0		// no alpha
-#define	R9_BLEND_ALPHA			1		// alpha blend
-#define	R9_BLEND_ADD			2		// additive
-#define	R9_BLEND_MOD			3		// modulative
-#define	R9_BLEND_MOD2			4		// decal
-#define	R9_BLEND_ALPHAREP		5		// alpha replicate
+enum class Blend
+{
+	Min = 0,
+	Opaque = Min,	// no alpha
+	Alpha,			// alpha blend
+	Add,			// additive
+	Mod,			// modulative
+	Mod2,			// decal
+	AlphaRep,		// alpha replicate
+	Max
+};
+//#define	R9_BLEND_OPAQUE			0		// no alpha
+//#define	R9_BLEND_ALPHA			1		// alpha blend
+//#define	R9_BLEND_ADD			2		// additive
+//#define	R9_BLEND_MOD			3		// modulative
+//#define	R9_BLEND_MOD2			4		// decal
+//#define	R9_BLEND_ALPHAREP		5		// alpha replicate
 
 #define	R9_TADDRESS_WRAP		0		// repeat texture mapping
 #define	R9_TADDRESS_CLAMP		1		// clamp texture mapping
@@ -133,6 +144,10 @@ inline	fRect&		GetViewport()									{ return m_viewport; }
 virtual	void		SetView( int x, int y, dword flip );			// set view options
 virtual	void		SetDefaultStates();								// set states to default values
 
+	virtual void SetBlend(Blend value) { blend = value; }			
+	Blend GetBlend() const { return blend; }
+
+
 // flow
 virtual	void		Clear( dword color );							// clear backbuffer
 virtual	BOOL		BeginScene( R9TEXTURE target=NULL );			// begine scene drawing; if target is valid then render in texture target
@@ -188,6 +203,8 @@ virtual BOOL		CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect );		/
 		int				m_primitivecount;	// rendered primitives from the scene
 		r9Font*			m_font;				// render font (created from source resource)
 		r9HandleReset	m_handlereset;		// on reset user callback
+
+	Blend blend;
 };
 
 
@@ -396,6 +413,10 @@ inline	int			R9_GetState( int state )								{ assert(r9_render); return r9_rend
 inline	void		R9_SetViewport( fRect& rect )							{ assert(r9_render); r9_render->SetViewport(rect); }
 inline	fRect&		R9_GetViewport()										{ assert(r9_render); return r9_render->GetViewport(); }
 inline	void		R9_SetView( int x, int y, dword flip )					{ assert(r9_render); r9_render->SetView(x,y,flip); }
+inline	void		R9_SetBlend(Blend b)						{ assert(r9_render); r9_render->SetBlend(b); }
+inline	Blend		R9_GetBlend()								{ assert(r9_render); return r9_render->GetBlend(); }
+
+
 
 inline	void		R9_Clear( dword color )									{ assert(r9_render); r9_render->Clear(color); }
 inline	BOOL		R9_BeginScene( R9TEXTURE target=NULL )					{ assert(r9_render); return r9_render->BeginScene( target ); }

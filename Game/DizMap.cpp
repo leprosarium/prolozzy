@@ -251,7 +251,7 @@ void cDizMap::DrawRoom( const iV2 & rp, int layer, int mode, const iV2 & ofs)
 			color	= brush.Get(BRUSH_COLOR);
 			shader	= brush.Get(BRUSH_SHADER);
 			brush.Set(BRUSH_COLOR, g_game.materials[brush.Get(BRUSH_MATERIAL)].color | 0xff000000);
-			brush.Set(BRUSH_SHADER, ShaderAlpharep);
+			brush.shader(Blend::AlphaRep);
 			g_paint.drawtilemat(brush.Get(BRUSH_MATERIAL)); // software use this
 			g_paint.DrawBrush( brush, p, frame );
 			brush.Set(BRUSH_COLOR, color);
@@ -270,7 +270,7 @@ void cDizMap::DrawRoom( const iV2 & rp, int layer, int mode, const iV2 & ofs)
 					dens == g_game.hard ? 0xffa0a0a0 :
 					0xffffffff;
 			brush.Set(BRUSH_COLOR,matd_color);
-			brush.Set(BRUSH_SHADER, ShaderAlpharep);
+			brush.shader(Blend::AlphaRep);
 			g_paint.DrawBrush( brush, p, frame );
 			brush.Set(BRUSH_COLOR, color);
 			brush.Set(BRUSH_SHADER, shader);

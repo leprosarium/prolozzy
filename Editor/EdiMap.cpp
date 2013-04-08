@@ -579,10 +579,10 @@ void cEdiMap::Draw()
 
 	// draw pre-rendered map
 	if(!m_target) return; // render target is not supported
-	R9_SetState(R9_STATE_BLEND,R9_BLEND_OPAQUE);
+	R9_SetBlend(Blend::Opaque);
 	R9_DrawSprite( fV2(m_viewx,m_viewy), fRect(0,0,m_vieww,m_viewh), m_target );
 	R9_Flush();
-	R9_SetState(R9_STATE_BLEND,R9_BLEND_ALPHA);
+	R9_SetBlend(Blend::Alpha);
 
 	// draw scrollers
 	DrawScrollers();
@@ -1166,7 +1166,7 @@ void cEdiMap::DrawGrid( iRect &view )
 {
 	int i;
 	iRect view2;
-	R9_SetState(R9_STATE_BLEND,R9_BLEND_ALPHA);
+	R9_SetBlend(Blend::Alpha);
 
 	// TILE GRID
 	int grid = EdiApp()->m_gridsize;

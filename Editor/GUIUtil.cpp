@@ -160,7 +160,7 @@ void GUIDrawImg( int x1, int y1, int x2, int y2, int img, dword color, int align
 	if(align & GUIALIGN_TOP)		y = y1;				else
 	if(align & GUIALIGN_BOTTOM)		y = y2-h;
 	
-	R9_SetState(R9_STATE_BLEND, R9_BLEND_ALPHA);
+	R9_SetBlend(Blend::Alpha);
 	R9_DrawSprite(fV2(x,y),fRect(0,0,w,h),tex,color);
 }
 

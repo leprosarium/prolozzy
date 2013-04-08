@@ -26,7 +26,7 @@ r9Font::r9Font()
 	m_aspect	= 1.0f;
 	m_italic	= 0;
 	m_color		= 0xffffffff;
-	m_blend		= R9_BLEND_ALPHA;
+	m_blend		= Blend::AlphaRep;
 	m_tex		= NULL;
 	memset( &m_char, 0, sizeof(m_char) );
 }

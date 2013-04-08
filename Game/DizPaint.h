@@ -10,18 +10,6 @@
 #include <deque> 
 #include <algorithm>
 
-// shaders
-enum Shader
-{
-	ShaderOpaque = 0,
-	ShaderBlend,
-	ShaderAdd,
-	ShaderMod,
-	ShaderMod2,
-	ShaderAlpharep,
-	ShaderMax
-};
-
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // TILE
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -155,13 +143,14 @@ struct tBrush
 {
 	int		m_data[BRUSH_MAX];
 	PlAtom _id;
+	Blend _shader;
 public:
-	tBrush() : _id("0") { 	memset(m_data, 0, sizeof(m_data)); Set(BRUSH_TILE, -1); Set(BRUSH_COLOR, 0xffffffff); }
-	tBrush(int (&data)[BRUSH_MAX], const PlAtom &_id) : _id(_id) { memcpy(m_data, data, sizeof(m_data)); }
+	tBrush() : _id("0"), _shader(Blend::Opaque) { 	memset(m_data, 0, sizeof(m_data)); Set(BRUSH_TILE, -1); Set(BRUSH_COLOR, 0xffffffff); }
+//	tBrush(int (&data)[BRUSH_MAX], const PlAtom &_id) : _id(_id) { memcpy(m_data, data, sizeof(m_data)); }
 	PlAtom id() const { return _id;}
 	void id(const PlAtom &id) { _id = id; }
-	int Get( int idx ) const { return m_data[idx]; }
-	void Set( int idx, int val ) { m_data[idx] = val; }
+	int Get( int idx ) const { if (idx == BRUSH_SHADER) return static_cast<int>(shader()); return m_data[idx]; }
+	void Set( int idx, int val ) { m_data[idx] = val; if(idx == BRUSH_SHADER) shader(static_cast<Blend>(val)); }
 	void MakeBBW	( int &x1, int &y1, int &x2, int &y2 ) const{ x1 = Get(BRUSH_X); x2 = x1 + Get(BRUSH_W); y1 = Get(BRUSH_Y); y2 = y1 + Get(BRUSH_H); }
 	void MakeBBW	( iV2 & p1, iV2 & p2 ) const { p1 = pos(); p2 = p1 + size(); }
 
@@ -175,6 +164,9 @@ public:
 	iRect rect() const { iV2 p = pos(); return iRect(p, p + size()); }
 	iRect map() const { return iRect(Get(BRUSH_MAP+0), Get(BRUSH_MAP+1), Get(BRUSH_MAP+2), Get(BRUSH_MAP+3)); }
 	fV2 mapSize() const { fV2 sz = map().Size(); return ((Get(BRUSH_FLIP) & R9_FLIPR) ? fV2(sz.y, sz.x) : sz) * mapScale(); }
+
+	Blend shader() const { return _shader; }
+	void shader(Blend s) { _shader = s; }
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -236,25 +228,25 @@ class HUD
 {
 	enum Cmd { None, Align, Color, Focus, Tile };
 	int _font;		// current font id
-	int _shader;	// current hud shader
+	Blend _shader;	// current hud shader
 	dword _color;	// current hud color
 	bool _isDrawing;		// draw allowed
 	Cmd ScanText(std::string::const_iterator start, std::string::const_iterator end, std::string::const_iterator & res, int* data);								// helper for hud text; scans for command and return command and data info
 
 public:
-	HUD() : _font(), _shader(ShaderBlend), _color(0xffffffff), _isDrawing() {}
+	HUD() : _font(), _shader(Blend::Alpha), _color(0xffffffff), _isDrawing() {}
 	void SetClipping(const iRect & dst);														// set a clipping rect
 	void DrawTile(int tileid, const iRect & dst, const iRect & src, dword flags, int frame);	// draw tile
 	void DrawText(int tileid, const iRect & dst, const std::string & text, int align);						// draw text with escape commands
 	void GetTextSize(const std::string & text, int& w, int& h, int&c, int&r);								// in text's width and height in pixels and the number of columns and rows
 
 	void font(int f) { _font = f; }
-	void shader(int s) { _shader = s; }
+	void shader(Blend b) { _shader = b; }
 	void color(dword c) { _color = c; }
 	void draw(bool d) { _isDrawing = d; }
 
 	int font() const { return _font; }
-	int shader() const { return _shader; }
+	Blend shader() const { return _shader; }
 	dword color() const { return _color; }
 	bool isDrawing() const { return _isDrawing; }
 };
@@ -274,8 +266,8 @@ class cDizPaint
 		fRect clip;
 	} rollback;
 
-	void DrawTileSoft(int idx, const iV2 & p, const iRect & map, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f ) const;	// paints tile in the image target map (faster, no rotation, no scale)
-	void DrawTileSoft2(int idx, const iV2 & p, const iRect & map, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f ) const;	// paints tile in the image target map (accept rotation and scale)
+	void DrawTileSoft(int idx, const iV2 & p, const iRect & map, dword color=0xffffffff, int flip=0, int frame=0, Blend blend = Blend::Alpha, float scale=1.0f ) const;	// paints tile in the image target map (faster, no rotation, no scale)
+	void DrawTileSoft2(int idx, const iV2 & p, const iRect & map, dword color=0xffffffff, int flip=0, int frame=0, Blend blend = Blend::Alpha, float scale=1.0f ) const;	// paints tile in the image target map (accept rotation and scale)
 
 	std::function<void(const iV2&)> selectDrawMethod(const tBrush & brush, int idx, int frame) const;
 
@@ -290,8 +282,8 @@ public:
 	void Unacquire();								// called before render reset to free render resources
 
 	// Draw scaled
-	void DrawTile(int idx, const iV2 & p, const iRect & map, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f ) const;	// tile scale (in editor paint it was full scale)
-	void DrawTile(int idx, const iV2 & p, dword color=0xffffffff, int flip=0, int frame=0, int blend=R9_BLEND_ALPHA, float scale=1.0f) const;				// tile scale (in editor paint it was full scale)
+	void DrawTile(int idx, const iV2 & p, const iRect & map, dword color=0xffffffff, int flip=0, int frame=0, Blend blend = Blend::Alpha, float scale=1.0f ) const;	// tile scale (in editor paint it was full scale)
+	void DrawTile(int idx, const iV2 & p, dword color=0xffffffff, int flip=0, int frame=0, Blend blend = Blend::Alpha, float scale=1.0f) const;				// tile scale (in editor paint it was full scale)
 	void DrawChar(int fontidx, const iV2 & p, char c, dword color=0xffffffff ) const;
 
 	// Draw brush 

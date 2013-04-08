@@ -35,7 +35,7 @@ class Object : public tBrush
 	std::string _Name;
 public:
 	Object() : tBrush() {}
-	Object(int (&data)[BRUSH_MAX], const PlAtom & id) : tBrush(data, id) {}
+//	Object(int (&data)[BRUSH_MAX], const PlAtom & id) : tBrush(data, id) {}
 	std::string Name() const { return _Name; }
 	void Name(const std::string & name) { _Name = name; std::transform(_Name.begin(), _Name.end(), _Name.begin(), ::toupper);  }
 };

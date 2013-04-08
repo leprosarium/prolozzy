@@ -276,20 +276,20 @@ void Tiles::Del( int idx )
 // Draw functions
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void cDizPaint::DrawTile( int idx,const iV2 & p, const iRect & map, dword color, int flip, int frame, int blend, float sc ) const
+void cDizPaint::DrawTile( int idx,const iV2 & p, const iRect & map, dword color, int flip, int frame, Blend blend, float sc ) const
 {
 	if(auto tile = tiles.Get(idx))
 	{
-		R9_SetState(R9_STATE_BLEND,blend);
+		R9_SetBlend(blend);
 		R9_DrawSprite( scrPos(p), tile->FrameRect(tile->ComputeFrameLoop(frame), map), tile->tex, color, flip, static_cast<float>(scale() * sc));
 	}
 }
 	
-void cDizPaint::DrawTile( int idx, const iV2 & p, dword color, int flip, int frame, int blend, float sc ) const
+void cDizPaint::DrawTile( int idx, const iV2 & p, dword color, int flip, int frame, Blend blend, float sc ) const
 {
 	if(auto tile = tiles.Get(idx))
 	{
-		R9_SetState(R9_STATE_BLEND,blend);
+		R9_SetBlend(blend);
 		R9_DrawSprite( scrPos(p), tile->FrameRect(tile->ComputeFrameLoop(frame)), tile->tex, color, flip, static_cast<float>(scale() * sc));
 	}
 }
@@ -312,7 +312,7 @@ std::function<void(const iV2 &)> cDizPaint::selectDrawMethod(const tBrush & brus
 	iRect map = brush.map();
 	int color = brush.Get(BRUSH_COLOR);
 	int flip = brush.Get(BRUSH_FLIP);
-	int blend = brush.Get(BRUSH_SHADER);
+	Blend blend = brush.shader();
 	float ms = brush.mapScale();
 	if(!drawtilesoft())
 		return [this, idx, map, color, flip, frame, blend, ms](const iV2 & p) { DrawTile(idx, p, map, color, flip, frame, blend, ms); };
@@ -385,7 +385,7 @@ void cDizPaint::EndSoftwareRendering()
 }
 
 
-void cDizPaint::DrawTileSoft( int idx, const iV2 & p, const iRect & map, dword color, int flip, int frame, int blend, float scale ) const
+void cDizPaint::DrawTileSoft( int idx, const iV2 & p, const iRect & map, dword color, int flip, int frame, Blend blend, float scale ) const
 {
 	auto tile = tiles.Get(idx); 
 	if(tile == nullptr) return;
@@ -451,7 +451,7 @@ void cDizPaint::DrawTileSoft( int idx, const iV2 & p, const iRect & map, dword c
 
 }
 
-void cDizPaint::DrawTileSoft2( int idx, const iV2 & p, const iRect & map, dword color, int flip, int frame, int blend, float scale ) const
+void cDizPaint::DrawTileSoft2( int idx, const iV2 & p, const iRect & map, dword color, int flip, int frame, Blend blend, float scale ) const
 {
 	auto tile = tiles.Get(idx); 
 	if(tile == nullptr) return;
@@ -623,7 +623,6 @@ void HUD::GetTextSize(const std::string & text, int& w, int& h, int& c, int& r )
 void HUD::DrawText( int tileid, const iRect & dst, const std::string & text, int m_align )
 {
 	if(!isDrawing()) return; // not in draw
-	if( shader()<0 || shader()>=ShaderMax ) return; // invalid shader
 	if( text.empty() ) return;
 	int tileidx = g_paint.tiles.Find(tileid);
 	cTile* tile = g_paint.tiles.Get(tileidx); 
@@ -708,7 +707,7 @@ void HUD::DrawText( int tileid, const iRect & dst, const std::string & text, int
 				else
 				if(cmd == Focus)	focus=data[0];
 				else
-				if(cmd == Tile)	g_paint.DrawTile( g_paint.tiles.Find(data[0]), p.x+data[1], p.y+data[2], focus ? colorfocus : clr, 0, 0 );
+				if(cmd == Tile)	g_paint.DrawTile( g_paint.tiles.Find(data[0]), iV2(p.x+data[1], p.y+data[2]), focus ? colorfocus : clr, 0, 0 );
 				m=m2+1; // step over it
 			}
 			else
@@ -739,15 +738,13 @@ void HUD::DrawTile( int tileid, const iRect & dst, const iRect & src, dword flag
 	if(tileidx==-1) return;
 	iV2 sz = src.Size();
 	if( sz.x==0 || sz.y==0 ) return;
-	if(shader()<0 || shader()>=ShaderMax) return;
-
 	fRect oldclip = R9_GetClipping();
 	fRect newclip = fRect(g_paint.scrPos(iV2(dst.x1, dst.y1)), g_paint.scrPos(iV2(dst.x2, dst.y2)));
 	R9_AddClipping(newclip);
 	if(R9_IsClipping())
 	{
 		iV2 c = (dst.Size() + sz - 1) / sz;
-		int blend = shader();
+		Blend blend = shader();
 		iV2 p(dst.x1, dst.y1);
 		for(int i=0;i<c.y;i++)
 		{

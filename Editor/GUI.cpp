@@ -114,7 +114,7 @@ void cGUI::Update()
 
 void cGUI::Draw()
 {
-	R9_SetState(R9_STATE_BLEND,R9_BLEND_ALPHA);
+	R9_SetBlend(Blend::Alpha);
 
 	std::for_each(m_dlg.begin(), m_dlg.end(), [](cGUIDlg * d){ d->Draw(); });
 	

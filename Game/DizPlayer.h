@@ -105,7 +105,7 @@ inline	cTile*		FindTile			()											{ return g_paint.tiles.Get(g_paint.tiles.
 		int			delay() const { return _delay; }
 		int			layer() const { return _layer; }
 		unsigned	color() const { return _color; }
-		int			shader() const { return _shader; }
+		Blend		shader() const { return _shader; }
 		bool		flipX() const { return _flipX; }
 		bool		flipY() const { return _flipY; }
 		dword		flip() const { return (flipX() ? 1 : 0 ) | (flipY() ? 2 : 0); }
@@ -131,7 +131,7 @@ inline	cTile*		FindTile			()											{ return g_paint.tiles.Get(g_paint.tiles.
 		void		delay(int delay) { _delay = delay; }
 		void		layer(int layer) { _layer = layer; }
 		void		color(unsigned color) { _color = color; }
-		void		shader(int shader) { _shader = shader; }
+		void		shader(Blend shader) { _shader = shader; }
 		void		flipX(bool flipX) { _flipX = flipX; }
 		void		flipY(bool flipY) { _flipY = flipY; }
 		void		dir(int dir) { _dir = dir; }
@@ -163,7 +163,7 @@ private:
 		int			_delay;				// update skips 'delay' frames (different from the animation delay that is in tile)
 		int			_layer;				// player's layer
 		unsigned	_color;				// color used to draw
-		int			_shader;			// shader
+		Blend		_shader;			// shader
 		bool		_flipX;
 		bool		_flipY;				
 		int			_dir;				// direction -1,0,1

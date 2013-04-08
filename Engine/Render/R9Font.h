@@ -54,8 +54,8 @@ virtual void		Destroy();											// destroy font (not the texture!)
 // config
 		void		SetTexture( R9TEXTURE texture )						{ m_tex = texture; } // set a texture for the font
 		R9TEXTURE	GetTexture() const									{ return m_tex; }
-		void		SetBlend( int blend )								{ m_blend = blend; }
-		int			GetBlend() const									{ return m_blend; }
+	void SetBlend( Blend blend ) { m_blend = blend; }
+	Blend GetBlend() const { return m_blend; }
 		void		SetColor( dword color )								{ m_color = color; }
 		void		SetSize( float size )								{ m_scale = size / m_chrh; }
 		void		SetSpace( int width )								{ m_char[32].w = width; }
@@ -95,7 +95,7 @@ public:
 		float		m_aspect;		// aspect (widths are multiplied by this) [0..1]
 		word		m_italic;		// italic shift width (0)
 		dword		m_color;		// color (0xffffffff)
-		int			m_blend;		// blend state
+		Blend		m_blend;		// blend state
 		R9TEXTURE	m_tex;			// texture
 
 public:

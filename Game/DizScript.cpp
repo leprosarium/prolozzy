@@ -380,10 +380,8 @@ PREDICATE_M(core, hudFont, 1)
 
 PREDICATE_M(core, hudShader, 1)
 {
-	int shd = A1;
-	if(shd < 0 || shd < ShaderMax) 
-		shd = ShaderBlend;
-	g_paint.hud.shader(shd);
+	int sh = A1;
+	g_paint.hud.shader(sh >= static_cast<int>(Blend::Min) && sh < static_cast<int>(Blend::Max) ? static_cast<Blend>(sh) : Blend::Alpha);
 	return true;
 }
 

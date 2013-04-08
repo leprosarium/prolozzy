@@ -69,7 +69,7 @@ void r9Render::SetDefaultStates()
 	m_texture = NULL;
 	for(int i=0;i<R9_STATES;i++) m_state[i]=-1; // clear states with invalid values
 	SetState(R9_STATE_PRIMITIVE,R9_PRIMITIVE_TRIANGLE);
-	SetState(R9_STATE_BLEND,R9_BLEND_ALPHA);
+	SetBlend(Blend::Alpha);
 	SetState(R9_STATE_TADDRESS,R9_TADDRESS_WRAP);
 	SetState(R9_STATE_FILTER,TRUE);
 	SetViewport(fRect(0,0,GetWidth(),GetHeight()));

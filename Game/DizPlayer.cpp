@@ -863,9 +863,9 @@ void cDizPlayer::CheckColliders()
 	int x1,y1,x2,y2;
 	int cx1,cy1,cx2,cy2;
 	MakeBBW(x1,y1,x2,y2);
-	for(auto i = g_game.m_collider.cbegin(), e = g_game.m_collider.cend(); i != e; ++i)
+	for(int idx: g_game.m_collider)
 	{
-		tBrush & obj = g_map.ObjGet(*i);
+		tBrush & obj = g_map.ObjGet(idx);
 		if( obj.Get(BRUSH_DISABLE)!=0 ) continue; // only enabled objects
 		if(!(obj.Get(BRUSH_COLLIDER) & COLLIDER_HANDLE)) continue; // just those that request it
 		cx1 = obj.Get(BRUSH_X);
@@ -879,7 +879,7 @@ void cDizPlayer::CheckColliders()
 		// call
 
 		enum collMode { exit = 0, enter = 1, keep = 2};
-		g_script.collision(*i, !collision ? exit : obj.Get(BRUSH_COLLISION) ? keep : enter);   // entering collision
+		g_script.collision(idx, !collision ? exit : obj.Get(BRUSH_COLLISION) ? keep : enter);   // entering collision
 
 		obj.Set(BRUSH_COLLISION,collision);
 	}
@@ -897,9 +897,9 @@ bool cDizPlayer::CheckCollidersSnap()
 
 	bool snap=false;
 
-	for(auto i = g_game.m_collider.cbegin(), e = g_game.m_collider.cend(); i != e; ++i)
+	for(int idx: g_game.m_collider)
 	{
-		tBrush & obj = g_map.ObjGet(*i);
+		tBrush & obj = g_map.ObjGet(idx);
 		if( obj.Get(BRUSH_DISABLE)!=0 ) continue; // only enabled objects
 		if(!(obj.Get(BRUSH_COLLIDER) & COLLIDER_HARD)) continue; // only those that need it
 		obj.MakeBBW(cx1,cy1,cx2,cy2);

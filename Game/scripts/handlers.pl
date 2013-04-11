@@ -62,7 +62,7 @@ drawCover(Menuid) :-
 	core:hudDrawTile(Menuid, rect(8,48,240,136), rect(8,48,240,136), 0, 0 ), !.
 
 drawMenu(Menuid) :-
-	core:hudShader(1),
+	core:hudShader(alpha),
 	core:hudColor(0xffffffff),
 	core:hudDrawTile(Menuid, rect(0,0,256,48), rect(0,0,256,48), 0, 0 ),
 	core:hudDrawTile(Menuid, rect(0,48,8,136), rect(0,48,8,136), 0, 0 ),
@@ -203,7 +203,7 @@ event(cover, drawHud) :-
 	Menuid = 1,
 	gamedef:fontDefault(Fontid),
 	core:hudFont(Fontid),
-	core:hudShader(1),
+	core:hudShader(alpha),
 	core:hudColor(0xffffffff),
 	drawCover(Menuid),
 	dialog:drawAll,
@@ -214,7 +214,7 @@ event(_, drawHud) :-
 	Menuid = 1,
 	gamedef:fontDefault(Fontid),
 	core:hudFont(Fontid),
-	core:hudShader(1),
+	core:hudShader(alpha),
 	core:hudColor(0xffffffff),
 	dialog:drawAll,
 	drawMenu(Menuid),

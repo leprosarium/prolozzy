@@ -351,8 +351,6 @@ cEdiMap::cEdiMap()
 	m_brushcount	= 0;
 	m_brushsize		= 0;
 	m_brush			= NULL;
-	m_brushviscount	= 0;
-	m_brushvis		= NULL;
 
 	// selection
 	m_selectcount	= 0;
@@ -411,11 +409,6 @@ void cEdiMap::Done()
 	m_brush=NULL;
 	m_brushcount = 0;
 	m_brushsize	= 0;
-	if(m_brushvis) free(m_brushvis);
-	m_brushviscount=NULL;
-	m_brushviscount=0;
-	m_brushvissize=0;
-
 }
 
 
@@ -765,7 +758,6 @@ void cEdiMap::BrushDrawOld( iRect& view )
 
 void cEdiMap::BrushDrawExtra( iRect& view )
 {
-	int i;
 	m_count_brushdraw = 0;
 	m_count_brushcheck = 0;
 
@@ -776,14 +768,14 @@ void cEdiMap::BrushDrawExtra( iRect& view )
 	if( partitioncount==0 ) return;
 
 	// brushvis is a draw buffer that holds indexes to brushes accepted for draw; will be order before draw
-	m_brushviscount = 0;
+	brushvis.clear();
 
 	// check partitions for draw
 	for( int p=0; p<partitioncount; p++ )
 	{
 		int pidx = partition[p];
 		int brushcount = m_partition[pidx]->m_count;
-		for( i=0; i<brushcount; i++ )
+		for( int i=0; i<brushcount; i++ )
 		{
 			int idx = m_partition[pidx]->m_data[i];
 			assert(0<=idx && idx<m_brushcount);
@@ -796,55 +788,25 @@ void cEdiMap::BrushDrawExtra( iRect& view )
 
 			if(!view.Intersects(brush.rect())) continue;
 
-			// store in drawbuffer
-			if(m_brushviscount==m_brushvissize)
-			{
-				m_brushvissize+=1024;
-				m_brushvis = (int*)realloc(m_brushvis, m_brushvissize*sizeof(int));
-			}
-			m_brushvis[m_brushviscount] = idx;
-			m_brushviscount++;
+			brushvis.push_back(idx); // store in drawbuffer
 		}
 	}
 
 	// order drawbuffer by index // @TODO optimize
-	BOOL ord;
-	while(TRUE)
-	{
-		ord=TRUE;
-		for(i=0;i<m_brushviscount-1;i++)
-		{
-			int l1 = m_brush[m_brushvis[i]].m_data[BRUSH_LAYER];
-			int l2 = m_brush[m_brushvis[i+1]].m_data[BRUSH_LAYER];
-			if( (l1>l2) || 
-				((l1==l2) && (m_brushvis[i]>m_brushvis[i+1]))
-				)
-			{
-				int t=m_brushvis[i+1];
-				m_brushvis[i+1]=m_brushvis[i];
-				m_brushvis[i]=t;
-				ord=FALSE;
-			}
-		}
-		if(ord) break;
-	}
 
-	// remove duplicates // @TODO optimize
-	for(i=0;i<m_brushviscount-1;i++)
-	{
-		if(m_brushvis[i]==m_brushvis[i+1])
-		{
-			memcpy( &m_brushvis[i], &m_brushvis[i+1], (m_brushviscount-1-i)*sizeof(int) );
-			m_brushviscount--;
-			i--; // redo this new one
-		}
-	}
+	std::sort(brushvis.begin(), brushvis.end(), [this](int idx1, int idx2) {
+			int l1 = m_brush[idx1].m_data[BRUSH_LAYER];
+			int l2 = m_brush[idx2].m_data[BRUSH_LAYER];
+			return l1 == l2 ? idx1 < idx2 : l1 < l2;
+	});
+
+	// remove duplicates
+	brushvis.erase( std::unique( brushvis.begin(), brushvis.end() ), brushvis.end() );
 
 	// draw drawbuffer
-	for( i=0; i<m_brushviscount; i++ )
+	for(size_t idx: brushvis)
 	{
-		int idx = m_brushvis[i];
-		tBrush& brush = m_brush[idx];
+		tBrush & brush = m_brush[idx];
 
 		// user callback
 		EdiApp()->m_brush = brush;
@@ -944,10 +906,7 @@ void cEdiMap::BrushClear()
 	m_brush=NULL;
 	m_brushcount = 0;
 	m_brushsize	= 0;
-	if(m_brushvis) free(m_brushvis);
-	m_brushviscount=NULL;
-	m_brushviscount=0;
-	m_brushvissize=0;
+	brushvis.clear();
 	m_selectcount=0;
 }
 
@@ -1012,21 +971,16 @@ int	cEdiMap::PartitionGet( iRect& rect, int* buffer, int buffersize )
 
 void cEdiMap::PartitionFix( int brushidx1, int brushidx2, int delta )
 {
-	for(size_t i=0; i<m_partition.size(); i++)
-	{
-		cPartitionCel* pcel = m_partition[i];
+	for(cPartitionCel* pcel: m_partition)
 		for(int j=0; j<pcel->m_count; j++)
-		{
 			if( pcel->m_data[j]>=brushidx1 && pcel->m_data[j]<=brushidx2 )
 				pcel->m_data[j] += delta;
-		}
-	}
 }
 
 BOOL cEdiMap::PartitionRepartition()
 {
 	// force all clean
-	std::for_each(m_partition.begin(), m_partition.end(), [](cPartitionCel *c) {c->m_count = 0;});
+	for(cPartitionCel *c: m_partition) c->m_count = 0;
 	// repartition all brushes
 	BOOL ok = TRUE;
 	for(int i=0; i<m_brushcount; i++)

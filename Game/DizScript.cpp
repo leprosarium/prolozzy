@@ -154,8 +154,8 @@ PREDICATE_M(core, materialDensityRead, 5)
 		for(p.x=x1;p.x<x2;p.x++)
 			dens.insert(g_game.DensMap(p));
 	PlTail l(A5);
-	for(auto i = dens.cbegin(), e = dens.cend(); i != e; ++i)
-		l.append(*i);
+	for(const PlAtom &a: dens)
+		l.append(a);
 	return l.close();
 }
 
@@ -271,9 +271,9 @@ PREDICATE_M(core, colliderSnapDistance, 5)
 
 	int dist = 0; // max distance from box bottom to collider top (if collider top is inside box)
 	int cx1,cy1,cx2,cy2;
-	for(auto i = g_game.m_collider.cbegin(), e = g_game.m_collider.cend(); i != e; ++i)
+	for(int idx: g_game.m_collider)
 	{
-		tBrush & obj = g_map.ObjGet(*i);
+		tBrush & obj = g_map.ObjGet(idx);
 		if( obj.Get(BRUSH_DISABLE)!=0 ) continue; // only enabled objects
 		if(!(obj.Get(BRUSH_COLLIDER) & COLLIDER_HARD)) continue; // only those that need it
 		obj.MakeBBW(cx1,cy1,cx2,cy2);
@@ -380,9 +380,12 @@ PREDICATE_M(core, hudFont, 1)
 
 PREDICATE_M(core, hudShader, 1)
 {
-	int sh = A1;
-	g_paint.hud.shader(sh >= static_cast<int>(Blend::Min) && sh < static_cast<int>(Blend::Max) ? static_cast<Blend>(sh) : Blend::Alpha);
+	g_paint.hud.shader(BlendAtom().Get(A1));
 	return true;
+
+//	int sh = A1;
+//	g_paint.hud.shader(sh >= static_cast<int>(Blend::Min) && sh < static_cast<int>(Blend::Max) ? static_cast<Blend>(sh) : Blend::Alpha);
+//	return true;
 }
 
 PREDICATE_M(core, hudColor, 1)

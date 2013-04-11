@@ -129,9 +129,7 @@ public:
 		int			m_brushcount;									// brushes count
 		int			m_brushsize;									// brush buffer size (how many it can hold)
 		tBrush*		m_brush;										// brush buffer list (brushes in map)
-		int			m_brushviscount;								// visible brushes count
-		int			m_brushvissize;									// visible brushes buffer size
-		int*		m_brushvis;										// visible brushes list (brushes to draw; updated on refresh)
+		std::vector<int> brushvis;									// visible brushes list (brushes to draw; updated on refresh)
 
 		// partitioning
 		void		PartitionInit		();							// create partitions cels depending on the map size

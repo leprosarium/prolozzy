@@ -193,7 +193,7 @@ BOOL cEdiApp::InitVideo()
 
 	// default config
 	r9Cfg cfg;
-	int api			= R9_API_DEFAULT;
+	Api api	= Api::Default;
 	cfg.m_windowed	= 1;
 	cfg.m_bpp		= 32;
 	cfg.m_width		= screensizelist[screensize][0]-delta/2;
@@ -201,7 +201,13 @@ BOOL cEdiApp::InitVideo()
 	cfg.m_refresh	= 85;
 
 	// load config
-	ini_getint( inifile, "EDITOR", "options_videoapi",		&api );
+	int apiv;
+	if(ini_getint( inifile, "EDITOR", "options_videoapi", &apiv))
+		if(apiv == static_cast<int>(Api::DirectX))
+			api = Api::DirectX;
+		else if(apiv == static_cast<int>(Api::OpenGL))
+			api = Api::OpenGL;
+
 
 	// init interface
 	if(!R9_InitInterface(api)) return FALSE;
@@ -209,13 +215,14 @@ BOOL cEdiApp::InitVideo()
 	BOOL ok = R9_Init(E9_GetHWND(),&cfg,api);
 	if(!ok) // try the other api
 	{
-		dlog(L"RENDER: init %S (api %i) failed, try the other api.\n",api?"OpenGL":"DirectX9",api);
-		ok = R9_Init(E9_GetHWND(),&cfg,!api);
+		dlog(L"RENDER: init %S failed, try the other api.\n", api == Api::OpenGL ? "OpenGL" : "DirectX9");
+		api = api == Api::DirectX ? Api::OpenGL : Api::DirectX;
+		ok = R9_Init(E9_GetHWND(),&cfg,api);
 		if(!ok)	return FALSE;
 	}
 
 	R9_SetHandleReset(HandleReset);
-	R9_SetState(R9_STATE_FILTER,FALSE);
+	R9_SetFilter(Filter::Point);
 	E9_AppSetInt(E9_APP_WINDOWED,cfg.m_windowed);
 
 	return TRUE;

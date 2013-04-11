@@ -5,25 +5,32 @@
 #ifndef __R9RENDER_H__
 #define __R9RENDER_H__
 
+#include <vector>
+
+
 #include "E9System.h"
 #include "E9Engine.h"
 #include "D9Debug.h"
 #include "R9Img.h"
 #include "E9Math.h"
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-#define R9_API_DIRECTX			0
-#define R9_API_OPENGL			1
-#define R9_API_DEFAULT			R9_API_DIRECTX
 
-#define R9_STATE_PRIMITIVE		0		// primitive type
-#define R9_STATE_BLEND			1		// blending mode
-#define R9_STATE_TADDRESS		2		// texture address mode
-#define R9_STATE_FILTER			3		// filter on/off
+///////////////////////////////////////////////////////////////////////////////////////////////////
+enum class Api
+{
+	DirectX,
+	OpenGL,
+	Default = DirectX
+
+};
+
 #define	R9_STATES				5		// dummy
 
-#define	R9_PRIMITIVE_LINE		0		// line primitive with 2 vertexes
-#define	R9_PRIMITIVE_TRIANGLE	1		// triangle primitive with 3 vertexes
+enum class Primitive
+{
+	Line,		// line primitive with 2 vertexes
+	Triangle	// triangle primitive with 3 vertexes
+};
 
 enum class Blend
 {
@@ -36,15 +43,18 @@ enum class Blend
 	AlphaRep,		// alpha replicate
 	Max
 };
-//#define	R9_BLEND_OPAQUE			0		// no alpha
-//#define	R9_BLEND_ALPHA			1		// alpha blend
-//#define	R9_BLEND_ADD			2		// additive
-//#define	R9_BLEND_MOD			3		// modulative
-//#define	R9_BLEND_MOD2			4		// decal
-//#define	R9_BLEND_ALPHAREP		5		// alpha replicate
 
-#define	R9_TADDRESS_WRAP		0		// repeat texture mapping
-#define	R9_TADDRESS_CLAMP		1		// clamp texture mapping
+enum class TAddress
+{
+	Wrap,		// repeat texture mapping
+	Clamp		// clamp texture mapping
+};
+
+enum class Filter
+{
+	Point,
+	Linear
+};
 
 #define	R9_CFG_WIDTH			640		// default width
 #define	R9_CFG_HEIGHT			480		// default height
@@ -77,17 +87,26 @@ struct r9Cfg
 	int		m_height;		// resolution height
 	int		m_refresh;		// refresh rate (0=default);
 	int		m_vsync;		// vsync (0=off)
-	r9Cfg();				// set defauld config values
+	r9Cfg();				
 };
 
 struct r9DisplayMode
 {
-	int		m_windowed;		// windowed 1/0 (1 for current display mode)
-	int		m_bpp;			// bpp 16/32
-	int		m_width;		// resolution width
-	int		m_height;		// resolution height
-	int		m_refresh;		// refresh rate (0 for current display mode)
-	dword	m_reserved1;	// reserved for platforms
+	int		windowed;		// windowed 1/0 (1 for current display mode)
+	int		bpp;			// bpp 16/32
+	int		width;		// resolution width
+	int		height;		// resolution height
+	int		refresh;		// refresh rate (0 for current display mode)
+	dword	reserved1;	// reserved for platforms
+	bool operator <(const r9DisplayMode & m) const
+	{
+		if(windowed != m.windowed )	return windowed < m.windowed;
+		if(bpp != m.bpp ) return bpp < m.bpp;
+		if(width != m.width) return width < m.width;
+		if(height != m.height) return height < m.height;
+		return refresh < m.refresh;
+	}
+	void log(int ch) const { dlog(ch, L"   \t%ix%i \t%ibpp \t%iHz \t%S\n", width, height, bpp, refresh, windowed ? "windowed" : ""); }
 };
 
 struct r9Texture
@@ -108,16 +127,22 @@ class r9Font;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class r9Render
 {
-public:
-					r9Render();
-virtual				~r9Render();
+protected:
+	virtual void ApplyBlend() = 0;
+	virtual void ApplyTAddress() = 0;
+	virtual void ApplyFilter() = 0;
 
-// dll
-virtual	BOOL		LoadDll();
-virtual	void		UnloadDll();
+public:
+	static std::vector<r9DisplayMode> DisplayModes;
+
+	r9Render(Api api);
+	virtual ~r9Render() {}
+
+	virtual	bool LoadDll() = 0;
+	virtual	void UnloadDll() = 0;
 
 // preinit
-virtual	int			GatherDisplayModes( r9DisplayMode* displaymode );				// fill list with valid displaymodes and return count; use NULL just for the count; first entry is the current mode (windowed) if available; @WARNING: only safe to call in windowed mode, at start
+virtual	void GatherDisplayModes() const = 0;				// fill list with valid displaymodes and return count; use NULL just for the count; first entry is the current mode (windowed) if available; @WARNING: only safe to call in windowed mode, at start
 
 // init
 virtual	BOOL		Init( HWND hwnd, r9Cfg* cfg );					// init render; if cfg is NULL, default cfg is used
@@ -126,7 +151,7 @@ virtual	BOOL		IsReady();										// if render is ready; avoid using render in w
 inline	int			GetWidth()										{ return m_cfg.m_width; }
 inline	int			GetHeight()										{ return m_cfg.m_height; }
 inline	r9Cfg&		GetCfg()										{ return m_cfg; }
-inline	int			GetApi()										{ return m_api; }
+inline	Api			GetApi()										{ return api; }
 
 // texture
 virtual	R9TEXTURE	TextureCreate( r9Img* img );					// create texture from image
@@ -137,15 +162,23 @@ virtual	void		TextureDestroy( R9TEXTURE tex );				// destroy texture
 // states
 virtual	void		SetTexture( R9TEXTURE tex );					// set current texture (if different); flushes if needed
 inline	R9TEXTURE	GetTexture()									{ return m_texture; }
-virtual void		SetState( int state, int value );				// set a render state (if different); flushes if needed
-inline	int			GetState( int state )							{ return m_state[state]; }
 virtual	void		SetViewport( fRect& rect );						// set viewport rect (used as scissor)
 inline	fRect&		GetViewport()									{ return m_viewport; }
 virtual	void		SetView( int x, int y, dword flip );			// set view options
 virtual	void		SetDefaultStates();								// set states to default values
 
-	virtual void SetBlend(Blend value) { blend = value; }			
+	void SetBlend(Blend b);
 	Blend GetBlend() const { return blend; }
+
+	void SetPrimitive(Primitive p);
+	Primitive GetPrimitive() const { return primitive; }
+
+	void SetTAddress(TAddress a);
+	TAddress GetTAddress() const { return taddress; }
+
+	void SetFilter(Filter f);
+	Filter GetFilter() const { return filter; }
+
 
 
 // flow
@@ -158,8 +191,8 @@ virtual	BOOL		CheckDevice();									// check if device is lost and if so, try t
 virtual	BOOL		ToggleVideoMode();								// @OBSOLETE toggle between windowed and full screen
 
 // batch primitives
-virtual	void		Push( r9Vertex* vx, int vxs, int primitive );	// push vertices in the batch buffer
-virtual	void		Flush();										// flush the batch buffer
+	virtual void Push( r9Vertex* vx, int vxs, Primitive primitive ) = 0;// push vertices in the batch buffer
+	virtual	void Flush() = 0;										// flush the batch buffer
 inline	BOOL		NeedFlush()										{ return m_needflush; }
 
 // draw functions
@@ -189,11 +222,10 @@ virtual BOOL		CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect );		/
 // members
 		HMODULE			m_dll;				// platform dll
 		HWND			m_hwnd;				// associated window
-		int				m_api;				// render api (fixed per render class)
+		Api				api;				// render api (fixed per render class)
 		r9Cfg			m_cfg;				// render config
 		BOOL			m_beginendscene;	// if inside begin-end scene cycle
 		R9TEXTURE		m_texture;			// current texture
-		int				m_state[R9_STATES];	// render states
 		fRect			m_viewport;			// viewport rect
 		int				m_viewx;			// view x offset
 		int				m_viewy;			// view y offset
@@ -204,7 +236,11 @@ virtual BOOL		CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect );		/
 		r9Font*			m_font;				// render font (created from source resource)
 		r9HandleReset	m_handlereset;		// on reset user callback
 
+private:
 	Blend blend;
+	Primitive primitive;
+	TAddress taddress;
+	Filter filter;
 };
 
 
@@ -229,7 +265,7 @@ inline void r9Render::DrawLine( fV2& a, fV2& b, dword color )
 	vx[1].v = 1.0f;
 	vx[1].color = color;
 
-	Push(vx,2,R9_PRIMITIVE_LINE);
+	Push(vx, 2, Primitive::Line);
 }
 
 inline void r9Render::DrawTriangle( fV2& a, fV2& b, fV2& c, fV2& ta, fV2& tb, fV2& tc, R9TEXTURE tex, dword color )
@@ -256,7 +292,7 @@ inline void r9Render::DrawTriangle( fV2& a, fV2& b, fV2& c, fV2& ta, fV2& tb, fV
 	vx[2].v = tc.y;
 	vx[2].color = color;
 
-	Push(vx,3,R9_PRIMITIVE_TRIANGLE);
+	Push(vx, 3, Primitive::Triangle);
 }
 
 inline void r9Render::DrawQuad( fRect& dst, fRect& src, R9TEXTURE tex, dword color )
@@ -301,7 +337,7 @@ inline void r9Render::DrawQuad( fRect& dst, fRect& src, R9TEXTURE tex, dword col
 	vx[5].v = src.y2;
 	vx[5].color = color;
 
-	Push(vx,6,R9_PRIMITIVE_TRIANGLE);
+	Push(vx, 6, Primitive::Triangle);
 }
 
 inline void r9Render::DrawBar( fRect& dst, dword color )
@@ -381,19 +417,19 @@ inline void r9Render::ClipSprite( fRect& dst, fRect& src, int flip )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 extern r9Render* r9_render;
 		
-		BOOL		R9_InitInterface( int api=R9_API_DEFAULT );
+bool R9_InitInterface(Api api = Api::Default);
 		void		R9_GetDisplayModes( r9DisplayMode* &displaymode, int& displaymodecount );		// available after init interface
-		BOOL		R9_FilterCfg( r9Cfg& cfg, int& api );														// available after init interface
-		void		R9_LogCfg( r9Cfg& cfg, int api );
+bool R9_FilterCfg(r9Cfg & cfg, Api & api);														// available after init interface
+		void		R9_LogCfg( r9Cfg& cfg, Api api );
 		void		R9_DoneInterface();
 
-		BOOL		R9_Init( HWND hwnd, r9Cfg* cfg, int api=R9_API_DEFAULT );
+		BOOL		R9_Init( HWND hwnd, r9Cfg* cfg, Api api = Api::Default);
 		void		R9_Done();
 inline	BOOL		R9_IsReady()											{ return (r9_render && r9_render->IsReady()); }
 inline	int			R9_GetWidth()											{ assert(r9_render); return r9_render->GetWidth(); }
 inline	int			R9_GetHeight()											{ assert(r9_render); return r9_render->GetHeight(); }
 inline	r9Cfg&		R9_GetCfg()												{ assert(r9_render); return r9_render->GetCfg(); }
-inline	int			R9_GetApi()												{ assert(r9_render); return r9_render->GetApi(); }
+inline	Api			R9_GetApi()												{ assert(r9_render); return r9_render->GetApi(); }
 inline	void		R9_SetHandleReset( r9HandleReset callback )				{ assert(r9_render); r9_render->m_handlereset = callback; }
 
 inline	R9TEXTURE	R9_TextureCreate( r9Img* img )							{ assert(r9_render); return r9_render->TextureCreate(img); }
@@ -408,13 +444,12 @@ inline	int			R9_TextureGetRealHeight( R9TEXTURE tex )				{ return tex->m_realhei
 
 inline	void		R9_SetTexture( R9TEXTURE tex )							{ assert(r9_render); r9_render->SetTexture(tex); }
 inline	R9TEXTURE	R9_GetTexture()											{ assert(r9_render); return r9_render->GetTexture(); }
-inline	void		R9_SetState( int state, int value )						{ assert(r9_render); r9_render->SetState(state,value); }
-inline	int			R9_GetState( int state )								{ assert(r9_render); return r9_render->GetState(state); }
 inline	void		R9_SetViewport( fRect& rect )							{ assert(r9_render); r9_render->SetViewport(rect); }
 inline	fRect&		R9_GetViewport()										{ assert(r9_render); return r9_render->GetViewport(); }
 inline	void		R9_SetView( int x, int y, dword flip )					{ assert(r9_render); r9_render->SetView(x,y,flip); }
 inline	void		R9_SetBlend(Blend b)						{ assert(r9_render); r9_render->SetBlend(b); }
 inline	Blend		R9_GetBlend()								{ assert(r9_render); return r9_render->GetBlend(); }
+inline	void		R9_SetFilter(Filter f)						{ assert(r9_render); r9_render->SetFilter(f); }
 
 
 
@@ -426,7 +461,7 @@ inline	BOOL		R9_IsBeginEndScene()									{ assert(r9_render); return r9_render-
 inline	BOOL		R9_CheckDevice()										{ assert(r9_render); return r9_render->CheckDevice(); }
 inline	BOOL		R9_ToggleVideoMode()									{ assert(r9_render); return r9_render->ToggleVideoMode(); }
 
-inline	void		R9_Push( r9Vertex* vx, int vxs, int primitive )			{ assert(r9_render); r9_render->Push(vx,vxs,primitive); }
+inline	void		R9_Push( r9Vertex* vx, int vxs, Primitive primitive )	{ assert(r9_render); r9_render->Push(vx, vxs, primitive); }
 inline	void		R9_Flush()												{ assert(r9_render); r9_render->Flush(); }
 inline	BOOL		R9_NeedFlush()											{ assert(r9_render); return r9_render->NeedFlush(); }
 

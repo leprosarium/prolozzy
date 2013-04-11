@@ -81,9 +81,8 @@ bool Tiles::Reacquire()
 {
 	dlog(LOGAPP, L"Paint reaquire.\n");
 	bool ok=true;
-	for(auto i = begin(), e = end(); i != e; ++i) 
+	for(cTile & tile: *this) 
 	{
-		cTile & tile = *i;
 		tile.tex = R9_TextureLoad(tile.name.c_str());
 		if(tile.tex==NULL)
 		{
@@ -96,7 +95,7 @@ bool Tiles::Reacquire()
 
 void Tiles::Unacquire()
 {
-	std::for_each(begin(), end(), [](cTile & t) { t.Destroy(); });
+	for(cTile & t: *this) t.Destroy();
 }
 void cDizPaint::Unacquire()
 {

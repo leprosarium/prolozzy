@@ -11,61 +11,56 @@
 
 #define R9_LOGERROR( prefix )	dlog( LOGERR, L"RENDER: %S\n", prefix );
 
-r9RenderGL::twglCreateContext		r9RenderGL::m_wglCreateContext		= NULL;
-r9RenderGL::twglMakeCurrent			r9RenderGL::m_wglMakeCurrent		= NULL;		
-r9RenderGL::twglDeleteContext		r9RenderGL::m_wglDeleteContext		= NULL;
-r9RenderGL::tglGetString			r9RenderGL::m_glGetString			= NULL;
-r9RenderGL::tglGenTextures			r9RenderGL::m_glGenTextures			= NULL;
-r9RenderGL::tglBindTexture			r9RenderGL::m_glBindTexture			= NULL;
-r9RenderGL::tglTexImage2D			r9RenderGL::m_glTexImage2D			= NULL;
-r9RenderGL::tglDeleteTextures		r9RenderGL::m_glDeleteTextures		= NULL;
-r9RenderGL::tglTexParameteri		r9RenderGL::m_glTexParameteri		= NULL;
-r9RenderGL::tglBlendFunc			r9RenderGL::m_glBlendFunc			= NULL;
-r9RenderGL::tglTexEnvi				r9RenderGL::m_glTexEnvi				= NULL;
-r9RenderGL::tglEnable				r9RenderGL::m_glEnable				= NULL;
-r9RenderGL::tglShadeModel			r9RenderGL::m_glShadeModel			= NULL;
-r9RenderGL::tglViewport				r9RenderGL::m_glViewport			= NULL;		
-r9RenderGL::tglMatrixMode			r9RenderGL::m_glMatrixMode			= NULL;
-r9RenderGL::tglLoadIdentity			r9RenderGL::m_glLoadIdentity		= NULL;		
-r9RenderGL::tglOrtho				r9RenderGL::m_glOrtho				= NULL;
-r9RenderGL::tglClearColor			r9RenderGL::m_glClearColor			= NULL;
-r9RenderGL::tglClear				r9RenderGL::m_glClear				= NULL;
-r9RenderGL::tglEnableClientState	r9RenderGL::m_glEnableClientState	= NULL;
-r9RenderGL::tglColorPointer			r9RenderGL::m_glColorPointer		= NULL;		
-r9RenderGL::tglVertexPointer		r9RenderGL::m_glVertexPointer		= NULL;
-r9RenderGL::tglTexCoordPointer		r9RenderGL::m_glTexCoordPointer		= NULL;
-r9RenderGL::tglDrawArrays			r9RenderGL::m_glDrawArrays			= NULL;
-r9RenderGL::tglDisableClientState	r9RenderGL::m_glDisableClientState	= NULL;
-r9RenderGL::tglPixelStorei			r9RenderGL::m_glPixelStorei			= NULL;
-r9RenderGL::tglReadPixels			r9RenderGL::m_glReadPixels			= NULL;
-r9RenderGL::tglCopyTexImage2D		r9RenderGL::m_glCopyTexImage2D		= NULL;
-r9RenderGL::tglGetTexImage			r9RenderGL::m_glGetTexImage			= NULL;
+r9RenderGL::twglCreateContext		r9RenderGL::m_wglCreateContext		= nullptr;
+r9RenderGL::twglMakeCurrent			r9RenderGL::m_wglMakeCurrent		= nullptr;		
+r9RenderGL::twglDeleteContext		r9RenderGL::m_wglDeleteContext		= nullptr;
+r9RenderGL::tglGetString			r9RenderGL::m_glGetString			= nullptr;
+r9RenderGL::tglGenTextures			r9RenderGL::m_glGenTextures			= nullptr;
+r9RenderGL::tglBindTexture			r9RenderGL::m_glBindTexture			= nullptr;
+r9RenderGL::tglTexImage2D			r9RenderGL::m_glTexImage2D			= nullptr;
+r9RenderGL::tglDeleteTextures		r9RenderGL::m_glDeleteTextures		= nullptr;
+r9RenderGL::tglTexParameteri		r9RenderGL::m_glTexParameteri		= nullptr;
+r9RenderGL::tglBlendFunc			r9RenderGL::m_glBlendFunc			= nullptr;
+r9RenderGL::tglTexEnvi				r9RenderGL::m_glTexEnvi				= nullptr;
+r9RenderGL::tglEnable				r9RenderGL::m_glEnable				= nullptr;
+r9RenderGL::tglShadeModel			r9RenderGL::m_glShadeModel			= nullptr;
+r9RenderGL::tglViewport				r9RenderGL::m_glViewport			= nullptr;		
+r9RenderGL::tglMatrixMode			r9RenderGL::m_glMatrixMode			= nullptr;
+r9RenderGL::tglLoadIdentity			r9RenderGL::m_glLoadIdentity		= nullptr;		
+r9RenderGL::tglOrtho				r9RenderGL::m_glOrtho				= nullptr;
+r9RenderGL::tglClearColor			r9RenderGL::m_glClearColor			= nullptr;
+r9RenderGL::tglClear				r9RenderGL::m_glClear				= nullptr;
+r9RenderGL::tglEnableClientState	r9RenderGL::m_glEnableClientState	= nullptr;
+r9RenderGL::tglColorPointer			r9RenderGL::m_glColorPointer		= nullptr;		
+r9RenderGL::tglVertexPointer		r9RenderGL::m_glVertexPointer		= nullptr;
+r9RenderGL::tglTexCoordPointer		r9RenderGL::m_glTexCoordPointer		= nullptr;
+r9RenderGL::tglDrawArrays			r9RenderGL::m_glDrawArrays			= nullptr;
+r9RenderGL::tglDisableClientState	r9RenderGL::m_glDisableClientState	= nullptr;
+r9RenderGL::tglPixelStorei			r9RenderGL::m_glPixelStorei			= nullptr;
+r9RenderGL::tglReadPixels			r9RenderGL::m_glReadPixels			= nullptr;
+r9RenderGL::tglCopyTexImage2D		r9RenderGL::m_glCopyTexImage2D		= nullptr;
+r9RenderGL::tglGetTexImage			r9RenderGL::m_glGetTexImage			= nullptr;
 
-r9RenderGL::r9RenderGL()
+r9RenderGL::r9RenderGL() : 
+	r9Render(Api::OpenGL),
+	m_hdc(),
+	m_hrc(),
+	m_batchcount(),
+	m_batchbuffer(),
+	m_textarget()
 {
-	m_api			= R9_API_OPENGL;
-	m_hdc			= NULL;
-	m_hrc			= NULL;
-	m_batchcount	= 0;
-	m_batchbuffer	= NULL;
 	m_caps.m_texture_env_combine	= FALSE;
-	m_textarget		= NULL;
 }
-
-r9RenderGL::~r9RenderGL()
-{
-}
-
 
 #define _GETDLLPROC( name )	m_##name = (t##name)GetProcAddress(m_dll,#name); if(!m_##name) { R9_LOGERROR("bad dll version."); goto error; }
 #define _SETLIBPROC( name ) m_##name = name;
 
-BOOL r9RenderGL::LoadDll()
+bool r9RenderGL::LoadDll()
 {
 #ifdef R9_ENABLE_DLLGL
-	if(m_dll) return TRUE;
+	if(m_dll) return true;
 	m_dll = LoadLibrary("opengl32.dll");
-	if(!m_dll) { R9_LOGERROR("can't load opengl32.dll"); return FALSE; }
+	if(!m_dll) { R9_LOGERROR("can't load opengl32.dll"); return false; }
 
 	_GETDLLPROC(	wglCreateContext		);
 	_GETDLLPROC(	wglMakeCurrent			);
@@ -97,10 +92,10 @@ BOOL r9RenderGL::LoadDll()
 	_GETDLLPROC(	glCopyTexImage2D		);
 	_GETDLLPROC(	glGetTexImage			);
 
-	return TRUE;
+	return true;
 	error:
 	UnloadDll();
-	return FALSE;
+	return false;
 
 #else
 
@@ -134,51 +129,51 @@ BOOL r9RenderGL::LoadDll()
 	_SETLIBPROC(	glCopyTexImage2D		);
 	_SETLIBPROC(	glGetTexImage			);
 
-	return TRUE;
+	return true;
 #endif
 }
 
 void r9RenderGL::UnloadDll()
 {
 #ifdef R9_ENABLE_DLLGL
-	if(m_dll==NULL) return;
+	if(!m_dll) return;
 	FreeLibrary(m_dll);	
-	m_dll=NULL;
+	m_dll = nullptr;
 #endif
 
-	m_wglCreateContext		= NULL;
-	m_wglMakeCurrent		= NULL;
-	m_wglDeleteContext		= NULL;
-	m_glGetString			= NULL;
-	m_glGenTextures			= NULL;
-	m_glBindTexture			= NULL;
-	m_glTexImage2D			= NULL;
-	m_glDeleteTextures		= NULL;
-	m_glTexParameteri		= NULL;
-	m_glBlendFunc			= NULL;
-	m_glTexEnvi				= NULL;
-	m_glEnable				= NULL;
-	m_glShadeModel			= NULL;
-	m_glViewport			= NULL;
-	m_glMatrixMode			= NULL;
-	m_glLoadIdentity		= NULL;
-	m_glOrtho				= NULL;
-	m_glClearColor			= NULL;
-	m_glClear				= NULL;
-	m_glEnableClientState	= NULL;
-	m_glColorPointer		= NULL;
-	m_glVertexPointer		= NULL;
-	m_glTexCoordPointer		= NULL;
-	m_glDrawArrays			= NULL;
-	m_glDisableClientState	= NULL;
-	m_glPixelStorei			= NULL;
-	m_glReadPixels			= NULL;
-	m_glCopyTexImage2D		= NULL;
-	m_glGetTexImage			= NULL;
+	m_wglCreateContext		= nullptr;
+	m_wglMakeCurrent		= nullptr;
+	m_wglDeleteContext		= nullptr;
+	m_glGetString			= nullptr;
+	m_glGenTextures			= nullptr;
+	m_glBindTexture			= nullptr;
+	m_glTexImage2D			= nullptr;
+	m_glDeleteTextures		= nullptr;
+	m_glTexParameteri		= nullptr;
+	m_glBlendFunc			= nullptr;
+	m_glTexEnvi				= nullptr;
+	m_glEnable				= nullptr;
+	m_glShadeModel			= nullptr;
+	m_glViewport			= nullptr;
+	m_glMatrixMode			= nullptr;
+	m_glLoadIdentity		= nullptr;
+	m_glOrtho				= nullptr;
+	m_glClearColor			= nullptr;
+	m_glClear				= nullptr;
+	m_glEnableClientState	= nullptr;
+	m_glColorPointer		= nullptr;
+	m_glVertexPointer		= nullptr;
+	m_glTexCoordPointer		= nullptr;
+	m_glDrawArrays			= nullptr;
+	m_glDisableClientState	= nullptr;
+	m_glPixelStorei			= nullptr;
+	m_glReadPixels			= nullptr;
+	m_glCopyTexImage2D		= nullptr;
+	m_glGetTexImage			= nullptr;
 
 }
 
-void r9RenderGL::LogAdapterInfo()
+void r9RenderGL::LogAdapterInfo() const
 {
 	DISPLAY_DEVICE  dd;
 	memset(&dd,0,sizeof(dd));
@@ -199,90 +194,51 @@ void r9RenderGL::LogAdapterInfo()
 	dlog(LOGRND, L"Video adapter unknown.");
 }
 
-static int SortDisplayModes( const VOID* arg1, const VOID* arg2 )
-{
-    r9DisplayMode* p1 = (r9DisplayMode*)arg1;
-    r9DisplayMode* p2 = (r9DisplayMode*)arg2;
-	if( p1->m_windowed	< p2->m_windowed )	return +1;
-    if( p1->m_windowed	> p2->m_windowed )	return -1;
-    if( p1->m_bpp		< p2->m_bpp )		return -1;
-    if( p1->m_bpp		> p2->m_bpp )		return +1;
-    if( p1->m_width		< p2->m_width )		return -1;
-    if( p1->m_width		> p2->m_width )		return +1;
-    if( p1->m_height	< p2->m_height )	return -1;
-    if( p1->m_height	> p2->m_height )	return +1;
-    if( p1->m_refresh	< p2->m_refresh )	return -1;
-    if( p1->m_refresh	> p2->m_refresh )	return +1;
-    return 0;
-}
 
-int r9RenderGL::GatherDisplayModes( r9DisplayMode* displaymode )
-{
-	BOOL ok;
-	int count = 0;
-	
-	// adapter (only when counting)
-	if(displaymode==NULL) LogAdapterInfo();
 
+void r9RenderGL::GatherDisplayModes() const
+{
 	// current display mode (windowed)
-	int bpp;
 	DEVMODE devmode;
 	memset(&devmode,0,sizeof(devmode));
 	devmode.dmSize = sizeof(DEVMODE);
-	ok = EnumDisplaySettings(NULL,ENUM_CURRENT_SETTINGS,&devmode);
-    if(!ok) { R9_LOGERROR("failed to get current display mode."); goto next; }
-	bpp = devmode.dmBitsPerPel;
-	if(bpp!=16 && bpp!=32) { R9_LOGERROR("invalid current display mode format."); goto next; }
-	if(displaymode)
+	BOOL ok = EnumDisplaySettings(NULL,ENUM_CURRENT_SETTINGS,&devmode);
+    if(ok) 
 	{
-		displaymode[count].m_windowed	= 1;
-		displaymode[count].m_bpp		= bpp;
-		displaymode[count].m_width		= devmode.dmPelsWidth;
-		displaymode[count].m_height		= devmode.dmPelsHeight;
-		displaymode[count].m_refresh	= devmode.dmDisplayFrequency;		
-		displaymode[count].m_reserved1	= 0;
+		int bpp = devmode.dmBitsPerPel;
+		if(bpp==16 || bpp==32) 
+		{ 
+			r9DisplayMode m = {1, bpp, devmode.dmPelsWidth, devmode.dmPelsHeight, devmode.dmDisplayFrequency, 0};
+			DisplayModes.push_back(m);
+		}
+		else	
+			R9_LOGERROR("invalid current display mode format.");
 	}
-	count++;
-
-	next:
+	else 
+		R9_LOGERROR("failed to get current display mode."); 
+	
+	LogAdapterInfo();
 
 	// supported display modes (fullscreen)
-	int idx=0; // mode index
-	while(TRUE)
+	for(int idx=0;;++idx)
 	{
 		memset(&devmode,0,sizeof(devmode));
 		devmode.dmSize = sizeof(DEVMODE);
 		ok = EnumDisplaySettings(NULL,idx,&devmode);
 		if(!ok) break; // got them all
-		idx++;
-		bpp = devmode.dmBitsPerPel;
+		int bpp = devmode.dmBitsPerPel;
 		if(bpp!=16 && bpp!=32) continue;
-		if(displaymode)
-		{
-			displaymode[count].m_windowed	= 0;
-			displaymode[count].m_bpp		= bpp;
-			displaymode[count].m_width		= devmode.dmPelsWidth;
-			displaymode[count].m_height		= devmode.dmPelsHeight;
-			displaymode[count].m_refresh	= devmode.dmDisplayFrequency;		
-			displaymode[count].m_reserved1	= 0;
-		}
-		count++;
+		r9DisplayMode m = {0, bpp, devmode.dmPelsWidth, devmode.dmPelsHeight, devmode.dmDisplayFrequency, 0};
+		DisplayModes.push_back(m);
 	}
 
 	// sort modes by windowed, bpp, width, height, refresh
-	if(displaymode)
-        qsort( displaymode, count, sizeof(r9DisplayMode), SortDisplayModes );
+	std::sort(DisplayModes.begin(), DisplayModes.end());
 
 	// log
-	if(displaymode)
-	{
-		dlog(LOGRND, L"Display modes:\n");
-		for(int i=0;i<count;i++)
-			dlog(LOGRND, L"   %i \t%ix%i \t%ibpp \t%iHz \t%S\n", i, displaymode[i].m_width, displaymode[i].m_height, displaymode[i].m_bpp, displaymode[i].m_refresh, displaymode[i].m_windowed?"windowed":"");
-		dlog(LOGRND, L"\n");
-	}
-
-	return count;
+	dlog(LOGRND, L"Display modes:\n");
+	for(const r9DisplayMode &m: DisplayModes) m.log(LOGRND);
+	dlog(LOGRND, L"\n");
 }
 
 BOOL r9RenderGL::Init( HWND hwnd, r9Cfg* cfg )
@@ -291,8 +247,8 @@ BOOL r9RenderGL::Init( HWND hwnd, r9Cfg* cfg )
 	
 	// config
 	if(cfg!=NULL) m_cfg = *cfg;
-	int api = m_api;
-	R9_FilterCfg(m_cfg,api);
+	Api api = r9Render::api;
+	R9_FilterCfg(m_cfg, api);
 
 	if(m_cfg.m_bpp!=16 && m_cfg.m_bpp!=32) return FALSE;
 
@@ -443,35 +399,6 @@ void r9RenderGL::SetTexture( R9TEXTURE texture )
 	GL_BindTexture();
 }
 
-void r9RenderGL::SetState( int state, int value )
-{
-	assert(0<=state && state<R9_STATES);
-	if(m_state[state]==value) return;
-	if(NeedFlush()) Flush();
-	m_state[state] = value;
-
-	switch(state)
-	{
-		case R9_STATE_PRIMITIVE:
-			break;
-		case R9_STATE_BLEND:
-		{
-			assert(true);
-			break;
-		}
-		case R9_STATE_TADDRESS:
-		{
-			GL_BindTexture();
-			break;
-		}
-		case R9_STATE_FILTER:
-		{
-			GL_BindTexture();
-			break;
-		}
-	}
-}
-
 void r9RenderGL::SetViewport( fRect& rect )
 {
 	if(m_viewport==rect) return;
@@ -507,13 +434,9 @@ void r9RenderGL::SetView( int x, int y, dword flip )
 
 }
 
-void r9RenderGL::SetBlend(Blend b)
+void r9RenderGL::ApplyBlend()
 {
-	if(blend == b) return;
-	if(NeedFlush()) Flush();
-	blend = b;
-
-	switch(blend)
+	switch(GetBlend())
 	{
 	case Blend::Opaque:
 		m_glBlendFunc(GL_ONE, GL_ZERO);
@@ -537,7 +460,15 @@ void r9RenderGL::SetBlend(Blend b)
 	GL_BindTexture(); // apply texture env states
 }
 
+void r9RenderGL::ApplyTAddress()
+{
+	GL_BindTexture();
+}
 
+void r9RenderGL::ApplyFilter()
+{
+	GL_BindTexture();
+}
 
 void r9RenderGL::SetDefaultStates()
 {
@@ -641,16 +572,15 @@ BOOL r9RenderGL::ToggleVideoMode()
 	return ok;
 }
 
-void r9RenderGL::Push( r9Vertex* vx, int vxs, int primitive )
+void r9RenderGL::Push( r9Vertex* vx, int vxs, Primitive primitive )
 {
 	// set primitive
-	if(GetState(R9_STATE_PRIMITIVE)!=primitive)
-		SetState(R9_STATE_PRIMITIVE,primitive);
+	SetPrimitive(primitive);
 
 	// push
-	int primitivevertexes = primitive ? 3 : 2;
+	int primitivevertexes = primitive == Primitive::Triangle ? 3 : 2;
 	int batchsize = (R9_BATCHSIZE_GL / primitivevertexes) * primitivevertexes; // make multiple of primitive vertexes
-	float ofs = (primitive==R9_PRIMITIVE_LINE) ? 0.5f : 0.0f; // pixel offset
+	float ofs = (primitive == Primitive::Line) ? 0.5f : 0.0f; // pixel offset
 
 	while(vxs>0)
 	{
@@ -699,8 +629,7 @@ void r9RenderGL::Flush()
 	m_glTexCoordPointer(2,GL_FLOAT,sizeof(r9Vertex),&(m_batchbuffer->u));
 
 	// draw
-	int primitive = GetState(R9_STATE_PRIMITIVE);
-	m_glDrawArrays( primitive ? GL_TRIANGLES : GL_LINES, 0, m_batchcount );
+	m_glDrawArrays( GetPrimitive() == Primitive::Triangle ? GL_TRIANGLES : GL_LINES, 0, m_batchcount );
 
 	m_glDisableClientState( GL_VERTEX_ARRAY );
 	m_glDisableClientState( GL_COLOR_ARRAY );

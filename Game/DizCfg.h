@@ -4,6 +4,8 @@
 #ifndef __DIZCFG_H__
 #define __DIZCFG_H__
 
+#include "R9Render.h"
+
 #define KEY_LEFT			0
 #define KEY_RIGHT			1
 #define KEY_UP				2
@@ -28,7 +30,7 @@ public:
 	bool	Load			();
 	bool	Save			();
 
-	void	LoadRenderCfg	( r9Cfg& cfg, int& api );
+	void	LoadRenderCfg	( r9Cfg& cfg, Api & api );
 	const char*	GetInfoValue	( const char* name );	// returns static info from the info file; line format: "name = value"
 
 	int		m_scale;						// scale (0=full)

@@ -33,13 +33,18 @@ struct r9CapsDX
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class r9RenderDX : public r9Render
 {
-public:
-					r9RenderDX();
-virtual				~r9RenderDX();
+	virtual void ApplyBlend();
+	virtual void ApplyTAddress();
+	virtual void ApplyFilter();
 
-virtual	BOOL		LoadDll();
-virtual	void		UnloadDll();
-virtual	int			GatherDisplayModes( r9DisplayMode* displaymode );
+public:
+	r9RenderDX();
+	virtual ~r9RenderDX();
+	
+	virtual	bool LoadDll();
+	virtual	void UnloadDll();
+
+	virtual	void GatherDisplayModes() const;
 
 virtual	BOOL		Init( HWND hwnd, r9Cfg* cfg );
 virtual	void		Done();
@@ -50,11 +55,9 @@ virtual	R9TEXTURE	TextureCreateTarget( int width, int height );
 virtual	void		TextureDestroy( R9TEXTURE tex );
 
 virtual	void		SetTexture( R9TEXTURE tex );
-virtual void		SetState( int state, int value );
 virtual	void		SetViewport( fRect& rect );
 virtual	void		SetView( int x, int y, dword flip );
 virtual	void		SetDefaultStates();
-	virtual void SetBlend(Blend b);
 
 virtual	void		Clear( dword color );
 virtual	BOOL		BeginScene( R9TEXTURE target=NULL );
@@ -63,8 +66,8 @@ virtual	void		Present();
 virtual	BOOL		CheckDevice();
 virtual	BOOL		ToggleVideoMode();
 
-virtual	void		Push( r9Vertex* vx, int vxs, int primitive );
-virtual	void		Flush();
+	virtual	void Push(r9Vertex* vx, int vxs, Primitive primitive);
+	virtual	void Flush();
 
 virtual	BOOL		SaveScreenShot( fRect* rect=NULL, BOOL full=TRUE);								// auto save screenshot
 virtual BOOL		TakeScreenShot( r9Img* img, fRect* rect=NULL, BOOL full=TRUE );					// shoots full screen or backbuffer (create img)

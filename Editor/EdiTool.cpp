@@ -467,10 +467,10 @@ void cEdiToolEdit::Draw()
 	}
 
 	// draw selected brushes ( from visible or from dragging )
-	int count = (m_mode!=2) ? g_map.m_brushviscount : m_dragcount;
+	int count = (m_mode!=2) ? g_map.brushvis.size() : m_dragcount;
 	for(int i=0;i<count;i++)
 	{
-		int idx = (m_mode!=2) ? g_map.m_brushvis[i] : m_drag[i];
+		int idx = (m_mode!=2) ? g_map.brushvis[i] : m_drag[i];
 		
 		tBrush& brush = g_map.m_brush[ idx ];
 		if(!brush.m_data[BRUSH_SELECT]) continue;
@@ -505,9 +505,9 @@ void cEdiToolEdit::Draw()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiToolEdit::BrushSelect()
 {
-	for( int i=0;i<g_map.m_brushviscount;i++ )
+	for( size_t i=0;i<g_map.brushvis.size();i++ )
 	{
-		int idx = g_map.m_brushvis[i];
+		int idx = g_map.brushvis[i];
 		tBrush& brush = g_map.m_brush[idx];
 		int layer = brush.m_data[BRUSH_LAYER];
 		if(layer<0 || layer>=LAYER_MAX) continue;
@@ -553,9 +553,9 @@ void cEdiToolEdit::BrushMoveStart()
 {
 	// create drag list with those visible and selected
 	m_dragcount = 0;
-	for(int i=0;i<g_map.m_brushviscount;i++)
+	for(size_t i = 0; i < g_map.brushvis.size();i++)
 	{
-		int idx = g_map.m_brushvis[i];
+		int idx = g_map.brushvis[i];
 		if(!g_map.m_brush[idx].m_data[BRUSH_SELECT]) continue;
 		if(m_dragcount==m_dragsize) // resize buffer
 		{

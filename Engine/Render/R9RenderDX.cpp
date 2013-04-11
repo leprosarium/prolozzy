@@ -14,33 +14,28 @@
 #endif
 #endif
 
-#define R9_LOGERROR( prefix, hr )	dlog( LOGERR, L"RENDER: %S (%x)\n", prefix, hr );
+#define R9_LOGERROR( prefix, hr )	dlog( LOGERR, L"RENDER: %S (%x)\n", prefix, hr )
 
-r9RenderDX::tDirect3DCreate9 r9RenderDX::m_Direct3DCreate9 = NULL;
+r9RenderDX::tDirect3DCreate9 r9RenderDX::m_Direct3DCreate9 = nullptr;
 
-r9RenderDX::r9RenderDX()
+r9RenderDX::r9RenderDX() : 
+	r9Render(Api::DirectX),
+	m_d3d(),
+	m_d3dd(),
+	m_pfdisplay(D3DFMT_X8R8G8B8),
+	m_pfopaque(D3DFMT_R8G8B8),
+	m_pfalpha(D3DFMT_A8R8G8B8),
+	m_batchcount(),
+	m_batchbuffer(),
+	m_batchd3d(),
+	m_d3dtarget(),
+	m_targetwidth(),
+	m_targetheight()
 {
-	m_api = R9_API_DIRECTX;
-
-	m_d3d		= NULL;
-	m_d3dd		= NULL;
-	m_pfdisplay	= D3DFMT_X8R8G8B8;
-	m_pfopaque	= D3DFMT_R8G8B8;
-	m_pfalpha	= D3DFMT_A8R8G8B8;
-	
 	m_caps.m_texsquareonly	= 0;
 	m_caps.m_texaspectratio	= 0;
 	m_caps.m_texwidth		= 0;
 	m_caps.m_texheight		= 0;
-
-	m_batchcount	= 0;
-	m_batchbuffer	= NULL;
-	m_batchd3d		= NULL;
-
-	m_d3dtarget		= NULL;
-	m_targetwidth	= 0;
-	m_targetheight	= 0;
-
 }
 
 r9RenderDX::~r9RenderDX()
@@ -48,109 +43,79 @@ r9RenderDX::~r9RenderDX()
 	m_targetlist.clear();
 }
 
-BOOL r9RenderDX::LoadDll()
+bool r9RenderDX::LoadDll()
 {
 #ifdef R9_ENABLE_DLLDX
-	if(m_dll) return TRUE;
+	if(m_dll) return true;
 	m_dll = LoadLibrary("d3d9.dll");
-	if(!m_dll) { R9_LOGERROR("can't load d3d9.dll",0); return FALSE; }
+	if(!m_dll) { R9_LOGERROR("can't load d3d9.dll",0); return false; }
 	m_Direct3DCreate9 = (tDirect3DCreate9)GetProcAddress(m_dll,"Direct3DCreate9");
-	if(!m_Direct3DCreate9) { R9_LOGERROR("bad dll version.",0); goto error; }
-	return TRUE;
-	error:
-	UnloadDll();
-	return FALSE;
+	if(!m_Direct3DCreate9) { R9_LOGERROR("bad dll version.",0); UnloadDll(); return false; }
+	return true;
 #else
 	m_Direct3DCreate9 = &Direct3DCreate9;
-	return TRUE;
+	return true;
 #endif
 }
 
 void r9RenderDX::UnloadDll()
 {
 #ifdef R9_ENABLE_DLLDX
-	if(m_dll==NULL) return;
+	if(!m_dll) return;
 	FreeLibrary(m_dll);	
-	m_dll=NULL;
+	m_dll = nullptr;
 #endif
-	m_Direct3DCreate9 = NULL;
+	m_Direct3DCreate9 = nullptr;
 }
 
-static int SortDisplayModes( const VOID* arg1, const VOID* arg2 )
+void r9RenderDX::GatherDisplayModes() const
 {
-    r9DisplayMode* p1 = (r9DisplayMode*)arg1;
-    r9DisplayMode* p2 = (r9DisplayMode*)arg2;
-	if( p1->m_windowed	< p2->m_windowed )	return +1;
-    if( p1->m_windowed	> p2->m_windowed )	return -1;
-    if( p1->m_bpp		< p2->m_bpp )		return -1;
-    if( p1->m_bpp		> p2->m_bpp )		return +1;
-    if( p1->m_width		< p2->m_width )		return -1;
-    if( p1->m_width		> p2->m_width )		return +1;
-    if( p1->m_height	< p2->m_height )	return -1;
-    if( p1->m_height	> p2->m_height )	return +1;
-    if( p1->m_refresh	< p2->m_refresh )	return -1;
-    if( p1->m_refresh	> p2->m_refresh )	return +1;
-    return 0;
-}
-
-int r9RenderDX::GatherDisplayModes( r9DisplayMode* displaymode )
-{
-	int p;
-	int count = 0;
-
 	HRESULT hr;
 //	LPDIRECT3D9 d3d = Direct3DCreate9(D3D_SDK_VERSION);
 	LPDIRECT3D9 d3d = m_Direct3DCreate9(D3D_SDK_VERSION);
-	if( d3d==NULL ) { R9_LOGERROR("failed to create Direct3D.",0); return 0; }
-	if(d3d->GetAdapterCount()==0) { R9_LOGERROR("no available adapters.",0); d3d->Release(); return 0; }
-
+	if(!d3d) { R9_LOGERROR("failed to create Direct3D.",0); return; }
+	if(d3d->GetAdapterCount()==0) { R9_LOGERROR("no available adapters.",0); d3d->Release(); return; }
+	
 	// adapter
 	int adapter = D3DADAPTER_DEFAULT;
 	D3DADAPTER_IDENTIFIER9 d3dadapter;
     hr = d3d->GetAdapterIdentifier( adapter, 0, &d3dadapter );
-	if(FAILED(hr)) { R9_LOGERROR("failed to get adapter.",hr); d3d->Release(); return 0; }
+	if(FAILED(hr)) { R9_LOGERROR("failed to get adapter.",hr); d3d->Release(); return; }
 
 	int dvProduct		= HIWORD(d3dadapter.DriverVersion.HighPart);
 	int dvVersion		= LOWORD(d3dadapter.DriverVersion.HighPart);
 	int dvSubVersion	= HIWORD(d3dadapter.DriverVersion.LowPart);
 	int dvBuild			= LOWORD(d3dadapter.DriverVersion.LowPart);
 
-	if(displaymode==NULL)
-	{
-		dlog(LOGRND, L"Video adapter info:\n");
-		dlog(LOGRND, L"  driver      = %S\n", (d3dadapter.Driver)?(d3dadapter.Driver):"NONE");
-		dlog(LOGRND, L"  description = %S\n", (d3dadapter.Description)?(d3dadapter.Description):"NONE");
-		dlog(LOGRND, L"  version     = p%i v%i.%i b%i\n", dvProduct, dvVersion, dvSubVersion, dvBuild );
-	}
-
+	dlog(LOGRND, L"Video adapter info:\n");
+	dlog(LOGRND, L"  driver      = %S\n", (d3dadapter.Driver)?(d3dadapter.Driver):"NONE");
+	dlog(LOGRND, L"  description = %S\n", (d3dadapter.Description)?(d3dadapter.Description):"NONE");
+	dlog(LOGRND, L"  version     = p%i v%i.%i b%i\n", dvProduct, dvVersion, dvSubVersion, dvBuild );
+	
 	// caps
 	D3DCAPS9 d3dcaps;
 	D3DDEVTYPE d3ddevtype = D3DDEVTYPE_HAL;
 	hr = d3d->GetDeviceCaps( adapter, d3ddevtype, &d3dcaps );
-	if(FAILED(hr)) { R9_LOGERROR("failed to get device caps.",hr); d3d->Release(); return 0; }
+	if(FAILED(hr)) { R9_LOGERROR("failed to get device caps.",hr); d3d->Release(); return; }
 
 	// current display mode (windowed)
 	D3DDISPLAYMODE d3dmode;
 	r9PFInfo* pfinfo;
     hr = d3d->GetAdapterDisplayMode( adapter, &d3dmode );
-	if(FAILED(hr)) { R9_LOGERROR("failed to get current display mode.",hr); goto next; }
-	pfinfo = D3D_PFInfo(d3dmode.Format);
-	if(!pfinfo) { R9_LOGERROR("invalid current display mode format.",hr); goto next; }
-	if(displaymode)
-	{
-		displaymode[count].m_windowed	= 1;
-		displaymode[count].m_bpp		= pfinfo->m_bpp;
-		displaymode[count].m_width		= d3dmode.Width;
-		displaymode[count].m_height		= d3dmode.Height;
-		displaymode[count].m_refresh	= 0;		
-		displaymode[count].m_reserved1	= (dword)d3dmode.Format;
-	}
-	count++;
+	if(FAILED(hr)) 
+		R9_LOGERROR("failed to get current display mode.", hr);
+	else
+		if(pfinfo = D3D_PFInfo(d3dmode.Format))
+		{
+			r9DisplayMode m = {1, pfinfo->m_bpp, d3dmode.Width, d3dmode.Height, 0, (dword)d3dmode.Format};
+			DisplayModes.push_back(m);
+		}
+		else
+			R9_LOGERROR("invalid current display mode format.",hr);
 
-	next:
 	// supported display modes (fullscreen)
 	D3DFORMAT pfdx[2][2] = { {D3DFMT_R5G6B5,D3DFMT_A4R4G4B4}, {D3DFMT_X8R8G8B8,D3DFMT_A8R8G8B8} };
-	for(p=0; p<2; p++)
+	for(int p = 0; p < 2; p++)
 	{
 		int modecount = d3d->GetAdapterModeCount( adapter, pfdx[p][0] );	
 		for(int i=0; i<modecount; i++)
@@ -165,35 +130,21 @@ int r9RenderDX::GatherDisplayModes( r9DisplayMode* displaymode )
 			hr = d3d->CheckDeviceFormat( adapter, d3ddevtype, d3dmode.Format, 0, D3DRTYPE_TEXTURE, pfdx[p][1] );
 			if(FAILED(hr)) continue; // refuse
 
-			if(displaymode)
-			{
-				displaymode[count].m_windowed	= 0;
-				displaymode[count].m_bpp		= pfinfo->m_bpp;
-				displaymode[count].m_width		= d3dmode.Width;
-				displaymode[count].m_height		= d3dmode.Height;
-				displaymode[count].m_refresh	= d3dmode.RefreshRate;		
-				displaymode[count].m_reserved1	= (dword)d3dmode.Format;
-			}
-			count++;
+			r9DisplayMode m = {0, pfinfo->m_bpp, d3dmode.Width, d3dmode.Height, d3dmode.RefreshRate, (dword)d3dmode.Format};
+			DisplayModes.push_back(m);
 		}
 	}
 
 	if(d3d) d3d->Release();
 
 	// sort modes by windowed, bpp, width, height, refresh
-	if(displaymode)
-        qsort( displaymode, count, sizeof(r9DisplayMode), SortDisplayModes );
+   	std::sort(DisplayModes.begin(), DisplayModes.end());
+
 
 	// log
-	if(displaymode)
-	{
-		dlog(LOGRND, L"Display modes:\n");
-		for(int i=0;i<count;i++)
-			dlog(LOGRND, L"   %i \t%ix%i \t%ibpp \t%iHz \t%S\n", i, displaymode[i].m_width, displaymode[i].m_height, displaymode[i].m_bpp, displaymode[i].m_refresh, displaymode[i].m_windowed?"windowed":"");
-		dlog(LOGRND, L"\n");
-	}
-
-	return count;
+	dlog(LOGRND, L"Display modes:\n");
+	for(const r9DisplayMode &m: DisplayModes) m.log(LOGRND);
+	dlog(LOGRND, L"\n");
 }
 
 BOOL r9RenderDX::Init( HWND hwnd, r9Cfg* cfg )
@@ -202,8 +153,8 @@ BOOL r9RenderDX::Init( HWND hwnd, r9Cfg* cfg )
 
 	// config
 	if(cfg!=NULL) m_cfg = *cfg;
-	int api = m_api;
-	R9_FilterCfg(m_cfg,api);
+	Api api = r9Render::api;
+	R9_FilterCfg(m_cfg, api);
 
 	if(m_cfg.m_bpp!=16 && m_cfg.m_bpp!=32) return FALSE;
 	m_pfdisplay	= (m_cfg.m_bpp==32) ? D3DFMT_X8R8G8B8 : D3DFMT_R5G6B5;
@@ -386,38 +337,6 @@ void r9RenderDX::SetTexture( R9TEXTURE texture )
 	HRESULT hr = m_d3dd->SetTexture(0,d3dtex);
 }
 
-void r9RenderDX::SetState( int state, int value )
-{
-	assert(0<=state && state<R9_STATES);
-	if(m_state[state]==value) return;
-	if(NeedFlush()) Flush();
-	m_state[state] = value;
-	switch(state)
-	{
-		case R9_STATE_PRIMITIVE:
-			break;
-		case R9_STATE_BLEND:
-		{
-			assert(true);
-			break;
-		}
-		case R9_STATE_TADDRESS:
-		{
-			dword mode = (value==R9_TADDRESS_WRAP) ? D3DTADDRESS_WRAP : D3DTADDRESS_CLAMP;
-			m_d3dd->SetSamplerState(0,D3DSAMP_ADDRESSU,mode);
-			m_d3dd->SetSamplerState(0,D3DSAMP_ADDRESSV,mode);
-			break;
-		}
-		case R9_STATE_FILTER:
-		{
-			dword mode = value ? D3DTEXF_LINEAR : D3DTEXF_POINT;
-			m_d3dd->SetSamplerState(0,D3DSAMP_MINFILTER,mode);
-			m_d3dd->SetSamplerState(0,D3DSAMP_MAGFILTER,mode);
-			break;
-		}
-	}
-}
-
 void r9RenderDX::SetViewport( fRect& rect )
 {
 	if(m_viewport==rect) return;
@@ -447,12 +366,9 @@ void r9RenderDX::SetView( int x, int y, dword flip )
 	// I could also have it software at Push, like I do with x and y
 }
 
-void r9RenderDX::SetBlend(Blend b)
+void r9RenderDX::ApplyBlend()
 {
-	if(blend == b) return;
-	if(NeedFlush()) Flush();
-	blend = b;
-	switch(blend)
+	switch(GetBlend())
 	{
 	case Blend::Opaque:
 		m_d3dd->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_ONE);
@@ -493,6 +409,19 @@ void r9RenderDX::SetBlend(Blend b)
 	}
 }
 
+void r9RenderDX::ApplyTAddress()
+{
+	dword mode = (GetTAddress() == TAddress::Wrap) ? D3DTADDRESS_WRAP : D3DTADDRESS_CLAMP;
+	m_d3dd->SetSamplerState(0,D3DSAMP_ADDRESSU,mode);
+	m_d3dd->SetSamplerState(0,D3DSAMP_ADDRESSV,mode);
+}
+
+void r9RenderDX::ApplyFilter()
+{
+	dword mode = GetFilter() == Filter::Linear ? D3DTEXF_LINEAR : D3DTEXF_POINT;
+	m_d3dd->SetSamplerState(0,D3DSAMP_MINFILTER,mode);
+	m_d3dd->SetSamplerState(0,D3DSAMP_MAGFILTER,mode);
+}
 
 
 void r9RenderDX::SetDefaultStates()
@@ -629,16 +558,15 @@ BOOL r9RenderDX::ToggleVideoMode()
 
 }
 
-void r9RenderDX::Push( r9Vertex* vx, int vxs, int primitive )
+void r9RenderDX::Push( r9Vertex* vx, int vxs, Primitive primitive)
 {
 	// set primitive
-	if(GetState(R9_STATE_PRIMITIVE)!=primitive)
-		SetState(R9_STATE_PRIMITIVE,primitive);
+	SetPrimitive(primitive);
 
 	// push
-	int primitivevertexes = primitive ? 3 : 2;
+	int primitivevertexes = primitive==Primitive::Triangle ? 3 : 2;
 	int batchsize = (R9_BATCHSIZE_DX / primitivevertexes) * primitivevertexes; // make multiple of primitive vertexes
-	float ofs = (primitive==R9_PRIMITIVE_LINE) ? 0.0f : 0.5f; // pixel offset
+	float ofs = (primitive == Primitive::Line) ? 0.0f : 0.5f; // pixel offset
 	float scrw2 = 2.0f/(float)m_targetwidth;
 	float scrh2 = 2.0f/(float)m_targetheight;
 	while(vxs>0)
@@ -685,9 +613,10 @@ void r9RenderDX::Flush()
 	if(FAILED(hr)) { m_batchcount=0; D3D_BatchLock(); return; }
 
 	// draw
-	int primitive = GetState(R9_STATE_PRIMITIVE);
-	int primitivecount = m_batchcount / (primitive ? 3 : 2);
-	hr = m_d3dd->DrawPrimitive(	primitive ? D3DPT_TRIANGLELIST : D3DPT_LINELIST, 0, primitivecount  );
+	Primitive primitive = GetPrimitive();
+	bool tri = primitive == Primitive::Triangle;
+	int primitivecount = m_batchcount / (tri ? 3 : 2);
+	hr = m_d3dd->DrawPrimitive(	tri ? D3DPT_TRIANGLELIST : D3DPT_LINELIST, 0, primitivecount  );
 	if(!FAILED(hr)) m_primitivecount += primitivecount;
 
 	// lock
@@ -988,11 +917,16 @@ void r9RenderDX::D3D_HandleReset( int mode )
 		TT_Recreate();
 
 		// restore render states
-		int i;
-		int state[R9_STATES];
-		for(i=0;i<R9_STATES;i++) state[i] = m_state[i];
+		Blend blend = GetBlend();
+		Primitive primitive = GetPrimitive();
+		TAddress taddress = GetTAddress();
+		Filter filter = GetFilter();;
 		SetDefaultStates();
-		for(i=0;i<R9_STATES;i++) SetState(i,state[i]);
+		SetBlend(blend);
+		SetPrimitive(primitive);
+		SetTAddress(taddress);
+		SetFilter(filter);
+
 
 		// notify user, to repaint content of render targets (the rest is handeled here)
 		if(m_handlereset) m_handlereset();

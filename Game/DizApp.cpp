@@ -142,9 +142,9 @@ bool cDizApp::InitVideo()
 	strcpy( inifile, file_getfullpath(GetIniFile()) );
 
 	// load config
-	int api;
+	Api api;
 	r9Cfg cfg;
-	g_cfg.LoadRenderCfg(cfg,api);
+	g_cfg.LoadRenderCfg(cfg, api);
 
 	// init interface
 	if(!R9_InitInterface(api)) return false;
@@ -152,12 +152,13 @@ bool cDizApp::InitVideo()
 	BOOL ok = R9_Init(E9_GetHWND(),&cfg,api);
 	if(!ok) // try the other api
 	{
-		dlog(LOGERR, L"RENDER: init %S (api %i) failed, try the other api.\n",api?"OpenGL":"DirectX9",api);
-		ok = R9_Init(E9_GetHWND(),&cfg,!api);
+		dlog(LOGERR, L"RENDER: init %S failed, try the other api.\n", api == Api::OpenGL ? "OpenGL":"DirectX9");
+		api = api == Api::DirectX ? Api::OpenGL : Api::DirectX;
+		ok = R9_Init(E9_GetHWND(),&cfg, api);
 		if(!ok)	return false;
 	}
 
-	R9_SetState(R9_STATE_FILTER,false);
+	R9_SetFilter(Filter::Point);
 	E9_AppSetInt(E9_APP_WINDOWED,cfg.m_windowed);
 
 	return true;
@@ -214,9 +215,9 @@ bool cDizApp::ToggleVideo()
 	maximized = !maximized; // toggle
 
 	// make cfg
-	int api;
+	Api api;
 	r9Cfg cfg;
-	g_cfg.LoadRenderCfg(cfg,api);
+	g_cfg.LoadRenderCfg(cfg, api);
 
 	if(maximized) // overwrite width and height - pseudo full screen
 	{
@@ -240,7 +241,7 @@ bool cDizApp::ToggleVideo()
 	g_cfg.m_scale = 0; // full scale
 
 	// reacquire
-	R9_SetState(R9_STATE_FILTER,false);
+	R9_SetFilter(Filter::Point);
 	E9_AppSetInt(E9_APP_WINDOWED,R9_GetCfg().m_windowed);
 	E9_AppSetCursor(R9_GetCfg().m_windowed ? E9_CURSOR_ARROW : E9_CURSOR_NONE);
 	g_dizdebug.Layout();

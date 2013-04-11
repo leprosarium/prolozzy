@@ -187,12 +187,12 @@ bool cDizCfg::Save()
 	return true;
 }
 
-void cDizCfg::LoadRenderCfg( r9Cfg& cfg, int& api )
+void cDizCfg::LoadRenderCfg( r9Cfg& cfg, Api & api )
 {
 	char inifile[256];
 	strcpy( inifile, file_getfullpath(GetIniFile()) );
 
-	api				= R9_API_DEFAULT;
+	api				= Api::Default;
 	cfg.m_windowed	= 1;
 	cfg.m_bpp		= 32;
 	cfg.m_width		= 640;
@@ -200,7 +200,12 @@ void cDizCfg::LoadRenderCfg( r9Cfg& cfg, int& api )
 	cfg.m_refresh	= 85;
 	cfg.m_vsync		= 0;
 
-	ini_getint( inifile, "VIDEO", "api",		&api );
+	int apiv;
+	if(ini_getint( inifile, "VIDEO", "api",		&apiv ))
+		if(apiv == static_cast<int>(Api::DirectX))
+			api = Api::DirectX;
+		else if(apiv == static_cast<int>(Api::OpenGL))
+			api = Api::OpenGL;
 	ini_getint( inifile, "VIDEO", "windowed",	&cfg.m_windowed );
 	ini_getint( inifile, "VIDEO", "bpp",		&cfg.m_bpp );
 	ini_getint( inifile, "VIDEO", "width",		&cfg.m_width );

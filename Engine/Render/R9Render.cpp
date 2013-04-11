@@ -9,40 +9,36 @@
 #include "R9Font.h"
 #include "R9Resources.h"
 
-r9Cfg::r9Cfg()
-{ 
-	m_width		= R9_CFG_WIDTH;
-	m_height	= R9_CFG_HEIGHT;
-	m_bpp		= R9_CFG_BPP;
-	m_windowed	= 1;
-	m_refresh	= 0;
-	m_vsync		= 0;
-}
-
-r9Render::r9Render()
-{
-	m_api				= -1;
-	m_dll				= NULL;
-	m_hwnd				= NULL;
-	m_beginendscene 	= FALSE;
-	m_texture			= NULL;
-	m_viewx				= 0;
-	m_viewy				= 0;
-	m_viewflip			= 0;
-	m_needflush			= FALSE;
-	m_primitivecount	= 0;
-	m_font				= NULL;
-	m_handlereset		= NULL;
-	for(int i=0;i<R9_STATES;i++) m_state[i]=-1; // clear states with invalid values
-}
-
-r9Render::~r9Render()
+r9Cfg::r9Cfg() : 
+	m_width(R9_CFG_WIDTH),
+	m_height(R9_CFG_HEIGHT),
+	m_bpp(R9_CFG_BPP),
+	m_windowed(1),
+	m_refresh(),
+	m_vsync()
 {
 }
 
-BOOL		r9Render::LoadDll()												{ return TRUE; }
-void		r9Render::UnloadDll()											{}
-int			r9Render::GatherDisplayModes( r9DisplayMode* displaymode )		{ return 0; }
+r9Render::r9Render(Api api) : 
+	api(api), 
+	blend(Blend::Alpha), 
+	primitive(Primitive::Triangle), 
+	taddress(TAddress::Wrap), 
+	filter(Filter::Linear),
+	m_dll(),
+	m_hwnd(),
+	m_beginendscene(),
+	m_texture(),
+	m_viewx(),
+	m_viewy(),
+	m_viewflip(),
+	m_needflush(),
+	m_primitivecount(),
+	m_font(),
+	m_handlereset()
+{
+}
+
 BOOL 		r9Render::Init( HWND hwnd, r9Cfg* cfg )							{ return TRUE; }
 void 		r9Render::Done()												{ if(m_font) { TextureDestroy(m_font->GetTexture()); m_font->Destroy(); delete m_font; } }
 BOOL		r9Render::IsReady()												{ return TRUE; }
@@ -61,17 +57,52 @@ R9TEXTURE r9Render::TextureLoad( const char* filename )
 void		r9Render::TextureDestroy( R9TEXTURE texture )					{}
 
 void r9Render::SetTexture( R9TEXTURE texture )				{ m_texture = texture; }
-void r9Render::SetState( int state, int value )				{ m_state[state] = value; }
 void r9Render::SetViewport( fRect& rect )					{ m_viewport = rect; }
 void r9Render::SetView( int x, int y, dword flip )			{ m_viewx = x; m_viewy = y; m_viewflip = flip; }
+
+void r9Render::SetBlend(Blend b)
+{
+	if(blend == b) return;
+	if(NeedFlush()) Flush();
+	blend = b;
+	ApplyBlend();
+}	
+
+void r9Render::SetPrimitive(Primitive p)
+{
+	if(primitive == p) return;
+	if(NeedFlush()) Flush();
+	primitive = p;
+}	
+
+void r9Render::SetTAddress(TAddress a)
+{
+	if(taddress == a) return;
+	if(NeedFlush()) Flush();
+	taddress = a;
+	ApplyTAddress();
+}	
+
+void r9Render::SetFilter(Filter f)
+{
+	if(filter == f) return;
+	if(NeedFlush()) Flush();
+	filter = f;
+	ApplyFilter();
+}	
+
+
 void r9Render::SetDefaultStates()
 {
 	m_texture = NULL;
-	for(int i=0;i<R9_STATES;i++) m_state[i]=-1; // clear states with invalid values
-	SetState(R9_STATE_PRIMITIVE,R9_PRIMITIVE_TRIANGLE);
-	SetBlend(Blend::Alpha);
-	SetState(R9_STATE_TADDRESS,R9_TADDRESS_WRAP);
-	SetState(R9_STATE_FILTER,TRUE);
+	if(NeedFlush()) Flush();
+	blend = Blend::Alpha;
+	primitive = Primitive::Triangle;
+	taddress = TAddress::Wrap;
+	filter = Filter::Linear;
+	ApplyBlend();
+	ApplyTAddress();
+	ApplyFilter();
 	SetViewport(fRect(0,0,GetWidth(),GetHeight()));
 	SetView( 0, 0, 0 );
 }
@@ -82,8 +113,6 @@ void r9Render::EndScene()									{}
 void r9Render::Present()									{}
 BOOL r9Render::CheckDevice()								{ return TRUE; }
 BOOL r9Render::ToggleVideoMode()							{ return FALSE; }
-void r9Render::Push( r9Vertex* vx, int vxs, int primitive ) {}
-void r9Render::Flush()										{}
 
 BOOL r9Render::SaveScreenShot( fRect* rect, BOOL full)							{ return TRUE; }
 BOOL r9Render::TakeScreenShot( r9Img* img, fRect* rect, BOOL full )				{ return TRUE; }
@@ -149,7 +178,7 @@ void r9Render::DrawQuadRot( fV2& pos, fV2& size, fV2& center, float angle, fRect
 	vx[5].v = src.y2;
 	vx[5].color = color;
 
-	Push(vx,6,R9_PRIMITIVE_TRIANGLE);
+	Push(vx, 6, Primitive::Triangle);
 }
 
 void r9Render::DrawSprite( const fV2 & pos, const fRect & src, R9TEXTURE tex, dword color, dword flip, float scale )
@@ -267,7 +296,7 @@ void r9Render::DrawSprite( const fV2 & pos, const fRect & src, R9TEXTURE tex, dw
 		vx[5].color = color;
 	}
 
-	Push(vx,6,R9_PRIMITIVE_TRIANGLE);
+	Push(vx, 6, Primitive::Triangle);
 }
 
 BOOL r9Render::CreateFont()
@@ -306,99 +335,89 @@ BOOL r9Render::CreateFont()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 r9Render* r9_render = NULL;
 
-r9Render* R9_CreateRender( int api )
+r9Render* R9_CreateRender( Api api )
 {
 	r9Render* render=NULL;
-	if(api==R9_API_DIRECTX)	render = new r9RenderDX();
-	if(api==R9_API_OPENGL)	render = new r9RenderGL();
+	if(api == Api::DirectX)	render = new r9RenderDX();
+	if(api == Api::OpenGL)	render = new r9RenderGL();
 	if(!render) return NULL;
 	if(!render->LoadDll()) { delete render; return NULL; }
 	return render;
 }
 
-// interface
-int				r9DisplayModesCount;		// displaymodes count
-r9DisplayMode*	r9DisplayModes;				// displaymodes list
+std::vector<r9DisplayMode> r9Render::DisplayModes;
 
-BOOL R9_InitInterface( int api )
+bool R9_InitInterface( Api api )
 {
 	dlog(LOGRND, L"Render init interface (api=%i).\n",api);
 	r9Render* render = R9_CreateRender(api);
-	if(!render) return FALSE;
+	if(!render) return false;
 
 	// gather display modes
-	r9DisplayModesCount = render->GatherDisplayModes(NULL);
-	if(r9DisplayModesCount==0) return FALSE;
-	r9DisplayModes = (r9DisplayMode*)malloc(r9DisplayModesCount*sizeof(r9DisplayMode));
-	r9DisplayModesCount = render->GatherDisplayModes(r9DisplayModes);
+	render->GatherDisplayModes();
+	if(r9Render::DisplayModes.empty()) return false;
 
 	render->UnloadDll();
 	delete render;
-	return TRUE;
+	return true;
 }
 
-BOOL R9_FilterCfg( r9Cfg& cfg, int &api )
+bool R9_FilterCfg( r9Cfg& cfg, Api & api )
 {
-	int count = r9DisplayModesCount;
-	r9DisplayMode* displaymode = r9DisplayModes;
-	if(!displaymode || !count) return FALSE;
+	if(r9Render::DisplayModes.empty()) return false;
 
 	dlog(LOGRND, L"Filter config:\n");
 	dlog(LOGRND, L"  Requested: "); R9_LogCfg(cfg,api);
 
-	BOOL ok = FALSE;
+	bool ok = false;
 	r9Cfg cfgout = cfg;
 	cfgout.m_refresh = 0;
-
 	// search modes	
-	for(int i=0;i<count;i++)
+	for(const r9DisplayMode & mode: r9Render::DisplayModes)
 	{
-		if( cfgout.m_windowed != displaymode[i].m_windowed ) continue;
+		if( cfgout.m_windowed != mode.windowed ) continue;
 		
 		if( cfgout.m_windowed ) // in windowed
 		{
 			// overwrite bpp
-			cfgout.m_bpp = displaymode[i].m_bpp;
+			cfgout.m_bpp = mode.bpp;
 			// clamp resolution in windowed
-			if( cfgout.m_width > displaymode[i].m_width || cfgout.m_height > displaymode[i].m_height )
+			if( cfgout.m_width > mode.width || cfgout.m_height > mode.height )
 			{
-				cfgout.m_width = displaymode[i].m_width;
-				cfgout.m_height = displaymode[i].m_height;
+				cfgout.m_width = mode.width;
+				cfgout.m_height =  mode.height;
 			}
 			// overwrite refresh
 			cfgout.m_refresh = 0;
-			ok = TRUE;
+			ok = true;
 			// got it
 			break;
 		}
-		else // in fullscreen
-		{
-			// match bpp
-			if( cfgout.m_bpp != displaymode[i].m_bpp ) continue;
-			// match resolution
-			if( cfgout.m_width != displaymode[i].m_width ) continue;
-			if( cfgout.m_height != displaymode[i].m_height ) continue;
-			// select highest refresh found, but not higher then requested
-			if( displaymode[i].m_refresh > cfgout.m_refresh &&
-				displaymode[i].m_refresh <= cfg.m_refresh )
-				cfgout.m_refresh = displaymode[i].m_refresh; 
-			ok = TRUE;
-			// continue search for better refresh
-		}
+		// in fullscreen
+		// match bpp
+		if(cfgout.m_bpp != mode.bpp) continue;
+		// match resolution
+		if(cfgout.m_width != mode.width ) continue;
+		if(cfgout.m_height != mode.height ) continue;
+		// select highest refresh found, but not higher then requested
+		if(mode.refresh > cfgout.m_refresh && mode.refresh <= cfg.m_refresh )
+			cfgout.m_refresh = mode.refresh; 
+		ok = true;
+		// continue search for better refresh
 	}
 	
 	cfg = cfgout;
 	if(ok)
-	{ dlog(LOGRND, L"  Received:  "); R9_LogCfg(cfg,api); }
+	{ dlog(LOGRND, L"  Received:  "); R9_LogCfg(cfg, api); }
 	else
 	{ dlog(LOGRND, L"  Received:  FAILED\n"); return FALSE; }
 	return ok;
 }
 
-void R9_LogCfg( r9Cfg& cfg, int api )
+void R9_LogCfg( r9Cfg& cfg, Api api )
 {
 	dlog(LOGRND, L"%S %S %ix%i %ibpp %iHz%S\n", 
-		api?"OpenGL":"DirectX",
+		api == Api::OpenGL ? "OpenGL" : "DirectX",
 		cfg.m_windowed?"windowed":"full-screen",
 		cfg.m_width, cfg.m_height,
 		cfg.m_bpp,
@@ -409,14 +428,12 @@ void R9_LogCfg( r9Cfg& cfg, int api )
 
 void R9_DoneInterface()
 {
-	if(!r9DisplayModes) return;
-	free(r9DisplayModes);
-	r9DisplayModes = NULL;
-	r9DisplayModesCount = 0;
+	if(r9Render::DisplayModes.empty()) return;
+	r9Render::DisplayModes.clear();
 	dlog(LOGRND, L"Render done interface.\n");
 }
 
-BOOL R9_Init( HWND hwnd, r9Cfg* cfg, int api )
+BOOL R9_Init( HWND hwnd, r9Cfg* cfg, Api api )
 {
 	if(r9_render) return TRUE;
 	dlog(LOGRND, L"Render init (api=%i).\n",api);

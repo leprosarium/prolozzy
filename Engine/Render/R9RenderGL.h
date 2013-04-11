@@ -32,14 +32,17 @@ struct r9CapsGL
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class r9RenderGL : public r9Render
 {
-public:
-					r9RenderGL();
-virtual				~r9RenderGL();
+	virtual void ApplyBlend();
+	virtual void ApplyTAddress();
+	virtual void ApplyFilter();
+	void LogAdapterInfo() const;
 
-virtual	BOOL		LoadDll();
-virtual	void		UnloadDll();
-		void		LogAdapterInfo();
-virtual	int			GatherDisplayModes( r9DisplayMode* displaymode );
+public:
+	r9RenderGL();
+	virtual	bool LoadDll();
+	virtual	void UnloadDll();
+	
+	virtual	void GatherDisplayModes() const;
 
 virtual	BOOL		Init( HWND hwnd, r9Cfg* cfg );
 virtual	void		Done();
@@ -50,12 +53,9 @@ virtual	R9TEXTURE	TextureCreateTarget( int width, int height );
 virtual	void		TextureDestroy( R9TEXTURE tex );
 
 virtual	void		SetTexture( R9TEXTURE tex );
-virtual void		SetState( int state, int value );
 virtual	void		SetViewport( fRect& rect );
 virtual	void		SetView( int x, int y, dword flip );
 virtual	void		SetDefaultStates();
-virtual void		SetBlend(Blend b);
-
 
 
 virtual	void		Clear( dword color );
@@ -64,8 +64,8 @@ virtual	void		EndScene();
 virtual	void		Present();
 virtual	BOOL		ToggleVideoMode();
 
-virtual	void		Push( r9Vertex* vx, int vxs, int primitive );
-virtual	void		Flush();
+	virtual	void Push( r9Vertex* vx, int vxs, Primitive primitive);
+	virtual	void Flush();
 
 virtual	BOOL		SaveScreenShot( fRect* rect=NULL, BOOL full=TRUE);
 virtual BOOL		TakeScreenShot( r9Img* img, fRect* rect=NULL, BOOL full=TRUE );
@@ -161,11 +161,11 @@ inline void r9RenderGL::GL_BindTexture()
 	if(m_texture) i = (GLuint)(intptr)m_texture->m_handler;
 	m_glBindTexture(GL_TEXTURE_2D, i);
 	// taddress
-	i = (GetState(R9_STATE_TADDRESS)==R9_TADDRESS_WRAP) ? GL_REPEAT : GL_CLAMP;
+	i = (GetTAddress() == TAddress::Wrap) ? GL_REPEAT : GL_CLAMP;
 	m_glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,i);
 	m_glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,i);
 	// filter
-	i = GetState(R9_STATE_FILTER) ? GL_LINEAR : GL_NEAREST;
+	i = GetFilter() == Filter::Linear ? GL_LINEAR : GL_NEAREST;
 	m_glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,i);
 	m_glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,i);
 	// alpha replicate

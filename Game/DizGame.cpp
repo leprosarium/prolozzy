@@ -501,9 +501,9 @@ bool cDizGame::Update()
 	// update present objects
 	if(!pause())
 	{
-		for(auto i = m_obj.cbegin(), e = m_obj.cend(); i != e; ++i)
+		for(int idx: m_obj)
 		{
-			tBrush & obj = g_map.ObjGet(*i);
+			tBrush & obj = g_map.ObjGet(idx);
 			if( obj.Get(BRUSH_DISABLE)!=0 ) continue; // only enabled objects
 			if( obj.Get(BRUSH_ANIM)!=0 )
 			{
@@ -639,9 +639,9 @@ void cDizGame::Draw()
 
 		// objects present
 		R9_SetClipping( rect );
-		for(auto i = m_obj.cbegin(), e = m_obj.cend(); i != e; ++i)
+		for(int idx: m_obj)
 		{
-			tBrush & obj = g_map.ObjGet( *i );
+			tBrush & obj = g_map.ObjGet(idx);
 			if( obj.Get(BRUSH_LAYER)!=layer ) continue;
 			if( obj.Get(BRUSH_DISABLE)!=0 ) continue;
 			if((obj.Get(BRUSH_DRAW) & 1)==0 ) continue;

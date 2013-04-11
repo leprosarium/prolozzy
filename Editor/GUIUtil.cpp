@@ -84,7 +84,7 @@ void GUIDrawGradient( int x1, int y1, int x2, int y2, dword color1, dword color2
 	vx[5].y = (float)y2;
 	vx[5].color = color1;
 
-	R9_Push(vx,6,R9_PRIMITIVE_TRIANGLE);
+	R9_Push(vx, 6, Primitive::Triangle);
 }
 
 void GUIDrawLineDot( int x1, int y1, int x2, int y2, dword color, float dx, float dy )
@@ -105,7 +105,7 @@ void GUIDrawLineDot( int x1, int y1, int x2, int y2, dword color, float dx, floa
 	vx[1].u		= ((float)x2+dx) / (float)tw;
 	vx[1].v		= ((float)y2+dy) / (float)th;
 
-	R9_Push(vx,2,R9_PRIMITIVE_LINE);
+	R9_Push(vx, 2, Primitive::Line);
 }
 
 void GUIDrawRectDot( int x1, int y1, int x2, int y2, dword color )

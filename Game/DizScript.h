@@ -3,14 +3,62 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef __DIZSCRIPT_H__
 #define __DIZSCRIPT_H__
+#include <unordered_map>
 
 #include "SWI-cpp-m.h"
-
+#include "R9Render.h"
 #include <string>
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // Script class
 //////////////////////////////////////////////////////////////////////////////////////////////////
+
+template<class T>
+class EnumAtom
+{
+protected:
+	std::unordered_map<T, atom_t> EnumToAtom;
+	std::unordered_map<atom_t, T> AtomToEnum;
+
+	void Add(T v, const char *s)
+	{
+		atom_t a = PL_new_atom(s);
+		EnumToAtom[v] = a;
+		AtomToEnum[a] = v;
+	}
+public:
+	bool Unify(PlTerm & t, T v) const 
+	{
+		auto i = EnumToAtom.find(v);
+		if ( i == EnumToAtom.end())
+			return false;
+		return t = i->second;
+	}
+	T Get(PlTerm t) const 
+	{
+		auto i = AtomToEnum.find(PlAtom(t));
+		if ( i == AtomToEnum.end())
+			throw PlTypeError("enum", t.ref);
+		return i->second;
+	}
+};
+
+
+class BlendAtom : public EnumAtom<Blend>
+{
+public:
+	BlendAtom() {
+		Add(Blend::Opaque, "opaque");
+		Add(Blend::Alpha, "alpha");
+		Add(Blend::Add, "add");
+		Add(Blend::Mod, "mod");
+		Add(Blend::Mod2, "mod2");
+		Add(Blend::AlphaRep, "alphaRep");
+	}
+
+};
+
+
 class cDizScript
 {
 	module_t		module;

@@ -4,8 +4,6 @@
 #ifndef __DIZPLAYER_H__
 #define __DIZPLAYER_H__
 
-//#include "E9System.h"
-//#include "D9Debug.h"
 #include "DizPaint.h"
 
 #include "SWI-cpp-m.h"

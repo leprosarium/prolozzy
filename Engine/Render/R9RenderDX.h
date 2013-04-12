@@ -33,9 +33,15 @@ struct r9CapsDX
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class r9RenderDX : public r9Render
 {
+	virtual void ApplyTexture();
+	virtual	void ApplyViewport();
+	virtual void ApplyView();
 	virtual void ApplyBlend();
 	virtual void ApplyTAddress();
 	virtual void ApplyFilter();
+	virtual	bool Init();
+	virtual	void Finish();
+	virtual	R9TEXTURE TextureCreateImg(r9Img * img);
 
 public:
 	r9RenderDX();
@@ -46,17 +52,11 @@ public:
 
 	virtual	void GatherDisplayModes() const;
 
-virtual	BOOL		Init( HWND hwnd, r9Cfg* cfg );
-virtual	void		Done();
-virtual	BOOL		IsReady();
+	virtual	bool IsReady();
 
-virtual	R9TEXTURE	TextureCreate( r9Img* img );
-virtual	R9TEXTURE	TextureCreateTarget( int width, int height );
-virtual	void		TextureDestroy( R9TEXTURE tex );
+	virtual	R9TEXTURE TextureCreateTarget(int width, int height);
+	virtual	void TextureDestroy( R9TEXTURE tex );
 
-virtual	void		SetTexture( R9TEXTURE tex );
-virtual	void		SetViewport( fRect& rect );
-virtual	void		SetView( int x, int y, dword flip );
 virtual	void		SetDefaultStates();
 
 virtual	void		Clear( dword color );

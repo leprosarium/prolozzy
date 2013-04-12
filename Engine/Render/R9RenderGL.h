@@ -32,10 +32,16 @@ struct r9CapsGL
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class r9RenderGL : public r9Render
 {
+	virtual void ApplyTexture();
+	virtual	void ApplyViewport();
+	virtual void ApplyView();
 	virtual void ApplyBlend();
 	virtual void ApplyTAddress();
 	virtual void ApplyFilter();
 	void LogAdapterInfo() const;
+	virtual	bool Init();
+	virtual	void Finish();
+	virtual	R9TEXTURE TextureCreateImg(r9Img * img);
 
 public:
 	r9RenderGL();
@@ -43,18 +49,11 @@ public:
 	virtual	void UnloadDll();
 	
 	virtual	void GatherDisplayModes() const;
+	virtual	bool IsReady();
 
-virtual	BOOL		Init( HWND hwnd, r9Cfg* cfg );
-virtual	void		Done();
-virtual	BOOL		IsReady();
+	virtual	R9TEXTURE TextureCreateTarget(int width, int height);
+	virtual	void TextureDestroy( R9TEXTURE tex );
 
-virtual	R9TEXTURE	TextureCreate( r9Img* img );
-virtual	R9TEXTURE	TextureCreateTarget( int width, int height );
-virtual	void		TextureDestroy( R9TEXTURE tex );
-
-virtual	void		SetTexture( R9TEXTURE tex );
-virtual	void		SetViewport( fRect& rect );
-virtual	void		SetView( int x, int y, dword flip );
 virtual	void		SetDefaultStates();
 
 

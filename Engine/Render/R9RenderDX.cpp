@@ -147,16 +147,8 @@ void r9RenderDX::GatherDisplayModes() const
 	dlog(LOGRND, L"\n");
 }
 
-BOOL r9RenderDX::Init( HWND hwnd, r9Cfg* cfg )
+bool r9RenderDX::Init()
 {
-	m_hwnd = hwnd;
-
-	// config
-	if(cfg!=NULL) m_cfg = *cfg;
-	Api api = r9Render::api;
-	R9_FilterCfg(m_cfg, api);
-
-	if(m_cfg.m_bpp!=16 && m_cfg.m_bpp!=32) return FALSE;
 	m_pfdisplay	= (m_cfg.m_bpp==32) ? D3DFMT_X8R8G8B8 : D3DFMT_R5G6B5;
 	m_pfopaque	= (m_cfg.m_bpp==32) ? D3DFMT_X8R8G8B8 : D3DFMT_R5G6B5;
 	m_pfalpha	= (m_cfg.m_bpp==32) ? D3DFMT_A8R8G8B8 : D3DFMT_A4R4G4B4;
@@ -164,33 +156,21 @@ BOOL r9RenderDX::Init( HWND hwnd, r9Cfg* cfg )
 	// create d3d
 //	m_d3d = Direct3DCreate9(D3D_SDK_VERSION);
 	m_d3d = m_Direct3DCreate9(D3D_SDK_VERSION);
-	if(!m_d3d) { R9_LOGERROR("failed to create Direct3D.",0); return FALSE; }
+	if(!m_d3d) { R9_LOGERROR("failed to create Direct3D.",0); return false; }
 
 	// prepare window
 	PrepareWindow();
 
 	// create d3d device
-	if(!D3D_CreateDevice())	{ if(m_d3d) m_d3d->Release(); return FALSE; }
+	if(!D3D_CreateDevice())	{ if(m_d3d) m_d3d->Release(); return false; }
 
 	// batch
-	if(!D3D_BatchCreate()) { if(m_d3dd) m_d3dd->Release(); if(m_d3d) m_d3d->Release(); return FALSE; }
-
-	// default render states
-	SetDefaultStates();
-
-	// clear doublebuffer
-	if(BeginScene()) { Clear(0xff000000); EndScene(); Present(); }
-	if(BeginScene()) { Clear(0xff000000); EndScene(); Present(); }
-
-	// font
-	CreateFont();
-
-	return TRUE;
+	if(!D3D_BatchCreate()) { if(m_d3dd) m_d3dd->Release(); if(m_d3d) m_d3d->Release(); return false; }
+	return true;
 }
 
-void r9RenderDX::Done()
+void r9RenderDX::Finish()
 {
-	r9Render::Done();
 	if(m_batchd3d) D3D_BatchUnlock();
 	if(m_batchd3d) m_batchd3d->Release();
 	if(m_d3dtarget) m_d3dtarget->Release();
@@ -198,20 +178,15 @@ void r9RenderDX::Done()
 	if(m_d3d) m_d3d->Release();
 }
 
-BOOL r9RenderDX::IsReady()
+bool r9RenderDX::IsReady()
 {
-	return (m_d3d!=NULL && m_d3dd!=NULL);
+	return m_d3d && m_d3dd;
 }
 
-R9TEXTURE r9RenderDX::TextureCreate( r9Img* img )
+R9TEXTURE r9RenderDX::TextureCreateImg(r9Img* img)
 {
 	assert(m_d3dd);
 	HRESULT hr;
-	// check image
-	if(img==NULL) return NULL;
-	if(!img->isValid()) return NULL;
-	int imgbpp = R9_PFBpp(img->m_pf);
-	if(imgbpp!=24 && imgbpp!=32) return NULL;
 
 	// find accepted size, power of 2, etc
 	int w = GetPow2HI(img->m_width);
@@ -227,22 +202,22 @@ R9TEXTURE r9RenderDX::TextureCreate( r9Img* img )
 		if( w/h > m_caps.m_texaspectratio )	h = w / m_caps.m_texaspectratio;
 		if( h/w > m_caps.m_texaspectratio )	w = h / m_caps.m_texaspectratio;
 	}
-	if( w > m_caps.m_texwidth )	return NULL;
-	if( h > m_caps.m_texheight ) return NULL;
+	if( w > m_caps.m_texwidth )	return nullptr;
+	if( h > m_caps.m_texheight ) return nullptr;
 
 	// create DX texture
 	int d3dmips = 1;
 	dword d3dusage = 0;
 	D3DFORMAT d3dpf = (R9_PFBpp(img->m_pf)==24) ? m_pfopaque : m_pfalpha;
 	D3DPOOL d3dpool = D3DPOOL_MANAGED;
-	LPDIRECT3DTEXTURE9 d3dtex = NULL;
-	hr = m_d3dd->CreateTexture( w, h, d3dmips, d3dusage, d3dpf, d3dpool, &d3dtex, NULL );
-	if( FAILED(hr) || d3dtex==NULL) return NULL;
+	LPDIRECT3DTEXTURE9 d3dtex = nullptr;
+	hr = m_d3dd->CreateTexture( w, h, d3dmips, d3dusage, d3dpf, d3dpool, &d3dtex, nullptr );
+	if( FAILED(hr) || !d3dtex) return nullptr;
 	
 	// lock
 	D3DLOCKED_RECT d3dlockedrect;
-	hr = d3dtex->LockRect( 0, &d3dlockedrect, NULL, D3DLOCK_NOSYSLOCK );
-	if(FAILED(hr)) { if(d3dtex) d3dtex->Release(); return NULL; }
+	hr = d3dtex->LockRect( 0, &d3dlockedrect, nullptr, D3DLOCK_NOSYSLOCK );
+	if(FAILED(hr)) { if(d3dtex) d3dtex->Release(); return nullptr; }
 	int pitch = d3dlockedrect.Pitch;
 	byte* data = (byte*)d3dlockedrect.pBits;
 
@@ -261,7 +236,7 @@ R9TEXTURE r9RenderDX::TextureCreate( r9Img* img )
 	tex->m_realwidth = w;
 	tex->m_realheight = h;
 	tex->m_handler = d3dtex;
-	tex->m_handlerex = NULL;
+	tex->m_handlerex = nullptr;
 
 	return tex;
 }
@@ -285,17 +260,17 @@ R9TEXTURE r9RenderDX::TextureCreateTarget( int width, int height )
 		if( w/h > m_caps.m_texaspectratio )	h = w / m_caps.m_texaspectratio;
 		if( h/w > m_caps.m_texaspectratio )	w = h / m_caps.m_texaspectratio;
 	}
-	if( w > m_caps.m_texwidth )	return NULL;
-	if( h > m_caps.m_texheight ) return NULL;
+	if( w > m_caps.m_texwidth )	return nullptr;
+	if( h > m_caps.m_texheight ) return nullptr;
 
 	// create DX texture
 	int d3dmips = 1;
 	dword d3dusage = D3DUSAGE_RENDERTARGET;
 	D3DFORMAT d3dpf = m_pfdisplay;
 	D3DPOOL d3dpool = D3DPOOL_DEFAULT;
-	LPDIRECT3DTEXTURE9 d3dtex = NULL;
-	hr = m_d3dd->CreateTexture( w, h, d3dmips, d3dusage, d3dpf, d3dpool, &d3dtex, NULL );
-	if( FAILED(hr) || d3dtex==NULL) return NULL;
+	LPDIRECT3DTEXTURE9 d3dtex = nullptr;
+	hr = m_d3dd->CreateTexture( w, h, d3dmips, d3dusage, d3dpf, d3dpool, &d3dtex, nullptr );
+	if( FAILED(hr) || !d3dtex) return nullptr;
 	
 	// no locks on the render target!
 
@@ -306,7 +281,7 @@ R9TEXTURE r9RenderDX::TextureCreateTarget( int width, int height )
 	tex->m_realwidth = w;
 	tex->m_realheight = h;
 	tex->m_handler = d3dtex;
-	LPDIRECT3DSURFACE9 d3dsrf = NULL;
+	LPDIRECT3DSURFACE9 d3dsrf = nullptr;
 	d3dtex->GetSurfaceLevel(0,&d3dsrf);
 	tex->m_handlerex = d3dsrf;
 
@@ -318,7 +293,7 @@ R9TEXTURE r9RenderDX::TextureCreateTarget( int width, int height )
 
 void r9RenderDX::TextureDestroy( R9TEXTURE texture )
 {
-	if(texture==NULL) return;
+	if(!texture) return;
 	LPDIRECT3DTEXTURE9 d3dtex = (LPDIRECT3DTEXTURE9)(texture->m_handler);
 	LPDIRECT3DSURFACE9 d3dsrf = (LPDIRECT3DSURFACE9)(texture->m_handlerex);
 	if(d3dsrf) TT_Del(texture); // delete render target texture from manager
@@ -327,39 +302,31 @@ void r9RenderDX::TextureDestroy( R9TEXTURE texture )
 	delete texture;
 }
 
-void r9RenderDX::SetTexture( R9TEXTURE texture )
+void r9RenderDX::ApplyTexture()
 {
-	if(m_texture==texture) return;
-	if(NeedFlush()) Flush();
-	m_texture = texture;
-	LPDIRECT3DTEXTURE9 d3dtex = NULL;
+	LPDIRECT3DTEXTURE9 d3dtex = nullptr;
 	if(m_texture) d3dtex = (LPDIRECT3DTEXTURE9)(m_texture->m_handler);
 	HRESULT hr = m_d3dd->SetTexture(0,d3dtex);
 }
 
-void r9RenderDX::SetViewport( fRect& rect )
+void r9RenderDX::ApplyViewport()
 {
-	if(m_viewport==rect) return;
-	m_viewport = rect;
 	D3DVIEWPORT9 vp;
-	vp.X = (DWORD)rect.x1;
-	vp.Y = (DWORD)rect.y1;
-	vp.Width = (DWORD)rect.Width();
-	vp.Height = (DWORD)rect.Height();
+	vp.X = (DWORD)m_viewport.x1;
+	vp.Y = (DWORD)m_viewport.y1;
+	vp.Width = (DWORD)m_viewport.Width();
+	vp.Height = (DWORD)m_viewport.Height();
 	vp.MinZ = 0.0f;
 	vp.MaxZ = 1.0f;
 	m_d3dd->SetViewport(&vp);
 }
 
-void r9RenderDX::SetView( int x, int y, dword flip )
+void r9RenderDX::ApplyView()
 {
-	m_viewx = x;
-	m_viewy = y;
-	m_viewflip = flip;
 	D3DMATRIX mat;
 	memset( &mat, 0, sizeof(mat) );
-	mat._11 = (flip & R9_FLIPX) ? -1.0f : 1.0f; 
-	mat._22 = (flip & R9_FLIPY) ? -1.0f : 1.0f; 
+	mat._11 = (m_viewflip & R9_FLIPX) ? -1.0f : 1.0f; 
+	mat._22 = (m_viewflip & R9_FLIPY) ? -1.0f : 1.0f; 
 	mat._33 = 1.0f; 
 	mat._44 = 1.0f;
 	m_d3dd->SetTransform( D3DTS_VIEW, &mat );	

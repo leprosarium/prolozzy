@@ -128,9 +128,15 @@ class r9Font;
 class r9Render
 {
 protected:
+	virtual void ApplyTexture() = 0;
+	virtual	void ApplyViewport() = 0;
+	virtual void ApplyView() = 0;
 	virtual void ApplyBlend() = 0;
 	virtual void ApplyTAddress() = 0;
 	virtual void ApplyFilter() = 0;
+	virtual	bool Init() = 0;							
+	virtual	void Finish() = 0;							
+	virtual	R9TEXTURE TextureCreateImg(r9Img* img) = 0;		// create texture from image
 
 public:
 	static std::vector<r9DisplayMode> DisplayModes;
@@ -138,33 +144,32 @@ public:
 	r9Render(Api api);
 	virtual ~r9Render() {}
 
+	bool Init(HWND hwnd, r9Cfg * cfg);					// init render; if cfg is NULL, default cfg is used
+	void Done();										
+	int GetWidth() const { return m_cfg.m_width; }
+	int GetHeight() const { return m_cfg.m_height; }
+	r9Cfg&		GetCfg()										{ return m_cfg; }
+	Api			GetApi()										{ return api; }
+
 	virtual	bool LoadDll() = 0;
 	virtual	void UnloadDll() = 0;
+	virtual	void GatherDisplayModes() const = 0;			// fill list with valid displaymodes and return count; use NULL just for the count; first entry is the current mode (windowed) if available; @WARNING: only safe to call in windowed mode, at start
+	virtual	bool IsReady() = 0;								// if render is ready; avoid using render in window messages, before the device is ready
 
-// preinit
-virtual	void GatherDisplayModes() const = 0;				// fill list with valid displaymodes and return count; use NULL just for the count; first entry is the current mode (windowed) if available; @WARNING: only safe to call in windowed mode, at start
-
-// init
-virtual	BOOL		Init( HWND hwnd, r9Cfg* cfg );					// init render; if cfg is NULL, default cfg is used
-virtual	void		Done();											// done render
-virtual	BOOL		IsReady();										// if render is ready; avoid using render in window messages, before the device is ready
-inline	int			GetWidth()										{ return m_cfg.m_width; }
-inline	int			GetHeight()										{ return m_cfg.m_height; }
-inline	r9Cfg&		GetCfg()										{ return m_cfg; }
-inline	Api			GetApi()										{ return api; }
-
-// texture
-virtual	R9TEXTURE	TextureCreate( r9Img* img );					// create texture from image
-virtual	R9TEXTURE	TextureLoad( const char* filename );			// load a texture from file
-virtual	R9TEXTURE	TextureCreateTarget( int width, int height );	// create a texture with render target support
-virtual	void		TextureDestroy( R9TEXTURE tex );				// destroy texture
+	// texture
+	R9TEXTURE TextureCreate(r9Img* img);					// create texture from image
+	R9TEXTURE TextureLoad(const char* filename);			// load a texture from file
+	virtual	R9TEXTURE TextureCreateTarget(int width, int height) = 0;	// create a texture with render target support
+	virtual	void TextureDestroy(R9TEXTURE tex) = 0;				// destroy texture
 
 // states
-virtual	void		SetTexture( R9TEXTURE tex );					// set current texture (if different); flushes if needed
-inline	R9TEXTURE	GetTexture()									{ return m_texture; }
-virtual	void		SetViewport( fRect& rect );						// set viewport rect (used as scissor)
-inline	fRect&		GetViewport()									{ return m_viewport; }
-virtual	void		SetView( int x, int y, dword flip );			// set view options
+	void SetTexture(R9TEXTURE tex);							// set current texture (if different); flushes if needed
+	R9TEXTURE GetTexture() const { return m_texture; }
+
+	void SetViewport(const fRect & rect );					// set viewport rect (used as scissor)
+	const fRect & GetViewport() const { return m_viewport; }
+
+	void SetView(int x, int y, dword flip);				// set view options
 virtual	void		SetDefaultStates();								// set states to default values
 
 	void SetBlend(Blend b);
@@ -445,7 +450,7 @@ inline	int			R9_TextureGetRealHeight( R9TEXTURE tex )				{ return tex->m_realhei
 inline	void		R9_SetTexture( R9TEXTURE tex )							{ assert(r9_render); r9_render->SetTexture(tex); }
 inline	R9TEXTURE	R9_GetTexture()											{ assert(r9_render); return r9_render->GetTexture(); }
 inline	void		R9_SetViewport( fRect& rect )							{ assert(r9_render); r9_render->SetViewport(rect); }
-inline	fRect&		R9_GetViewport()										{ assert(r9_render); return r9_render->GetViewport(); }
+inline	const fRect& R9_GetViewport()										{ assert(r9_render); return r9_render->GetViewport(); }
 inline	void		R9_SetView( int x, int y, dword flip )					{ assert(r9_render); r9_render->SetView(x,y,flip); }
 inline	void		R9_SetBlend(Blend b)						{ assert(r9_render); r9_render->SetBlend(b); }
 inline	Blend		R9_GetBlend()								{ assert(r9_render); return r9_render->GetBlend(); }

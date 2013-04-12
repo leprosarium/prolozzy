@@ -241,43 +241,22 @@ void r9RenderGL::GatherDisplayModes() const
 	dlog(LOGRND, L"\n");
 }
 
-BOOL r9RenderGL::Init( HWND hwnd, r9Cfg* cfg )
+bool r9RenderGL::Init()
 {
-	// m_hwnd = hwnd; OpenGL uses a child render window, because of the bpp problem
-	
-	// config
-	if(cfg!=NULL) m_cfg = *cfg;
-	Api api = r9Render::api;
-	R9_FilterCfg(m_cfg, api);
-
-	if(m_cfg.m_bpp!=16 && m_cfg.m_bpp!=32) return FALSE;
-
 	// prepare window
 	PrepareParentWindow();
-	if(!CreateRenderWindow()) { DestroyRenderWindow(); return FALSE; }
+	if(!CreateRenderWindow()) { DestroyRenderWindow(); return false; }
 
 	// create opengl device
-	if(!GL_CreateDevice()) { DestroyRenderWindow(); return FALSE; }
+	if(!GL_CreateDevice()) { DestroyRenderWindow(); return false; }
 
 	// batch
 	GL_BatchCreate();
-
-	// default render states
-	SetDefaultStates();
-
-	// clear doublebuffer
-	if(BeginScene()) { Clear(0xff000000); EndScene(); Present(); }
-	if(BeginScene()) { Clear(0xff000000); EndScene(); Present(); }
-
-	// font
-	CreateFont();
-
-	return TRUE;
+	return true;
 }
 
-void r9RenderGL::Done()
+void r9RenderGL::Finish()
 {
-	r9Render::Done();
 	free(m_batchbuffer);
 	if(!m_cfg.m_windowed) ChangeDisplaySettings(NULL,0);
 	if(m_hrc) { m_wglMakeCurrent(NULL,NULL); m_wglDeleteContext(m_hrc); m_hrc=NULL; }
@@ -285,18 +264,14 @@ void r9RenderGL::Done()
 	DestroyRenderWindow();
 }
 
-BOOL r9RenderGL::IsReady()
+bool r9RenderGL::IsReady()
 {
-	return (m_hrc!=NULL);
+	return m_hrc != nullptr;
 }
 
-R9TEXTURE r9RenderGL::TextureCreate( r9Img* img )
+R9TEXTURE r9RenderGL::TextureCreateImg( r9Img* img )
 {
-	// check image
-	if(img==NULL) return NULL;
-	if(!img->isValid()) return NULL;
 	int imgbpp = R9_PFBpp(img->m_pf);
-	if(imgbpp!=24 && imgbpp!=32) return NULL;
 
 	R9_ImgFlipRGB(img); // opengl is bgr
 
@@ -320,7 +295,7 @@ R9TEXTURE r9RenderGL::TextureCreate( r9Img* img )
 		imgdata = img2.m_data; // use this data
 	}
 	else
-	if(w<img->m_width || h<img->m_height) return FALSE; // it can't be smaller
+	if(w<img->m_width || h<img->m_height) return nullptr; // it can't be smaller
 
 	// create GL texture
 	GLuint gltex;
@@ -340,14 +315,14 @@ R9TEXTURE r9RenderGL::TextureCreate( r9Img* img )
 	tex->m_realwidth	= w;
 	tex->m_realheight	= h;
 	tex->m_handler		= (void*)(intptr)gltex;
-	tex->m_handlerex	= NULL;
+	tex->m_handlerex	= nullptr;
 
 	GL_BindTexture(); // for wrap and filter
 
 	return tex;
 }
 
-R9TEXTURE r9RenderGL::TextureCreateTarget( int width, int height )
+R9TEXTURE r9RenderGL::TextureCreateTarget(int width, int height)
 {
 	
 	// find accepted size, power of 2, etc
@@ -358,8 +333,8 @@ R9TEXTURE r9RenderGL::TextureCreateTarget( int width, int height )
 
 	// data
 	int spp = 4;
-	byte* imgdata = (byte*)malloc(w*h*spp); assert(imgdata);
-	memset(imgdata,0,w*h*spp);
+	byte* imgdata = new byte[w * h * spp]; assert(imgdata);
+	memset(imgdata, 0, w*h*spp);
 
 	// create GL texture
 	GLuint gltex;
@@ -367,7 +342,7 @@ R9TEXTURE r9RenderGL::TextureCreateTarget( int width, int height )
 	m_glBindTexture(GL_TEXTURE_2D, gltex);
 	m_glTexImage2D(GL_TEXTURE_2D, 0, spp, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, imgdata);
 
-	free(imgdata);
+	delete [] imgdata;
 
 	// create R9 texture
 	r9Texture* tex		= new r9Texture;
@@ -385,53 +360,42 @@ R9TEXTURE r9RenderGL::TextureCreateTarget( int width, int height )
 
 void r9RenderGL::TextureDestroy( R9TEXTURE texture )
 {
-	if(texture==NULL) return;
+	if(!texture) return;
 	GLuint gltex = (GLuint)(intptr)texture->m_handler;
 	m_glDeleteTextures(1,&gltex);
 	delete texture;
 }
 
-void r9RenderGL::SetTexture( R9TEXTURE texture )
+void r9RenderGL::ApplyTexture()
 {
-	if(m_texture==texture) return;
-	if(NeedFlush()) Flush();
-	m_texture = texture;
 	GL_BindTexture();
 }
 
-void r9RenderGL::SetViewport( fRect& rect )
+void r9RenderGL::ApplyViewport()
 {
-	if(m_viewport==rect) return;
-	m_viewport = rect;
-	m_glViewport((GLint)rect.x1,(GLint)rect.y1,(GLint)rect.Width(),(GLint)rect.Height());
+	m_glViewport((GLint)m_viewport.x1,(GLint)m_viewport.y1,(GLint)m_viewport.Width(),(GLint)m_viewport.Height());
 	m_glMatrixMode(GL_PROJECTION);
 	m_glLoadIdentity();
-	m_glOrtho(rect.x1,rect.x2,rect.y2,rect.y1,-1,1);
+	m_glOrtho(m_viewport.x1,m_viewport.x2,m_viewport.y2,m_viewport.y1,-1,1);
 	m_glMatrixMode(GL_MODELVIEW);
 	m_glLoadIdentity();
 }
 
-void r9RenderGL::SetView( int x, int y, dword flip )
+void r9RenderGL::ApplyView()
 {
-	m_viewx = x;
-	m_viewy = y;
-	m_viewflip = flip;
-
 	fRect rect;
-	rect.x1 = (flip & R9_FLIPX) ? m_viewport.x2 : m_viewport.x1;
-	rect.y1 = (flip & R9_FLIPY) ? m_viewport.y2 : m_viewport.y1;
-	rect.x2 = (flip & R9_FLIPX) ? m_viewport.x1 : m_viewport.x2;
-	rect.y2 = (flip & R9_FLIPY) ? m_viewport.y1 : m_viewport.y2;
-	rect.x1 += x;		
-	rect.x2 += x;
-	rect.y1 += y;
-	rect.y2 += y;
+	rect.x1 = (m_viewflip & R9_FLIPX) ? m_viewport.x2 : m_viewport.x1;
+	rect.y1 = (m_viewflip & R9_FLIPY) ? m_viewport.y2 : m_viewport.y1;
+	rect.x2 = (m_viewflip & R9_FLIPX) ? m_viewport.x1 : m_viewport.x2;
+	rect.y2 = (m_viewflip & R9_FLIPY) ? m_viewport.y1 : m_viewport.y2;
+	rect.x1 += m_viewx;		
+	rect.x2 += m_viewx;
+	rect.y1 += m_viewy;
+	rect.y2 += m_viewy;
 
 	m_glMatrixMode(GL_PROJECTION);
 	m_glLoadIdentity();
 	m_glOrtho(rect.x1,rect.x2,rect.y2,rect.y1,-1,1);
-
-
 }
 
 void r9RenderGL::ApplyBlend()

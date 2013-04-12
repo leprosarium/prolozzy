@@ -39,26 +39,82 @@ r9Render::r9Render(Api api) :
 {
 }
 
-BOOL 		r9Render::Init( HWND hwnd, r9Cfg* cfg )							{ return TRUE; }
-void 		r9Render::Done()												{ if(m_font) { TextureDestroy(m_font->GetTexture()); m_font->Destroy(); delete m_font; } }
-BOOL		r9Render::IsReady()												{ return TRUE; }
-R9TEXTURE	r9Render::TextureCreate( r9Img* img )							{ return NULL; }
-R9TEXTURE	r9Render::TextureCreateTarget( int width, int height )			{ return NULL; }
+bool r9Render::Init(HWND hwnd, r9Cfg * cfg)
+{
+	m_hwnd = hwnd;
+	
+	if(cfg) m_cfg = *cfg;
+	Api api = r9Render::api;
+	R9_FilterCfg(m_cfg, api);
+
+	if(m_cfg.m_bpp!=16 && m_cfg.m_bpp!=32) return false;
+
+	if(!Init()) return false;
+
+	SetDefaultStates();
+
+	// clear doublebuffer
+	if(BeginScene()) { Clear(0xff000000); EndScene(); Present(); }
+	if(BeginScene()) { Clear(0xff000000); EndScene(); Present(); }
+
+	// font
+	CreateFont();
+	return true;
+}
+
+void r9Render::Done()
+{
+	if(m_font)
+	{
+		TextureDestroy(m_font->GetTexture()); 
+		m_font->Destroy(); 
+		delete m_font; 
+	}
+	Finish();
+}
+
+R9TEXTURE r9Render::TextureCreate(r9Img* img)
+{
+	if(!img) return nullptr;
+	if(!img->isValid()) return nullptr;
+	int imgbpp = R9_PFBpp(img->m_pf);
+	if(imgbpp!=24 && imgbpp!=32) return nullptr;
+	return TextureCreateImg(img);	
+}
+
+
 
 R9TEXTURE r9Render::TextureLoad( const char* filename )
 {
 	r9Img img;
-	if(!R9_ImgLoadFile(filename, &img)) return NULL;
+	if(!R9_ImgLoadFile(filename, &img)) return nullptr;
 	R9TEXTURE tex = TextureCreate(&img);
 	R9_ImgDestroy(&img);
 	return tex;
 }
 
-void		r9Render::TextureDestroy( R9TEXTURE texture )					{}
+void r9Render::SetTexture( R9TEXTURE texture ) 
+{
+	if(m_texture==texture) return;
+	if(NeedFlush()) Flush();
+	m_texture = texture;
+	ApplyTexture();
+}
 
-void r9Render::SetTexture( R9TEXTURE texture )				{ m_texture = texture; }
-void r9Render::SetViewport( fRect& rect )					{ m_viewport = rect; }
-void r9Render::SetView( int x, int y, dword flip )			{ m_viewx = x; m_viewy = y; m_viewflip = flip; }
+void r9Render::SetViewport( const fRect & rect )
+{
+	if(m_viewport==rect) return;
+	m_viewport = rect;
+	ApplyViewport();
+}
+
+void r9Render::SetView( int x, int y, dword flip )
+{
+	m_viewx = x;
+	m_viewy = y;
+	m_viewflip = flip;
+	ApplyView();
+}
 
 void r9Render::SetBlend(Blend b)
 {

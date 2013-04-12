@@ -136,8 +136,12 @@ protected:
 	virtual void ApplyFilter() = 0;
 	virtual	bool Init() = 0;							
 	virtual	void Finish() = 0;							
-	virtual	R9TEXTURE TextureCreateImg(r9Img* img) = 0;		// create texture from image
-
+	virtual	R9TEXTURE TextureCreateImg(r9Img* img) = 0;
+	virtual	void ResetDefaultStates() = 0;
+	virtual	void DoClear(dword color) = 0;
+	virtual	bool DoBeginScene(R9TEXTURE target) = 0;
+	virtual	void DoEndScene() = 0;
+	virtual void DoPresent() = 0;
 public:
 	static std::vector<r9DisplayMode> DisplayModes;
 
@@ -150,11 +154,18 @@ public:
 	int GetHeight() const { return m_cfg.m_height; }
 	r9Cfg&		GetCfg()										{ return m_cfg; }
 	Api			GetApi()										{ return api; }
+	void SetDefaultStates();								// set states to default values
+	bool NeedFlush() const { return m_needflush; }
 
 	virtual	bool LoadDll() = 0;
 	virtual	void UnloadDll() = 0;
 	virtual	void GatherDisplayModes() const = 0;			// fill list with valid displaymodes and return count; use NULL just for the count; first entry is the current mode (windowed) if available; @WARNING: only safe to call in windowed mode, at start
 	virtual	bool IsReady() = 0;								// if render is ready; avoid using render in window messages, before the device is ready
+
+// batch primitives
+	virtual void Push( r9Vertex* vx, int vxs, Primitive primitive ) = 0;// push vertices in the batch buffer
+	virtual	void Flush() = 0;										// flush the batch buffer
+
 
 	// texture
 	R9TEXTURE TextureCreate(r9Img* img);					// create texture from image
@@ -170,7 +181,6 @@ public:
 	const fRect & GetViewport() const { return m_viewport; }
 
 	void SetView(int x, int y, dword flip);				// set view options
-virtual	void		SetDefaultStates();								// set states to default values
 
 	void SetBlend(Blend b);
 	Blend GetBlend() const { return blend; }
@@ -187,34 +197,30 @@ virtual	void		SetDefaultStates();								// set states to default values
 
 
 // flow
-virtual	void		Clear( dword color );							// clear backbuffer
-virtual	BOOL		BeginScene( R9TEXTURE target=NULL );			// begine scene drawing; if target is valid then render in texture target
-virtual	void		EndScene();										// end scene drawing
-virtual	void		Present();										// present scene (flip buffers)
-inline	BOOL		IsBeginEndScene()								{ return m_beginendscene; }
+	void Clear(dword color)  { if(m_beginendscene) DoClear(color); }// clear backbuffer
+	bool BeginScene(R9TEXTURE target = nullptr);					// begine scene drawing; if target is valid then render in texture target
+	void EndScene();												// end scene drawing
+	void Present() { DoPresent(); }										// present scene (flip buffers)
+	bool IsBeginEndScene() const { return m_beginendscene; }
 virtual	BOOL		CheckDevice();									// check if device is lost and if so, try to reset it
 virtual	BOOL		ToggleVideoMode();								// @OBSOLETE toggle between windowed and full screen
 
-// batch primitives
-	virtual void Push( r9Vertex* vx, int vxs, Primitive primitive ) = 0;// push vertices in the batch buffer
-	virtual	void Flush() = 0;										// flush the batch buffer
-inline	BOOL		NeedFlush()										{ return m_needflush; }
 
 // draw functions
-inline	void		DrawLine( fV2& a, fV2& b, dword color=0xffffffff );
-inline	void		DrawTriangle( fV2& a, fV2& b, fV2& c, fV2& ta, fV2& tb, fV2& tc, R9TEXTURE tex, dword color=0xffffffff );
-inline	void		DrawBar( fRect& dst, dword color=0xffffffff );
-inline	void		DrawQuad( fRect& dst, fRect& src, R9TEXTURE tex, dword color=0xffffffff );
-		void		DrawQuadRot( fV2& pos, fV2& size, fV2& center, float angle, fRect& src, R9TEXTURE tex, dword color=0xffffffff ); // center is relative to the middle of the rectangle
-		void		DrawSprite( const fV2 & pos, const fRect & src, R9TEXTURE tex, dword color=0xffffffff, dword flip=0, float scale=1.0f ); // does clipping
+	void DrawLine(const fV2 & a, const fV2 & b, dword color = 0xffffffff);
+	void DrawTriangle(const fV2 & a, const fV2 & b, const fV2 & c, const fV2 & ta, const fV2 & tb, const fV2 & tc, R9TEXTURE tex, dword color=0xffffffff );
+	void DrawBar(const fRect & dst, dword color=0xffffffff ) { DrawQuad(dst,fRect(0.0f,0.0f,1.0f,1.0f), nullptr, color); }
+	void DrawQuad( const fRect& dst, const fRect& src, R9TEXTURE tex, dword color=0xffffffff );
+	void DrawQuadRot(const fV2 & pos, const fV2 & size, const fV2 & center, float angle, const fRect & src, R9TEXTURE tex, dword color=0xffffffff ); // center is relative to the middle of the rectangle
+	void DrawSprite( const fV2 & pos, const fRect & src, R9TEXTURE tex, dword color=0xffffffff, dword flip=0, float scale=1.0f ); // does clipping
 
 // clipping
-inline	BOOL		IsClipping()										{ return ( (m_cliprect.x1<m_cliprect.x2) && (m_cliprect.y1<m_cliprect.y2) ); }
-inline	void		SetClipping( fRect& rect )							{ m_cliprect = rect; }
-inline	fRect&		GetClipping()										{ return m_cliprect; }
-inline 	void		ClipBar( fRect& dst );								// clip destination rect (dst must be ordered)
-inline 	void		ClipQuad(fRect & dst, fRect & src );				// clip destination rect and source mapping rect (dst must be ordered, src coordinates can be flipped)
-inline 	void		ClipSprite( fRect& dst, fRect& src, int flip=0 );	// clip destination rect and source mapping rect (dst and src must have the same sizes; src coordinates can't be flipped); rotation not supported
+	bool IsClipping() const { return m_cliprect.x1<m_cliprect.x2 && m_cliprect.y1<m_cliprect.y2; }
+	void SetClipping(const fRect & rect) { m_cliprect = rect; }
+	const fRect & GetClipping() const { return m_cliprect; }
+	void ClipBar( fRect& dst );								// clip destination rect (dst must be ordered)
+	void ClipQuad(fRect & dst, fRect & src );				// clip destination rect and source mapping rect (dst must be ordered, src coordinates can be flipped)
+	void ClipSprite( fRect& dst, fRect& src, int flip=0 );	// clip destination rect and source mapping rect (dst and src must have the same sizes; src coordinates can't be flipped); rotation not supported
 
 // screen shot
 virtual	BOOL		SaveScreenShot( fRect* rect=NULL, BOOL full=TRUE);					// auto save screenshot
@@ -229,14 +235,14 @@ virtual BOOL		CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect );		/
 		HWND			m_hwnd;				// associated window
 		Api				api;				// render api (fixed per render class)
 		r9Cfg			m_cfg;				// render config
-		BOOL			m_beginendscene;	// if inside begin-end scene cycle
+		bool			m_beginendscene;	// if inside begin-end scene cycle
 		R9TEXTURE		m_texture;			// current texture
 		fRect			m_viewport;			// viewport rect
 		int				m_viewx;			// view x offset
 		int				m_viewy;			// view y offset
 		dword			m_viewflip;			// view flip option
 		fRect			m_cliprect;			// clipping rect (clipping is performed if rect is valid)
-		BOOL			m_needflush;		// need flush, batch buffer not empty
+		bool			m_needflush;		// need flush, batch buffer not empty
 		int				m_primitivecount;	// rendered primitives from the scene
 		r9Font*			m_font;				// render font (created from source resource)
 		r9HandleReset	m_handlereset;		// on reset user callback
@@ -252,102 +258,32 @@ private:
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // INLINES
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-inline void r9Render::DrawLine( fV2& a, fV2& b, dword color )
+inline void r9Render::DrawLine(const fV2 & a, const fV2 & b, dword color)
 {
-	if(GetTexture()!=NULL) SetTexture(NULL);
-
-	r9Vertex vx[2];
-
-	vx[0].x = a.x;
-	vx[0].y = a.y;
-	vx[0].u = 0.0f;
-	vx[0].v = 0.0f;
-	vx[0].color = color;
-
-	vx[1].x = b.x;
-	vx[1].y = b.y;
-	vx[1].u = 1.0f;
-	vx[1].v = 1.0f;
-	vx[1].color = color;
-
+	SetTexture(nullptr);
+	r9Vertex vx[2] = {{a.x, a.y, 0.0f, 0.0f, color}, {b.x, b.y, 1.0f, 1.0f, color}};
 	Push(vx, 2, Primitive::Line);
 }
 
-inline void r9Render::DrawTriangle( fV2& a, fV2& b, fV2& c, fV2& ta, fV2& tb, fV2& tc, R9TEXTURE tex, dword color )
+inline void r9Render::DrawTriangle(const fV2 & a, const fV2 & b, const fV2 & c, const fV2 & ta, const fV2 & tb, const fV2 & tc, R9TEXTURE tex, dword color )
 {
-	if(GetTexture()!=tex) SetTexture(tex);
-
-	r9Vertex vx[3];
-
-	vx[0].x = a.x;
-	vx[0].y = a.y;
-	vx[0].u = ta.x;
-	vx[0].v = ta.y;
-	vx[0].color = color;
-
-	vx[1].x = b.x;
-	vx[1].y = b.y;
-	vx[1].u = tb.x;
-	vx[1].v = tb.y;
-	vx[1].color = color;
-
-	vx[2].x = c.x;
-	vx[2].y = c.y;
-	vx[2].u = tc.x;
-	vx[2].v = tc.y;
-	vx[2].color = color;
-
+	SetTexture(tex);
+	r9Vertex vx[3] = {{a.x, a.y, ta.x, ta.y, color}, { b.x, b.y, tb.x, tb.y, color}, {c.x, c.y, tc.x, tc.y, color}};
 	Push(vx, 3, Primitive::Triangle);
 }
 
-inline void r9Render::DrawQuad( fRect& dst, fRect& src, R9TEXTURE tex, dword color )
+inline void r9Render::DrawQuad( const fRect & dst, const fRect & src, R9TEXTURE tex, dword color )
 {
-	if(GetTexture()!=tex) SetTexture(tex);
+	SetTexture(tex);
 
-	r9Vertex vx[6];
-
-	vx[0].x = dst.x1;
-	vx[0].y = dst.y1;
-	vx[0].u = src.x1;
-	vx[0].v = src.y1;
-	vx[0].color = color;
-
-	vx[1].x = dst.x2;
-	vx[1].y = dst.y1;
-	vx[1].u = src.x2;
-	vx[1].v = src.y1;
-	vx[1].color = color;
-
-	vx[2].x = dst.x1;
-	vx[2].y = dst.y2;
-	vx[2].u = src.x1;
-	vx[2].v = src.y2;
-	vx[2].color = color;
-
-	vx[3].x = dst.x2;
-	vx[3].y = dst.y1;
-	vx[3].u = src.x2;
-	vx[3].v = src.y1;
-	vx[3].color = color;
-
-	vx[4].x = dst.x2;
-	vx[4].y = dst.y2;
-	vx[4].u = src.x2;
-	vx[4].v = src.y2;
-	vx[4].color = color;
-
-	vx[5].x = dst.x1;
-	vx[5].y = dst.y2;
-	vx[5].u = src.x1;
-	vx[5].v = src.y2;
-	vx[5].color = color;
-
+	r9Vertex vx[6] = {
+		{ dst.x1, dst.y1, src.x1, src.y1, color },
+		{ dst.x2, dst.y1, src.x2, src.y1, color },
+		{ dst.x1, dst.y2, src.x1, src.y2, color },
+		{ dst.x2, dst.y1, src.x2, src.y1, color },
+		{ dst.x2, dst.y2, src.x2, src.y2, color },
+		{ dst.x1, dst.y2, src.x1, src.y2, color}};
 	Push(vx, 6, Primitive::Triangle);
-}
-
-inline void r9Render::DrawBar( fRect& dst, dword color )
-{
-	DrawQuad(dst,fRect(0.0f,0.0f,1.0f,1.0f),NULL,color);
 }
 
 inline void r9Render::ClipBar( fRect& dst )
@@ -480,7 +416,7 @@ inline	void		R9_DrawSprite( const fV2 & pos, const fRect & src, R9TEXTURE tex, d
 
 inline	BOOL		R9_IsClipping()											{ assert(r9_render); return r9_render->IsClipping(); }
 inline	void		R9_SetClipping( fRect& rect )							{ assert(r9_render); r9_render->SetClipping(rect); }
-inline	fRect&		R9_GetClipping()										{ assert(r9_render); return r9_render->GetClipping(); }
+inline	const fRect & R9_GetClipping()										{ assert(r9_render); return r9_render->GetClipping(); }
 inline	void		R9_ResetClipping()										{ assert(r9_render); r9_render->SetClipping(fRect()); }
 inline	void		R9_AddClipping( fRect& rect )							{ assert(r9_render); if(!r9_render->IsClipping()) r9_render->SetClipping(rect); else r9_render->SetClipping(r9_render->GetClipping() * rect); }
 inline 	void		R9_ClipBar( fRect& dst )								{ assert(r9_render); r9_render->ClipBar(dst); }

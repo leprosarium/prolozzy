@@ -150,6 +150,8 @@ void r9Render::SetFilter(Filter f)
 
 void r9Render::SetDefaultStates()
 {
+	ResetDefaultStates();
+
 	m_texture = NULL;
 	if(NeedFlush()) Flush();
 	blend = Blend::Alpha;
@@ -163,10 +165,24 @@ void r9Render::SetDefaultStates()
 	SetView( 0, 0, 0 );
 }
 
-void r9Render::Clear( dword color )							{}				
-BOOL r9Render::BeginScene( R9TEXTURE target )				{ return TRUE; }
-void r9Render::EndScene()									{}
-void r9Render::Present()									{}
+bool r9Render::BeginScene(R9TEXTURE target)
+{
+	if(m_beginendscene) return false;
+	m_primitivecount = 0;
+	bool r = DoBeginScene(target);
+	if(r)
+		m_beginendscene = true;
+	return r;
+}
+
+void r9Render::EndScene()
+{
+	if( !m_beginendscene ) return;
+	if(NeedFlush()) Flush();
+	m_beginendscene = false;
+	DoEndScene();
+}
+
 BOOL r9Render::CheckDevice()								{ return TRUE; }
 BOOL r9Render::ToggleVideoMode()							{ return FALSE; }
 
@@ -175,65 +191,29 @@ BOOL r9Render::TakeScreenShot( r9Img* img, fRect* rect, BOOL full )				{ return 
 BOOL r9Render::CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )	{ return FALSE; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void r9Render::DrawQuadRot( fV2& pos, fV2& size, fV2& center, float angle, fRect& src, R9TEXTURE tex, dword color )
+void r9Render::DrawQuadRot(const fV2 & pos, const fV2 & size, const fV2 & center, float angle, const fRect & src, R9TEXTURE tex, dword color )
 {
-	if(GetTexture()!=tex) SetTexture(tex);
-
-	fV2 dst[4];
-	dst[0].x = -center.x - size.x/2.0f;
-	dst[0].y = -center.y - size.y/2.0f;
-	dst[1].x = -center.x + size.x/2.0f;
-	dst[1].y = -center.y - size.y/2.0f;
-	dst[2].x = -center.x + size.x/2.0f;
-	dst[2].y = -center.y + size.y/2.0f;
-	dst[3].x = -center.x - size.x/2.0f;
-	dst[3].y = -center.y + size.y/2.0f;
+	SetTexture(tex);
+	fV2 sz = size * 0.5f;
+	fV2 d0 = -center - sz;
+	fV2 d1 = -center + (sz.x, -sz.y);
+	fV2 d2 = -center + sz;
+	fV2 d3 = -center + (-sz.x, sz.y);
 
 	float angsin = sinf(DEG2RAD(angle));
 	float angcos = cosf(DEG2RAD(angle));
-	dst[0] = Rotate(dst[0],angsin,angcos) + pos;
-	dst[1] = Rotate(dst[1],angsin,angcos) + pos;
-	dst[2] = Rotate(dst[2],angsin,angcos) + pos;
-	dst[3] = Rotate(dst[3],angsin,angcos) + pos;
+	d0 = Rotate(d0,angsin,angcos) + pos;
+	d1 = Rotate(d1,angsin,angcos) + pos;
+	d2 = Rotate(d2,angsin,angcos) + pos;
+	d3 = Rotate(d3,angsin,angcos) + pos;
 
-	r9Vertex vx[6];
-
-	vx[0].x = dst[0].x;
-	vx[0].y = dst[0].y;
-	vx[0].u = src.x1;
-	vx[0].v = src.y1;
-	vx[0].color = color;
-
-	vx[1].x = dst[1].x;
-	vx[1].y = dst[1].y;
-	vx[1].u = src.x2;
-	vx[1].v = src.y1;
-	vx[1].color = color;
-
-	vx[2].x = dst[3].x;
-	vx[2].y = dst[3].y;
-	vx[2].u = src.x1;
-	vx[2].v = src.y2;
-	vx[2].color = color;
-
-	vx[3].x = dst[1].x;
-	vx[3].y = dst[1].y;
-	vx[3].u = src.x2;
-	vx[3].v = src.y1;
-	vx[3].color = color;
-
-	vx[4].x = dst[2].x;
-	vx[4].y = dst[2].y;
-	vx[4].u = src.x2;
-	vx[4].v = src.y2;
-	vx[4].color = color;
-
-	vx[5].x = dst[3].x;
-	vx[5].y = dst[3].y;
-	vx[5].u = src.x1;
-	vx[5].v = src.y2;
-	vx[5].color = color;
-
+	r9Vertex vx[6] = {
+		{ d0.x, d0.y, src.x1, src.y1, color },
+		{ d1.x, d1.y, src.x2, src.y1, color },
+		{ d3.x, d3.y, src.x1, src.y2, color },
+		{ d1.x, d1.y, src.x2, src.y1, color },
+		{ d2.x, d2.y, src.x2, src.y2, color },
+		{ d3.x, d3.y, src.x1, src.y2, color }};
 	Push(vx, 6, Primitive::Triangle);
 }
 
@@ -253,7 +233,7 @@ void r9Render::DrawSprite( const fV2 & pos, const fRect & src, R9TEXTURE tex, dw
 	ClipQuad(dst,src0);
 	if(dst.x2<=dst.x1 || dst.y2<=dst.y1) return;
 
-	if(GetTexture()!=tex) SetTexture(tex);
+	SetTexture(tex);
 
 	if(tex)
 	{
@@ -272,87 +252,29 @@ void r9Render::DrawSprite( const fV2 & pos, const fRect & src, R9TEXTURE tex, dw
 			src0.y2 /= tex->m_realheight;
 		}
 	}
-
-	r9Vertex vx[6];
-
 	if(rotated)
 	{
-		vx[0].x = dst.x1;
-		vx[0].y = dst.y1;
-		vx[0].u = src0.y1;
-		vx[0].v = src0.x1;
-		vx[0].color = color;
-
-		vx[1].x = dst.x2;
-		vx[1].y = dst.y1;
-		vx[1].u = src0.y1;
-		vx[1].v = src0.x2;
-		vx[1].color = color;
-
-		vx[2].x = dst.x1;
-		vx[2].y = dst.y2;
-		vx[2].u = src0.y2;
-		vx[2].v = src0.x1;
-		vx[2].color = color;
-
-		vx[3].x = dst.x2;
-		vx[3].y = dst.y1;
-		vx[3].u = src0.y1;
-		vx[3].v = src0.x2;
-		vx[3].color = color;
-
-		vx[4].x = dst.x2;
-		vx[4].y = dst.y2;
-		vx[4].u = src0.y2;
-		vx[4].v = src0.x2;
-		vx[4].color = color;
-
-		vx[5].x = dst.x1;
-		vx[5].y = dst.y2;
-		vx[5].u = src0.y2;
-		vx[5].v = src0.x1;
-		vx[5].color = color;
+	r9Vertex vx[6] = {
+		{ dst.x1, dst.y1, src0.y1, src0.x1, color },
+		{ dst.x2, dst.y1, src0.y1, src0.x2, color },
+		{ dst.x1, dst.y2, src0.y2, src0.x1, color },
+		{ dst.x2, dst.y1, src0.y1, src0.x2, color },
+		{ dst.x2, dst.y2, src0.y2, src0.x2, color }, 
+		{ dst.x1, dst.y2, src0.y2, src0.x1, color }};
+		Push(vx, 6, Primitive::Triangle);
 	}
-	else
+	else 
 	{
-		vx[0].x = dst.x1;
-		vx[0].y = dst.y1;
-		vx[0].u = src0.x1;
-		vx[0].v = src0.y1;
-		vx[0].color = color;
-
-		vx[1].x = dst.x2;
-		vx[1].y = dst.y1;
-		vx[1].u = src0.x2;
-		vx[1].v = src0.y1;
-		vx[1].color = color;
-
-		vx[2].x = dst.x1;
-		vx[2].y = dst.y2;
-		vx[2].u = src0.x1;
-		vx[2].v = src0.y2;
-		vx[2].color = color;
-
-		vx[3].x = dst.x2;
-		vx[3].y = dst.y1;
-		vx[3].u = src0.x2;
-		vx[3].v = src0.y1;
-		vx[3].color = color;
-
-		vx[4].x = dst.x2;
-		vx[4].y = dst.y2;
-		vx[4].u = src0.x2;
-		vx[4].v = src0.y2;
-		vx[4].color = color;
-
-		vx[5].x = dst.x1;
-		vx[5].y = dst.y2;
-		vx[5].u = src0.x1;
-		vx[5].v = src0.y2;
-		vx[5].color = color;
+	r9Vertex vx[6] = {
+		{dst.x1, dst.y1, src0.x1, src0.y1, color },
+		{dst.x2, dst.y1, src0.x2, src0.y1, color },
+		{dst.x1, dst.y2, src0.x1, src0.y2, color },
+		{dst.x2, dst.y1, src0.x2, src0.y1, color },
+		{dst.x2, dst.y2, src0.x2, src0.y2, color },
+		{dst.x1, dst.y2, src0.x1, src0.y2, color }};
+		Push(vx, 6, Primitive::Triangle);
 	}
 
-	Push(vx, 6, Primitive::Triangle);
 }
 
 BOOL r9Render::CreateFont()

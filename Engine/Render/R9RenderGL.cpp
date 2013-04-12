@@ -434,7 +434,7 @@ void r9RenderGL::ApplyFilter()
 	GL_BindTexture();
 }
 
-void r9RenderGL::SetDefaultStates()
+void r9RenderGL::ResetDefaultStates()
 {
 	// device default states
 	m_glEnable(GL_BLEND);
@@ -448,23 +448,17 @@ void r9RenderGL::SetDefaultStates()
 	m_glMatrixMode(GL_MODELVIEW);
 	m_glLoadIdentity();
 
-	// our render states
-	r9Render::SetDefaultStates();
 }
 
-void r9RenderGL::Clear( dword color )
+void r9RenderGL::DoClear(dword color)
 {
-	if( !m_beginendscene ) return;
 	fColor fcolor(color);
 	m_glClearColor(fcolor.r,fcolor.g,fcolor.b,fcolor.a);
 	m_glClear(GL_COLOR_BUFFER_BIT);
 }
 
-BOOL r9RenderGL::BeginScene( R9TEXTURE target )
+bool r9RenderGL::DoBeginScene(R9TEXTURE target)
 {
-	if( m_beginendscene ) return FALSE;
-	m_primitivecount = 0;
-
 	if(target) // use render target
 	{
 		// the upside down is a mess, so we will render upside down :(
@@ -473,19 +467,13 @@ BOOL r9RenderGL::BeginScene( R9TEXTURE target )
 		m_glOrtho(0,GetWidth(),0,GetHeight(),-1,1);
 		m_textarget = target; // store for later use
 	}
-
-	m_beginendscene = TRUE;
-	return TRUE;
+	return true;
 }
 
-void r9RenderGL::EndScene()
+void r9RenderGL::DoEndScene()
 {
-	if( !m_beginendscene ) return;
-	if(NeedFlush()) Flush();
-	m_beginendscene = FALSE;
-	
 	// if render target, then copy from screen into it
-	if(m_textarget!=NULL)
+	if(m_textarget)
 	{
 		GLuint gltarget = (GLuint)(intptr)m_textarget->m_handler;
 		m_glBindTexture(GL_TEXTURE_2D,gltarget);
@@ -495,14 +483,13 @@ void r9RenderGL::EndScene()
 		m_glMatrixMode(GL_PROJECTION);
 		m_glLoadIdentity();
 		m_glOrtho(0,GetWidth(),GetHeight(),0,-1,1);
-		m_textarget = NULL; // clear
+		m_textarget = nullptr; // clear
 	}
-
 }
 
-void r9RenderGL::Present()
+void r9RenderGL::DoPresent()
 {
-	BOOL ok = SwapBuffers(m_hdc);
+	SwapBuffers(m_hdc);
 }
 
 //@OBSOLETE
@@ -570,7 +557,7 @@ void r9RenderGL::Push( r9Vertex* vx, int vxs, Primitive primitive )
 		vx += count;
 		vxs -= count;
 		m_batchcount += count;
-		m_needflush = TRUE;
+		m_needflush = true;
 
 		// flush if full
 		if( m_batchcount==batchsize ) Flush();
@@ -580,7 +567,7 @@ void r9RenderGL::Push( r9Vertex* vx, int vxs, Primitive primitive )
 
 void r9RenderGL::Flush()
 {
-	m_needflush = FALSE;
+	m_needflush = false;
 	if(m_batchcount==0) return;
 
 	// set arrays

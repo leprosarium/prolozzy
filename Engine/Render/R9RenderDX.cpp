@@ -391,7 +391,7 @@ void r9RenderDX::ApplyFilter()
 }
 
 
-void r9RenderDX::SetDefaultStates()
+void r9RenderDX::ResetDefaultStates()
 {
 	// device default states
 	m_d3dd->SetRenderState(D3DRS_FILLMODE,D3DFILL_SOLID);
@@ -410,35 +410,29 @@ void r9RenderDX::SetDefaultStates()
 	m_d3dd->SetFVF( D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1 );
 	m_d3dd->SetTexture(0,NULL);
 
-	// our render states
-	r9Render::SetDefaultStates();
-
 	// hide cursor in fullscreen
 	m_d3dd->ShowCursor(m_cfg.m_windowed);
 }
 
-void r9RenderDX::Clear( dword color )
+void r9RenderDX::DoClear(dword color)
 {
-	if( !m_beginendscene ) return;
 	m_d3dd->Clear( 0, NULL, D3DCLEAR_TARGET, color, 1.0f, 0 );
 }
 
-BOOL r9RenderDX::BeginScene( R9TEXTURE target )
+bool r9RenderDX::DoBeginScene(R9TEXTURE target)
 {
-	if( m_beginendscene ) return FALSE;
-	m_primitivecount = 0;
-	if(m_d3dd->TestCooperativeLevel()!=D3D_OK) return FALSE; // lost or something, wait for CheckDevice to aquire it back
+	if(m_d3dd->TestCooperativeLevel()!=D3D_OK) return false; // lost or something, wait for CheckDevice to aquire it back
 
 	if( target ) // use render target
 	{
-		if( !target->m_handler || !target->m_handlerex ) return FALSE; // invalid target
+		if( !target->m_handler || !target->m_handlerex ) return false; // invalid target
 		// remember default target
 		HRESULT hr = m_d3dd->GetBackBuffer(0,0,D3DBACKBUFFER_TYPE_MONO,&m_d3dtarget);
-		if(FAILED(hr)) { R9_LOGERROR("can't get default render target.",hr); return FALSE; }
+		if(FAILED(hr)) { R9_LOGERROR("can't get default render target.",hr); return false; }
 		// set new target
 		LPDIRECT3DSURFACE9 d3dsrf = (LPDIRECT3DSURFACE9)(target->m_handlerex);
 		hr = m_d3dd->SetRenderTarget(0,d3dsrf);
-		if(FAILED(hr)) { R9_LOGERROR("can't set render target.",hr); if(m_d3dtarget) m_d3dtarget->Release(); return FALSE; }
+		if(FAILED(hr)) { R9_LOGERROR("can't set render target.",hr); if(m_d3dtarget) m_d3dtarget->Release(); return false; }
 
 		m_targetwidth = target->m_realwidth;
 		m_targetheight = target->m_realheight;
@@ -456,19 +450,14 @@ BOOL r9RenderDX::BeginScene( R9TEXTURE target )
 		//set back old render target
 		m_d3dd->SetRenderTarget(0,m_d3dtarget);
 		if(m_d3dtarget) m_d3dtarget->Release();
-		return FALSE;
+		return false;
 	}
-	m_beginendscene = TRUE;
-	return TRUE;
+	return true;
 }
 
-void r9RenderDX::EndScene()
+void r9RenderDX::DoEndScene()
 {
-	if( !m_beginendscene ) return;
-	if(NeedFlush()) Flush();
-	m_beginendscene = FALSE;
 	m_d3dd->EndScene();
-
 	if(m_d3dtarget) // restore old render target
 	{
 		m_d3dd->SetRenderTarget(0,m_d3dtarget);
@@ -476,10 +465,10 @@ void r9RenderDX::EndScene()
 	}
 }
 
-void r9RenderDX::Present()
+void r9RenderDX::DoPresent()
 {
-	if(m_d3dd->TestCooperativeLevel()!=D3D_OK) return; // lost or something
-	HRESULT hr = m_d3dd->Present( NULL, NULL, m_hwnd, NULL );	
+	if(m_d3dd->TestCooperativeLevel() == D3D_OK)
+		m_d3dd->Present(nullptr, nullptr, m_hwnd, nullptr);	
 }
 
 BOOL r9RenderDX::CheckDevice()
@@ -558,7 +547,7 @@ void r9RenderDX::Push( r9Vertex* vx, int vxs, Primitive primitive)
 		}
 		vxs -= count;
 		m_batchcount += count;
-		m_needflush = TRUE;
+		m_needflush = true;
 
 		// flush if full
 		if( m_batchcount==batchsize ) Flush();
@@ -569,7 +558,7 @@ void r9RenderDX::Push( r9Vertex* vx, int vxs, Primitive primitive)
 void r9RenderDX::Flush()
 {
 	HRESULT hr;
-	m_needflush = FALSE;
+	m_needflush = false;
 	if(m_batchcount==0) return;
 
 	// unlock

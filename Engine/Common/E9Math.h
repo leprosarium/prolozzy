@@ -34,7 +34,7 @@ struct fV2
 	fV2( float v) : x(v), y(v) {}
 	fV2( const iV2 & v );
 
-	fV2		operator - () const { fV2(-x, -y); }
+	fV2		operator - () const { return fV2(-x, -y); }
 	fV2	&	operator *=(const fV2 & v) { x *= v.x; y *= v.y; return *this; }
 	fV2	&	operator *=(float f) { x *= f; y *= f; return *this; }
 	fV2	&	operator /=(const fV2 & v) { x /= v.x; y /= v.y; return *this; }

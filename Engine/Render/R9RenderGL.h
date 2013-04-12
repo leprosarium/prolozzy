@@ -42,6 +42,11 @@ class r9RenderGL : public r9Render
 	virtual	bool Init();
 	virtual	void Finish();
 	virtual	R9TEXTURE TextureCreateImg(r9Img * img);
+	virtual	void ResetDefaultStates();
+	virtual	void DoClear(dword color);
+	virtual	bool DoBeginScene(R9TEXTURE target);
+	virtual	void DoEndScene();
+	virtual void DoPresent();
 
 public:
 	r9RenderGL();
@@ -54,13 +59,6 @@ public:
 	virtual	R9TEXTURE TextureCreateTarget(int width, int height);
 	virtual	void TextureDestroy( R9TEXTURE tex );
 
-virtual	void		SetDefaultStates();
-
-
-virtual	void		Clear( dword color );
-virtual	BOOL		BeginScene( R9TEXTURE target=NULL );
-virtual	void		EndScene();
-virtual	void		Present();
 virtual	BOOL		ToggleVideoMode();
 
 	virtual	void Push( r9Vertex* vx, int vxs, Primitive primitive);

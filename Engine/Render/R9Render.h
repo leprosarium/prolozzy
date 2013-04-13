@@ -215,7 +215,7 @@ virtual	BOOL		ToggleVideoMode();								// @OBSOLETE toggle between windowed and
 	void DrawSprite( const fV2 & pos, const fRect & src, R9TEXTURE tex, dword color=0xffffffff, dword flip=0, float scale=1.0f ); // does clipping
 
 // clipping
-	bool IsClipping() const { return m_cliprect.x1<m_cliprect.x2 && m_cliprect.y1<m_cliprect.y2; }
+	bool IsClipping() const { return m_cliprect.Ordered(); }
 	void SetClipping(const fRect & rect) { m_cliprect = rect; }
 	const fRect & GetClipping() const { return m_cliprect; }
 	void ClipBar( fRect& dst );								// clip destination rect (dst must be ordered)
@@ -277,12 +277,12 @@ inline void r9Render::DrawQuad( const fRect & dst, const fRect & src, R9TEXTURE 
 	SetTexture(tex);
 
 	r9Vertex vx[6] = {
-		{ dst.x1, dst.y1, src.x1, src.y1, color },
-		{ dst.x2, dst.y1, src.x2, src.y1, color },
-		{ dst.x1, dst.y2, src.x1, src.y2, color },
-		{ dst.x2, dst.y1, src.x2, src.y1, color },
-		{ dst.x2, dst.y2, src.x2, src.y2, color },
-		{ dst.x1, dst.y2, src.x1, src.y2, color}};
+		{ dst.p1.x, dst.p1.y, src.p1.x, src.p1.y, color },
+		{ dst.p2.x, dst.p1.y, src.p2.x, src.p1.y, color },
+		{ dst.p1.x, dst.p2.y, src.p1.x, src.p2.y, color },
+		{ dst.p2.x, dst.p1.y, src.p2.x, src.p1.y, color },
+		{ dst.p2.x, dst.p2.y, src.p2.x, src.p2.y, color },
+		{ dst.p1.x, dst.p2.y, src.p1.x, src.p2.y, color}};
 	Push(vx, 6, Primitive::Triangle);
 }
 
@@ -290,17 +290,17 @@ inline void r9Render::ClipBar( fRect& dst )
 {
 	if(!IsClipping()) return;
 	
-	if(dst.x1<m_cliprect.x1) dst.x1=m_cliprect.x1;	else
-	if(dst.x1>m_cliprect.x2) dst.x1=m_cliprect.x2;
+	if(dst.p1.x<m_cliprect.p1.x) dst.p1.x=m_cliprect.p1.x;	else
+	if(dst.p1.x>m_cliprect.p2.x) dst.p1.x=m_cliprect.p2.x;
 	
-	if(dst.y1<m_cliprect.y1) dst.y1=m_cliprect.y1;	else
-	if(dst.y1>m_cliprect.y2) dst.y1=m_cliprect.y2;
+	if(dst.p1.y<m_cliprect.p1.y) dst.p1.y=m_cliprect.p1.y;	else
+	if(dst.p1.y>m_cliprect.p2.y) dst.p1.y=m_cliprect.p2.y;
 	
-	if(dst.x2>m_cliprect.x2) dst.x2=m_cliprect.x2;	else
-	if(dst.x2<m_cliprect.x1) dst.x2=m_cliprect.x1;
+	if(dst.p2.x>m_cliprect.p2.x) dst.p2.x=m_cliprect.p2.x;	else
+	if(dst.p2.x<m_cliprect.p1.x) dst.p2.x=m_cliprect.p1.x;
 	
-	if(dst.y2>m_cliprect.y2) dst.y2=m_cliprect.y2;	else
-	if(dst.y2<m_cliprect.y1) dst.y2=m_cliprect.y1;
+	if(dst.p2.y>m_cliprect.p2.y) dst.p2.y=m_cliprect.p2.y;	else
+	if(dst.p2.y<m_cliprect.p1.y) dst.p2.y=m_cliprect.p1.y;
 
 }
 
@@ -317,13 +317,13 @@ inline void r9Render::ClipQuad( fRect & dst, fRect & src )
 
 	if(dsz.x>0.0f) {
 		f = ssz.x / dsz.x;
-		src.x1 += f * (dst.x1 - dst0.x1);
-		src.x2 += f * (dst.x2 - dst0.x2);
+		src.p1.x += f * (dst.p1.x - dst0.p1.x);
+		src.p2.x += f * (dst.p2.x - dst0.p2.x);
 	}
 	if(dsz.y>0.0f) {
 		f = ssz.y / dsz.y;
-		src.y1 += f * (dst.y1 - dst0.y1);
-		src.y2 += f * (dst.y2 - dst0.y2);
+		src.p1.y += f * (dst.p1.y - dst0.p1.y);
+		src.p2.y += f * (dst.p2.y - dst0.p2.y);
 	}
 
 }
@@ -333,23 +333,23 @@ inline void r9Render::ClipSprite( fRect& dst, fRect& src, int flip )
 	if(!IsClipping()) return;
 	if(flip & 1)
 	{
-		if(dst.x1<m_cliprect.x1) { src.x2-=(m_cliprect.x1-dst.x1); dst.x1=m_cliprect.x1; }
-		if(dst.x2>m_cliprect.x2) { src.x1+=(dst.x2-m_cliprect.x2); dst.x2=m_cliprect.x2; }
+		if(dst.p1.x<m_cliprect.p1.x) { src.p2.x-=(m_cliprect.p1.x-dst.p1.x); dst.p1.x=m_cliprect.p1.x; }
+		if(dst.p2.x>m_cliprect.p2.x) { src.p1.x+=(dst.p2.x-m_cliprect.p2.x); dst.p2.x=m_cliprect.p2.x; }
 	}
 	else
 	{
-		if(dst.x1<m_cliprect.x1) { src.x1+=(m_cliprect.x1-dst.x1); dst.x1=m_cliprect.x1; }
-		if(dst.x2>m_cliprect.x2) { src.x2-=(dst.x2-m_cliprect.x2); dst.x2=m_cliprect.x2; }
+		if(dst.p1.x<m_cliprect.p1.x) { src.p1.x+=(m_cliprect.p1.x-dst.p1.x); dst.p1.x=m_cliprect.p1.x; }
+		if(dst.p2.x>m_cliprect.p2.x) { src.p2.x-=(dst.p2.x-m_cliprect.p2.x); dst.p2.x=m_cliprect.p2.x; }
 	}
 	if(flip & 2)
 	{
-		if(dst.y1<m_cliprect.y1) { src.y2-=(m_cliprect.y1-dst.y1); dst.y1=m_cliprect.y1; }
-		if(dst.y2>m_cliprect.y2) { src.y1+=(dst.y2-m_cliprect.y2); dst.y2=m_cliprect.y2; }
+		if(dst.p1.y<m_cliprect.p1.y) { src.p2.y-=(m_cliprect.p1.y-dst.p1.y); dst.p1.y=m_cliprect.p1.y; }
+		if(dst.p2.y>m_cliprect.p2.y) { src.p1.y+=(dst.p2.y-m_cliprect.p2.y); dst.p2.y=m_cliprect.p2.y; }
 	}
 	else
 	{
-		if(dst.y1<m_cliprect.y1) { src.y1+=(m_cliprect.y1-dst.y1); dst.y1=m_cliprect.y1; }
-		if(dst.y2>m_cliprect.y2) { src.y2-=(dst.y2-m_cliprect.y2); dst.y2=m_cliprect.y2; }
+		if(dst.p1.y<m_cliprect.p1.y) { src.p1.y+=(m_cliprect.p1.y-dst.p1.y); dst.p1.y=m_cliprect.p1.y; }
+		if(dst.p2.y>m_cliprect.p2.y) { src.p2.y-=(dst.p2.y-m_cliprect.p2.y); dst.p2.y=m_cliprect.p2.y; }
 	}
 }
 

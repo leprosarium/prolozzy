@@ -46,14 +46,14 @@ void cGUITile::Draw()
 		if(shrink)
 			scale = (float)(rc.right-rc.left) / w;
 		else
-			src.x2 = (rc.right-rc.left) / scale;
+			src.p2.x = (rc.right-rc.left) / scale;
 	}
 	if( h*scale > rc.bottom-rc.top )
 	{
 		if(shrink)
 			scale = (float)(rc.bottom-rc.top) / h;
 		else
-			src.y2 = (rc.bottom-rc.top) / scale;
+			src.p2.y = (rc.bottom-rc.top) / scale;
 	}
 
 	// frame anim (1 game frame = 25ms); don't know brush delay !
@@ -61,10 +61,9 @@ void cGUITile::Draw()
 	frame = frame % tile->m_frames;
 	int fx = tile->GetFx(frame);
 	int fy = tile->GetFy(frame);
-	src.x1 += fx * w;
-	src.x2 += fx * w;
-	src.y1 += fy * h;
-	src.y2 += fy * h;
+	fV2 ss(fx * w, fy * h);
+	src.p1 += ss;
+	src.p2 += ss;
 
 	// align
 	int align = GetInt(IV_IMGALIGN);
@@ -80,12 +79,10 @@ void cGUITile::Draw()
 	R9_SetClipping( fRect(rc.left,rc.top,rc.right,rc.bottom) );
 
 	// background
-	iRect rect;
-	rect.x1 = x;
-	rect.y1 = y;
-	rect.x2 = std::min(x+static_cast<int>(w*scale), static_cast<int>(rc.right));
-	rect.y2 = std::min(y+static_cast<int>(h*scale), static_cast<int>(rc.bottom));
-	GUIDrawBar(rect.x1, rect.y1, rect.x2, rect.y2, GetInt(IV_COLOR+1)); 
+	iRect rect(x, y, 
+		std::min(x+static_cast<int>(w*scale), static_cast<int>(rc.right)), 
+		std::min(y+static_cast<int>(h*scale), static_cast<int>(rc.bottom)));
+	GUIDrawBar(rect.p1.x, rect.p1.y, rect.p2.x, rect.p2.y, GetInt(IV_COLOR+1)); 
 		
 	// sprite
 	R9_DrawSprite( fV2(x,y), src, tile->m_tex, 0xffffffff, 0, scale );
@@ -136,18 +133,10 @@ void cGUITileMap::Update()
 	mx = (int)((float)mx / GetInt(IV_GUITILEMAP_SCALE)); // to tile space
 	my = (int)((float)my / GetInt(IV_GUITILEMAP_SCALE)); // to tile space
 
-	iRect rctile; // tile rect
-	rctile.x1 = 0;
-	rctile.y1 = 0;
-	rctile.x2 = tilew;
-	rctile.y2 = tileh;
+	iRect rctile(0, 0, tilew, tileh);
 	BOOL mouseintile = rctile.IsInside(iV2(mx, my));
 
-	iRect rcsel;	// selection rect
-	rcsel.x1 = selx;
-	rcsel.y1 = sely;
-	rcsel.x2 = selx+selw;
-	rcsel.y2 = sely+selh;
+	iRect rcsel(selx, sely, selx+selw, sely+selh);
 	BOOL mouseinsel = rcsel.IsInside(iV2(mx, my));
 
 	// additional keys for snap and grid

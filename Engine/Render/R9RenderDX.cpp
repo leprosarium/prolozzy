@@ -312,8 +312,8 @@ void r9RenderDX::ApplyTexture()
 void r9RenderDX::ApplyViewport()
 {
 	D3DVIEWPORT9 vp;
-	vp.X = (DWORD)m_viewport.x1;
-	vp.Y = (DWORD)m_viewport.y1;
+	vp.X = (DWORD)m_viewport.p1.x;
+	vp.Y = (DWORD)m_viewport.p1.y;
 	vp.Width = (DWORD)m_viewport.Width();
 	vp.Height = (DWORD)m_viewport.Height();
 	vp.MinZ = 0.0f;
@@ -638,10 +638,10 @@ BOOL r9RenderDX::TakeScreenShot( r9Img* img, fRect* rect, BOOL full )
 	{
 		if(rect)
 		{
-			r.left = (int)rect->x1;
-			r.top = (int)rect->y1;
-			r.right = (int)rect->x2;
-			r.bottom = (int)rect->y2;
+			r.left = (int)rect->p1.x;
+			r.top = (int)rect->p1.y;
+			r.right = (int)rect->p2.x;
+			r.bottom = (int)rect->p2.y;
 			srfw =	GetWidth();
 			srfh = GetHeight();
 			img->m_width = static_cast<word>(rect->Width());
@@ -719,8 +719,8 @@ BOOL r9RenderDX::CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )
 	assert(target);
 	if(!img->isValid()) return FALSE;
 
-	int x = (int)rect->x1;
-	int y = (int)rect->y1;
+	int x = (int)rect->p1.x;
+	int y = (int)rect->p1.y;
 	int w = (int)rect->Width();
 	int h = (int)rect->Height();
 	if(w>target->m_realwidth) return FALSE;

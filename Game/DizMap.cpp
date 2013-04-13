@@ -226,8 +226,10 @@ void cDizMap::DrawRoom( const iV2 & rp, int layer, int mode, const iV2 & ofs)
 	{
 		iV2 p1 = g_game.roomPos() * Room::Size - g_game.viewportPos();
 		iRect viewport(p1, p1 + Room::Size);
-		if( rp.x * Room::Size.x >= viewport.x2 || rp.y * Room::Size.y >= viewport.y2 || (rp.x+1) * Room::Size.x <= viewport.x1 || (rp.y+1) * Room::Size.y <= viewport.y1 )
+		if(!(rp * Room::Size < viewport.p2 && (rp + 1) * Room::Size > viewport.p1))
 			return;
+
+
 	}
 	const std::vector<int> & part = GetRoom(rp.x, rp.y).Brushes();
 	for(size_t i=0;i<part.size();i++)

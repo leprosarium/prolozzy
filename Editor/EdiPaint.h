@@ -89,6 +89,7 @@ inline	void	MakeBBW	( int &x1, int &y1, int &x2, int &y2 )		{ x1 = m_data[BRUSH_
 	iV2 pos() const { return iV2(Get(BRUSH_X), Get(BRUSH_Y)); }
 	iV2 size() const { return iV2(Get(BRUSH_W), Get(BRUSH_H)); }
 	iRect rect() const { iV2 p = pos(); return iRect(p, p + size()); }
+	iRect map() const { return iRect(m_data[BRUSH_MAP+0], m_data[BRUSH_MAP+1], m_data[BRUSH_MAP+2], m_data[BRUSH_MAP+3]); }
 
 };
 

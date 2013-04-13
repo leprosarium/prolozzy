@@ -656,10 +656,10 @@ void cDizGame::Draw()
 		R9_SetView( 0, 0, 0 );
 
 	// borders
-	R9_DrawBar( fRect( 0.0f, 0.0f, (float)R9_GetWidth(), rect.y1 ),					borderColor()|0xff000000);
-	R9_DrawBar( fRect( 0.0f, rect.y2, (float)R9_GetWidth(), (float)R9_GetHeight() ),borderColor()|0xff000000);
-	R9_DrawBar( fRect( 0.0f, rect.y1, rect.x1, rect.y2 ),							borderColor()|0xff000000);
-	R9_DrawBar( fRect( rect.x2, rect.y1, (float)R9_GetWidth(),rect.y2 ),			borderColor()|0xff000000);
+	R9_DrawBar( fRect( 0.0f, 0.0f, (float)R9_GetWidth(), rect.p1.y ),					borderColor()|0xff000000);
+	R9_DrawBar( fRect( 0.0f, rect.p2.y, (float)R9_GetWidth(), (float)R9_GetHeight() ),borderColor()|0xff000000);
+	R9_DrawBar( fRect( 0.0f, rect.p1.y, rect.p1.x, rect.p2.y ),							borderColor()|0xff000000);
+	R9_DrawBar( fRect( rect.p2.x, rect.p1.y, (float)R9_GetWidth(),rect.p2.y ),			borderColor()|0xff000000);
 
 /*	// clip
 	rect.x1 = g_paint.m_scrx;
@@ -745,7 +745,7 @@ void MatMap::Update(const iV2 & room, bool full)
 		else
 		{
 			// classic style
-			R9_SetClipping( fRect(Size - Room::Border, iV2(Rect.x2, Rect.y2) + Room::Border) );
+			R9_SetClipping( fRect(Size - Room::Border, Rect.p2 + Room::Border) );
 			g_map.DrawRoom( room, layer, DRAWMODE_MATERIAL, Size);
 		}
 	}
@@ -759,10 +759,10 @@ void MatMap::Update(const iV2 & room, bool full)
 int MatMap::Get(int x1, int x2, int y) const
 {
 	int mat = 0;
-	if(y < Rect.y1 || y >= Rect.y2)
+	if(y < Rect.p1.y || y >= Rect.p2.y)
 		return mat;
-	x1 = std::max(x1, Rect.x1);
-	x2 = std::min(x2, Rect.x2);
+	x1 = std::max(x1, Rect.p1.x);
+	x2 = std::min(x2, Rect.p2.x);
 	if(x1 >= x2)
 		return mat;
 	for(int v = idx(iV2(x1, y)), ve = v + (x2 - x1); v < ve; ++v)

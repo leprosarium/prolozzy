@@ -208,12 +208,12 @@ void r9Render::DrawQuadRot(const fV2 & pos, const fV2 & size, const fV2 & center
 	d3 = Rotate(d3,angsin,angcos) + pos;
 
 	r9Vertex vx[6] = {
-		{ d0.x, d0.y, src.x1, src.y1, color },
-		{ d1.x, d1.y, src.x2, src.y1, color },
-		{ d3.x, d3.y, src.x1, src.y2, color },
-		{ d1.x, d1.y, src.x2, src.y1, color },
-		{ d2.x, d2.y, src.x2, src.y2, color },
-		{ d3.x, d3.y, src.x1, src.y2, color }};
+		{ d0.x, d0.y, src.p1.x, src.p1.y, color },
+		{ d1.x, d1.y, src.p2.x, src.p1.y, color },
+		{ d3.x, d3.y, src.p1.x, src.p2.y, color },
+		{ d1.x, d1.y, src.p2.x, src.p1.y, color },
+		{ d2.x, d2.y, src.p2.x, src.p2.y, color },
+		{ d3.x, d3.y, src.p1.x, src.p2.y, color }};
 	Push(vx, 6, Primitive::Triangle);
 }
 
@@ -224,14 +224,14 @@ void r9Render::DrawSprite( const fV2 & pos, const fRect & src, R9TEXTURE tex, dw
 
 	fRect dst(pos, pos + (rotated ? src.Size().Tran() : src.Size()) * scale);
 	fRect src0 = src;
-	if(flip & 1)	{ src0.x1=src.x2; src0.x2=src.x1; }
-	if(flip & 2)	{ src0.y1=src.y2; src0.y2=src.y1; }
-	if(rotated)		{ fRect src1 = src0; src0.x1=src1.y2; src0.y1=src1.x1; src0.x2=src1.y1; src0.y2=src1.x2; }
+	if(flip & 1)	{ src0.p1.x=src.p2.x; src0.p2.x=src.p1.x; }
+	if(flip & 2)	{ src0.p1.y=src.p2.y; src0.p2.y=src.p1.y; }
+	if(rotated)		{ fRect src1 = src0; src0.p1.x=src1.p2.y; src0.p1.y=src1.p1.x; src0.p2.x=src1.p1.y; src0.p2.y=src1.p2.x; }
 
 	// src: normal={x1y1,x2y2}; rotated={y2x1,y1x2};
 
 	ClipQuad(dst,src0);
-	if(dst.x2<=dst.x1 || dst.y2<=dst.y1) return;
+	if(dst.p2.x<=dst.p1.x || dst.p2.y<=dst.p1.y) return;
 
 	SetTexture(tex);
 
@@ -239,39 +239,39 @@ void r9Render::DrawSprite( const fV2 & pos, const fRect & src, R9TEXTURE tex, dw
 	{
 		if(rotated)
 		{
-			src0.x1 /= tex->m_realheight;
-			src0.x2 /= tex->m_realheight;
-			src0.y1 /= tex->m_realwidth;
-			src0.y2 /= tex->m_realwidth;
+			src0.p1.x /= tex->m_realheight;
+			src0.p2.x /= tex->m_realheight;
+			src0.p1.y /= tex->m_realwidth;
+			src0.p2.y /= tex->m_realwidth;
 		}
 		else
 		{
-			src0.x1 /= tex->m_realwidth;
-			src0.x2 /= tex->m_realwidth;
-			src0.y1 /= tex->m_realheight;
-			src0.y2 /= tex->m_realheight;
+			src0.p1.x /= tex->m_realwidth;
+			src0.p2.x /= tex->m_realwidth;
+			src0.p1.y /= tex->m_realheight;
+			src0.p2.y /= tex->m_realheight;
 		}
 	}
 	if(rotated)
 	{
 	r9Vertex vx[6] = {
-		{ dst.x1, dst.y1, src0.y1, src0.x1, color },
-		{ dst.x2, dst.y1, src0.y1, src0.x2, color },
-		{ dst.x1, dst.y2, src0.y2, src0.x1, color },
-		{ dst.x2, dst.y1, src0.y1, src0.x2, color },
-		{ dst.x2, dst.y2, src0.y2, src0.x2, color }, 
-		{ dst.x1, dst.y2, src0.y2, src0.x1, color }};
+		{ dst.p1.x, dst.p1.y, src0.p1.y, src0.p1.x, color },
+		{ dst.p2.x, dst.p1.y, src0.p1.y, src0.p2.x, color },
+		{ dst.p1.x, dst.p2.y, src0.p2.y, src0.p1.x, color },
+		{ dst.p2.x, dst.p1.y, src0.p1.y, src0.p2.x, color },
+		{ dst.p2.x, dst.p2.y, src0.p2.y, src0.p2.x, color }, 
+		{ dst.p1.x, dst.p2.y, src0.p2.y, src0.p1.x, color }};
 		Push(vx, 6, Primitive::Triangle);
 	}
 	else 
 	{
 	r9Vertex vx[6] = {
-		{dst.x1, dst.y1, src0.x1, src0.y1, color },
-		{dst.x2, dst.y1, src0.x2, src0.y1, color },
-		{dst.x1, dst.y2, src0.x1, src0.y2, color },
-		{dst.x2, dst.y1, src0.x2, src0.y1, color },
-		{dst.x2, dst.y2, src0.x2, src0.y2, color },
-		{dst.x1, dst.y2, src0.x1, src0.y2, color }};
+		{dst.p1.x, dst.p1.y, src0.p1.x, src0.p1.y, color },
+		{dst.p2.x, dst.p1.y, src0.p2.x, src0.p1.y, color },
+		{dst.p1.x, dst.p2.y, src0.p1.x, src0.p2.y, color },
+		{dst.p2.x, dst.p1.y, src0.p2.x, src0.p1.y, color },
+		{dst.p2.x, dst.p2.y, src0.p2.x, src0.p2.y, color },
+		{dst.p1.x, dst.p2.y, src0.p1.x, src0.p2.y, color }};
 		Push(vx, 6, Primitive::Triangle);
 	}
 

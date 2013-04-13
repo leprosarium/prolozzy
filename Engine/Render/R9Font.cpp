@@ -174,29 +174,18 @@ void r9Font::Char( const fV2 & p, char c )
 
 	byte ci = (byte)c;
 
-	fRect dst;
-	dst.x1 = p.x;
-	dst.y1 = p.y;
-	dst.x2 = p.x + GetCharWidth(c);
-	dst.y2 = p.y + GetSize();
+	fRect dst(p, p + fV2(GetCharWidth(c), GetSize()));
 	
-	fRect src;
-	src.x1 = (float)m_char[ci].x;
-	src.y1 = (float)m_char[ci].y;
-	src.x2 = (float)(m_char[ci].x + m_char[ci].w);
-	src.y2 = (float)(m_char[ci].y + m_chrh);
+	fRect src((float)m_char[ci].x, (float)m_char[ci].y, (float)(m_char[ci].x + m_char[ci].w), (float)(m_char[ci].y + m_chrh));
 
 	// clipping
 	R9_ClipQuad( dst, src );
-	if(dst.x2<=dst.x1 || dst.y2<=dst.y1) return;
+	if(!dst.Ordered()) return;
 
 	// mapping
-	float tw = (float)R9_TextureGetRealWidth(tex);
-	float th = (float)R9_TextureGetRealHeight(tex);
-	src.x1 /= tw;
-	src.x2 /= tw;
-	src.y1 /= th;
-	src.y2 /= th;
+	fV2 tt(R9_TextureGetRealWidth(tex), R9_TextureGetRealHeight(tex));
+	src.p1 /= tt;
+	src.p2 /= tt;
 
 	R9_DrawQuad(dst, src, tex, m_color );
 

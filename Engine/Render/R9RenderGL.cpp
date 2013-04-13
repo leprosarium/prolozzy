@@ -373,10 +373,10 @@ void r9RenderGL::ApplyTexture()
 
 void r9RenderGL::ApplyViewport()
 {
-	m_glViewport((GLint)m_viewport.x1,(GLint)m_viewport.y1,(GLint)m_viewport.Width(),(GLint)m_viewport.Height());
+	m_glViewport((GLint)m_viewport.p1.x,(GLint)m_viewport.p1.y,(GLint)m_viewport.Width(),(GLint)m_viewport.Height());
 	m_glMatrixMode(GL_PROJECTION);
 	m_glLoadIdentity();
-	m_glOrtho(m_viewport.x1,m_viewport.x2,m_viewport.y2,m_viewport.y1,-1,1);
+	m_glOrtho(m_viewport.p1.x,m_viewport.p2.x,m_viewport.p2.y,m_viewport.p1.y,-1,1);
 	m_glMatrixMode(GL_MODELVIEW);
 	m_glLoadIdentity();
 }
@@ -384,18 +384,18 @@ void r9RenderGL::ApplyViewport()
 void r9RenderGL::ApplyView()
 {
 	fRect rect;
-	rect.x1 = (m_viewflip & R9_FLIPX) ? m_viewport.x2 : m_viewport.x1;
-	rect.y1 = (m_viewflip & R9_FLIPY) ? m_viewport.y2 : m_viewport.y1;
-	rect.x2 = (m_viewflip & R9_FLIPX) ? m_viewport.x1 : m_viewport.x2;
-	rect.y2 = (m_viewflip & R9_FLIPY) ? m_viewport.y1 : m_viewport.y2;
-	rect.x1 += m_viewx;		
-	rect.x2 += m_viewx;
-	rect.y1 += m_viewy;
-	rect.y2 += m_viewy;
+	rect.p1.x = (m_viewflip & R9_FLIPX) ? m_viewport.p2.x : m_viewport.p1.x;
+	rect.p1.y = (m_viewflip & R9_FLIPY) ? m_viewport.p2.y : m_viewport.p1.y;
+	rect.p2.x = (m_viewflip & R9_FLIPX) ? m_viewport.p1.x : m_viewport.p2.x;
+	rect.p2.y = (m_viewflip & R9_FLIPY) ? m_viewport.p1.y : m_viewport.p2.y;
+	rect.p1.x += m_viewx;		
+	rect.p2.x += m_viewx;
+	rect.p1.y += m_viewy;
+	rect.p2.y += m_viewy;
 
 	m_glMatrixMode(GL_PROJECTION);
 	m_glLoadIdentity();
-	m_glOrtho(rect.x1,rect.x2,rect.y2,rect.y1,-1,1);
+	m_glOrtho(rect.p1.x,rect.p2.x,rect.p2.y,rect.p1.y,-1,1);
 }
 
 void r9RenderGL::ApplyBlend()
@@ -649,7 +649,7 @@ BOOL r9RenderGL::TakeScreenShot( r9Img* img, fRect* rect, BOOL full )
 		{
 			for(int x=0;x<irect.Width();x++)
 			{
-				dword dw = GetPixel(hdc,irect.x1+x,irect.y1+y);
+				dword dw = GetPixel(hdc,irect.p1.x+x,irect.p1.y+y);
 				R9_ImgSetColor(img,x,y,dw);
 			}
 		}
@@ -665,7 +665,7 @@ BOOL r9RenderGL::TakeScreenShot( r9Img* img, fRect* rect, BOOL full )
 		if(!R9_ImgCreate(img)) return FALSE;
 
 		m_glPixelStorei(GL_PACK_ALIGNMENT, 1);
-		m_glReadPixels( irect.x1, GetHeight()-irect.y2, irect.Width(), irect.Height(), GL_RGB, GL_UNSIGNED_BYTE, img->m_data );
+		m_glReadPixels( irect.p1.x, GetHeight()-irect.p2.y, irect.Width(), irect.Height(), GL_RGB, GL_UNSIGNED_BYTE, img->m_data );
 		R9_ImgFlipV(img);
 	}
 
@@ -680,8 +680,8 @@ BOOL r9RenderGL::CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )
 	assert(target);
 	if(!img->isValid()) return FALSE;
 
-	int x = (int)rect->x1;
-	int y = (int)rect->y1;
+	int x = (int)rect->p1.x;
+	int y = (int)rect->p1.y;
 	int w = (int)rect->Width();
 	int h = (int)rect->Height();
 	if(w>target->m_realwidth) return FALSE;

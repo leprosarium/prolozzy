@@ -366,8 +366,7 @@ PREDICATE_M(core, hudClipping, 1)
 {
 	PlTerm r = A1;	
 	iRect dst( r[0], r[1], r[2], r[3] );
-	dst.x2 += dst.x1;
-	dst.y2 += dst.y1;
+	dst.p2 += dst.p1;
 	g_paint.hud.SetClipping( dst );
 	return true;
 }

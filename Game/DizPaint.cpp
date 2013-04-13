@@ -407,20 +407,20 @@ void cDizPaint::DrawTileSoft( int idx, const iV2 & p, const iRect & map, dword c
 	rdst = frdst;
 	rsrc = frsrc;
 
-	if(!(rdst.x1<rdst.x2 && rdst.y1<rdst.y2)) return; // out-clipped
+	if(!rdst.Ordered()) return; // out-clipped
 
 	// prepare blit
 	int dstw = _imgtarget.m_width;
 	int dsth = _imgtarget.m_height;
 	byte* dst = _imgtarget.m_data; assert(dst!=NULL);
-	dst += rdst.x1 + rdst.y1 * dstw; // start
+	dst += rdst.p1.x + rdst.p1.y * dstw; // start
 
-	int rw = rdst.x2-rdst.x1;
-	int rh = rdst.y2-rdst.y1;
+	int rw = rdst.Width();
+	int rh = rdst.Height();
 	int srcw = tile->img.m_width;
 	int srch = tile->img.m_height;
 	byte* src = tile->img.m_data; assert(src!=NULL);
-	src += rsrc.x1 + rsrc.y1 * srcw; // start
+	src += rsrc.p1.x + rsrc.p1.y * srcw; // start
 	int srcsx = 1; // step x;
 	if(flip & 1)
 	{
@@ -469,19 +469,19 @@ void cDizPaint::DrawTileSoft2( int idx, const iV2 & p, const iRect & map, dword 
 	fRect dst(pf, pf + fV2(rotated ? rsrc.Size().Tran() : rsrc.Size() ) * scale);
 	
 	fRect src(rsrc);
-	if(flip & R9_FLIPX)	{ src.x1=(float)rsrc.x2; src.x2=(float)rsrc.x1; }
-	if(flip & R9_FLIPY)	{ src.y1=(float)rsrc.y2; src.y2=(float)rsrc.y1; }
-	if(rotated)		{ fRect src1 = src; src.x1=src1.y2; src.y1=src1.x1; src.x2=src1.y1; src.y2=src1.x2; }
+	if(flip & R9_FLIPX)	{ src.p1.x=(float)rsrc.p2.x; src.p2.x=(float)rsrc.p1.x; }
+	if(flip & R9_FLIPY)	{ src.p1.y=(float)rsrc.p2.y; src.p2.y=(float)rsrc.p1.y; }
+	if(rotated)		{ fRect src1 = src; src.p1.x=src1.p2.y; src.p1.y=src1.p1.x; src.p2.x=src1.p1.y; src.p2.y=src1.p2.x; }
 
 	R9_ClipQuad(dst,src);
-	if(dst.x2<=dst.x1 || dst.y2<=dst.y1) return;
+	if(!dst.Ordered()) return;
 
 	int dstw = _imgtarget.m_width;
 	int dsth = _imgtarget.m_height;
 	int dw = (int)dst.Width();
 	int dh = (int)dst.Height();
 	byte* dstdata = _imgtarget.m_data;
-	dstdata += (int)dst.x1 + (int)dst.y1 * dstw; // start
+	dstdata += (int)dst.p1.x + (int)dst.p1.y * dstw; // start
 	float sw = src.Width();
 	float sh = src.Height();
 	int srcw = tile->img.m_width;
@@ -493,11 +493,11 @@ void cDizPaint::DrawTileSoft2( int idx, const iV2 & p, const iRect & map, dword 
 	for(int iy=0;iy<dh;iy++)
 	{
 		float ty = (float)iy / (float)dh + 0.001f;
-		int my = (int)(src.y1 + sh*ty);
+		int my = (int)(src.p1.y + sh*ty);
 		for(int ix=0;ix<dw;ix++)
 		{
 			float tx = (float)ix / (float)dw + 0.001f;
-			int mx = (int)(src.x1 + sw*tx);
+			int mx = (int)(src.p1.x + sw*tx);
 			if(rotated)
 			{
 				if(srcdata[mx*srcw+my]>128) *dstdata=mat;
@@ -635,7 +635,7 @@ void HUD::DrawText( int tileid, const iRect & dst, const std::string & text, int
 	font->font->SetBlend(shader());
 
 	// draw process
-	iV2 p(dst.x1, dst.y1);
+	iV2 p(dst.p1);
 	iV2 sz = dst.Size();
 
 	int linecount = 0;				// line count
@@ -654,7 +654,7 @@ void HUD::DrawText( int tileid, const iRect & dst, const std::string & text, int
 	while(lnstart != text.end())
 	{
 		// Current Line Processing
-		p.x = dst.x1;
+		p.x = dst.p1.x;
 
 		Cmd cmd;			// escape command
 		int data[4];		// escape command data
@@ -738,16 +738,16 @@ void HUD::DrawTile( int tileid, const iRect & dst, const iRect & src, dword flag
 	iV2 sz = src.Size();
 	if( sz.x==0 || sz.y==0 ) return;
 	fRect oldclip = R9_GetClipping();
-	fRect newclip = fRect(g_paint.scrPos(iV2(dst.x1, dst.y1)), g_paint.scrPos(iV2(dst.x2, dst.y2)));
+	fRect newclip = fRect(g_paint.scrPos(dst.p1), g_paint.scrPos(dst.p2));
 	R9_AddClipping(newclip);
 	if(R9_IsClipping())
 	{
 		iV2 c = (dst.Size() + sz - 1) / sz;
 		Blend blend = shader();
-		iV2 p(dst.x1, dst.y1);
+		iV2 p(dst.p1);
 		for(int i=0;i<c.y;i++)
 		{
-			p.x = dst.x1;
+			p.x = dst.p1.x;
 			for(int j=0;j<c.x;j++)
 			{
 				g_paint.DrawTile( tileidx, p, src, color(), flags, frame, blend );
@@ -763,10 +763,10 @@ void HUD::DrawTile( int tileid, const iRect & dst, const iRect & src, dword flag
 void HUD::SetClipping( const iRect & dst )
 {
 	if( isDrawing() )
-		if(dst.x2<dst.x1 || dst.y2<dst.y1)
-			R9_ResetClipping();
+		if(dst.Ordered())
+			R9_SetClipping(fRect(g_paint.scrPos(dst.p1), g_paint.scrPos(dst.p2)));
 		else
-			R9_SetClipping(fRect(g_paint.scrPos(iV2(dst.x1, dst.y1)), g_paint.scrPos(iV2(dst.x2, dst.y2))));	
+			R9_ResetClipping();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

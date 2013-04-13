@@ -371,10 +371,7 @@ void cEdiToolEdit::Update( float dtime )
 		if(I9_GetKeyDown(I9_MOUSE_B1))
 		{
 			if(m_selop==0) BrushDeselect();
-			m_rect.x1 = mx;
-			m_rect.y1 = my;
-			m_rect.x2 = mx;
-			m_rect.y2 = my;
+			m_rect.p1 = m_rect.p2 = iV2(mx, my);
 			m_mode=1;
 		}
 		else
@@ -400,11 +397,10 @@ void cEdiToolEdit::Update( float dtime )
 	else
 	if( m_mode==1 )
 	{
-		m_rect.x2 = mx;
-		m_rect.y2 = my;
-		if(m_rect.x2<m_rect.x1+1) m_rect.x2 = m_rect.x1+1;
-		if(m_rect.y2<m_rect.y1+1) m_rect.y2 = m_rect.y1+1;
-
+		m_rect.p2.x = mx;
+		m_rect.p2.y = my;
+		m_rect.p2.x = std::max(m_rect.p2.x, m_rect.p1.x+1);
+		m_rect.p2.y = std::max(m_rect.p2.y, m_rect.p1.y+1);
 		if(!I9_GetKeyValue(I9_MOUSE_B1))
 		{
 			BrushSelect();
@@ -437,7 +433,7 @@ void cEdiToolEdit::Update( float dtime )
 		if( m_selop==-1 ) strcat(sz,"sub\n");
 		if( m_selop==1 ) strcat(sz,"add\n");
 		strcat(sz, sprint("%i,%i", mx, my) );
-		if( m_mode==1 ) strcat(sz, sprint("\n%i x %i", m_rect.x2-m_rect.x1, m_rect.y2-m_rect.y1) );
+		if( m_mode==1 ) strcat(sz, sprint("\n%i x %i", m_rect.Width(), m_rect.Height()) );
 	}
 	else
 	{
@@ -490,14 +486,14 @@ void cEdiToolEdit::Draw()
 	{
 		dword color = 0xffffffff;
 		iRect rect = m_rect;
-		CAM2VIEW(rect.x1,rect.y1);
-		CAM2VIEW(rect.x2,rect.y2);
-		rect.x1 += VIEWX;
-		rect.y1 += VIEWY;
-		rect.x2 += VIEWX;
-		rect.y2 += VIEWY;
+		CAM2VIEW(rect.p1.x,rect.p1.y);
+		CAM2VIEW(rect.p2.x,rect.p2.y);
+		rect.p1.x += VIEWX;
+		rect.p1.y += VIEWY;
+		rect.p2.x += VIEWX;
+		rect.p2.y += VIEWY;
 		
-		GUIDrawRectDot( rect.x1,rect.y1,rect.x2,rect.y2,color);
+		GUIDrawRectDot( rect.p1.x,rect.p1.y,rect.p2.x,rect.p2.y,color);
 	}
 
 }
@@ -513,11 +509,7 @@ void cEdiToolEdit::BrushSelect()
 		if(layer<0 || layer>=LAYER_MAX) continue;
 		if(EdiApp()->LayerGet(layer)==0) continue; // hidden
 
-		iRect bb;
-		bb.x1 = brush.m_data[BRUSH_X];
-		bb.y1 = brush.m_data[BRUSH_Y];
-		bb.x2 = brush.m_data[BRUSH_X] + brush.m_data[BRUSH_W];
-		bb.y2 = brush.m_data[BRUSH_Y] + brush.m_data[BRUSH_H];
+		iRect bb = brush.rect();
 		
 		if( m_rect.Intersects(brush.rect()) )
 		{

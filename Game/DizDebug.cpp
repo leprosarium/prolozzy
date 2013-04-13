@@ -295,7 +295,7 @@ bool Developer::Update()
 void Info::Draw()
 {
 	R9_DrawBar(rect,COLOR_BBKGR);
-	fV2 p(rect.x1 + R9_CHRW, rect.y1);
+	fV2 p = rect.p1 + fV2(R9_CHRW, 0);
 	
 	// script
 	R9_DrawText( p, g_script.UpdateStack().c_str(), COLOR_INFO);
@@ -378,8 +378,8 @@ void Console::Draw()
 	fRect oldclip = R9_GetClipping();
 	R9_SetClipping(rect);
 	R9_DrawBar(rect, COLOR_BBKGR);
-	fV2 p(rect.x1 + R9_CHRW, rect.y1 + R9_CHRH);
-	for(auto line = begin() + PageBegin; p.y < rect.y2 && line != end(); ++line, p.y += static_cast<float>(R9_CHRH)) // show as many as you can
+	fV2 p = rect.p1 + fV2(R9_CHRW, R9_CHRH);
+	for(auto line = begin() + PageBegin; p.y < rect.p2.y && line != end(); ++line, p.y += static_cast<float>(R9_CHRH)) // show as many as you can
 		R9_DrawText(p, line->c_str(), D9_LogGetChannelColor(line->Ch));
 	R9_SetClipping(oldclip);
 }
@@ -433,8 +433,8 @@ void Slots::Draw()
 	fRect oldclip = R9_GetClipping();
 	R9_SetClipping(rect);
 	R9_DrawBar(rect, COLOR_BBKGR);
-	fV2 p(rect.x1 + R9_CHRW, rect.y1 + R9_CHRH);
-	for(size_t i=0; i < SLOT_COUNT && p.y < rect.y2; i++, p.y += R9_CHRH)
+	fV2 p  = rect.p1 + fV2(R9_CHRW, R9_CHRH);
+	for(size_t i=0; i < SLOT_COUNT && p.y < rect.p2.y; i++, p.y += R9_CHRH)
 		R9_DrawText(p, slots[i].c_str(), 0xff0040a0);
 	R9_SetClipping(oldclip);
 }
@@ -556,12 +556,12 @@ void Input::Draw()
 {
 	if(!open) return;
 	R9_DrawBar(rect,COLOR_BBKGR);
-	fV2 p(rect.x1, rect.y1);
+	fV2 p = rect.p1;
 	R9_DrawText(p, prompt.c_str(), COLOR_INPUT);
 	p.x += prompt.size() * R9_CHRW;
 	int t = sys_gettickcount() % 800;
 	float crtx = p.x + R9_CHRW * (crt-cmd.begin())-1;
-	if(t<500) R9_DrawLine(fV2(crtx, p.y-1), fV2(crtx, rect.y2 + 1));
+	if(t<500) R9_DrawLine(fV2(crtx, p.y-1), fV2(crtx, rect.p2.y + 1));
 //	if(t<400) R9_DrawLine(fV2(crtx, rect.y2), fV2(crtx+R9_CHRW, rect.y2));
 //	if(t<500) R9_DrawBar(fRect(crtx, p.y-1, crtx + R9_CHRW, rect.y2 + 1), 0xff808080);
 	R9_DrawText(p, cmd.c_str(), COLOR_INPUT);

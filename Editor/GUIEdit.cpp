@@ -291,12 +291,12 @@ void cGUIEdit::Draw()
 		// selection
 		if(m_sel1!=m_sel2)
 		{
-			rc1.x1 = (float)rc.left + Chr2Pos(m_sel1) + deltax;
-			rc1.y1 = (float)rc.top;
-			rc1.x2 =  (float)rc.left + Chr2Pos(m_sel2) + deltax;
-			rc1.y2 = (float)rc.bottom; 
+			rc1.p1.x = (float)rc.left + Chr2Pos(m_sel1) + deltax;
+			rc1.p1.y = (float)rc.top;
+			rc1.p2.x =  (float)rc.left + Chr2Pos(m_sel2) + deltax;
+			rc1.p2.y = (float)rc.bottom; 
 			R9_ClipBar(rc1);
-			GUIDrawBar( (int)rc1.x1, (int)rc1.y1, (int)rc1.x2, (int)rc1.y2, GetInt(IV_COLOR+3));
+			GUIDrawBar( (int)rc1.p1.x, (int)rc1.p1.y, (int)rc1.p2.x, (int)rc1.p2.y, GetInt(IV_COLOR+3));
 		}
 
 		// text
@@ -309,12 +309,12 @@ void cGUIEdit::Draw()
 			s_time += E9_AppGetInt(E9_APP_DELTATIME);
 			if(s_time<=400)
 			{
-				rc1.x1 = (float)rc.left + Chr2Pos(m_sel2) + deltax;
-				rc1.y1 = (float)rc.top+2;
-				rc1.x2 =  rc1.x1+1;
-				rc1.y2 = (float)rc.bottom-2;
+				rc1.p1.x = (float)rc.left + Chr2Pos(m_sel2) + deltax;
+				rc1.p1.y = (float)rc.top+2;
+				rc1.p2.x =  rc1.p1.x+1;
+				rc1.p2.y = (float)rc.bottom-2;
 				R9_ClipBar(rc1);
-				GUIDrawBar( (int)rc1.x1, (int)rc1.y1, (int)rc1.x2, (int)rc1.y2, GetInt(IV_TXTCOLOR));			
+				GUIDrawBar( (int)rc1.p1.x, (int)rc1.p1.y, (int)rc1.p2.x, (int)rc1.p2.y, GetInt(IV_TXTCOLOR));			
 			}
 			if(s_time>700) s_time = 0;
 		}

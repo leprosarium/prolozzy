@@ -218,10 +218,7 @@ void cEdiPaint::DrawTile( int idx, int x, int y, const iRect & map, dword color,
 	int fx = tile->GetFx(frame);
 	int fy = tile->GetFy(frame);
 	fRect src = map;
-	src.x1 += fx * w;
-	src.x2 += fx * w;
-	src.y1 += fy * h;
-	src.y2 += fy * h;
+	src.Offset(fV2(fx * w, fy *h));
 	R9_SetBlend(blend);
 	R9_DrawSprite( fV2(x, y), src, tile->m_tex, color, flip, (float)scale );
 
@@ -238,11 +235,7 @@ void cEdiPaint::DrawTile( int idx, int x, int y, dword color, int flip, int fram
 	frame = frame % tile->m_frames;
 	int fx = tile->GetFx(frame);
 	int fy = tile->GetFy(frame);
-	fRect src;
-	src.x1 = (float)(fx * w);
-	src.x2 = (float)((fx+1) * w);
-	src.y1 = float(fy * h);
-	src.y2 = float((fy + 1) * h);
+	fRect src(fx * w, fy * h, (fx+1) * w, (fy + 1) * h);
 	R9_SetBlend(blend);
 	R9_DrawSprite( fV2(x, y), src, tile->m_tex, color, flip, scale );
 
@@ -254,11 +247,7 @@ void cEdiPaint::DrawBrushAt( tBrush* brush, int x, int y, float zoom, BOOL anim 
 	int idx = TileFind(brush->m_data[BRUSH_TILE]);
 	// if(idx==-1) return;
 
-	iRect map;
-	map.x1 = brush->m_data[BRUSH_MAP+0];
-	map.y1 = brush->m_data[BRUSH_MAP+1];
-	map.x2 = brush->m_data[BRUSH_MAP+2];
-	map.y2 = brush->m_data[BRUSH_MAP+3];
+	iRect map = brush->map();
 	int mw = (int)GET_BRUSH_MAPWITH(*brush);
 	int mh = (int)GET_BRUSH_MAPHEIGHT(*brush);
 	float ms = GET_BRUSH_MAPSCALE(*brush);
@@ -272,12 +261,12 @@ void cEdiPaint::DrawBrushAt( tBrush* brush, int x, int y, float zoom, BOOL anim 
 	if(idx==-1) // no tile
 	{
 		dword color = brush->m_data[BRUSH_COLOR] & 0xffff40ff;
-		R9_DrawLine( fV2(newclip.x1,newclip.y1),		fV2(newclip.x2-1,newclip.y1),	color );
-		R9_DrawLine( fV2(newclip.x2-1,newclip.y1),		fV2(newclip.x2-1,newclip.y2-1),	color );
-		R9_DrawLine( fV2(newclip.x2-1,newclip.y2-1),	fV2(newclip.x1,newclip.y2-1),	color );
-		R9_DrawLine( fV2(newclip.x1,newclip.y2-1),		fV2(newclip.x1,newclip.y1),		color );
-		R9_DrawLine( fV2(newclip.x1,newclip.y1),		fV2(newclip.x2-1,newclip.y2-1),	color );
-		R9_DrawLine( fV2(newclip.x2-1,newclip.y1),		fV2(newclip.x1,newclip.y2-1),	color );
+		R9_DrawLine( fV2(newclip.p1.x,newclip.p1.y),		fV2(newclip.p2.x-1,newclip.p1.y),	color );
+		R9_DrawLine( fV2(newclip.p2.x-1,newclip.p1.y),		fV2(newclip.p2.x-1,newclip.p2.y-1),	color );
+		R9_DrawLine( fV2(newclip.p2.x-1,newclip.p2.y-1),	fV2(newclip.p1.x,newclip.p2.y-1),	color );
+		R9_DrawLine( fV2(newclip.p1.x,newclip.p2.y-1),		fV2(newclip.p1.x,newclip.p1.y),		color );
+		R9_DrawLine( fV2(newclip.p1.x,newclip.p1.y),		fV2(newclip.p2.x-1,newclip.p2.y-1),	color );
+		R9_DrawLine( fV2(newclip.p2.x-1,newclip.p1.y),		fV2(newclip.p1.x,newclip.p2.y-1),	color );
 		R9_SetClipping(oldclip);
 		return;
 	}
@@ -308,10 +297,10 @@ void cEdiPaint::DrawBrushAt( tBrush* brush, int x, int y, float zoom, BOOL anim 
 	if(m_brushrect)
 	{
 		dword color = 0xa04040ff;
-		R9_DrawLine( fV2(newclip.x1,newclip.y1),		fV2(newclip.x2-1,newclip.y1),	color );
-		R9_DrawLine( fV2(newclip.x2-1,newclip.y1),		fV2(newclip.x2-1,newclip.y2-1),	color );
-		R9_DrawLine( fV2(newclip.x2-1,newclip.y2-1),	fV2(newclip.x1,newclip.y2-1),	color );
-		R9_DrawLine( fV2(newclip.x1,newclip.y2-1),		fV2(newclip.x1,newclip.y1),		color );
+		R9_DrawLine( fV2(newclip.p1.x,newclip.p1.y),		fV2(newclip.p2.x-1,newclip.p1.y),	color );
+		R9_DrawLine( fV2(newclip.p2.x-1,newclip.p1.y),		fV2(newclip.p2.x-1,newclip.p2.y-1),	color );
+		R9_DrawLine( fV2(newclip.p2.x-1,newclip.p2.y-1),	fV2(newclip.p1.x,newclip.p2.y-1),	color );
+		R9_DrawLine( fV2(newclip.p1.x,newclip.p2.y-1),		fV2(newclip.p1.x,newclip.p1.y),		color );
 	}
 
 	R9_SetClipping(oldclip);

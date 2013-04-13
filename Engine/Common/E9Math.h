@@ -42,6 +42,7 @@ struct fV2
 
 	fV2 &	operator +=(const fV2 & v) { x += v.x; y += v.y; return *this; }
 	fV2 &	operator +=(float f) { x += f; y += f; return *this; }
+	fV2 &	operator -=(const fV2 & v) { x -= v.x; y -= v.y; return *this; }
 	fV2 &	operator -=(float f) { x -= f; y -= f; return *this; }
 	float	operator ! () { return sqrt(x*x + y*y); }
 	fV2	Tran() const { return fV2(y, x); }
@@ -50,6 +51,8 @@ struct fV2
     bool operator >(float v) const { return x > v && y > v; }
     bool operator <=(const fV2 & v) const { return x <= v.x && y <= v.y; }
     bool operator >=(const fV2 & v) const { return x >= v.x && y >= v.y; }
+    bool operator <(const fV2 & v) const { return x < v.x && y < v.y; }
+    bool operator >(const fV2 & v) const { return x > v.x && y > v.y; }	
 	bool operator ==(const fV2 & v) const { return x == v.x && y == v.y; }
 	bool operator !=(const fV2 & v) const { return ! operator==(v);}
 
@@ -97,6 +100,8 @@ struct iV2
     bool operator >(int v) const { return x > v && y > v; }
     bool operator <=(const iV2 & v) const { return x <= v.x && y <= v.y; }
     bool operator >=(const iV2 & v) const { return x >= v.x && y >= v.y; }
+    bool operator <(const iV2 & v) const { return x < v.x && y < v.y; }
+	bool operator >(const iV2 & v) const { return x > v.x && y > v.y; }
 	bool operator ==(const iV2 & v) const { return x == v.x && y == v.y; }
 	bool operator ==(int v) const { return x == v && y == v; }
 	bool operator !=(const iV2 & v) const { return ! operator==(v);}
@@ -120,41 +125,41 @@ struct iV2
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct fRect
 {
-	float x1, y1, x2, y2;
+	fV2 p1, p2;
 
+	fRect() {}
+	fRect(const fV2 & p1, const fV2 & p2) : p1(p1), p2(p2) {}
+	fRect(float x1, float y1, float x2, float y2 )  : p1(x1, y1), p2(x2, y2) {}
+	fRect(int x1, int y1, int x2, int y2) : p1(x1, y1), p2(x2, y2) {}
+	fRect( const iRect & r );
 
-		fRect()												: x1(), y1(), x2(), y2() {}
-		fRect(const fV2 & p1, const fV2 & p2)				: x1(p1.x), y1(p1.y), x2(p2.x), y2(p2.y) {}
-		fRect( float x1, float y1, float x2, float y2 )		: x1(x1), y1(y1), x2(x2), y2(y2) {}
-		fRect( int x1, int y1, int x2, int y2 )				: x1((float)x1), y1((float)y1), x2((float)x2), y2((float)y2) {}
-		fRect( const iRect & r );
+	fV2 Size() const { return p2 - p1; }
+	float Width() const { return p2.x-p1.x; }
+	float Height() const { return p2.y-p1.y; }
+	fV2 Center() const { return (p1 + p2) * 0.5f; }
+	fRect &	Inflate( const fV2 & v ) { p1 += v; p2 -= v; return *this; }
+	fRect &	Deflate( const fV2 & v ) { p1 -= v; p2 += v; return *this; }
+	fRect &	Offset( const fV2 & v ) { p1 += v; p2 += v; return *this; }
+	fRect & Clip(const fRect & c)
+	{ 
+		if(p1.x < c.p1.x) p1.x = c.p1.x;
+		if(p1.y < c.p1.y) p1.y = c.p1.y;
+		if(p2.x > c.p2.x) p2.x = c.p2.x;
+		if(p2.y > c.p2.y) p2.y = c.p2.y; 
+		return *this;
+	}
 
-		fV2		Size() const								{ return fV2(Width(), Height()); }
-		float 	Width()	const								{ return x2-x1; }
-		float 	Height() const								{ return y2-y1; }
-		fV2		Center() const								{ return fV2((x1+x2) * 0.5f,(y1+y2) * 0.5f); }
-		fRect &	Inflate( const fV2 & v )					{ x1+=v.x; y1+=v.y; x2-=v.x; y2-=v.y; return *this; }
-		fRect &	Deflate( const fV2 & v )					{ x1-=v.x; y1-=v.y; x2+=v.x; y2+=v.y; return *this; }
-		fRect &	Offset( const fV2 & v )						{ x1+=v.x; y1+=v.y; x2+=v.x; y2+=v.y; return *this; }
-		fRect & Clip(const fRect & c)
-		{ 
-			if(x1 < c.x1) x1 = c.x1;
-			if(y1 < c.y1) y1 = c.y1;
-			if(x2 > c.x2) x2 = c.x2;
-			if(y2 > c.y2) y2 = c.y2; 
-			return *this;
-		}
-
-		bool	IsInside(const fV2 & v) const				{ return x1<=v.x && v.x<x2 && y1<=v.y && v.y<y2; }
-		bool	Intersects(const fRect & r) const			{ return x2 > r.x1 && x1 < r.x2 && y2 > r.y1 && y1 < r.y2; }
+	bool IsInside( const fV2 & v ) const { return p1 <= v && v < p2; }
+	bool Intersects(const fRect & r) const { return p2.x > r.p1.x && p1.x < r.p2.x && p2.y > r.p1.y && p1.y < r.p2.y; }
+	bool Ordered() const { return p1.x<p2.x && p1.y<p2.y; }
 };
 
-inline	bool	operator==	( const fRect& r1, const fRect& r2 )	{ return (r1.x1==r2.x1 && r1.y1==r2.y1 && r1.x2==r2.x2 && r1.y2==r2.y2); }
-inline	bool	operator!=	( const fRect& r1, const fRect& r2 )	{ return (r1.x1!=r2.x1 || r1.y1!=r2.y1 || r1.x2!=r2.x2 || r1.y2!=r2.y2); }
-inline fRect	operator+	( const fRect& r1, const fRect& r2 )	{ return fRect( (r1.x1<r2.x1)?r1.x1:r2.x1, (r1.y1<r2.y1)?r1.y1:r2.y1, (r1.x2>r2.x2)?r1.x2:r2.x2, (r1.y2>r2.y2)?r1.y2:r2.y2 ); }
-inline fRect	operator+=	( fRect& r1, const fRect& r2 )			{ if(r2.x1<r1.x1) r1.x1=r2.x1; if(r2.y1<r1.y1) r1.y1=r2.y1; if(r2.x2>r1.x2) r1.x2=r2.x2; if(r2.y2>r1.y2) r1.y2=r2.y2; return r1; }
-inline fRect	operator*	( const fRect& r1, const fRect& r2 )	{ return fRect( (r1.x1>r2.x1)?r1.x1:r2.x1, (r1.y1>r2.y1)?r1.y1:r2.y1, (r1.x2<r2.x2)?r1.x2:r2.x2, (r1.y2<r2.y2)?r1.y2:r2.y2 ); }
-inline fRect	operator*=	( fRect& r1, const fRect& r2 )			{ if(r2.x1>r1.x1) r1.x1=r2.x1; if(r2.y1>r1.y1) r1.y1=r2.y1; if(r2.x2<r1.x2) r1.x2=r2.x2; if(r2.y2<r1.y2) r1.y2=r2.y2; return r1; }
+inline	bool	operator==	( const fRect& r1, const fRect& r2 )	{ return r1.p1 == r2.p1 && r1.p2 == r2.p2; }
+inline	bool	operator!=	( const fRect& r1, const fRect& r2 )	{ return ! (r1 == r2); }
+//inline fRect	operator+	( const fRect& r1, const fRect& r2 )	{ return fRect( (r1.x1<r2.x1)?r1.x1:r2.x1, (r1.y1<r2.y1)?r1.y1:r2.y1, (r1.x2>r2.x2)?r1.x2:r2.x2, (r1.y2>r2.y2)?r1.y2:r2.y2 ); }
+//inline fRect	operator+=	( fRect& r1, const fRect& r2 )			{ if(r2.x1<r1.x1) r1.x1=r2.x1; if(r2.y1<r1.y1) r1.y1=r2.y1; if(r2.x2>r1.x2) r1.x2=r2.x2; if(r2.y2>r1.y2) r1.y2=r2.y2; return r1; }
+inline fRect	operator*	( const fRect& r1, const fRect& r2 )	{ return fRect( std::max(r1.p1.x,r2.p1.x), std::max(r1.p1.y,r2.p1.y), std::min(r1.p2.x, r2.p2.x), std::min(r1.p2.y,r2.p2.y)); }
+//inline fRect	operator*=	( fRect& r1, const fRect& r2 )			{ if(r2.x1>r1.x1) r1.x1=r2.x1; if(r2.y1>r1.y1) r1.y1=r2.y1; if(r2.x2<r1.x2) r1.x2=r2.x2; if(r2.y2<r1.y2) r1.y2=r2.y2; return r1; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // iRect
@@ -162,41 +167,40 @@ inline fRect	operator*=	( fRect& r1, const fRect& r2 )			{ if(r2.x1>r1.x1) r1.x1
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct iRect
 {
-	int x1, y1, x2, y2;
+	iV2 p1, p2;
 
-
-		iRect()												: x1(), y1(), x2(), y2() {}
-		iRect(const iV2 & p1, const iV2 & p2)				: x1(p1.x), y1(p1.y), x2(p2.x), y2(p2.y) {}
-		iRect( int x1, int y1, int x2, int y2 )				: x1(x1), y1(y1), x2(x2), y2(y2) {}
-		iRect( float x1, float y1, float x2, float y2 )		: x1((int)x1), y1((int)y1), x2((int)x2), y2((int)y2) {}
-		iRect( const fRect & r )							: x1((int)r.x1), y1((int)r.y1), x2((int)r.x2), y2((int)r.y2) {}
-
-
-		iV2		Size() const								{ return iV2(Width(), Height()); }
-	 	int 	Width()	const								{ return x2-x1; }
-	 	int 	Height() const								{ return y2-y1; }
-	 	iV2		Center() const								{ return iV2((x1+x2)/2.0f,(y1+y2)/2.0f); }
-	 	iRect &	Inflate( const iV2 & v )					{ x1+=v.x; y1+=v.y; x2-=v.x; y2-=v.y; return *this; }
-	 	iRect &	Deflate( const iV2 & v )					{ x1-=v.x; y1-=v.y; x2+=v.x; y2+=v.y; return *this; }
-	 	iRect &	Offset( const iV2 & v )						{ x1+=v.x; y1+=v.y; x2+=v.x; y2+=v.y; return *this; }
-		iRect & Clip(const iRect & c)
-		{ 
-			if(x1 < c.x1) x1 = c.x1;
-			if(y1 < c.y1) y1 = c.y1;
-			if(x2 > c.x2) x2 = c.x2;
-			if(y2 > c.y2) y2 = c.y2; 
-			return *this;
-		}
-		bool	IsInside( const iV2 & v ) const				{ return (x1<=v.x && v.x<x2 && y1<=v.y && v.y<y2); }
-		bool	Intersects(const iRect & r) const			{ return x2 > r.x1 && x1 < r.x2 && y2 > r.y1 && y1 < r.y2; }
+	iRect() {}
+	iRect(const iV2 & p1, const iV2 & p2) : p1(p1), p2(p2) {}
+	iRect( int x1, int y1, int x2, int y2 ) : p1(x1, y1), p2(x2, y2) {}
+	iRect( float x1, float y1, float x2, float y2 )	: p1(x1, y1), p2(x2, y2) {}
+	iRect( const fRect & r ) : p1(r.p1), p2(r.p2) {}
+	
+	iV2 Size() const { return p2 - p1; }
+	int Width()	const { return p2.x-p1.x; }
+	int Height() const { return p2.y-p1.y; }
+	iV2 Center() const								{ return (p1 + p2) / 2; }
+	iRect &	Inflate( const iV2 & v ) { p1 += v; p2 -= v; return *this; }
+	iRect & Deflate( const iV2 & v ) { p1 -= v; p2 += v; return *this; }
+	iRect & Offset( const iV2 & v ) { p1+= v; p2 +=v; return *this; }
+	iRect & Clip(const iRect & c)
+	{ 
+		if(p1.x < c.p1.x) p1.x = c.p1.x;
+		if(p1.y < c.p1.y) p1.y = c.p1.y;
+		if(p2.x > c.p2.x) p2.x = c.p2.x;
+		if(p2.y > c.p2.y) p2.y = c.p2.y; 
+		return *this;
+	}
+	bool IsInside( const iV2 & v ) const { return p1 <= v && v < p2; }
+	bool Intersects(const iRect & r) const { return p2.x > r.p1.x && p1.x < r.p2.x && p2.y > r.p1.y && p1.y < r.p2.y; }
+	bool Ordered() const { return p1.x<p2.x && p1.y<p2.y; }
 };
 
-inline	bool	operator==	( const iRect& r1, const iRect& r2 )	{ return (r1.x1==r2.x1 && r1.y1==r2.y1 && r1.x2==r2.x2 && r1.y2==r2.y2); }
-inline	bool	operator!=	( const iRect& r1, const iRect& r2 )	{ return (r1.x1!=r2.x1 || r1.y1!=r2.y1 || r1.x2!=r2.x2 || r1.y2!=r2.y2); }
-inline iRect	operator+	( const iRect& r1, const iRect& r2 )	{ return iRect( (r1.x1<r2.x1)?r1.x1:r2.x1, (r1.y1<r2.y1)?r1.y1:r2.y1, (r1.x2>r2.x2)?r1.x2:r2.x2, (r1.y2>r2.y2)?r1.y2:r2.y2 ); }
-inline iRect	operator+=	( iRect& r1, const iRect& r2 )			{ if(r2.x1<r1.x1) r1.x1=r2.x1; if(r2.y1<r1.y1) r1.y1=r2.y1; if(r2.x2>r1.x2) r1.x2=r2.x2; if(r2.y2>r1.y2) r1.y2=r2.y2; return r1; }
-inline iRect	operator*	( const iRect& r1, const iRect& r2 )	{ return iRect( (r1.x1>r2.x1)?r1.x1:r2.x1, (r1.y1>r2.y1)?r1.y1:r2.y1, (r1.x2<r2.x2)?r1.x2:r2.x2, (r1.y2<r2.y2)?r1.y2:r2.y2 ); }
-inline iRect	operator*=	( iRect& r1, const iRect& r2 )			{ if(r2.x1>r1.x1) r1.x1=r2.x1; if(r2.y1>r1.y1) r1.y1=r2.y1; if(r2.x2<r1.x2) r1.x2=r2.x2; if(r2.y2<r1.y2) r1.y2=r2.y2; return r1; }
+inline	bool	operator==	( const iRect& r1, const iRect& r2 )	{ return r1.p1 == r2.p1 && r1.p2 == r2.p2;; }
+inline	bool	operator!=	( const iRect& r1, const iRect& r2 )	{ return ! (r1 == r2); }
+//inline iRect	operator+	( const iRect& r1, const iRect& r2 )	{ return iRect( std::min(r1.p1.x, r2.p1.x), std::min(r1.p1.y, r2.p1.y), std::max(r1.p2.x, r2.p2.x), std::max(r1.p2.y, r2.p2.y)); }
+//inline iRect	operator+=	( iRect& r1, const iRect& r2 )			{ if(r2.p1.x<r1.p1.x) r1.p1.x=r2.p1.x; if(r2.p1.y<r1.p1.y) r1.p1.y=r2.p1.y; if(r2.p2.x>r1.p2.x) r1.p2.x=r2.p2.x; if(r2.p2.y>r1.p2.y) r1.p2.y=r2.p2.y; return r1; }
+inline iRect	operator*	( const iRect& r1, const iRect& r2 )	{ return iRect( std::max(r1.p1.x,r2.p1.x), std::max(r1.p1.y,r2.p1.y), std::min(r1.p2.x, r2.p2.x), std::min(r1.p2.y,r2.p2.y)); }
+//inline iRect	operator*=	( iRect& r1, const iRect& r2 )			{ if(r2.p1.x>r1.p1.x) r1.p1.x=r2.p1.x; if(r2.p1.y>r1.p1.y) r1.p1.y=r2.p1.y; if(r2.p2.x<r1.p2.x) r1.p2.x=r2.p2.x; if(r2.p2.y<r1.p2.y) r1.p2.y=r2.p2.y; return r1; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // fColor
@@ -222,7 +226,7 @@ struct fColor
 // inlines
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 inline fV2::fV2( const iV2 & v ) : x(static_cast<float>(v.x)), y(static_cast<float>(v.y)) {}
-inline fRect::fRect( const iRect & r )	: x1((float)r.x1), y1((float)r.y1), x2((float)r.x2), y2((float)r.y2) {}
+inline fRect::fRect( const iRect & r ) : p1(r.p1), p2(r.p2) {}
 
 // get the nearst power of 2 (but lower than value)
 inline int GetPow2LO( int value )	

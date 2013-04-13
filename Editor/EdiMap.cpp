@@ -496,7 +496,7 @@ void cEdiMap::Update( float dtime )
 		if(rc.IsInside(fV2(mx,my))) 
 		{
 			m_scrolling = 1;
-			m_scrollofs = mx-rc.x1;
+			m_scrollofs = mx-rc.p1.x;
 			E9_AppSetCursor(E9_CURSOR_HAND);
 		}
 		else
@@ -505,7 +505,7 @@ void cEdiMap::Update( float dtime )
 			if(rc.IsInside(fV2(mx,my)))
 			{
 				m_scrolling = 2;
-				m_scrollofs = my-rc.y1;
+				m_scrollofs = my-rc.p1.y;
 				E9_AppSetCursor(E9_CURSOR_HAND);
 			}
 		}
@@ -520,14 +520,14 @@ void cEdiMap::Update( float dtime )
 	if(m_scrolling==1) // scroll horizontal
 	{
 		rc = GetHScrollRect();
-		dx = (mx-m_scrollofs)-rc.x1;
+		dx = (mx-m_scrollofs)-rc.p1.x;
 		dx = (dx/EdiApp()->m_gridsize)*EdiApp()->m_gridsize;
 	}
 	else
 	if(m_scrolling==2) // scroll vertical
 	{
 		rc = GetVScrollRect();
-		dy = (my-m_scrollofs)-rc.y1;
+		dy = (my-m_scrollofs)-rc.p1.y;
 		dy = (dy/EdiApp()->m_gridsize)*EdiApp()->m_gridsize;
 	}
 
@@ -596,13 +596,9 @@ void cEdiMap::Refresh()
 	if(R9_BeginScene(m_target))
 	{
 		R9_Clear(EdiApp()->GetColor(EDI_COLORMAP));
-
-		iRect view; // camera view in map
-		view.x1 = m_camx - (m_vieww/m_camz)/2;
-		view.y1 = m_camy - (m_viewh/m_camz)/2;
-		view.x2 = m_camx + (m_vieww/m_camz)/2;
-		view.y2 = m_camy + (m_viewh/m_camz)/2;
-
+		iV2 cam(m_camx, m_camy);
+		iRect view(cam, cam);
+		view.Deflate((iV2(m_vieww, m_viewh) / m_camz) /2);
 		BrushDrawExtra( view );
 
 		DrawGrid( view );
@@ -813,9 +809,8 @@ void cEdiMap::BrushDrawExtra( iRect& view )
 		if(!g_gui->ScriptPrologDo("mod:brushDraw")) continue;
 
 		if( m_hideselected && brush.m_data[BRUSH_SELECT] ) continue;
-		int x = m_camz * (EdiApp()->m_brush.m_data[BRUSH_X]-view.x1);
-		int y = m_camz * (EdiApp()->m_brush.m_data[BRUSH_Y]-view.y1);
-		g_paint.DrawBrushAt( &EdiApp()->m_brush, x, y, (float)m_camz );
+		iV2 p = m_camz  * EdiApp()->m_brush.pos() - view.p1;
+		g_paint.DrawBrushAt( &EdiApp()->m_brush, p.x, p.y, (float)m_camz );
 
 		m_count_brushdraw++;
 	}
@@ -934,7 +929,7 @@ BOOL cEdiMap::PartitionAdd( int brushidx )
 			ok = TRUE;
 		}
 	if(!ok)
-		dlog(LOGAPP, L"Brush # %d (%d, %d)-(%d, %d) out of bounds\n", brushidx, br.x1, br.y1, br.x2, br.y2);
+		dlog(LOGAPP, L"Brush # %d (%d, %d)-(%d, %d) out of bounds\n", brushidx, br.p1.x, br.p1.y, br.p2.x, br.p2.y);
 	return ok;
 }
 
@@ -1122,20 +1117,18 @@ void cEdiMap::DrawGrid( iRect &view )
 	{
 		// snap view
 		view2 = view; 
-		view2.x1 = view2.x1 / grid * grid;
-		view2.y1 = view2.y1 / grid * grid;
-		view2.x2 = view2.x2 / grid * grid;
-		view2.y2 = view2.y2 / grid * grid;
+		view2.p1 = view2.p1 / grid * grid;
+		view2.p2 = view2.p2 / grid * grid;
 		
 		// vertical
-		for( i=view2.x1; i<=view2.x2; i+=grid )
+		for( i=view2.p1.x; i<=view2.p2.x; i+=grid )
 		{
 			int x = m_camz * (i - (m_camx - (m_vieww/m_camz)/2));
 			R9_DrawLine( fV2(x,0), fV2(x,m_viewh), EdiApp()->GetColor(EDI_COLORGRID1) );
 		}
 
 		// horizontal
-		for( i=view2.y1; i<=view2.y2; i+=grid )
+		for( i=view2.p1.y; i<=view2.p2.y; i+=grid )
 		{
 			int y = m_camz * (i - (m_camy - (m_viewh/m_camz)/2));
 			R9_DrawLine( fV2(0,y), fV2(m_vieww,y), EdiApp()->GetColor(EDI_COLORGRID1) );
@@ -1147,22 +1140,21 @@ void cEdiMap::DrawGrid( iRect &view )
 	int gridy = m_roomh;
 	if( m_roomgrid && gridx!=0 && gridy!=0 ) 
 	{
+		iV2 gr(gridx, gridy);
 		// snap view
 		view2 = view; 
-		view2.x1 = view2.x1 / gridx * gridx;
-		view2.y1 = view2.y1 / gridy * gridy;
-		view2.x2 = view2.x2 / gridx * gridx;
-		view2.y2 = view2.y2 / gridy * gridy;
+		view2.p1 = view2.p1 / gr * gr;
+		view2.p2 = view2.p2 / gr * gr;
 		
 		// vertical
-		for( i=view2.x1; i<=view2.x2; i+=gridx )
+		for( i=view2.p1.x; i<=view2.p2.x; i+=gridx )
 		{
 			int x = m_camz * (i - (m_camx - (m_vieww/m_camz)/2));
 			R9_DrawLine( fV2(x,0), fV2(x,m_viewh), EdiApp()->GetColor(EDI_COLORGRID2) );
 		}
 
 		// horizontal
-		for( i=view2.y1; i<=view2.y2; i+=gridy )
+		for( i=view2.p1.y; i<=view2.p2.y; i+=gridy )
 		{
 			int y = m_camz * (i - (m_camy - (m_viewh/m_camz)/2));
 			R9_DrawLine( fV2(0,y), fV2(m_vieww,y), EdiApp()->GetColor(EDI_COLORGRID2));
@@ -1261,11 +1253,7 @@ BOOL cEdiMap::SaveMapImage(const std::string & filename )
 				m_camy = y + 128;
 				m_vieww = w;
 				m_viewh = h;
-				iRect view; // camera view in map
-				view.x1 = x;
-				view.y1 = y;
-				view.x2 = x+w;
-				view.y2 = y+h;
+				iRect view(x, y, x + w, y + h); // camera view in map
 				BrushDrawExtra( view );
 				DrawGrid( view );
 				m_camz = camz;

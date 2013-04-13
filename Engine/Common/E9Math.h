@@ -120,11 +120,8 @@ struct iV2
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct fRect
 {
-		union
-		{
-			struct { float x1, y1, x2, y2; };
-			struct { float left, top, right, bottom; };
-		};
+	float x1, y1, x2, y2;
+
 
 		fRect()												: x1(), y1(), x2(), y2() {}
 		fRect(const fV2 & p1, const fV2 & p2)				: x1(p1.x), y1(p1.y), x2(p2.x), y2(p2.y) {}
@@ -165,11 +162,8 @@ inline fRect	operator*=	( fRect& r1, const fRect& r2 )			{ if(r2.x1>r1.x1) r1.x1
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct iRect
 {
-		union
-		{
-			struct { int x1, y1, x2, y2; };
-			struct { int left, top, right, bottom; };
-		};
+	int x1, y1, x2, y2;
+
 
 		iRect()												: x1(), y1(), x2(), y2() {}
 		iRect(const iV2 & p1, const iV2 & p2)				: x1(p1.x), y1(p1.y), x2(p2.x), y2(p2.y) {}

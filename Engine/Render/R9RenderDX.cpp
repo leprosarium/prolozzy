@@ -638,14 +638,14 @@ BOOL r9RenderDX::TakeScreenShot( r9Img* img, fRect* rect, BOOL full )
 	{
 		if(rect)
 		{
-			r.left = (int)rect->left;
-			r.top = (int)rect->top;
-			r.right = (int)rect->right;
-			r.bottom = (int)rect->bottom;
+			r.left = (int)rect->x1;
+			r.top = (int)rect->y1;
+			r.right = (int)rect->x2;
+			r.bottom = (int)rect->y2;
 			srfw =	GetWidth();
 			srfh = GetHeight();
-			img->m_width = (word)(rect->right-rect->left);
-			img->m_height = (word)(rect->bottom-rect->top);
+			img->m_width = static_cast<word>(rect->Width());
+			img->m_height = static_cast<word>(rect->Height());
 		}
 		else
 		{

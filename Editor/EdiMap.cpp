@@ -465,7 +465,7 @@ void cEdiMap::Update( float dtime )
 	}
 
 	// vertical scroll
-	if( mz!=0 && INRECT( mx, my, iRect(VIEWW, 0, VIEWW+VIEWB, VIEWH) ) )
+	if( mz!=0 && iRect(VIEWW, 0, VIEWW+VIEWB, VIEWH).IsInside(iV2(mx, my)) )
 	{
 		if(mz<0) dy = stepy;
 		if(mz>0) dy =-stepy;
@@ -474,7 +474,7 @@ void cEdiMap::Update( float dtime )
 	}
 	
 	// horizontal scroll
-	if( mz!=0 && INRECT( mx, my, iRect(0, VIEWH, VIEWW, VIEWH+VIEWB) ) )
+	if( mz!=0 && iRect(0, VIEWH, VIEWW, VIEWH+VIEWB).IsInside(iV2(mx, my)))
 	{
 		if(mz<0) dx = stepx;
 		if(mz>0) dx =-stepx;
@@ -496,7 +496,7 @@ void cEdiMap::Update( float dtime )
 		if(rc.IsInside(fV2(mx,my))) 
 		{
 			m_scrolling = 1;
-			m_scrollofs = mx-rc.left;
+			m_scrollofs = mx-rc.x1;
 			E9_AppSetCursor(E9_CURSOR_HAND);
 		}
 		else
@@ -505,7 +505,7 @@ void cEdiMap::Update( float dtime )
 			if(rc.IsInside(fV2(mx,my)))
 			{
 				m_scrolling = 2;
-				m_scrollofs = my-rc.top;
+				m_scrollofs = my-rc.y1;
 				E9_AppSetCursor(E9_CURSOR_HAND);
 			}
 		}
@@ -520,14 +520,14 @@ void cEdiMap::Update( float dtime )
 	if(m_scrolling==1) // scroll horizontal
 	{
 		rc = GetHScrollRect();
-		dx = (mx-m_scrollofs)-rc.left;
+		dx = (mx-m_scrollofs)-rc.x1;
 		dx = (dx/EdiApp()->m_gridsize)*EdiApp()->m_gridsize;
 	}
 	else
 	if(m_scrolling==2) // scroll vertical
 	{
 		rc = GetVScrollRect();
-		dy = (my-m_scrollofs)-rc.top;
+		dy = (my-m_scrollofs)-rc.y1;
 		dy = (dy/EdiApp()->m_gridsize)*EdiApp()->m_gridsize;
 	}
 
@@ -832,13 +832,7 @@ int	cEdiMap::BrushPick( int x, int y )
 		int layer = brush.m_data[BRUSH_LAYER];
 		if(layer<0 || layer>=LAYER_MAX) continue;
 		if(EdiApp()->LayerGet(layer)==0) continue; // hidden
-
-		iRect bb;
-		bb.x1 = brush.m_data[BRUSH_X];
-		bb.y1 = brush.m_data[BRUSH_Y];
-		bb.x2 = brush.m_data[BRUSH_X] + brush.m_data[BRUSH_W];
-		bb.y2 = brush.m_data[BRUSH_Y] + brush.m_data[BRUSH_H];
-		if(INRECT(x,y,bb)) return idx;
+		if(brush.rect().IsInside(iV2(x,y))) return idx;
 	}
 	return -1;
 }

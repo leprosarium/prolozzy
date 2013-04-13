@@ -649,7 +649,7 @@ BOOL r9RenderGL::TakeScreenShot( r9Img* img, fRect* rect, BOOL full )
 		{
 			for(int x=0;x<irect.Width();x++)
 			{
-				dword dw = GetPixel(hdc,irect.left+x,irect.top+y);
+				dword dw = GetPixel(hdc,irect.x1+x,irect.y1+y);
 				R9_ImgSetColor(img,x,y,dw);
 			}
 		}
@@ -665,7 +665,7 @@ BOOL r9RenderGL::TakeScreenShot( r9Img* img, fRect* rect, BOOL full )
 		if(!R9_ImgCreate(img)) return FALSE;
 
 		m_glPixelStorei(GL_PACK_ALIGNMENT, 1);
-		m_glReadPixels( irect.left, GetHeight()-irect.bottom, irect.Width(), irect.Height(), GL_RGB, GL_UNSIGNED_BYTE, img->m_data );
+		m_glReadPixels( irect.x1, GetHeight()-irect.y2, irect.Width(), irect.Height(), GL_RGB, GL_UNSIGNED_BYTE, img->m_data );
 		R9_ImgFlipV(img);
 	}
 

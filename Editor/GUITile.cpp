@@ -141,14 +141,14 @@ void cGUITileMap::Update()
 	rctile.y1 = 0;
 	rctile.x2 = tilew;
 	rctile.y2 = tileh;
-	BOOL mouseintile = INRECT( mx, my, rctile);
+	BOOL mouseintile = rctile.IsInside(iV2(mx, my));
 
 	iRect rcsel;	// selection rect
 	rcsel.x1 = selx;
 	rcsel.y1 = sely;
 	rcsel.x2 = selx+selw;
 	rcsel.y2 = sely+selh;
-	BOOL mouseinsel = INRECT( mx, my, rcsel);
+	BOOL mouseinsel = rcsel.IsInside(iV2(mx, my));
 
 	// additional keys for snap and grid
 	BOOL shift	= (I9_GetKeyValue(I9K_LSHIFT)) || (I9_GetKeyValue(I9K_RSHIFT));

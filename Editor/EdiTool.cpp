@@ -70,8 +70,8 @@ void cEdiToolPaint::Update( float dtime )
 
 	if( m_mode==0 )
 	{
-		int bw = (int)GET_BRUSH_MAPWITH(brush); // brush.m_data[BRUSH_MAP+2]-brush.m_data[BRUSH_MAP+0];
-		int bh = (int)GET_BRUSH_MAPHEIGHT(brush); // brush.m_data[BRUSH_MAP+3]-brush.m_data[BRUSH_MAP+1];
+		int bw = static_cast<int>(brush.mapWith()); // brush.m_data[BRUSH_MAP+2]-brush.m_data[BRUSH_MAP+0];
+		int bh = static_cast<int>(brush.mapHeight()); // brush.m_data[BRUSH_MAP+3]-brush.m_data[BRUSH_MAP+1];
 		VIEW2CAM(mx,my);
 		if(mx<CAMX1+bw)	mx=CAMX1+bw;
 		if(my<CAMY1+bh)	my=CAMY1+bh;
@@ -112,8 +112,8 @@ void cEdiToolPaint::Update( float dtime )
 		
 		if(I9_GetKeyValue(I9K_LSHIFT))
 		{
-			int mw = (int)GET_BRUSH_MAPWITH(brush); // brush.m_data[BRUSH_MAP+2]-brush.m_data[BRUSH_MAP+0];
-			int mh = (int)GET_BRUSH_MAPHEIGHT(brush); // brush.m_data[BRUSH_MAP+3]-brush.m_data[BRUSH_MAP+1];
+			int mw = static_cast<int>(brush.mapWith()); // brush.m_data[BRUSH_MAP+2]-brush.m_data[BRUSH_MAP+0];
+			int mh = static_cast<int>(brush.mapHeight()); // brush.m_data[BRUSH_MAP+3]-brush.m_data[BRUSH_MAP+1];
 			if(mw<1) bw=0; else	bw = (bw / mw) * mw;
 			if(mh<1) bh=0; else	bh = (bh / mh) * mh;
 		}

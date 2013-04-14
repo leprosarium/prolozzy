@@ -591,12 +591,12 @@ void cDizGame::Draw()
 	iV2 v = g_paint.scrPos(view);
 	if( viewportFlipX())
 	{
-		flip |= R9_FLIPX;
+		flip |= static_cast<dword>(Flip::X);
 		vv.x = R9_GetWidth() - v.x - roomW() * g_paint.scale() - v.x + 1; // magic +1
 	}
 	if( viewportFlipY())
 	{
-		flip |= R9_FLIPY;
+		flip |= static_cast<dword>(Flip::Y);
 		vv.y = R9_GetHeight() - v.y - roomH() * g_paint.scale() - v.y + 1; // magic +1
 	}
 

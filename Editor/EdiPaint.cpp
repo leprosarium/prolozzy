@@ -248,9 +248,9 @@ void cEdiPaint::DrawBrushAt( tBrush* brush, int x, int y, float zoom, BOOL anim 
 	// if(idx==-1) return;
 
 	iRect map = brush->map();
-	int mw = (int)GET_BRUSH_MAPWITH(*brush);
-	int mh = (int)GET_BRUSH_MAPHEIGHT(*brush);
-	float ms = GET_BRUSH_MAPSCALE(*brush);
+	int mw = static_cast<int>(brush->mapWith());
+	int mh = static_cast<int>(brush->mapHeight());
+	float ms = brush->mapScale();
 	if( mw==0 || mh==0 ) return;
 
 	fRect oldclip = R9_GetClipping();

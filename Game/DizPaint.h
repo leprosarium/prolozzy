@@ -155,15 +155,15 @@ public:
 	void MakeBBW	( iV2 & p1, iV2 & p2 ) const { p1 = pos(); p2 = p1 + size(); }
 
 	float mapScale() const { return Get(BRUSH_SCALE) > 0 ? Get(BRUSH_SCALE) / 100.0f : 1.0f; }		
-	float mapWith() const   { return ( (Get(BRUSH_FLIP) & R9_FLIPR) ? (Get(BRUSH_MAP+3) - Get(BRUSH_MAP+1)) : (Get(BRUSH_MAP+2) - Get(BRUSH_MAP+0)) ) * mapScale(); }
-	float mapHeight() const { return ( (Get(BRUSH_FLIP) & R9_FLIPR) ? (Get(BRUSH_MAP+2) - Get(BRUSH_MAP+0)) : (Get(BRUSH_MAP+3) - Get(BRUSH_MAP+1)) ) * mapScale(); }
+	float mapWith() const   { return ( Is<Flip::R>(Get(BRUSH_FLIP)) ? (Get(BRUSH_MAP+3) - Get(BRUSH_MAP+1)) : (Get(BRUSH_MAP+2) - Get(BRUSH_MAP+0)) ) * mapScale(); }
+	float mapHeight() const { return ( Is<Flip::R>(Get(BRUSH_FLIP)) ? (Get(BRUSH_MAP+2) - Get(BRUSH_MAP+0)) : (Get(BRUSH_MAP+3) - Get(BRUSH_MAP+1)) ) * mapScale(); }
 	static bool InvalidProp(int idx) { return idx < 0 || idx >= BRUSH_MAX; }	
 
 	iV2 pos() const { return iV2(Get(BRUSH_X), Get(BRUSH_Y)); }
 	iV2 size() const { return iV2(Get(BRUSH_W), Get(BRUSH_H)); }
 	iRect rect() const { iV2 p = pos(); return iRect(p, p + size()); }
 	iRect map() const { return iRect(Get(BRUSH_MAP+0), Get(BRUSH_MAP+1), Get(BRUSH_MAP+2), Get(BRUSH_MAP+3)); }
-	fV2 mapSize() const { fV2 sz = map().Size(); return ((Get(BRUSH_FLIP) & R9_FLIPR) ? fV2(sz.y, sz.x) : sz) * mapScale(); }
+	fV2 mapSize() const { fV2 sz = map().Size(); return (Is<Flip::R>(Get(BRUSH_FLIP)) ? fV2(sz.y, sz.x) : sz) * mapScale(); }
 
 	Blend shader() const { return _shader; }
 	void shader(Blend s) { _shader = s; }

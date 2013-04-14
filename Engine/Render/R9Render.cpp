@@ -220,7 +220,7 @@ void r9Render::DrawQuadRot(const fV2 & pos, const fV2 & size, const fV2 & center
 void r9Render::DrawSprite( const fV2 & pos, const fRect & src, R9TEXTURE tex, dword color, dword flip, float scale )
 {
 
-	BOOL rotated = flip & R9_FLIPR;
+	bool rotated = Is<Flip::R>(flip);
 
 	fRect dst(pos, pos + (rotated ? src.Size().Tran() : src.Size()) * scale);
 	fRect src0 = src;

@@ -316,7 +316,7 @@ std::function<void(const iV2 &)> cDizPaint::selectDrawMethod(const tBrush & brus
 	if(!drawtilesoft())
 		return [this, idx, map, color, flip, frame, blend, ms](const iV2 & p) { DrawTile(idx, p, map, color, flip, frame, blend, ms); };
 	int bs = brush.Get(BRUSH_SCALE);
-	if((flip & R9_FLIPR) || (bs != 0 && bs != 100))
+	if(Is<Flip::R>(flip) || (bs != 0 && bs != 100))
 		return [this, idx, map, color, flip, frame, blend, ms](const iV2 & p) { DrawTileSoft2(idx, p, map, color, flip, frame, blend, ms); };
 	return [this, idx, map, color, flip, frame, blend, ms](const iV2 & p) { DrawTileSoft(idx, p, map, color, flip, frame, blend, ms); };
 }
@@ -391,7 +391,6 @@ void cDizPaint::DrawTileSoft( int idx, const iV2 & p, const iRect & map, dword c
 	iV2 sz = tile->GetSize();
 	// assert(frame==0);
 	frame = tile->ComputeFrameLoop(frame);
-	bool rotated = (flip & R9_FLIPR) != FALSE;
 	iV2 f = tile->GetF(frame);
 	// source rectangle safe
 	iRect rsrc = map;
@@ -422,13 +421,13 @@ void cDizPaint::DrawTileSoft( int idx, const iV2 & p, const iRect & map, dword c
 	byte* src = tile->img.m_data; assert(src!=NULL);
 	src += rsrc.p1.x + rsrc.p1.y * srcw; // start
 	int srcsx = 1; // step x;
-	if(flip & 1)
+	if(Is<Flip::X>(flip))
 	{
 		srcsx = -1;
 		src += rw-1;
 	}
 	int srcsy = 1; // step y;
-	if(flip & 2)
+	if(Is<Flip::Y>(flip))
 	{
 		srcsy = -1;
 		src += (rh-1) * srcw;
@@ -463,14 +462,14 @@ void cDizPaint::DrawTileSoft2( int idx, const iV2 & p, const iRect & map, dword 
 	rsrc.Offset(f* sz).Clip(iRect(iV2(), tile->TexSize()));
 
 	// DRAW SPRITE SOFTWARE
-	bool rotated = (flip & R9_FLIPR) != 0;
+	bool rotated = Is<Flip::R>(flip);
 
 	fV2 pf(p);
 	fRect dst(pf, pf + fV2(rotated ? rsrc.Size().Tran() : rsrc.Size() ) * scale);
 	
 	fRect src(rsrc);
-	if(flip & R9_FLIPX)	{ src.p1.x=(float)rsrc.p2.x; src.p2.x=(float)rsrc.p1.x; }
-	if(flip & R9_FLIPY)	{ src.p1.y=(float)rsrc.p2.y; src.p2.y=(float)rsrc.p1.y; }
+	if(Is<Flip::X>(flip))	{ src.p1.x=(float)rsrc.p2.x; src.p2.x=(float)rsrc.p1.x; }
+	if(Is<Flip::Y>(flip))	{ src.p1.y=(float)rsrc.p2.y; src.p2.y=(float)rsrc.p1.y; }
 	if(rotated)		{ fRect src1 = src; src.p1.x=src1.p2.y; src.p1.y=src1.p1.x; src.p2.x=src1.p1.y; src.p2.y=src1.p2.x; }
 
 	R9_ClipQuad(dst,src);

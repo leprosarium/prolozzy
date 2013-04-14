@@ -62,13 +62,20 @@ enum class Filter
 #define	R9_CHRW					6		// system font chr width
 #define	R9_CHRH					9		// system font chr height
 
-#define	R9_FLIPX				1		// flip horizontal
-#define	R9_FLIPY				2		// flip vertical
-#define	R9_FLIPR				4		// flip rotation
-#define	R9_FLIPXY				(R9_FLIPX|R9_FLIPY)
-#define	R9_FLIPXR				(R9_FLIPX|R9_FLIPR)
-#define	R9_FLIPYR				(R9_FLIPY|R9_FLIPR)
-#define	R9_FLIPXYR				(R9_FLIPXY|R9_FLIPR)
+enum class Flip
+{
+	None = 0,
+	X = 1,
+	Y = 2,
+	R = 4,
+	XY = X | Y,
+	XR = X | R,
+	YR = Y | R,
+	XYR = XY | R
+};
+
+template<Flip F, class T>
+inline bool Is(T v) { return (v & static_cast<T>(F)) != T(); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct r9Vertex

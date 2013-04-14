@@ -384,10 +384,10 @@ void r9RenderGL::ApplyViewport()
 void r9RenderGL::ApplyView()
 {
 	fRect rect;
-	rect.p1.x = (m_viewflip & R9_FLIPX) ? m_viewport.p2.x : m_viewport.p1.x;
-	rect.p1.y = (m_viewflip & R9_FLIPY) ? m_viewport.p2.y : m_viewport.p1.y;
-	rect.p2.x = (m_viewflip & R9_FLIPX) ? m_viewport.p1.x : m_viewport.p2.x;
-	rect.p2.y = (m_viewflip & R9_FLIPY) ? m_viewport.p1.y : m_viewport.p2.y;
+	rect.p1.x = (Is<Flip::X>(m_viewflip)) ? m_viewport.p2.x : m_viewport.p1.x;
+	rect.p1.y = (Is<Flip::Y>(m_viewflip)) ? m_viewport.p2.y : m_viewport.p1.y;
+	rect.p2.x = (Is<Flip::X>(m_viewflip)) ? m_viewport.p1.x : m_viewport.p2.x;
+	rect.p2.y = (Is<Flip::Y>(m_viewflip)) ? m_viewport.p1.y : m_viewport.p2.y;
 	rect.p1.x += m_viewx;		
 	rect.p2.x += m_viewx;
 	rect.p1.y += m_viewy;

@@ -325,8 +325,8 @@ void r9RenderDX::ApplyView()
 {
 	D3DMATRIX mat;
 	memset( &mat, 0, sizeof(mat) );
-	mat._11 = (m_viewflip & R9_FLIPX) ? -1.0f : 1.0f; 
-	mat._22 = (m_viewflip & R9_FLIPY) ? -1.0f : 1.0f; 
+	mat._11 = (Is<Flip::X>(m_viewflip)) ? -1.0f : 1.0f; 
+	mat._22 = (Is<Flip::Y>(m_viewflip)) ? -1.0f : 1.0f; 
 	mat._33 = 1.0f; 
 	mat._44 = 1.0f;
 	m_d3dd->SetTransform( D3DTS_VIEW, &mat );	

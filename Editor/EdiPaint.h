@@ -90,13 +90,15 @@ inline	void	MakeBBW	( int &x1, int &y1, int &x2, int &y2 )		{ x1 = m_data[BRUSH_
 	iV2 size() const { return iV2(Get(BRUSH_W), Get(BRUSH_H)); }
 	iRect rect() const { iV2 p = pos(); return iRect(p, p + size()); }
 	iRect map() const { return iRect(m_data[BRUSH_MAP+0], m_data[BRUSH_MAP+1], m_data[BRUSH_MAP+2], m_data[BRUSH_MAP+3]); }
-
+	float mapWith() const   { return ( Is<Flip::R>(Get(BRUSH_FLIP)) ? (Get(BRUSH_MAP+3) - Get(BRUSH_MAP+1)) : (Get(BRUSH_MAP+2) - Get(BRUSH_MAP+0)) ) * mapScale(); }
+	float mapHeight() const { return ( Is<Flip::R>(Get(BRUSH_FLIP)) ? (Get(BRUSH_MAP+2) - Get(BRUSH_MAP+0)) : (Get(BRUSH_MAP+3) - Get(BRUSH_MAP+1)) ) * mapScale(); }
+	float mapScale() const { return Get(BRUSH_SCALE) > 0 ? Get(BRUSH_SCALE) / 100.0f : 1.0f; }	
 };
 
 // macros to access brush width and height with respect to flip rotation and scale
-#define GET_BRUSH_MAPSCALE( brush )		( (brush).m_data[BRUSH_SCALE]>0 ? (float)(brush).m_data[BRUSH_SCALE]/100.0f : 1.0f )
-#define GET_BRUSH_MAPWITH( brush )		( (float)( ((brush).m_data[BRUSH_FLIP] & R9_FLIPR) ? ((brush).m_data[BRUSH_MAP+3]-(brush).m_data[BRUSH_MAP+1]) : ((brush).m_data[BRUSH_MAP+2]-(brush).m_data[BRUSH_MAP+0]) ) * GET_BRUSH_MAPSCALE(brush) )
-#define GET_BRUSH_MAPHEIGHT( brush )	( (float)( ((brush).m_data[BRUSH_FLIP] & R9_FLIPR) ? ((brush).m_data[BRUSH_MAP+2]-(brush).m_data[BRUSH_MAP+0]) : ((brush).m_data[BRUSH_MAP+3]-(brush).m_data[BRUSH_MAP+1]) ) * GET_BRUSH_MAPSCALE(brush) )
+//#define GET_BRUSH_MAPSCALE( brush )		( (brush).m_data[BRUSH_SCALE]>0 ? (float)(brush).m_data[BRUSH_SCALE]/100.0f : 1.0f )
+//#define GET_BRUSH_MAPWITH( brush )		( (float)( Is<Flip::R>((brush).m_data[BRUSH_FLIP]) ? ((brush).m_data[BRUSH_MAP+3]-(brush).m_data[BRUSH_MAP+1]) : ((brush).m_data[BRUSH_MAP+2]-(brush).m_data[BRUSH_MAP+0]) ) * GET_BRUSH_MAPSCALE(brush) )
+//#define GET_BRUSH_MAPHEIGHT( brush )	( (float)( Is<Flip::R>((brush).m_data[BRUSH_FLIP]) ? ((brush).m_data[BRUSH_MAP+2]-(brush).m_data[BRUSH_MAP+0]) : ((brush).m_data[BRUSH_MAP+3]-(brush).m_data[BRUSH_MAP+1]) ) * GET_BRUSH_MAPSCALE(brush) )
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // EDIPAINT

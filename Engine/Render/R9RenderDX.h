@@ -47,6 +47,8 @@ class r9RenderDX : public r9Render
 	virtual	bool DoBeginScene(R9TEXTURE target);
 	virtual	void DoEndScene();
 	virtual	void DoPresent();
+	virtual bool DoTakeScreenShot( r9Img* img, fRect* rect, bool full);
+	virtual bool CopyTargetToImage( R9TEXTURE target, r9Img* img, const iV2 &p, const iV2 & sz);
 
 public:
 	r9RenderDX();
@@ -63,15 +65,11 @@ public:
 	virtual	void TextureDestroy( R9TEXTURE tex );
 
 
-virtual	BOOL		CheckDevice();
-virtual	BOOL		ToggleVideoMode();
+	virtual	bool CheckDevice();
+	virtual	bool ToggleVideoMode();
 
 	virtual	void Push(r9Vertex* vx, int vxs, Primitive primitive);
 	virtual	void Flush();
-
-virtual	BOOL		SaveScreenShot( fRect* rect=NULL, BOOL full=TRUE);								// auto save screenshot
-virtual BOOL		TakeScreenShot( r9Img* img, fRect* rect=NULL, BOOL full=TRUE );					// shoots full screen or backbuffer (create img)
-virtual BOOL		CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect );
 
 protected:
 

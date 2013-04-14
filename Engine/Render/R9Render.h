@@ -55,16 +55,15 @@ enum class Filter
 	Linear
 };
 
-#define	R9_CFG_WIDTH			640		// default width
-#define	R9_CFG_HEIGHT			480		// default height
-#define	R9_CFG_BPP				32		// default bpp
+const int CfgWidth = 640;		// default width
+const int CfgHeight = 480;		// default height
+const int CfgBPP = 32;			// default bpp
 
-#define	R9_CHRW					6		// system font chr width
-#define	R9_CHRH					9		// system font chr height
+const int ChrW = 6;		// system font chr width
+const int ChrH = 9;		// system font chr height
 
 enum class Flip
 {
-	None = 0,
 	X = 1,
 	Y = 2,
 	R = 4,
@@ -87,12 +86,12 @@ struct r9Vertex
 
 struct r9Cfg
 {
-	int		m_windowed;		// windowed 1/0
-	int		m_bpp;			// bpp 16/32 (ignored in windowed)
-	int		m_width;		// resolution width
-	int		m_height;		// resolution height
-	int		m_refresh;		// refresh rate (0=default);
-	int		m_vsync;		// vsync (0=off)
+	int windowed;		// windowed
+	int bpp;			// bpp 16/32 (ignored in windowed)
+	int width;		// resolution width
+	int height;		// resolution height
+	int refresh;		// refresh rate (0=default);
+	int vsync;			// vsync (0=off)
 	r9Cfg();				
 };
 
@@ -153,6 +152,8 @@ protected:
 	virtual	bool DoBeginScene(R9TEXTURE target) = 0;
 	virtual	void DoEndScene() = 0;
 	virtual void DoPresent() = 0;
+	virtual	bool DoTakeScreenShot( r9Img* img, fRect* rect , bool full) = 0;
+	virtual bool CopyTargetToImage( R9TEXTURE target, r9Img* img, const iV2 &p, const iV2 & sz) = 0;
 public:
 	static std::vector<r9DisplayMode> DisplayModes;
 
@@ -161,8 +162,8 @@ public:
 
 	bool Init(HWND hwnd, r9Cfg * cfg);					// init render; if cfg is NULL, default cfg is used
 	void Done();										
-	int GetWidth() const { return m_cfg.m_width; }
-	int GetHeight() const { return m_cfg.m_height; }
+	int GetWidth() const { return m_cfg.width; }
+	int GetHeight() const { return m_cfg.height; }
 	r9Cfg&		GetCfg()										{ return m_cfg; }
 	Api			GetApi()										{ return api; }
 	void SetDefaultStates();								// set states to default values
@@ -213,8 +214,8 @@ public:
 	void EndScene();												// end scene drawing
 	void Present() { DoPresent(); }										// present scene (flip buffers)
 	bool IsBeginEndScene() const { return m_beginendscene; }
-virtual	BOOL		CheckDevice();									// check if device is lost and if so, try to reset it
-virtual	BOOL		ToggleVideoMode();								// @OBSOLETE toggle between windowed and full screen
+	virtual	bool CheckDevice() = 0;									// check if device is lost and if so, try to reset it
+	virtual	bool ToggleVideoMode() = 0;								// @OBSOLETE toggle between windowed and full screen
 
 
 // draw functions
@@ -234,9 +235,10 @@ virtual	BOOL		ToggleVideoMode();								// @OBSOLETE toggle between windowed and
 	void ClipSprite( fRect& dst, fRect& src, int flip=0 );	// clip destination rect and source mapping rect (dst and src must have the same sizes; src coordinates can't be flipped); rotation not supported
 
 // screen shot
-virtual	BOOL		SaveScreenShot( fRect* rect=NULL, BOOL full=TRUE);					// auto save screenshot
-virtual BOOL		TakeScreenShot( r9Img* img, fRect* rect=NULL, BOOL full=TRUE );		// shoots full screen or backbuffer (create img)
-virtual BOOL		CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect );		// copy the content of a texture target from (0,0) into an image at a specified rect
+	bool SaveScreenShot( fRect* rect=nullptr, bool full = true);					// auto save screenshot
+	bool TakeScreenShot( r9Img* img, fRect* rect = nullptr, bool full = true);		// shoots full screen or backbuffer (create img)
+
+	bool CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect );	// copy the content of a texture target from (0,0) into an image at a specified rect
 
 // font
 		BOOL		CreateFont();									// creates render debug font, from source resources; call at the end of platform Init, since it requires a texture to be created
@@ -429,9 +431,9 @@ inline 	void		R9_ClipBar( fRect& dst )								{ assert(r9_render); r9_render->Cl
 inline 	void		R9_ClipQuad( fRect& dst, fRect& src )					{ assert(r9_render); r9_render->ClipQuad(dst,src); }
 inline 	void		R9_ClipSprite( fRect& dst, fRect& src, int flip=0 )		{ assert(r9_render); r9_render->ClipSprite(dst,src,flip); }
 
-inline	BOOL		R9_SaveScreenShot( fRect* rect=NULL, BOOL full=TRUE)				{ assert(r9_render); return r9_render->SaveScreenShot(rect,full); }
-inline	BOOL		R9_TakeScreenShot( r9Img* img, fRect* rect=NULL, BOOL full=TRUE )	{ assert(r9_render); return r9_render->TakeScreenShot(img,rect,full); }
-inline	BOOL		R9_CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )	{ assert(r9_render); return r9_render->CopyTargetToImage(target,img,rect); }
+inline	bool		R9_SaveScreenShot( fRect* rect = nullptr, bool full = true)				{ assert(r9_render); return r9_render->SaveScreenShot(rect,full); }
+inline	bool		R9_TakeScreenShot( r9Img* img, fRect* rect = nullptr, bool full = true)	{ assert(r9_render); return r9_render->TakeScreenShot(img,rect,full); }
+inline	bool		R9_CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )	{ assert(r9_render); return r9_render->CopyTargetToImage(target,img,rect); }
 
 #endif
 ///////////////////////////////////////////////////////////////////////////////////////////////////

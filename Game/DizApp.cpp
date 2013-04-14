@@ -159,7 +159,7 @@ bool cDizApp::InitVideo()
 	}
 
 	R9_SetFilter(Filter::Point);
-	E9_AppSetInt(E9_APP_WINDOWED,cfg.m_windowed);
+	E9_AppSetInt(E9_APP_WINDOWED,cfg.windowed);
 
 	return true;
 }
@@ -203,13 +203,13 @@ void cDizApp::Activate( BOOL active )
 
 bool cDizApp::ToggleVideo()
 {
-	if(!R9_GetCfg().m_windowed) return false; // toggle only in windowed mode (not a hw restriction though)
+	if(!R9_GetCfg().windowed) return false; // toggle only in windowed mode (not a hw restriction though)
 
 	dlog(LOGAPP, L"Toggle video.\n");
 	int scrwidth = sys_desktopwidth();
 	int scrheight = sys_desktopheight();
-	int w = R9_GetCfg().m_width;
-	int h = R9_GetCfg().m_height;
+	int w = R9_GetCfg().width;
+	int h = R9_GetCfg().height;
 	static bool maximized = false;
 
 	maximized = !maximized; // toggle
@@ -221,8 +221,8 @@ bool cDizApp::ToggleVideo()
 
 	if(maximized) // overwrite width and height - pseudo full screen
 	{
-		cfg.m_width		= scrwidth;
-		cfg.m_height	= scrheight;
+		cfg.width		= scrwidth;
+		cfg.height	= scrheight;
 	}
 
 	//unaquire
@@ -242,8 +242,8 @@ bool cDizApp::ToggleVideo()
 
 	// reacquire
 	R9_SetFilter(Filter::Point);
-	E9_AppSetInt(E9_APP_WINDOWED,R9_GetCfg().m_windowed);
-	E9_AppSetCursor(R9_GetCfg().m_windowed ? E9_CURSOR_ARROW : E9_CURSOR_NONE);
+	E9_AppSetInt(E9_APP_WINDOWED,R9_GetCfg().windowed);
+	E9_AppSetCursor(R9_GetCfg().windowed ? E9_CURSOR_ARROW : E9_CURSOR_NONE);
 	g_dizdebug.Layout();
 	g_paint.Reacquire();
 	g_paint.Layout();
@@ -364,8 +364,8 @@ void cDizApp::DrawStats()
 	char sz[128];
 	sprintf(sz, "obj:%i, brs:%i, fps:%i/%i", g_game.m_obj.size(), g_game.m_visible_brushes, (int)m_gamefps, E9_AppGetInt(E9_APP_FPS));
 
-	float w = (float)R9_CHRW*(int)strlen(sz)+4;
-	float h = (float)R9_CHRH+4;
+	float w = (float)ChrW*(int)strlen(sz)+4;
+	float h = (float)ChrH+4;
 	float x=R9_GetWidth()-w-2;
 	float y=2;
 	R9_DrawBar( fRect(x,y,x+w,y+h), 0xa0000000 );

@@ -264,7 +264,7 @@ PREDICATE_M(selection, refresh, 0)
 
 PREDICATE_M(map, saveImage, 1)
 {
-	BOOL ret = g_map.SaveMapImage(WideStringToMultiByte(A1));
+	bool ret = g_map.SaveMapImage(WideStringToMultiByte(A1));
 	g_map.m_refresh = TRUE;
 	return ret;
 }
@@ -1217,16 +1217,16 @@ void cEdiMap::CheckMapView()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // SAVE MAP IMAGE
 //////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL cEdiMap::SaveMapImage(const std::string & filename )
+bool cEdiMap::SaveMapImage(const std::string & filename )
 {
-	if(!m_target) return FALSE;
+	if(!m_target) return false;
 
 	// CREATE IMGHUGE
 	r9Img imghuge;
 	imghuge.m_pf = R9_PF_RGB;
 	imghuge.m_width = m_mapw;
 	imghuge.m_height = m_maph;
-	if(!R9_ImgCreate(&imghuge)) return FALSE;
+	if(!R9_ImgCreate(&imghuge)) return false;
 
 	// LOOP
 	int w=256;
@@ -1268,7 +1268,7 @@ BOOL cEdiMap::SaveMapImage(const std::string & filename )
 			}
 
 			fRect rect(x,y,x+w,y+h);
-			BOOL ok = R9_CopyTargetToImage(m_target,&imghuge,&rect);
+			R9_CopyTargetToImage(m_target,&imghuge,&rect);
 
 			x+=w;
 		}
@@ -1276,7 +1276,7 @@ BOOL cEdiMap::SaveMapImage(const std::string & filename )
 		y+=h;
 	}
 
-	BOOL ok = R9_ImgSaveFile(filename.c_str(), &imghuge);
+	bool ok = R9_ImgSaveFile(filename.c_str(), &imghuge);
 	R9_ImgDestroy(&imghuge);
 	return ok;
 }

@@ -258,7 +258,7 @@ bool r9RenderGL::Init()
 void r9RenderGL::Finish()
 {
 	free(m_batchbuffer);
-	if(!m_cfg.m_windowed) ChangeDisplaySettings(NULL,0);
+	if(!m_cfg.windowed) ChangeDisplaySettings(NULL,0);
 	if(m_hrc) { m_wglMakeCurrent(NULL,NULL); m_wglDeleteContext(m_hrc); m_hrc=NULL; }
 	if(m_hdc) { ReleaseDC(m_hwnd,m_hdc); m_hdc=NULL; }
 	DestroyRenderWindow();
@@ -493,11 +493,11 @@ void r9RenderGL::DoPresent()
 }
 
 //@OBSOLETE
-BOOL r9RenderGL::ToggleVideoMode()
+bool r9RenderGL::ToggleVideoMode()
 {
 	dlog(LOGRND, L"Toggle video mode: ");
-	BOOL ok = FALSE;
-	if(!m_cfg.m_windowed) // change to windowed
+	bool ok = false;
+	if(!m_cfg.windowed) // change to windowed
 	{
 		ok = (ChangeDisplaySettings(NULL,0)==DISP_CHANGE_SUCCESSFUL);
 	}
@@ -506,17 +506,17 @@ BOOL r9RenderGL::ToggleVideoMode()
 		DEVMODE devmode;
 		memset(&devmode,0,sizeof(DEVMODE));
 		devmode.dmSize				= sizeof(DEVMODE);
-		devmode.dmPelsWidth			= m_cfg.m_width;
-		devmode.dmPelsHeight		= m_cfg.m_height;
-		devmode.dmBitsPerPel		= m_cfg.m_bpp;
-		devmode.dmDisplayFrequency	= m_cfg.m_refresh;
+		devmode.dmPelsWidth			= m_cfg.width;
+		devmode.dmPelsHeight		= m_cfg.height;
+		devmode.dmBitsPerPel		= m_cfg.bpp;
+		devmode.dmDisplayFrequency	= m_cfg.refresh;
 		devmode.dmFields			= DM_BITSPERPEL|DM_PELSWIDTH|DM_PELSHEIGHT|DM_DISPLAYFREQUENCY;
 		ok = (ChangeDisplaySettings(&devmode,CDS_FULLSCREEN)==DISP_CHANGE_SUCCESSFUL);
 	}
 
 	if(ok) 
 	{
-		m_cfg.m_windowed = !m_cfg.m_windowed;
+		m_cfg.windowed = !m_cfg.windowed;
 		PrepareParentWindow();
 	}
 	dlog(LOGRND,ok? L"successful\n" : L"failed\n");
@@ -594,57 +594,24 @@ void r9RenderGL::Flush()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // SCREEN SHOT
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL r9RenderGL::SaveScreenShot( fRect* rect, BOOL full )
+
+bool r9RenderGL::DoTakeScreenShot( r9Img* img, fRect* rect, bool full )
 {
-	r9Img img;
-	if(!TakeScreenShot(&img, rect, full)) return FALSE;
-
-	char file[64];
-	char date[16];
-	char time[16];
-	
-	SYSTEMTIME systime;
-	GetSystemTime( &systime );
-	GetDateFormat( NULL, 0, &systime, "yyMMdd", date, 16 );
-	GetTimeFormat( NULL, 0, &systime, "_HHmm_ss", time, 16 );
-
-	CreateDirectory("ScreenShots",NULL);
-	strcpy( file, "ScreenShots\\" );
-	strcat( file, date );
-	strcat( file, time );
-	strcat( file, ".png" ); // change this if you want (.tga)
-	
-	R9_ImgSaveFile(file,&img);
-	R9_ImgDestroy(&img);
-	
-	dlog(LOGRND, L"ScreenShot saved!\n");
-
-	return TRUE;
-}
-
-BOOL r9RenderGL::TakeScreenShot( r9Img* img, fRect* rect, BOOL full )
-{
-	if(img==NULL) return FALSE;
-	if( IsBeginEndScene() ) { dlog(LOGRND, L"ScreenShot can not be taken inside Begin - End frame.\n"); return FALSE; }
-	if( m_cfg.m_bpp!=32 ) 	{ dlog(LOGRND, L"ScreenShot can be taken only in 32bit modes.\n"); return FALSE; }
-
-	R9_ImgDestroy(img);
-
 	if(full) // directly from screen; very slow
 	{
 		DEVMODE devmode;
 		memset(&devmode,0,sizeof(devmode));
 		devmode.dmSize = sizeof(DEVMODE);
-		if(!EnumDisplaySettings(NULL,ENUM_CURRENT_SETTINGS,&devmode)) return FALSE;
+		if(!EnumDisplaySettings(NULL,ENUM_CURRENT_SETTINGS,&devmode)) return false;
 		iRect irect(0,0,devmode.dmPelsWidth,devmode.dmPelsHeight);
 
 		img->m_pf = R9_PF_RGB;
 		img->m_width = irect.Width();
 		img->m_height = irect.Height();
-		if(!R9_ImgCreate(img)) return FALSE;
+		if(!R9_ImgCreate(img)) return false;
 
 		HDC hdc = GetDC(NULL);
-		if(!hdc) return FALSE;
+		if(!hdc) return false;
 		for(int y=0;y<irect.Height();y++)
 		{
 			for(int x=0;x<irect.Width();x++)
@@ -662,7 +629,7 @@ BOOL r9RenderGL::TakeScreenShot( r9Img* img, fRect* rect, BOOL full )
 		img->m_pf = R9_PF_RGB;
 		img->m_width = irect.Width();
 		img->m_height = irect.Height();
-		if(!R9_ImgCreate(img)) return FALSE;
+		if(!R9_ImgCreate(img)) return false;
 
 		m_glPixelStorei(GL_PACK_ALIGNMENT, 1);
 		m_glReadPixels( irect.p1.x, GetHeight()-irect.p2.y, irect.Width(), irect.Height(), GL_RGB, GL_UNSIGNED_BYTE, img->m_data );
@@ -670,29 +637,17 @@ BOOL r9RenderGL::TakeScreenShot( r9Img* img, fRect* rect, BOOL full )
 	}
 
 	R9_ImgFlipRGB(img);
-	return TRUE;
+	return true;
 }
 
-BOOL r9RenderGL::CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )
+bool r9RenderGL::CopyTargetToImage( R9TEXTURE target, r9Img* img, const iV2 &p, const iV2 & sz)
 {
-	assert(img); 
-	assert(rect);
-	assert(target);
-	if(!img->isValid()) return FALSE;
-
-	int x = (int)rect->p1.x;
-	int y = (int)rect->p1.y;
-	int w = (int)rect->Width();
-	int h = (int)rect->Height();
-	if(w>target->realwidth) return FALSE;
-	if(h>target->realheight) return FALSE;
-
 	// temp image to read target data into
 	r9Img imgtmp;
 	imgtmp.m_pf = R9_PF_RGB;
 	imgtmp.m_width = target->realwidth;
 	imgtmp.m_height = target->realheight;
-	if(!R9_ImgCreate(&imgtmp)) return FALSE;
+	if(!R9_ImgCreate(&imgtmp)) return false;
 	SetTexture(target);
 	m_glPixelStorei(GL_PACK_ALIGNMENT, 1);
 	m_glGetTexImage(GL_TEXTURE_2D,0,GL_RGB,GL_UNSIGNED_BYTE,imgtmp.m_data);
@@ -700,12 +655,12 @@ BOOL r9RenderGL::CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )
 	//R9_ImgSaveFile(sprint("map_%02i_%02i.png",y/h,x/w),&imgtmp); // test
 
 	// bitblt
-	int wc = w; if(x+wc>img->m_width)	wc=img->m_width-x;
-	int hc = h; if(y+hc>img->m_height)	hc=img->m_height-y;
-	if(!R9_ImgBitBltSafe(&imgtmp,0,0,wc,hc,img,x,y)) return FALSE;
+	int wc = sz.x; if(p.x+wc>img->m_width)	wc=img->m_width-p.x;
+	int hc = sz.y; if(p.y+hc>img->m_height)	hc=img->m_height-p.y;
+	if(!R9_ImgBitBltSafe(&imgtmp,0,0,wc,hc,img,p.x,p.y)) return false;
 
 	R9_ImgDestroy(&imgtmp);
-	return TRUE;
+	return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -775,14 +730,14 @@ void r9RenderGL::PrepareParentWindow()
 {
 	HWND hwnd = E9_GetHWND();
 	if(!hwnd) return;
-	if( m_cfg.m_windowed )
+	if( m_cfg.windowed )
 	{
 		int scrw = sys_desktopwidth();
 		int scrh = sys_desktopheight();
-		BOOL fulldesktop = (m_cfg.m_width==scrw) || (m_cfg.m_height==scrh);
-		int cx = (sys_desktopwidth()-m_cfg.m_width) / 2;
-		int cy = (sys_desktopheight()-m_cfg.m_height) / 2;
-		RECT rec = {cx,cy,cx+m_cfg.m_width,cy+m_cfg.m_height};
+		BOOL fulldesktop = (m_cfg.width==scrw) || (m_cfg.height==scrh);
+		int cx = (sys_desktopwidth()-m_cfg.width) / 2;
+		int cy = (sys_desktopheight()-m_cfg.height) / 2;
+		RECT rec = {cx,cy,cx+m_cfg.width,cy+m_cfg.height};
 		long style = fulldesktop ? (WS_POPUP|WS_SYSMENU) : (WS_OVERLAPPEDWINDOW & ~(WS_MAXIMIZEBOX|WS_SIZEBOX));
 		style |= CS_OWNDC;
 		AdjustWindowRectEx( &rec, style, FALSE, 0 );
@@ -794,7 +749,7 @@ void r9RenderGL::PrepareParentWindow()
 	}
 	else
 	{
-		RECT rec = {0,0,m_cfg.m_width,m_cfg.m_height};
+		RECT rec = {0,0,m_cfg.width,m_cfg.height};
 		long style = WS_POPUP|WS_SYSMENU|WS_VISIBLE;
 		style |= CS_OWNDC;
 		MoveWindow( hwnd, rec.left, rec.top, rec.right-rec.left, rec.bottom-rec.top, TRUE );
@@ -820,7 +775,7 @@ BOOL r9RenderGL::GL_CreateDevice()
 		PFD_SUPPORT_OPENGL |						// Format Must Support OpenGL
 		PFD_DOUBLEBUFFER,							// Must Support Double Buffering
 		PFD_TYPE_RGBA,								// Request An RGBA Format
-		m_cfg.m_bpp,								// Select Our Color Depth
+		m_cfg.bpp,									// Select Our Color Depth
 		0, 0, 0, 0, 0, 0,							// Color Bits Ignored
 		0,											// No Alpha Buffer
 		0,											// Shift Bit Ignored
@@ -835,15 +790,15 @@ BOOL r9RenderGL::GL_CreateDevice()
 	};
 
 	// change mode to fullscreen if required
-	if(!m_cfg.m_windowed)
+	if(!m_cfg.windowed)
 	{
 		DEVMODE devmode;
 		memset(&devmode,0,sizeof(DEVMODE));
 		devmode.dmSize				= sizeof(DEVMODE);
-		devmode.dmPelsWidth			= m_cfg.m_width;
-		devmode.dmPelsHeight		= m_cfg.m_height;
-		devmode.dmBitsPerPel		= m_cfg.m_bpp;
-		devmode.dmDisplayFrequency	= m_cfg.m_refresh;
+		devmode.dmPelsWidth			= m_cfg.width;
+		devmode.dmPelsHeight		= m_cfg.height;
+		devmode.dmBitsPerPel		= m_cfg.bpp;
+		devmode.dmDisplayFrequency	= m_cfg.refresh;
 		devmode.dmFields			= DM_BITSPERPEL|DM_PELSWIDTH|DM_PELSHEIGHT|DM_DISPLAYFREQUENCY;
 		if( ChangeDisplaySettings(&devmode,CDS_FULLSCREEN)!=DISP_CHANGE_SUCCESSFUL)
 		{
@@ -864,7 +819,7 @@ BOOL r9RenderGL::GL_CreateDevice()
 	pfgl = ChoosePixelFormat(m_hdc,&pfd);
 	if(!pfgl) {R9_LOGERROR("can't find a suitable pixel format."); goto error; }
 	if(!DescribePixelFormat(m_hdc,pfgl,sizeof(PIXELFORMATDESCRIPTOR),&pfd)) { R9_LOGERROR("can't describe the pixel format."); goto error; }
-	if(m_cfg.m_bpp != pfd.cColorBits) { R9_LOGERROR("choosed different pixel format."); goto error; }
+	if(m_cfg.bpp != pfd.cColorBits) { R9_LOGERROR("choosed different pixel format."); goto error; }
 	if(!SetPixelFormat(m_hdc,pfgl,&pfd)) { R9_LOGERROR("can't set the pixel format."); goto error; }
 
 	// create and activate rendering context
@@ -880,7 +835,7 @@ BOOL r9RenderGL::GL_CreateDevice()
 	return TRUE;
 
 	error:
-	if(!m_cfg.m_windowed) ChangeDisplaySettings(NULL,0);
+	if(!m_cfg.windowed) ChangeDisplaySettings(NULL,0);
 	if(m_hrc) { m_wglMakeCurrent(NULL,NULL); m_wglDeleteContext(m_hrc); m_hrc=NULL; }
 	if(m_hdc) { ReleaseDC(m_hwnd,m_hdc); m_hdc=NULL; }
 	return FALSE;

@@ -62,7 +62,7 @@ BOOL R9_ImgLoadFile( const char* name, r9Img* img )
 	return ret;
 }
 
-BOOL R9_ImgSaveFile( const char* name, r9Img* img )
+bool R9_ImgSaveFile( const char* name, r9Img* img )
 {
 	if(!name || !img || !img->isValid()) return FALSE;
 
@@ -72,12 +72,12 @@ BOOL R9_ImgSaveFile( const char* name, r9Img* img )
 	if( stricmp(ext,"png")==0 )	type = R9_IMG_PNG; else
 	if( stricmp(ext,"jpg")==0 ) type = R9_IMG_JPG; else
 	if( stricmp(ext,"tga")==0 )	type = R9_IMG_TGA; // else...
-	if( type==R9_IMG_UNKNOWN ) return FALSE; // unsupported file format
+	if( type==R9_IMG_UNKNOWN ) return false; // unsupported file format
 
 	// write
-	BOOL ret = FALSE;
+	bool ret = false;
 	F9FILE file = F9_FileOpen(name, F9_WRITE); 
-	if(!file) return FALSE;
+	if(!file) return ret;
 	switch(type)
 	{
 		case R9_IMG_TGA:	ret = R9_ImgWriteTGA( file, img ); break;
@@ -151,9 +151,9 @@ BOOL R9_ImgReadTGA( F9FILE file, r9Img* img )
 	return TRUE;
 }
 
-BOOL R9_ImgWriteTGA( F9FILE file, r9Img* img )
+bool R9_ImgWriteTGA( F9FILE file, r9Img* img )
 {
-	if(!file || !img || !img->isValid()) return FALSE;
+	if(!file || !img || !img->isValid()) return false;
 
 	R9_ImgFlipV(img);
 
@@ -179,7 +179,7 @@ BOOL R9_ImgWriteTGA( F9FILE file, r9Img* img )
 
 	R9_ImgFlipV(img);
 
-	return TRUE;
+	return true;
 }
 
 BOOL R9_ImgReadHeaderTGA( F9FILE file, r9Img* img )
@@ -368,7 +368,7 @@ BOOL R9_ImgReadPNG( F9FILE file, r9Img* img )
 	return TRUE;
 }
 
-BOOL R9_ImgWritePNG( F9FILE file, r9Img* img )
+bool R9_ImgWritePNG( F9FILE file, r9Img* img )
 {
 	
 	const int32 compressionlevel = 6;
@@ -377,7 +377,7 @@ BOOL R9_ImgWritePNG( F9FILE file, r9Img* img )
 	
 	if(img->m_pf!=R9_PF_RGB && img->m_pf!=R9_PF_ARGB && img->m_pf!=R9_PF_BGR && img->m_pf!=R9_PF_ABGR )
 	{
-		dlog(LOGRND, L"png format not supported\n"); return FALSE;
+		dlog(LOGRND, L"png format not supported\n"); return false;
 	}
 
 	png_structp png_ptr = png_create_write_struct_2( PNG_LIBPNG_VER_STRING,
@@ -387,13 +387,13 @@ BOOL R9_ImgWritePNG( F9FILE file, r9Img* img )
 												 NULL,
 												 R9_ImgPNG_Malloc,
 												 R9_ImgPNG_Free );
-	if(png_ptr==NULL) return FALSE;
+	if(png_ptr==NULL) return false;
 
 	png_infop info_ptr = png_create_info_struct(png_ptr);
 	if(info_ptr==NULL)
 	{
 		png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
-		return FALSE;
+		return false;
 	}
 
 	r9_imgpng_file = file;
@@ -453,7 +453,7 @@ BOOL R9_ImgWritePNG( F9FILE file, r9Img* img )
 	// flip rgb back, if necessarily
 	if(img->m_pf==R9_PF_ARGB || img->m_pf==R9_PF_RGB) R9_ImgFlipRGB(img);
 
-	return TRUE;
+	return true;
 }
 
 BOOL R9_ImgReadHeaderPNG( F9FILE file, r9Img* img )
@@ -623,11 +623,11 @@ BOOL R9_ImgReadJPG( F9FILE file, r9Img* img )
 	return TRUE;
 }
 
-BOOL R9_ImgWriteJPG( F9FILE file, r9Img* img )
+bool R9_ImgWriteJPG( F9FILE file, r9Img* img )
 {
-	if(file==NULL || img==NULL) return FALSE;
-	if(!R9_ImgIsValid(img)) return FALSE;
-	if(R9_PFSpp(img->m_pf)!=3) return FALSE; // 24bpp / 3bytes
+	if(file==NULL || img==NULL) return false;
+	if(!R9_ImgIsValid(img)) return false;
+	if(R9_PFSpp(img->m_pf)!=3) return false; // 24bpp / 3bytes
 
 	R9_ImgFlipRGB(img); // jpegs are BGR
 
@@ -673,7 +673,7 @@ BOOL R9_ImgWriteJPG( F9FILE file, r9Img* img )
 	jpeg_destroy_compress(&cinfo);
 
 	R9_ImgFlipRGB(img); // back to RGB
-	return TRUE;
+	return true;
 }
 
 BOOL R9_ImgReadHeaderJPG( F9FILE file, r9Img* img )
@@ -729,7 +729,7 @@ void R9_ImgSetQualityJPG( int quality )
 #else
 
 BOOL	R9_ImgReadJPG		( F9FILE file, r9Img* img )	{ return FALSE; }
-BOOL	R9_ImgWriteJPG		( F9FILE file, r9Img* img )	{ return FALSE; }
+bool	R9_ImgWriteJPG		( F9FILE file, r9Img* img )	{ return false; }
 BOOL	R9_ImgReadHeaderJPG	( F9FILE file, r9Img* img )	{ return FALSE; }
 void	R9_ImgSetQualityJPG	( int quality )				{}
 

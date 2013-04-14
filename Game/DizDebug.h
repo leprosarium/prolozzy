@@ -46,7 +46,7 @@ class Console : std::deque<Line>
 
 public:
 	Console(size_t Cap) : Cap(Cap), PageBegin(), lines() {}
-	void Layout(const iRect & r) { rect = r; int h = r.Height(); lines = h < R9_CHRH ? 0 : (h / R9_CHRH - 1);}
+	void Layout(const iRect & r) { rect = r; int h = r.Height(); lines = h < ChrH ? 0 : (h / ChrH - 1);}
 	void Update();
 	void Draw();
 	void Push(int ch, const std::string & str);

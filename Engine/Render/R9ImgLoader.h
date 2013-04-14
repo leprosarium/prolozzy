@@ -16,7 +16,7 @@
 // LOADER
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL	R9_ImgLoadFile	( const char* name, r9Img* img );
-BOOL	R9_ImgSaveFile	( const char* name, r9Img* img );
+bool	R9_ImgSaveFile	( const char* name, r9Img* img );
 BOOL	R9_ImgLoadHeader( const char* name, r9Img* img );
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -37,21 +37,21 @@ struct r9ImgHeaderTGA
 };
 
 BOOL	R9_ImgReadTGA		( F9FILE file, r9Img* img );
-BOOL	R9_ImgWriteTGA		( F9FILE file, r9Img* img );
+bool	R9_ImgWriteTGA		( F9FILE file, r9Img* img );
 BOOL	R9_ImgReadHeaderTGA	( F9FILE file, r9Img* img );
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // PNG LOADER
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL	R9_ImgReadPNG		( F9FILE file, r9Img* img );
-BOOL	R9_ImgWritePNG		( F9FILE file, r9Img* img );
+bool	R9_ImgWritePNG		( F9FILE file, r9Img* img );
 BOOL	R9_ImgReadHeaderPNG	( F9FILE file, r9Img* img );
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // JPG LOADER
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL	R9_ImgReadJPG		( F9FILE file, r9Img* img );
-BOOL	R9_ImgWriteJPG		( F9FILE file, r9Img* img );
+bool	R9_ImgWriteJPG		( F9FILE file, r9Img* img );
 BOOL	R9_ImgReadHeaderJPG	( F9FILE file, r9Img* img );
 void	R9_ImgSetQualityJPG	( int quality );				// 0..100 jpeg saving quality (32,64,80,90,98); default=32
 

@@ -238,7 +238,7 @@ void cDizDebug::Draw()
 	if(!_active) return;
 	if(!_visible)
 	{
-		R9_DrawBar(fRect(2,2,4+8*R9_CHRW,4+R9_CHRH),0xffff0000);
+		R9_DrawBar(fRect(2,2,4+8*ChrW,4+ChrH),0xffff0000);
 		R9_DrawText(fV2(4,4),"DEV-MODE",0xffffffff);
 		return;
 	}
@@ -253,10 +253,10 @@ void cDizDebug::Layout()
 {
 	iV2 renderSize(R9_GetWidth(), R9_GetHeight());
 	iV2 scr = g_game.screenSize * g_paint.scale();
-	con.Layout(iRect(iV2(), renderSize - iV2(0, (INFO_LINES+1)*R9_CHRH)));
+	con.Layout(iRect(iV2(), renderSize - iV2(0, (INFO_LINES+1)*ChrH)));
 	slots.Layout(iRect(scr.x, 0, renderSize.x, scr.y));
-	info.Layout(iRect(iV2(0, renderSize.y - INFO_LINES * R9_CHRH), renderSize));
-	iRect inp = iRect(0, renderSize.y - (INFO_LINES+1)*R9_CHRH, renderSize.x, renderSize.y - INFO_LINES * R9_CHRH);
+	info.Layout(iRect(iV2(0, renderSize.y - INFO_LINES * ChrH), renderSize));
+	iRect inp = iRect(0, renderSize.y - (INFO_LINES+1)*ChrH, renderSize.x, renderSize.y - INFO_LINES * ChrH);
 	input.Layout(inp);
 	prolog.Layout(inp);
 }
@@ -295,11 +295,11 @@ bool Developer::Update()
 void Info::Draw()
 {
 	R9_DrawBar(rect,COLOR_BBKGR);
-	fV2 p = rect.p1 + fV2(R9_CHRW, 0);
+	fV2 p = rect.p1 + fV2(ChrW, 0);
 	
 	// script
 	R9_DrawText( p, g_script.UpdateStack().c_str(), COLOR_INFO);
-	p.y+=R9_CHRH;
+	p.y+=ChrH;
 
 	// player
 	std::ostringstream os;
@@ -378,8 +378,8 @@ void Console::Draw()
 	fRect oldclip = R9_GetClipping();
 	R9_SetClipping(rect);
 	R9_DrawBar(rect, COLOR_BBKGR);
-	fV2 p = rect.p1 + fV2(R9_CHRW, R9_CHRH);
-	for(auto line = begin() + PageBegin; p.y < rect.p2.y && line != end(); ++line, p.y += static_cast<float>(R9_CHRH)) // show as many as you can
+	fV2 p = rect.p1 + fV2(ChrW, ChrH);
+	for(auto line = begin() + PageBegin; p.y < rect.p2.y && line != end(); ++line, p.y += static_cast<float>(ChrH)) // show as many as you can
 		R9_DrawText(p, line->c_str(), D9_LogGetChannelColor(line->Ch));
 	R9_SetClipping(oldclip);
 }
@@ -433,8 +433,8 @@ void Slots::Draw()
 	fRect oldclip = R9_GetClipping();
 	R9_SetClipping(rect);
 	R9_DrawBar(rect, COLOR_BBKGR);
-	fV2 p  = rect.p1 + fV2(R9_CHRW, R9_CHRH);
-	for(size_t i=0; i < SLOT_COUNT && p.y < rect.p2.y; i++, p.y += R9_CHRH)
+	fV2 p  = rect.p1 + fV2(ChrW, ChrH);
+	for(size_t i=0; i < SLOT_COUNT && p.y < rect.p2.y; i++, p.y += ChrH)
 		R9_DrawText(p, slots[i].c_str(), 0xff0040a0);
 	R9_SetClipping(oldclip);
 }
@@ -558,12 +558,12 @@ void Input::Draw()
 	R9_DrawBar(rect,COLOR_BBKGR);
 	fV2 p = rect.p1;
 	R9_DrawText(p, prompt.c_str(), COLOR_INPUT);
-	p.x += prompt.size() * R9_CHRW;
+	p.x += prompt.size() * ChrW;
 	int t = sys_gettickcount() % 800;
-	float crtx = p.x + R9_CHRW * (crt-cmd.begin())-1;
+	float crtx = p.x + ChrW * (crt-cmd.begin())-1;
 	if(t<500) R9_DrawLine(fV2(crtx, p.y-1), fV2(crtx, rect.p2.y + 1));
-//	if(t<400) R9_DrawLine(fV2(crtx, rect.y2), fV2(crtx+R9_CHRW, rect.y2));
-//	if(t<500) R9_DrawBar(fRect(crtx, p.y-1, crtx + R9_CHRW, rect.y2 + 1), 0xff808080);
+//	if(t<400) R9_DrawLine(fV2(crtx, rect.y2), fV2(crtx+ChrW, rect.y2));
+//	if(t<500) R9_DrawBar(fRect(crtx, p.y-1, crtx + ChrW, rect.y2 + 1), 0xff808080);
 	R9_DrawText(p, cmd.c_str(), COLOR_INPUT);
 }
 

@@ -194,11 +194,11 @@ BOOL cEdiApp::InitVideo()
 	// default config
 	r9Cfg cfg;
 	Api api	= Api::Default;
-	cfg.m_windowed	= 1;
-	cfg.m_bpp		= 32;
-	cfg.m_width		= screensizelist[screensize][0]-delta/2;
-	cfg.m_height	= screensizelist[screensize][1]-delta;
-	cfg.m_refresh	= 85;
+	cfg.windowed	= 1;
+	cfg.bpp		= 32;
+	cfg.width		= screensizelist[screensize][0]-delta/2;
+	cfg.height	= screensizelist[screensize][1]-delta;
+	cfg.refresh	= 85;
 
 	// load config
 	int apiv;
@@ -223,7 +223,7 @@ BOOL cEdiApp::InitVideo()
 
 	R9_SetHandleReset(HandleReset);
 	R9_SetFilter(Filter::Point);
-	E9_AppSetInt(E9_APP_WINDOWED,cfg.m_windowed);
+	E9_AppSetInt(E9_APP_WINDOWED,cfg.windowed);
 
 	return TRUE;
 }
@@ -417,8 +417,8 @@ void cEdiApp::DrawStats()
 	char sz[64];
 	sprintf(sz, "fps: %i", E9_AppGetInt(E9_APP_FPS));
 	
-	float w = (float)R9_CHRW*(int)strlen(sz)+4;
-	float h = (float)R9_CHRH+4;
+	float w = (float)ChrW*(int)strlen(sz)+4;
+	float h = (float)ChrH+4;
 	float x=R9_GetWidth()-w-2;
 	float y=2;
 

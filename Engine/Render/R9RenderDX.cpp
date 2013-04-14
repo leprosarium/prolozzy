@@ -149,9 +149,9 @@ void r9RenderDX::GatherDisplayModes() const
 
 bool r9RenderDX::Init()
 {
-	m_pfdisplay	= (m_cfg.m_bpp==32) ? D3DFMT_X8R8G8B8 : D3DFMT_R5G6B5;
-	m_pfopaque	= (m_cfg.m_bpp==32) ? D3DFMT_X8R8G8B8 : D3DFMT_R5G6B5;
-	m_pfalpha	= (m_cfg.m_bpp==32) ? D3DFMT_A8R8G8B8 : D3DFMT_A4R4G4B4;
+	m_pfdisplay	= (m_cfg.bpp==32) ? D3DFMT_X8R8G8B8 : D3DFMT_R5G6B5;
+	m_pfopaque	= (m_cfg.bpp==32) ? D3DFMT_X8R8G8B8 : D3DFMT_R5G6B5;
+	m_pfalpha	= (m_cfg.bpp==32) ? D3DFMT_A8R8G8B8 : D3DFMT_A4R4G4B4;
 
 	// create d3d
 //	m_d3d = Direct3DCreate9(D3D_SDK_VERSION);
@@ -411,7 +411,7 @@ void r9RenderDX::ResetDefaultStates()
 	m_d3dd->SetTexture(0,NULL);
 
 	// hide cursor in fullscreen
-	m_d3dd->ShowCursor(m_cfg.m_windowed);
+	m_d3dd->ShowCursor(m_cfg.windowed);
 }
 
 void r9RenderDX::DoClear(dword color)
@@ -439,8 +439,8 @@ bool r9RenderDX::DoBeginScene(R9TEXTURE target)
 	}
 	else
 	{
-		m_targetwidth = m_cfg.m_width;
-		m_targetheight = m_cfg.m_height;
+		m_targetwidth = m_cfg.width;
+		m_targetheight = m_cfg.height;
 	}
 
 	HRESULT hr = m_d3dd->BeginScene();
@@ -471,12 +471,11 @@ void r9RenderDX::DoPresent()
 		m_d3dd->Present(nullptr, nullptr, m_hwnd, nullptr);	
 }
 
-BOOL r9RenderDX::CheckDevice()
+bool r9RenderDX::CheckDevice()
 {
-	
 	HRESULT hr = m_d3dd->TestCooperativeLevel();
-	if( hr==D3D_OK ) return TRUE; // everything is fine
-	if( hr!=D3DERR_DEVICENOTRESET ) { sys_sleep(100); return FALSE; } // can't reset now
+	if( hr==D3D_OK ) return true; // everything is fine
+	if( hr!=D3DERR_DEVICENOTRESET ) { sys_sleep(100); return false; } // can't reset now
 
 	// store and release all unmanaged video resources
 	D3D_HandleReset(0); 
@@ -487,30 +486,30 @@ BOOL r9RenderDX::CheckDevice()
 	// restore video resources
 	D3D_HandleReset(1);	
 
-	return TRUE; // success
+	return true;
 }
 
 //@OBSOLETE
-BOOL r9RenderDX::ToggleVideoMode()
+bool r9RenderDX::ToggleVideoMode()
 {
-	if(m_d3dd->TestCooperativeLevel()!=D3D_OK ) return FALSE;
+	if(m_d3dd->TestCooperativeLevel()!=D3D_OK ) return false;
 	dlog(LOGRND, L"Toggle video mode.\n");
 
-	m_cfg.m_windowed = !m_cfg.m_windowed;
+	m_cfg.windowed = !m_cfg.windowed;
 	PrepareWindow(); // prepare for setting style
 
 	D3D_HandleReset(0); // store
 	if(!D3D_Reset()) // reset
 	{
-		m_cfg.m_windowed = !m_cfg.m_windowed;
+		m_cfg.windowed = !m_cfg.windowed;
 		// leave it to the check device to reset after failure (can't even restore resources)
-		return FALSE;
+		return false;
 	}
 	D3D_HandleReset(1); // restore
 
 	//@REM sys_sleep(100); // wait a little bit
 	PrepareWindow(); // prepare again for correct resize
-	return TRUE;
+	return true;
 
 }
 
@@ -584,51 +583,17 @@ void r9RenderDX::Flush()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // SCREEN SHOT
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL r9RenderDX::SaveScreenShot( fRect* rect, BOOL full )
-{
-	r9Img img;
-	if(!TakeScreenShot(&img, rect, full)) return FALSE;
-
-	char file[64];
-	char date[16];
-	char time[16];
-	
-	SYSTEMTIME systime;
-	GetSystemTime( &systime );
-	GetDateFormat( NULL, 0, &systime, "yyMMdd", date, 16 );
-	GetTimeFormat( NULL, 0, &systime, "_HHmm_ss", time, 16 );
-
-	CreateDirectory("ScreenShots",NULL);
-	strcpy( file, "ScreenShots\\" );
-	strcat( file, date );
-	strcat( file, time );
-	strcat( file, ".png" ); // change this if you want (.tga)
-	
-	R9_ImgSaveFile(file,&img);
-	R9_ImgDestroy(&img);
-	
-	dlog(LOGRND, L"ScreenShot saved!\n");
-	return TRUE;
-}
-
-BOOL r9RenderDX::TakeScreenShot( r9Img* img, fRect* rect, BOOL full )
+bool r9RenderDX::DoTakeScreenShot( r9Img* img, fRect* rect, bool full )
 {
 	HRESULT	hr;
-
-	if(img==NULL) return FALSE;
-	if( IsBeginEndScene() ) { dlog(LOGRND, L"ScreenShot can not be taken inside Begin - End frame.\n"); return FALSE; }
-	if( m_cfg.m_bpp!=32 ) 	{ dlog(LOGRND, L"ScreenShot can be taken only in 32bit modes.\n"); return FALSE; }
-
 	int		srfw,srfh;	// surface size
 	RECT	r;			// rectangle in surface
-
-	R9_ImgDestroy(img);
 
 	if(full)
 	{
 		D3DDISPLAYMODE d3dmode;
 		hr = m_d3d->GetAdapterDisplayMode( D3DADAPTER_DEFAULT, &d3dmode );
-		if(FAILED(hr)) { R9_LOGERROR("failed to get current display mode.",hr); return FALSE; }
+		if(FAILED(hr)) { R9_LOGERROR("failed to get current display mode.",hr); return false; }
 		r.left = 0; 
 		r.top = 0;
 		img->m_width = r.right = srfw = (word)d3dmode.Width;
@@ -665,22 +630,22 @@ BOOL r9RenderDX::TakeScreenShot( r9Img* img, fRect* rect, BOOL full )
 	if(full) // directly from screen; whole full screen is taken
 	{
 		hr = m_d3dd->CreateOffscreenPlainSurface( srfw, srfh, D3DFMT_A8R8G8B8, D3DPOOL_SCRATCH, &dxsrf, NULL ); 
-		if( FAILED(hr) ) return FALSE;
+		if( FAILED(hr) ) return false;
 
 		hr = m_d3dd->GetFrontBufferData(0,dxsrf);
-		if( FAILED(hr) ) { if(dxsrf) dxsrf->Release(); return FALSE; }
+		if( FAILED(hr) ) { if(dxsrf) dxsrf->Release(); return false; }
 	}
 	else // from backbuffer; copy in other surf because bkbuffer may not be lockable
 	{
 		
 		hr = m_d3dd->CreateOffscreenPlainSurface( srfw, srfh, m_pfdisplay, D3DPOOL_SYSTEMMEM, &dxsrf, NULL ); 
-		if( FAILED(hr) ) return FALSE;
+		if( FAILED(hr) ) return false;
 
 		LPDIRECT3DSURFACE9 bksrf;
 		hr = m_d3dd->GetRenderTarget(0,&bksrf);
-		if(FAILED(hr)) { if(dxsrf) dxsrf->Release(); return FALSE; }
+		if(FAILED(hr)) { if(dxsrf) dxsrf->Release(); return false; }
 		hr = m_d3dd->GetRenderTargetData(bksrf,dxsrf);
-		if(FAILED(hr)) { if(dxsrf) dxsrf->Release() ; if(bksrf) bksrf->Release(); return FALSE; }
+		if(FAILED(hr)) { if(dxsrf) dxsrf->Release() ; if(bksrf) bksrf->Release(); return false; }
 		if(bksrf) bksrf->Release();
 	}
 
@@ -709,44 +674,32 @@ BOOL r9RenderDX::TakeScreenShot( r9Img* img, fRect* rect, BOOL full )
 	dxsrf->UnlockRect();
 	if(dxsrf) dxsrf->Release();
 
-	return TRUE;
+	return true;
 }
 
-BOOL r9RenderDX::CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )
+bool r9RenderDX::CopyTargetToImage( R9TEXTURE target, r9Img* img, const iV2 &p, const iV2 & sz)
 {
-	assert(img); 
-	assert(rect);
-	assert(target);
-	if(!img->isValid()) return FALSE;
-
-	int x = (int)rect->p1.x;
-	int y = (int)rect->p1.y;
-	int w = (int)rect->Width();
-	int h = (int)rect->Height();
-	if(w>target->realwidth) return FALSE;
-	if(h>target->realheight) return FALSE;
-	
 	// target surface
 	LPDIRECT3DSURFACE9 dsback = (LPDIRECT3DSURFACE9)(target->handlerex);
-	if(dsback==NULL) return FALSE;
+	if(dsback==NULL) return false;
 	D3DSURFACE_DESC desc;
 	dsback->GetDesc(&desc);
-	if(desc.Format!=D3DFMT_X8R8G8B8) return FALSE; // only 32 bit format
+	if(desc.Format!=D3DFMT_X8R8G8B8) return false; // only 32 bit format
 		
 	// temp surface (lockable)
 	LPDIRECT3DSURFACE9 dstemp;
 	D3DFORMAT pf = desc.Format;
 	HRESULT hr = m_d3dd->CreateOffscreenPlainSurface( target->realwidth, target->realheight, pf, D3DPOOL_SYSTEMMEM, &dstemp, NULL );
-	if(FAILED(hr)) return FALSE;
+	if(FAILED(hr)) return false;
 	
 	// copy rect into temp srf	
 	hr = m_d3dd->GetRenderTargetData( dsback, dstemp );
-	if(FAILED(hr)) { dstemp->Release(); return FALSE; }
+	if(FAILED(hr)) { dstemp->Release(); return false; }
 
 	// lock tmp srf
 	D3DLOCKED_RECT lockrect;
 	hr = dstemp->LockRect( &lockrect, NULL, D3DLOCK_READONLY  );
-	if(FAILED(hr)) { dstemp->Release(); return FALSE; }
+	if(FAILED(hr)) { dstemp->Release(); return false; }
 
 	// bitblt from tmp srf to img (assume width*spp = pitch)
 	r9Img imgtmp;
@@ -756,15 +709,15 @@ BOOL r9RenderDX::CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )
 	imgtmp.m_size	= lockrect.Pitch * target->realheight;
 	imgtmp.m_data	= (byte*)lockrect.pBits;
 	// R9_ImgSaveFile(sprint("map_%02i_%02i.png",y/h,x/w),&imgtmp); // test
-	int wc = w; if(x+wc>img->m_width)	wc=img->m_width-x;
-	int hc = h; if(y+hc>img->m_height)	hc=img->m_height-y;
-	if(!R9_ImgBitBltSafe(&imgtmp,0,0,wc,hc,img,x,y)) { dstemp->Release(); return FALSE; }
+	int wc = sz.x; if(p.x+wc>img->m_width)	wc=img->m_width-p.x;
+	int hc = sz.y; if(p.y+hc>img->m_height)	hc=img->m_height-p.y;
+	if(!R9_ImgBitBltSafe(&imgtmp,0,0,wc,hc,img,p.x,p.y)) { dstemp->Release(); return false; }
 
 	// unlock tmp srf
 	hr = dstemp->UnlockRect();
 	dstemp->Release();
 
-	return TRUE;
+	return true;
 }
 
 
@@ -773,14 +726,14 @@ BOOL r9RenderDX::CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void r9RenderDX::PrepareWindow()
 {
-	if( m_cfg.m_windowed )
+	if( m_cfg.windowed )
 	{
 		int scrw = sys_desktopwidth();
 		int scrh = sys_desktopheight();
-		BOOL fulldesktop = (m_cfg.m_width==scrw) || (m_cfg.m_height==scrh);
-		int cx = (scrw-m_cfg.m_width) / 2;
-		int cy = (scrh-m_cfg.m_height) / 2;
-		RECT rec = {cx,cy,cx+m_cfg.m_width,cy+m_cfg.m_height};
+		BOOL fulldesktop = (m_cfg.width==scrw) || (m_cfg.height==scrh);
+		int cx = (scrw-m_cfg.width) / 2;
+		int cy = (scrh-m_cfg.height) / 2;
+		RECT rec = {cx,cy,cx+m_cfg.width,cy+m_cfg.height};
 		long style = fulldesktop ? (WS_POPUP|WS_SYSMENU) : (WS_OVERLAPPEDWINDOW & ~(WS_MAXIMIZEBOX|WS_SIZEBOX));
 		AdjustWindowRectEx( &rec, style, FALSE, 0 );
 		MoveWindow( m_hwnd, rec.left, rec.top, rec.right-rec.left, rec.bottom-rec.top, TRUE );
@@ -791,7 +744,7 @@ void r9RenderDX::PrepareWindow()
 	}
 	else
 	{
-		RECT rec = {0,0,m_cfg.m_width,m_cfg.m_height};
+		RECT rec = {0,0,m_cfg.width,m_cfg.height};
 		long style = WS_POPUP|WS_SYSMENU|WS_VISIBLE;
 		MoveWindow( m_hwnd, rec.left, rec.top, rec.right-rec.left, rec.bottom-rec.top, TRUE );
 		SetWindowLong( m_hwnd, GWL_STYLE, style );
@@ -808,19 +761,19 @@ void r9RenderDX::D3D_GetPresentParams( D3DPRESENT_PARAMETERS* d3dparam )
 {
 	assert(d3dparam!=NULL);
 	memset(d3dparam,0,sizeof(D3DPRESENT_PARAMETERS));
-	d3dparam->BackBufferWidth					= m_cfg.m_width;
-	d3dparam->BackBufferHeight					= m_cfg.m_height;
+	d3dparam->BackBufferWidth					= m_cfg.width;
+	d3dparam->BackBufferHeight					= m_cfg.height;
 	d3dparam->BackBufferFormat					= m_pfdisplay;
 	d3dparam->BackBufferCount					= 1;
 	d3dparam->MultiSampleType					= D3DMULTISAMPLE_NONE;
-	d3dparam->SwapEffect						= m_cfg.m_windowed ? D3DSWAPEFFECT_COPY : D3DSWAPEFFECT_FLIP;
+	d3dparam->SwapEffect						= m_cfg.windowed ? D3DSWAPEFFECT_COPY : D3DSWAPEFFECT_FLIP;
 	d3dparam->hDeviceWindow						= m_hwnd;
-	d3dparam->Windowed							= m_cfg.m_windowed;
+	d3dparam->Windowed							= m_cfg.windowed;
 	d3dparam->EnableAutoDepthStencil			= FALSE;
 	d3dparam->AutoDepthStencilFormat			= D3DFMT_UNKNOWN;
 	d3dparam->Flags								= 0;
-	d3dparam->FullScreen_RefreshRateInHz		= m_cfg.m_windowed ? 0 : m_cfg.m_refresh;
-	d3dparam->PresentationInterval				= m_cfg.m_vsync ? D3DPRESENT_INTERVAL_DEFAULT : D3DPRESENT_INTERVAL_IMMEDIATE;
+	d3dparam->FullScreen_RefreshRateInHz		= m_cfg.windowed ? 0 : m_cfg.refresh;
+	d3dparam->PresentationInterval				= m_cfg.vsync ? D3DPRESENT_INTERVAL_DEFAULT : D3DPRESENT_INTERVAL_IMMEDIATE;
 }
 
 BOOL r9RenderDX::D3D_CreateDevice()

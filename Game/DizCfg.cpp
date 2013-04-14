@@ -193,12 +193,12 @@ void cDizCfg::LoadRenderCfg( r9Cfg& cfg, Api & api )
 	strcpy( inifile, file_getfullpath(GetIniFile()) );
 
 	api				= Api::Default;
-	cfg.m_windowed	= 1;
-	cfg.m_bpp		= 32;
-	cfg.m_width		= 640;
-	cfg.m_height	= 480;
-	cfg.m_refresh	= 85;
-	cfg.m_vsync		= 0;
+	cfg.windowed	= 1;
+	cfg.bpp			= 32;
+	cfg.width		= CfgWidth;
+	cfg.height		= CfgHeight;
+	cfg.refresh		= 85;
+	cfg.vsync		= 0;
 
 	int apiv;
 	if(ini_getint( inifile, "VIDEO", "api",		&apiv ))
@@ -206,12 +206,12 @@ void cDizCfg::LoadRenderCfg( r9Cfg& cfg, Api & api )
 			api = Api::DirectX;
 		else if(apiv == static_cast<int>(Api::OpenGL))
 			api = Api::OpenGL;
-	ini_getint( inifile, "VIDEO", "windowed",	&cfg.m_windowed );
-	ini_getint( inifile, "VIDEO", "bpp",		&cfg.m_bpp );
-	ini_getint( inifile, "VIDEO", "width",		&cfg.m_width );
-	ini_getint( inifile, "VIDEO", "height",		&cfg.m_height );
-	ini_getint( inifile, "VIDEO", "refresh",	&cfg.m_refresh );
-	ini_getint( inifile, "VIDEO", "vsync",		&cfg.m_vsync );
+	ini_getint( inifile, "VIDEO", "windowed",	&cfg.windowed );
+	ini_getint( inifile, "VIDEO", "bpp",		&cfg.bpp );
+	ini_getint( inifile, "VIDEO", "width",		&cfg.width );
+	ini_getint( inifile, "VIDEO", "height",		&cfg.height );
+	ini_getint( inifile, "VIDEO", "refresh",	&cfg.refresh );
+	ini_getint( inifile, "VIDEO", "vsync",		&cfg.vsync );
 
 }
 

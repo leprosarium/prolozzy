@@ -10,12 +10,12 @@
 #include "R9Resources.h"
 
 r9Cfg::r9Cfg() : 
-	m_width(R9_CFG_WIDTH),
-	m_height(R9_CFG_HEIGHT),
-	m_bpp(R9_CFG_BPP),
-	m_windowed(1),
-	m_refresh(),
-	m_vsync()
+	windowed(1),
+	width(CfgWidth),
+	height(CfgHeight),
+	bpp(CfgBPP),
+	refresh(),
+	vsync()
 {
 }
 
@@ -47,7 +47,7 @@ bool r9Render::Init(HWND hwnd, r9Cfg * cfg)
 	Api api = r9Render::api;
 	R9_FilterCfg(m_cfg, api);
 
-	if(m_cfg.m_bpp!=16 && m_cfg.m_bpp!=32) return false;
+	if(m_cfg.bpp!=16 && m_cfg.bpp!=32) return false;
 
 	if(!Init()) return false;
 
@@ -183,12 +183,55 @@ void r9Render::EndScene()
 	DoEndScene();
 }
 
-BOOL r9Render::CheckDevice()								{ return TRUE; }
-BOOL r9Render::ToggleVideoMode()							{ return FALSE; }
+bool r9Render::SaveScreenShot( fRect* rect, bool full )
+{
+	r9Img img;
+	if(!TakeScreenShot(&img, rect, full)) return false;
 
-BOOL r9Render::SaveScreenShot( fRect* rect, BOOL full)							{ return TRUE; }
-BOOL r9Render::TakeScreenShot( r9Img* img, fRect* rect, BOOL full )				{ return TRUE; }
-BOOL r9Render::CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )	{ return FALSE; }
+	char file[64];
+	char date[16];
+	char time[16];
+	
+	SYSTEMTIME systime;
+	GetSystemTime( &systime );
+	GetDateFormat( NULL, 0, &systime, "yyMMdd", date, 16 );
+	GetTimeFormat( NULL, 0, &systime, "_HHmm_ss", time, 16 );
+
+	CreateDirectory("ScreenShots",NULL);
+	strcpy( file, "ScreenShots\\" );
+	strcat( file, date );
+	strcat( file, time );
+	strcat( file, ".png" ); // change this if you want (.tga)
+	
+	R9_ImgSaveFile(file,&img);
+	R9_ImgDestroy(&img);
+	
+	dlog(LOGRND, L"ScreenShot saved!\n");
+
+	return true;
+}
+
+bool r9Render::TakeScreenShot( r9Img* img, fRect* rect, bool full )
+{
+	if(img==nullptr) return false;
+	if( IsBeginEndScene() ) { dlog(LOGRND, L"ScreenShot can not be taken inside Begin - End frame.\n"); return false; }
+	if( m_cfg.bpp!=32 ) 	{ dlog(LOGRND, L"ScreenShot can be taken only in 32bit modes.\n"); return false; }
+	R9_ImgDestroy(img);
+	return DoTakeScreenShot(img, rect, full);
+}
+
+bool r9Render::CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )
+{
+	assert(img); 
+	assert(rect);
+	assert(target);
+	if(!img->isValid()) return FALSE;
+
+	iV2 sz = rect->Size();
+	if(sz.x > target->realwidth) return false;
+	if(sz.y > target->realheight) return false;
+	return CopyTargetToImage(target, img, rect->p1, sz);
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void r9Render::DrawQuadRot(const fV2 & pos, const fV2 & size, const fV2 & center, float angle, const fRect & src, R9TEXTURE tex, dword color )
@@ -275,7 +318,7 @@ BOOL r9Render::CreateFont()
 
 	// create fixed font (courier new)
 	m_font = new r9Font();
-	m_font->Create(R9_CHRW,R9_CHRH-1);
+	m_font->Create(ChrW,ChrH-1);
 
 	// create texture from memory
 	R9TEXTURE tex;
@@ -338,37 +381,37 @@ bool R9_FilterCfg( r9Cfg& cfg, Api & api )
 
 	bool ok = false;
 	r9Cfg cfgout = cfg;
-	cfgout.m_refresh = 0;
+	cfgout.refresh = 0;
 	// search modes	
 	for(const r9DisplayMode & mode: r9Render::DisplayModes)
 	{
-		if( cfgout.m_windowed != mode.windowed ) continue;
+		if( cfgout.windowed != mode.windowed ) continue;
 		
-		if( cfgout.m_windowed ) // in windowed
+		if( cfgout.windowed ) // in windowed
 		{
 			// overwrite bpp
-			cfgout.m_bpp = mode.bpp;
+			cfgout.bpp = mode.bpp;
 			// clamp resolution in windowed
-			if( cfgout.m_width > mode.width || cfgout.m_height > mode.height )
+			if( cfgout.width > mode.width || cfgout.height > mode.height )
 			{
-				cfgout.m_width = mode.width;
-				cfgout.m_height =  mode.height;
+				cfgout.width = mode.width;
+				cfgout.height =  mode.height;
 			}
 			// overwrite refresh
-			cfgout.m_refresh = 0;
+			cfgout.refresh = 0;
 			ok = true;
 			// got it
 			break;
 		}
 		// in fullscreen
 		// match bpp
-		if(cfgout.m_bpp != mode.bpp) continue;
+		if(cfgout.bpp != mode.bpp) continue;
 		// match resolution
-		if(cfgout.m_width != mode.width ) continue;
-		if(cfgout.m_height != mode.height ) continue;
+		if(cfgout.width != mode.width ) continue;
+		if(cfgout.height != mode.height ) continue;
 		// select highest refresh found, but not higher then requested
-		if(mode.refresh > cfgout.m_refresh && mode.refresh <= cfg.m_refresh )
-			cfgout.m_refresh = mode.refresh; 
+		if(mode.refresh > cfgout.refresh && mode.refresh <= cfg.refresh )
+			cfgout.refresh = mode.refresh; 
 		ok = true;
 		// continue search for better refresh
 	}
@@ -385,11 +428,11 @@ void R9_LogCfg( r9Cfg& cfg, Api api )
 {
 	dlog(LOGRND, L"%S %S %ix%i %ibpp %iHz%S\n", 
 		api == Api::OpenGL ? "OpenGL" : "DirectX",
-		cfg.m_windowed?"windowed":"full-screen",
-		cfg.m_width, cfg.m_height,
-		cfg.m_bpp,
-		cfg.m_refresh,
-		cfg.m_vsync?" vsync":""
+		cfg.windowed?"windowed":"full-screen",
+		cfg.width, cfg.height,
+		cfg.bpp,
+		cfg.refresh,
+		cfg.vsync?" vsync":""
 		);
 }
 

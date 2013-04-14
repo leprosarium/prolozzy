@@ -38,8 +38,8 @@ public:
 				cTile		()					{ m_id=0; m_frames=1; fx = 1; fy = 1; m_tex=NULL; m_name=NULL; }
 		int         GetFx(int frame) const { return frame % fx; }
 		int         GetFy(int frame) const { return frame / fx; }
-inline	int		GetWidth	()					{ return fx > 0 ? R9_TextureGetWidth(m_tex) / fx : R9_TextureGetWidth(m_tex); }
-inline	int		GetHeight	()					{ return fy > 0 ? R9_TextureGetHeight(m_tex) / fy : R9_TextureGetHeight(m_tex); }
+	int GetWidth () const					{ return fx > 0 ? m_tex->width / fx : m_tex->width; }
+	int	GetHeight () const					{ return fy > 0 ? m_tex->height / fy : m_tex->height; }
 		void Destroy() { R9_TextureDestroy(m_tex); if(m_name) free(m_name); }
 };
 

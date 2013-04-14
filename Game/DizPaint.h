@@ -62,10 +62,10 @@ public:
 		int         GetFx(int frame) const		{ return frame % fx; }
 		int         GetFy(int frame) const		{ return frame / fx; }
 		iV2			GetF(int frame) const		{ return iV2(GetFx(frame), GetFy(frame)); }
-		int			GetWidth() const			{ return fx > 0 ? R9_TextureGetWidth(tex) / fx : R9_TextureGetWidth(tex); }
-		int			GetHeight()	const			{ return fy > 0 ? R9_TextureGetHeight(tex) / fy : R9_TextureGetHeight(tex); }
+		int			GetWidth() const			{ return fx > 0 ? tex->width / fx : tex->width; }
+		int			GetHeight()	const			{ return fy > 0 ? tex->height / fy : tex->height; }
 		iV2			GetSize() const { return iV2(GetWidth(), GetHeight()); }
-		iV2			TexSize() const { return iV2(R9_TextureGetWidth(tex), R9_TextureGetHeight(tex)); }
+		iV2			TexSize() const { return tex->size(); }
 		fRect		FrameRect(int frame, const iRect & map) const { fRect src = map; return src.Offset(GetF(frame) * GetSize()); }
 		fRect		FrameRect(int frame) const { iV2 sz = GetSize(); iV2 p = GetF(frame) * sz; return fRect(p, p + sz); }
 

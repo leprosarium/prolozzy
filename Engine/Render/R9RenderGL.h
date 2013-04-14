@@ -155,7 +155,7 @@ inline void r9RenderGL::GL_BindTexture()
 {
 	// texture
 	GLint i = 0;
-	if(m_texture) i = (GLuint)(intptr)m_texture->m_handler;
+	if(m_texture) i = (GLuint)(intptr)m_texture->handler;
 	m_glBindTexture(GL_TEXTURE_2D, i);
 	// taddress
 	i = (GetTAddress() == TAddress::Wrap) ? GL_REPEAT : GL_CLAMP;

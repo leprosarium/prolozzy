@@ -309,13 +309,13 @@ R9TEXTURE r9RenderGL::TextureCreateImg( r9Img* img )
 	if(img2.isValid()) R9_ImgDestroy(&img2); // destroy resized if needed
 
 	// create R9 texture
-	r9Texture* tex		= new r9Texture;
-	tex->m_width		= img->m_width;
-	tex->m_height		= img->m_height;
-	tex->m_realwidth	= w;
-	tex->m_realheight	= h;
-	tex->m_handler		= (void*)(intptr)gltex;
-	tex->m_handlerex	= nullptr;
+	r9Texture* tex	= new r9Texture;
+	tex->width		= img->m_width;
+	tex->height		= img->m_height;
+	tex->realwidth	= w;
+	tex->realheight	= h;
+	tex->handler	= (void*)(intptr)gltex;
+	tex->handlerex	= nullptr;
 
 	GL_BindTexture(); // for wrap and filter
 
@@ -346,12 +346,12 @@ R9TEXTURE r9RenderGL::TextureCreateTarget(int width, int height)
 
 	// create R9 texture
 	r9Texture* tex		= new r9Texture;
-	tex->m_width		= width;
-	tex->m_height		= height;
-	tex->m_realwidth	= w;
-	tex->m_realheight	= h;
-	tex->m_handler		= (void*)(intptr)gltex;
-	tex->m_handlerex	= NULL;
+	tex->width		= width;
+	tex->height		= height;
+	tex->realwidth	= w;
+	tex->realheight	= h;
+	tex->handler		= (void*)(intptr)gltex;
+	tex->handlerex	= NULL;
 
 	GL_BindTexture(); // for wrap and filter
 
@@ -361,7 +361,7 @@ R9TEXTURE r9RenderGL::TextureCreateTarget(int width, int height)
 void r9RenderGL::TextureDestroy( R9TEXTURE texture )
 {
 	if(!texture) return;
-	GLuint gltex = (GLuint)(intptr)texture->m_handler;
+	GLuint gltex = (GLuint)(intptr)texture->handler;
 	m_glDeleteTextures(1,&gltex);
 	delete texture;
 }
@@ -475,9 +475,9 @@ void r9RenderGL::DoEndScene()
 	// if render target, then copy from screen into it
 	if(m_textarget)
 	{
-		GLuint gltarget = (GLuint)(intptr)m_textarget->m_handler;
+		GLuint gltarget = (GLuint)(intptr)m_textarget->handler;
 		m_glBindTexture(GL_TEXTURE_2D,gltarget);
-		m_glCopyTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,0,0,m_textarget->m_realwidth,m_textarget->m_realheight,0);
+		m_glCopyTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,0,0,m_textarget->realwidth,m_textarget->realheight,0);
 
 		// restore projection for normap drawing
 		m_glMatrixMode(GL_PROJECTION);
@@ -684,14 +684,14 @@ BOOL r9RenderGL::CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )
 	int y = (int)rect->p1.y;
 	int w = (int)rect->Width();
 	int h = (int)rect->Height();
-	if(w>target->m_realwidth) return FALSE;
-	if(h>target->m_realheight) return FALSE;
+	if(w>target->realwidth) return FALSE;
+	if(h>target->realheight) return FALSE;
 
 	// temp image to read target data into
 	r9Img imgtmp;
 	imgtmp.m_pf = R9_PF_RGB;
-	imgtmp.m_width = target->m_realwidth;
-	imgtmp.m_height = target->m_realheight;
+	imgtmp.m_width = target->realwidth;
+	imgtmp.m_height = target->realheight;
 	if(!R9_ImgCreate(&imgtmp)) return FALSE;
 	SetTexture(target);
 	m_glPixelStorei(GL_PACK_ALIGNMENT, 1);

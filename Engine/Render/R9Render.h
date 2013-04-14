@@ -7,7 +7,6 @@
 
 #include <vector>
 
-
 #include "E9System.h"
 #include "E9Engine.h"
 #include "D9Debug.h"
@@ -111,12 +110,17 @@ struct r9DisplayMode
 
 struct r9Texture
 {
-	int		m_width;		// requested width
-	int		m_height;		// requested height
-	int		m_realwidth;	// real created width (may be greater than requested, pow2 etc)
-	int		m_realheight;	// real created height (may be greater than requested, pow2 etc)
-	void*	m_handler;		// platform handler
-	void*	m_handlerex;	// platform handler ex
+	int		width;		// requested width
+	int		height;		// requested height
+	int		realwidth;	// real created width (may be greater than requested, pow2 etc)
+	int		realheight;	// real created height (may be greater than requested, pow2 etc)
+	void*	handler;	// platform handler
+	void*	handlerex;	// platform handler ex
+
+	bool IsValid() const { return handler != nullptr; }
+	iV2 size() const { return iV2(width, height); }
+	iV2 realSize() const { return iV2(realwidth, realheight); }
+
 };
 typedef r9Texture* R9TEXTURE;
 
@@ -377,11 +381,6 @@ inline	R9TEXTURE	R9_TextureCreate( r9Img* img )							{ assert(r9_render); retur
 inline	R9TEXTURE	R9_TextureLoad( const char* filename )					{ assert(r9_render); return r9_render->TextureLoad(filename); }
 inline	R9TEXTURE	R9_TextureCreateTarget( int width, int height )			{ assert(r9_render); return r9_render->TextureCreateTarget(width,height); }
 inline	void		R9_TextureDestroy( R9TEXTURE tex )						{ assert(r9_render); r9_render->TextureDestroy(tex); }
-inline	BOOL		R9_TextureIsValid( R9TEXTURE tex )						{ return tex->m_handler!=NULL; }
-inline	int			R9_TextureGetWidth( R9TEXTURE tex )						{ return tex->m_width; }
-inline	int			R9_TextureGetHeight( R9TEXTURE tex )					{ return tex->m_height; }
-inline	int			R9_TextureGetRealWidth( R9TEXTURE tex )					{ return tex->m_realwidth; }
-inline	int			R9_TextureGetRealHeight( R9TEXTURE tex )				{ return tex->m_realheight; }
 
 inline	void		R9_SetTexture( R9TEXTURE tex )							{ assert(r9_render); r9_render->SetTexture(tex); }
 inline	R9TEXTURE	R9_GetTexture()											{ assert(r9_render); return r9_render->GetTexture(); }

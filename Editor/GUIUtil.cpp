@@ -92,8 +92,8 @@ void GUIDrawLineDot( int x1, int y1, int x2, int y2, dword color, float dx, floa
 	if(!g_texdot) return;
 	if(R9_GetTexture()!=g_texdot) R9_SetTexture(g_texdot);
 	r9Vertex vx[2];
-	int tw = R9_TextureGetWidth(g_texdot);
-	int th = R9_TextureGetHeight(g_texdot);
+	int tw = g_texdot->width;
+	int th = g_texdot->height;
 	vx[0].x		= (float)x1;
 	vx[0].y		= (float)y1;
 	vx[0].color	= color;
@@ -149,8 +149,8 @@ void GUIDrawImg( int x1, int y1, int x2, int y2, int img, dword color, int align
 	R9TEXTURE tex = g_gui->m_texturepool.Get(img);
 	if(!tex) return;
 
-	int w = R9_TextureGetWidth(tex);
-	int h = R9_TextureGetHeight(tex);
+	int w = tex->width;
+	int h = tex->height;
 	int x = x1;
 	int y = y1;
 	if((align & GUIALIGN_CENTERX) == GUIALIGN_CENTERX)	x = (x1+x2-w)/2;	else	

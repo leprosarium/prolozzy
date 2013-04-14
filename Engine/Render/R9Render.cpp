@@ -237,20 +237,9 @@ void r9Render::DrawSprite( const fV2 & pos, const fRect & src, R9TEXTURE tex, dw
 
 	if(tex)
 	{
-		if(rotated)
-		{
-			src0.p1.x /= tex->m_realheight;
-			src0.p2.x /= tex->m_realheight;
-			src0.p1.y /= tex->m_realwidth;
-			src0.p2.y /= tex->m_realwidth;
-		}
-		else
-		{
-			src0.p1.x /= tex->m_realwidth;
-			src0.p2.x /= tex->m_realwidth;
-			src0.p1.y /= tex->m_realheight;
-			src0.p2.y /= tex->m_realheight;
-		}
+		fV2 tx = rotated ? tex->realSize().Tran() : tex->realSize();
+		src0.p1 /= tx;
+		src0.p2 /= tx;
 	}
 	if(rotated)
 	{

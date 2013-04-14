@@ -231,12 +231,12 @@ R9TEXTURE r9RenderDX::TextureCreateImg(r9Img* img)
 
 	// create R9 texture
 	r9Texture* tex = new r9Texture;
-	tex->m_width = img->m_width;
-	tex->m_height = img->m_height;
-	tex->m_realwidth = w;
-	tex->m_realheight = h;
-	tex->m_handler = d3dtex;
-	tex->m_handlerex = nullptr;
+	tex->width = img->m_width;
+	tex->height = img->m_height;
+	tex->realwidth = w;
+	tex->realheight = h;
+	tex->handler = d3dtex;
+	tex->handlerex = nullptr;
 
 	return tex;
 }
@@ -276,14 +276,14 @@ R9TEXTURE r9RenderDX::TextureCreateTarget( int width, int height )
 
 	// create R9 texture
 	r9Texture* tex = new r9Texture;
-	tex->m_width = width;
-	tex->m_height = height;
-	tex->m_realwidth = w;
-	tex->m_realheight = h;
-	tex->m_handler = d3dtex;
+	tex->width = width;
+	tex->height = height;
+	tex->realwidth = w;
+	tex->realheight = h;
+	tex->handler = d3dtex;
 	LPDIRECT3DSURFACE9 d3dsrf = nullptr;
 	d3dtex->GetSurfaceLevel(0,&d3dsrf);
-	tex->m_handlerex = d3dsrf;
+	tex->handlerex = d3dsrf;
 
 	// add render target texture to manager
 	TT_Add(tex);
@@ -294,8 +294,8 @@ R9TEXTURE r9RenderDX::TextureCreateTarget( int width, int height )
 void r9RenderDX::TextureDestroy( R9TEXTURE texture )
 {
 	if(!texture) return;
-	LPDIRECT3DTEXTURE9 d3dtex = (LPDIRECT3DTEXTURE9)(texture->m_handler);
-	LPDIRECT3DSURFACE9 d3dsrf = (LPDIRECT3DSURFACE9)(texture->m_handlerex);
+	LPDIRECT3DTEXTURE9 d3dtex = (LPDIRECT3DTEXTURE9)(texture->handler);
+	LPDIRECT3DSURFACE9 d3dsrf = (LPDIRECT3DSURFACE9)(texture->handlerex);
 	if(d3dsrf) TT_Del(texture); // delete render target texture from manager
 	if(d3dsrf) if(d3dsrf) d3dsrf->Release();
 	if(d3dtex) if(d3dtex) d3dtex->Release();
@@ -305,7 +305,7 @@ void r9RenderDX::TextureDestroy( R9TEXTURE texture )
 void r9RenderDX::ApplyTexture()
 {
 	LPDIRECT3DTEXTURE9 d3dtex = nullptr;
-	if(m_texture) d3dtex = (LPDIRECT3DTEXTURE9)(m_texture->m_handler);
+	if(m_texture) d3dtex = (LPDIRECT3DTEXTURE9)(m_texture->handler);
 	HRESULT hr = m_d3dd->SetTexture(0,d3dtex);
 }
 
@@ -425,17 +425,17 @@ bool r9RenderDX::DoBeginScene(R9TEXTURE target)
 
 	if( target ) // use render target
 	{
-		if( !target->m_handler || !target->m_handlerex ) return false; // invalid target
+		if( !target->handler || !target->handlerex ) return false; // invalid target
 		// remember default target
 		HRESULT hr = m_d3dd->GetBackBuffer(0,0,D3DBACKBUFFER_TYPE_MONO,&m_d3dtarget);
 		if(FAILED(hr)) { R9_LOGERROR("can't get default render target.",hr); return false; }
 		// set new target
-		LPDIRECT3DSURFACE9 d3dsrf = (LPDIRECT3DSURFACE9)(target->m_handlerex);
+		LPDIRECT3DSURFACE9 d3dsrf = (LPDIRECT3DSURFACE9)(target->handlerex);
 		hr = m_d3dd->SetRenderTarget(0,d3dsrf);
 		if(FAILED(hr)) { R9_LOGERROR("can't set render target.",hr); if(m_d3dtarget) m_d3dtarget->Release(); return false; }
 
-		m_targetwidth = target->m_realwidth;
-		m_targetheight = target->m_realheight;
+		m_targetwidth = target->realwidth;
+		m_targetheight = target->realheight;
 	}
 	else
 	{
@@ -723,11 +723,11 @@ BOOL r9RenderDX::CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )
 	int y = (int)rect->p1.y;
 	int w = (int)rect->Width();
 	int h = (int)rect->Height();
-	if(w>target->m_realwidth) return FALSE;
-	if(h>target->m_realheight) return FALSE;
+	if(w>target->realwidth) return FALSE;
+	if(h>target->realheight) return FALSE;
 	
 	// target surface
-	LPDIRECT3DSURFACE9 dsback = (LPDIRECT3DSURFACE9)(target->m_handlerex);
+	LPDIRECT3DSURFACE9 dsback = (LPDIRECT3DSURFACE9)(target->handlerex);
 	if(dsback==NULL) return FALSE;
 	D3DSURFACE_DESC desc;
 	dsback->GetDesc(&desc);
@@ -736,7 +736,7 @@ BOOL r9RenderDX::CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )
 	// temp surface (lockable)
 	LPDIRECT3DSURFACE9 dstemp;
 	D3DFORMAT pf = desc.Format;
-	HRESULT hr = m_d3dd->CreateOffscreenPlainSurface( target->m_realwidth, target->m_realheight, pf, D3DPOOL_SYSTEMMEM, &dstemp, NULL );
+	HRESULT hr = m_d3dd->CreateOffscreenPlainSurface( target->realwidth, target->realheight, pf, D3DPOOL_SYSTEMMEM, &dstemp, NULL );
 	if(FAILED(hr)) return FALSE;
 	
 	// copy rect into temp srf	
@@ -751,9 +751,9 @@ BOOL r9RenderDX::CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect )
 	// bitblt from tmp srf to img (assume width*spp = pitch)
 	r9Img imgtmp;
 	imgtmp.m_pf		= R9_PF_ARGB;
-	imgtmp.m_width	= target->m_realwidth;
-	imgtmp.m_height	= target->m_realheight;
-	imgtmp.m_size	= lockrect.Pitch * target->m_realheight;
+	imgtmp.m_width	= target->realwidth;
+	imgtmp.m_height	= target->realheight;
+	imgtmp.m_size	= lockrect.Pitch * target->realheight;
 	imgtmp.m_data	= (byte*)lockrect.pBits;
 	// R9_ImgSaveFile(sprint("map_%02i_%02i.png",y/h,x/w),&imgtmp); // test
 	int wc = w; if(x+wc>img->m_width)	wc=img->m_width-x;
@@ -955,12 +955,12 @@ void r9RenderDX::TT_Del(R9TEXTURE texture)
 
 void r9RenderDX::ReleaseTexture(R9TEXTURE t)
 {
-	LPDIRECT3DTEXTURE9 d3dtex = reinterpret_cast<LPDIRECT3DTEXTURE9>(t->m_handler);
-	LPDIRECT3DSURFACE9 d3dsrf = reinterpret_cast<LPDIRECT3DSURFACE9>(t->m_handlerex);
+	LPDIRECT3DTEXTURE9 d3dtex = reinterpret_cast<LPDIRECT3DTEXTURE9>(t->handler);
+	LPDIRECT3DSURFACE9 d3dsrf = reinterpret_cast<LPDIRECT3DSURFACE9>(t->handlerex);
 	if(d3dsrf) d3dsrf->Release();
 	if(d3dtex) d3dtex->Release();
-	t->m_handler = 0;
-	t->m_handlerex = 0;
+	t->handler = 0;
+	t->handlerex = 0;
 }
 
 void r9RenderDX::TT_Release()
@@ -974,7 +974,7 @@ void r9RenderDX::TT_Recreate()
 	{
 		// manareli...
 		// create new temporary tex (will add it in targetlist too!)
-		R9TEXTURE ttex = TextureCreateTarget(m_targetlist[i]->m_width,m_targetlist[i]->m_height);
+		R9TEXTURE ttex = TextureCreateTarget(m_targetlist[i]->width,m_targetlist[i]->height);
 		if(ttex==NULL) { dlog(LOGSYS, L"ERROREXIT: Can't recover render target, from lost device.\n"); exit(-1); }
 		// force content into the old tex pointer (that was cleared before reset)
 		*m_targetlist[i] = *ttex;

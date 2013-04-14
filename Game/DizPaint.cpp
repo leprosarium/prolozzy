@@ -52,14 +52,14 @@ PREDICATE_M(tile, id, 2)
 PREDICATE_M(tile, width, 2) 
 {
 	if(cTile* tile = g_paint.tiles.Get(A1))
-		return A2 = R9_TextureGetWidth(tile->tex);
+		return A2 = tile->GetWidth();
 	throw PlDomainError("invalid tile index", A1); 
 }
 
 PREDICATE_M(tile, height, 2) 
 {
 	if(cTile* tile = g_paint.tiles.Get(A1))
-		return A2 = R9_TextureGetHeight(tile->tex);
+		return A2 = tile->GetHeight();
 	throw PlDomainError("invalid tile index", A1); 
 }
 

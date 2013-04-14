@@ -183,7 +183,7 @@ void r9Font::Char( const fV2 & p, char c )
 	if(!dst.Ordered()) return;
 
 	// mapping
-	fV2 tt(R9_TextureGetRealWidth(tex), R9_TextureGetRealHeight(tex));
+	fV2 tt = tex->realSize();
 	src.p1 /= tt;
 	src.p2 /= tt;
 

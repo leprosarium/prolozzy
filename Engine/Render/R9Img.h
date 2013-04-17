@@ -84,6 +84,14 @@ struct r9Img
 		i.m_data = 0; 
 		return *this;
 	}
+	dword getColor(int x, int y) const;
+	void setColor(int x, int y, dword color);
+	dword getColorSafe(int x, int y) const { 	return validPos(x, y) ? getColor(x, y) : 0; }
+	void setColorSafe(int x, int y, dword color) { 	if(validPos(x, y)) setColor(x, y, color); }
+	dword getColorRect(int x1, int y1, int x2, int y2) const;	// used by img_scale; w=x2-x1; bpp must be 3 or 4; img must be valid
+
+	bool validPos(int x, int y) const { return x >= 0 && x < m_width && y >= 0 && y < m_height; }
+
 private:
 	r9Img(const r9Img &);
 	r9Img & operator =(const r9Img & i);
@@ -112,11 +120,6 @@ private:
 
 //		...
 
-inline	dword	R9_ImgGetColor		( r9Img* img, int x, int y );
-inline	void	R9_ImgSetColor		( r9Img* img, int x, int y, dword color );
-inline	dword	R9_ImgGetColorSafe	( r9Img* img, int x, int y );
-inline	void	R9_ImgSetColorSafe	( r9Img* img, int x, int y, dword color );
-inline	dword	R9_ImgGetColorRect	( r9Img* img, int x1, int y1, int x2, int y2 );	// used by img_scale; w=x2-x1; bpp must be 3 or 4; img must be valid
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -164,54 +167,37 @@ inline void R9_PFSetARGB( void* dst, r9PFInfo* pfinfo, float* argb )
 	R9_PFSetDWORD(dst,pfinfo->m_spp,color);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// IMAGE INLINES
-///////////////////////////////////////////////////////////////////////////////////////////////////
-inline dword R9_ImgGetColor( r9Img* img, int x, int y )
+inline dword r9Img::getColor(int x, int y) const
 {
-	int spp = R9_PFSpp(img->m_pf);
-	return R9_PFGetDWORD( img->m_data+(y*img->m_width+x)*spp, spp );
+	int spp = R9_PFSpp(m_pf);
+	return R9_PFGetDWORD(m_data + (y * m_width + x) * spp, spp);
 }
 
-inline void R9_ImgSetColor( r9Img* img, int x, int y, dword color )
+inline void r9Img::setColor(int x, int y, dword color)
 {
-	int spp = R9_PFSpp(img->m_pf);
-	R9_PFSetDWORD( img->m_data+(y*img->m_width+x)*spp, spp, color );
+	int spp = R9_PFSpp(m_pf);
+	R9_PFSetDWORD(m_data+(y * m_width + x) * spp, spp, color );
 }
 
-inline dword R9_ImgGetColorSafe( r9Img* img, int x, int y )
-{
-	if( x<0 || x>=(int)img->m_width || y<0 || y>=(int)img->m_height ) return 0;
-	int spp = R9_PFSpp(img->m_pf);
-	return R9_PFGetDWORD( img->m_data+(y*img->m_width+x)*spp, spp );
-}
-
-inline void R9_ImgSetColorSafe( r9Img* img, int x, int y, dword color )
-{
-	if( x<0 || x>=(int)img->m_width || y<0 || y>=(int)img->m_height ) return;
-	int spp = R9_PFSpp(img->m_pf);
-	R9_PFSetDWORD( img->m_data+(y*img->m_width+x)*spp, spp, color );
-}
-
-inline dword R9_ImgGetColorRect( r9Img* img, int x1, int y1, int x2, int y2 )
+inline dword r9Img::getColorRect(int x1, int y1, int x2, int y2) const
 {
 	int a, r, g, b;
-	int spp = R9_PFSpp(img->m_pf);
+	int spp = R9_PFSpp(m_pf);
 	
 	a = r = g = b = 0;
 	int width  = x2-x1;
 	int height = y2-y1;
-	int adr0 = (y1*img->m_width+x1)*spp;
+	int adr0 = (y1 * m_width + x1) * spp;
 
 	for(int y=0; y<height; y++)
 	{
-		int adr = adr0+y*img->m_width*spp;
+		int adr = adr0 + y * m_width * spp;
 		for(int x=0; x<width; x++)
 		{
-			b += img->m_data[adr+0];
-			g += img->m_data[adr+1];
-			r += img->m_data[adr+2];
-			if(spp==4) a += img->m_data[adr+3];
+			b += m_data[adr+0];
+			g += m_data[adr+1];
+			r += m_data[adr+2];
+			if(spp==4) a += m_data[adr+3];
 			adr+=spp;
 		}
 	}

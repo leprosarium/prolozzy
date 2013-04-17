@@ -201,9 +201,9 @@ BOOL R9_ImgScale( r9Img* src, r9Img* dst )
 				int a, r, g, b;
 				int fu = u & 0xffff;
 
-				left = right = R9_ImgGetColorRect( src, u>>16, v>>16, (u>>16)+1, (v+dv)>>16 );
+				left = right = src->getColorRect(u>>16, v>>16, (u>>16)+1, (v+dv)>>16);
 				if( u >> 16 < oldwidth-1 )
-					right = R9_ImgGetColorRect( src, (u>>16)+1, v>>16, (u>>16)+2, (v+dv)>>16 );
+					right = src->getColorRect((u>>16)+1, v>>16, (u>>16)+2, (v+dv)>>16);
 
 				a = ((left >> 24)       ) + (((((right >> 24)       ) - ((left >> 24)       )) * fu) >> 16);
 				r = ((left >> 16) & 0xff) + (((((right >> 16) & 0xff) - ((left >> 16) & 0xff)) * fu) >> 16);
@@ -241,9 +241,9 @@ BOOL R9_ImgScale( r9Img* src, r9Img* dst )
 				int a, r, g, b;
 				int fv = v & 0xffff;
 
-				left = right = R9_ImgGetColorRect( src,  u>>16, v>>16, (u+du)>>16, (v>>16)+1 );
+				left = right = src->getColorRect(u>>16, v>>16, (u+du)>>16, (v>>16)+1);
 				if( v >> 16 < oldheight-1 )
-					right = R9_ImgGetColorRect ( src, u>>16, (v>>16)+1, (u+du)>>16, (v>>16)+2 );
+					right = src->getColorRect (u>>16, (v>>16)+1, (u+du)>>16, (v>>16)+2);
 
 				a = ((left >> 24)       ) + (((((right >> 24)       ) - ((left >> 24)       )) * fv) >> 16);
 				r = ((left >> 16) & 0xff) + (((((right >> 16) & 0xff) - ((left >> 16) & 0xff)) * fv) >> 16);
@@ -275,7 +275,7 @@ BOOL R9_ImgScale( r9Img* src, r9Img* dst )
 			u=0;
 			for(int x=0; x<newwidth; x++)
 			{
-				dword color = R9_ImgGetColorRect (src, u>>16, v>>16, (u+du)>>16, (v+dv)>>16 );
+				dword color = src->getColorRect(u>>16, v>>16, (u+du)>>16, (v+dv)>>16);
 				newdata[newadr+0] = color & 0xff;
 				newdata[newadr+1] = (color>>8) & 0xff;
 				newdata[newadr+2] = (color>>16) & 0xff;
@@ -351,13 +351,8 @@ BOOL R9_ImgConvertPF( r9Img* src, r9Img* dst, int pf )
 	dst->m_pf = pf;
 	if(!R9_ImgCreate(dst)) return FALSE;
 	for(int y=0;y<dst->m_height;y++)
-	{
 		for(int x=0;x<dst->m_width;x++)
-		{
-			dword color = R9_ImgGetColor(src,x,y);
-			R9_ImgSetColor(dst,x,y,color);
-		}
-	}
+			dst->setColor(x, y, src->getColor(x, y));
 	return TRUE;
 }
 
@@ -418,13 +413,8 @@ BOOL R9_ImgBitBltSafe( r9Img* src, int sx, int sy, int sw, int sh, r9Img* dst, i
 	if(!src || !src->isValid()) return FALSE;
 	if(!dst || !dst->isValid()) return FALSE;
 	for(int i=0; i<sh; i++)
-	{
 		for(int j=0; j<sw; j++)
-		{
-			dword color = R9_ImgGetColorSafe(src,sx+j,sy+i);
-			R9_ImgSetColorSafe(dst,dx+j,dy+i,color);
-		}
-	}
+			dst->setColorSafe(dx+j,dy+i, src->getColorSafe(sx+j,sy+i));
 	return TRUE;
 }
 

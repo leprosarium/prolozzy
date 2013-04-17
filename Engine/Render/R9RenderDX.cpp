@@ -535,8 +535,8 @@ void r9RenderDX::Push( r9Vertex* vx, int vxs, Primitive primitive)
 		r9VertexDX* vxdx = m_batchbuffer + m_batchcount;
 		for(int i=0;i<count;i++)
 		{
-			vxdx->x =  (vx->x+m_viewx-ofs)*scrw2-1.0f;
-			vxdx->y = -(vx->y+m_viewy-ofs)*scrh2+1.0f;
+			vxdx->x =  (vx->x+viewOffs.x-ofs)*scrw2-1.0f;
+			vxdx->y = -(vx->y+viewOffs.y-ofs)*scrh2+1.0f;
 			vxdx->z = 0.0f;
 			vxdx->u = vx->u;
 			vxdx->v = vx->v;

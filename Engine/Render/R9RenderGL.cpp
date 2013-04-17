@@ -388,10 +388,8 @@ void r9RenderGL::ApplyView()
 	rect.p1.y = (Is<Flip::Y>(m_viewflip)) ? m_viewport.p2.y : m_viewport.p1.y;
 	rect.p2.x = (Is<Flip::X>(m_viewflip)) ? m_viewport.p1.x : m_viewport.p2.x;
 	rect.p2.y = (Is<Flip::Y>(m_viewflip)) ? m_viewport.p1.y : m_viewport.p2.y;
-	rect.p1.x += m_viewx;		
-	rect.p2.x += m_viewx;
-	rect.p1.y += m_viewy;
-	rect.p2.y += m_viewy;
+	rect.p1 += viewOffs;		
+	rect.p2 += viewOffs;
 
 	m_glMatrixMode(GL_PROJECTION);
 	m_glLoadIdentity();
@@ -613,13 +611,8 @@ bool r9RenderGL::DoTakeScreenShot( r9Img* img, fRect* rect, bool full )
 		HDC hdc = GetDC(NULL);
 		if(!hdc) return false;
 		for(int y=0;y<irect.Height();y++)
-		{
 			for(int x=0;x<irect.Width();x++)
-			{
-				dword dw = GetPixel(hdc,irect.p1.x+x,irect.p1.y+y);
-				R9_ImgSetColor(img,x,y,dw);
-			}
-		}
+				img->setColor(x,y,GetPixel(hdc,irect.p1.x+x,irect.p1.y+y));
 		ReleaseDC(NULL,hdc);
 	}
 	else // from backbuffer

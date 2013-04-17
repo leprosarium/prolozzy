@@ -193,7 +193,7 @@ public:
 	void SetViewport(const fRect & rect );					// set viewport rect (used as scissor)
 	const fRect & GetViewport() const { return m_viewport; }
 
-	void SetView(int x, int y, dword flip);				// set view options
+	void SetView(const iV2 & offs, dword flip);				// set view options
 
 	void SetBlend(Blend b);
 	Blend GetBlend() const { return blend; }
@@ -242,7 +242,7 @@ public:
 	bool CopyTargetToImage( R9TEXTURE target, r9Img* img, fRect* rect );	// copy the content of a texture target from (0,0) into an image at a specified rect
 
 // font
-		BOOL		CreateFont();									// creates render debug font, from source resources; call at the end of platform Init, since it requires a texture to be created
+	bool MakeFont();									// creates render debug font, from source resources; call at the end of platform Init, since it requires a texture to be created
 
 // members
 		HMODULE			m_dll;				// platform dll
@@ -252,8 +252,7 @@ public:
 		bool			m_beginendscene;	// if inside begin-end scene cycle
 		R9TEXTURE		m_texture;			// current texture
 		fRect			m_viewport;			// viewport rect
-		int				m_viewx;			// view x offset
-		int				m_viewy;			// view y offset
+		iV2				viewOffs;			// view offset
 		dword			m_viewflip;			// view flip option
 		fRect			m_cliprect;			// clipping rect (clipping is performed if rect is valid)
 		bool			m_needflush;		// need flush, batch buffer not empty
@@ -396,7 +395,7 @@ inline	void		R9_SetTexture( R9TEXTURE tex )							{ assert(r9_render); r9_render
 inline	R9TEXTURE	R9_GetTexture()											{ assert(r9_render); return r9_render->GetTexture(); }
 inline	void		R9_SetViewport( fRect& rect )							{ assert(r9_render); r9_render->SetViewport(rect); }
 inline	const fRect& R9_GetViewport()										{ assert(r9_render); return r9_render->GetViewport(); }
-inline	void		R9_SetView( int x, int y, dword flip )					{ assert(r9_render); r9_render->SetView(x,y,flip); }
+inline	void		R9_SetView(const iV2 & offs, dword flip )				{ assert(r9_render); r9_render->SetView(offs,flip); }
 inline	void		R9_SetBlend(Blend b)						{ assert(r9_render); r9_render->SetBlend(b); }
 inline	Blend		R9_GetBlend()								{ assert(r9_render); return r9_render->GetBlend(); }
 inline	void		R9_SetFilter(Filter f)						{ assert(r9_render); r9_render->SetFilter(f); }

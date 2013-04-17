@@ -31,7 +31,7 @@ void cGUIColorPick::Update()
 	{
 		float x = ((float)mx / (rc.right-rc.left))*m_img.m_width;
 		float y = ((float)my / (rc.bottom-rc.top))*m_img.m_height;
-		dword color	= R9_ImgGetColor(&m_img,(int)x,(int)y);
+		dword color	= m_img.getColor((int)x,(int)y);
 		SetInt(IV_COLOR,color);
 
 		if(I9_GetKeyUp(I9_MOUSE_B1))

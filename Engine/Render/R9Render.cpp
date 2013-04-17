@@ -29,8 +29,6 @@ r9Render::r9Render(Api api) :
 	m_hwnd(),
 	m_beginendscene(),
 	m_texture(),
-	m_viewx(),
-	m_viewy(),
 	m_viewflip(),
 	m_needflush(),
 	m_primitivecount(),
@@ -58,7 +56,7 @@ bool r9Render::Init(HWND hwnd, r9Cfg * cfg)
 	if(BeginScene()) { Clear(0xff000000); EndScene(); Present(); }
 
 	// font
-	CreateFont();
+	MakeFont();
 	return true;
 }
 
@@ -108,10 +106,9 @@ void r9Render::SetViewport( const fRect & rect )
 	ApplyViewport();
 }
 
-void r9Render::SetView( int x, int y, dword flip )
+void r9Render::SetView( const iV2 & v, dword flip )
 {
-	m_viewx = x;
-	m_viewy = y;
+	viewOffs = v;
 	m_viewflip = flip;
 	ApplyView();
 }
@@ -162,7 +159,7 @@ void r9Render::SetDefaultStates()
 	ApplyTAddress();
 	ApplyFilter();
 	SetViewport(fRect(0,0,GetWidth(),GetHeight()));
-	SetView( 0, 0, 0 );
+	SetView(iV2(), 0 );
 }
 
 bool r9Render::BeginScene(R9TEXTURE target)
@@ -309,34 +306,30 @@ void r9Render::DrawSprite( const fV2 & pos, const fRect & src, R9TEXTURE tex, dw
 
 }
 
-BOOL r9Render::CreateFont()
+bool r9Render::MakeFont()
 {
-	assert(m_font==NULL);
-	char* filename; // name for the memory file
-	dword memsize; // memory buffer (file) size
-	byte* memfile; // memory buffer
+	assert(m_font==nullptr);
 
 	// create fixed font (courier new)
 	m_font = new r9Font();
 	m_font->Create(ChrW,ChrH-1);
 
 	// create texture from memory
-	R9TEXTURE tex;
-	memsize = r9_fonttga_buffer[0];
-	memfile = (byte*)malloc(memsize);
-	if(!decompress_data((byte*)(r9_fonttga_buffer+2),r9_fonttga_buffer[1],memfile,memsize)) goto error;
-	filename = F9_MakeFileName("font.tga",memfile,memsize);
-	if(!filename) goto error;
-	tex = TextureLoad(filename);
-	if(!tex) goto error;
-	m_font->SetTexture(tex);
-	free(memfile);
-	return TRUE;
+	;
+	dword memsize = r9_fonttga_buffer[0];
+	byte * memfile = new byte[memsize];
+	if(decompress_data((byte*)(r9_fonttga_buffer+2),r9_fonttga_buffer[1],memfile,memsize))
+		if(char *filename = F9_MakeFileName("font.tga",memfile,memsize))
+			if(R9TEXTURE tex = TextureLoad(filename))
+			{
+				m_font->SetTexture(tex);
+				delete [] memfile;
+				return true;
 
-	error:
-	delete m_font; m_font=NULL;
-	if(memfile) free(memfile);
-	return FALSE;
+			}
+	delete m_font; m_font=nullptr;
+	delete [] memfile;
+	return false;
 }
 
 

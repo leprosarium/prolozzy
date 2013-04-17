@@ -602,7 +602,7 @@ void cDizGame::Draw()
 
 	if( flip )
 	{
-		R9_SetView( vv.x, vv.y, flip );
+		R9_SetView( vv, flip );
 	}
 
 	m_visible_brushes = 0;
@@ -653,7 +653,7 @@ void cDizGame::Draw()
 	}
 
 	if( flip )
-		R9_SetView( 0, 0, 0 );
+		R9_SetView( iV2(), 0 );
 
 	// borders
 	R9_DrawBar( fRect( 0.0f, 0.0f, (float)R9_GetWidth(), rect.p1.y ),					borderColor()|0xff000000);

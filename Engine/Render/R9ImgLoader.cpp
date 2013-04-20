@@ -530,7 +530,7 @@ BOOL R9_ImgReadHeaderPNG( F9FILE file, r9Img* img )
 #else
 
 BOOL	R9_ImgReadPNG		( F9FILE file, r9Img* img )	{ return FALSE; }
-BOOL	R9_ImgWritePNG		( F9FILE file, r9Img* img )	{ return FALSE; }
+bool	R9_ImgWritePNG		( F9FILE file, r9Img* img )	{ return false; }
 BOOL	R9_ImgReadHeaderPNG	( F9FILE file, r9Img* img )	{ return FALSE; }
 
 #endif

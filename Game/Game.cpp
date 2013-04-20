@@ -66,8 +66,9 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	// init debug
 	BOOL openlog = false;
 	ini_getint( file_getfullpath(GetIniFile()), "ADVANCED", "log",  &openlog );
-	D9_INIT(GetLogFile(),nullptr,openlog);
 
+	D9_LogInit(GetLogFile(),nullptr);													\
+	E9_OpenChannels( openlog );	
 
 	// init engine
 	if(E9_Init())
@@ -88,8 +89,6 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 		// done engine
 		E9_Done();
 	}
-	// done debug
-	D9_DONE();
 	return 0;
 }
 

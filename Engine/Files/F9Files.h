@@ -17,6 +17,7 @@
 #define __F9FILES_H__
 
 #include <vector>
+#include <assert.h>
 
 #include "F9Archive.h"
 

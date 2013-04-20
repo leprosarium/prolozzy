@@ -86,9 +86,6 @@
     <ClInclude Include="Common\E9Math.h" />
     <ClInclude Include="Common\E9String.h" />
     <ClInclude Include="Common\E9System.h" />
-    <ClInclude Include="Debug\D9Breakpoint.h" />
-    <ClInclude Include="Debug\D9Debug.h" />
-    <ClInclude Include="Debug\D9DH.h" />
     <ClInclude Include="Debug\D9Log.h" />
     <ClInclude Include="Files\F9Archive.h" />
     <ClInclude Include="Files\F9ArchivePak.h" />
@@ -129,9 +126,6 @@
     <ClCompile Include="Common\E9Engine.cpp" />
     <ClCompile Include="Common\E9String.cpp" />
     <ClCompile Include="Common\E9System.cpp" />
-    <ClCompile Include="Debug\D9Breakpoint.cpp" />
-    <ClCompile Include="Debug\D9Debug.cpp" />
-    <ClCompile Include="Debug\D9DH.cpp" />
     <ClCompile Include="Debug\D9Log.cpp" />
     <ClCompile Include="Files\F9Archive.cpp" />
     <ClCompile Include="Files\F9ArchivePak.cpp" />

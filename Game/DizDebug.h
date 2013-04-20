@@ -5,7 +5,6 @@
 #define __GAMEDEBUG_H__
 
 #include "E9System.h"
-#include "D9Debug.h"
 #include "R9Render.h"
 #include "E9Math.h"
 #include "SWI-Stream.h"

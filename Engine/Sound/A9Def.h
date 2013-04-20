@@ -8,7 +8,6 @@
 
 #include "E9System.h"
 #include "E9Engine.h"
-#include "D9Debug.h"		// use better debug system
 #include "F9Files.h"		// use files system
 
 

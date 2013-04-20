@@ -6,12 +6,13 @@
 #define __R9RENDER_H__
 
 #include <vector>
+#include <assert.h>
 
 #include "E9System.h"
 #include "E9Engine.h"
-#include "D9Debug.h"
 #include "R9Img.h"
 #include "E9Math.h"
+#include "D9Log.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

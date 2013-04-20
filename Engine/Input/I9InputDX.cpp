@@ -3,6 +3,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
 #include "i9InputDX.h"
+#include "D9Log.h"
 
 #define I9_LOGERROR( prefix )	dlog( LOGINP, L"INPUT: %S (%S)\n", prefix, ErrorDesc(err) );
 

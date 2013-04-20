@@ -120,10 +120,12 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
 	// init debug
 	BOOL openlog = TRUE;
-	D9_INIT("editor.log",nullptr,openlog);
+
+	D9_LogInit("editor.log",nullptr);													\
+	E9_OpenChannels( openlog );		
 	
 	// init engine
-	if(!E9_Init()) goto done;
+	if(!E9_Init()) return 1;
 
 	// prepare application callbacks
 	E9_AppSetCallback( E9_APP_ONINIT,		AppOnInit );
@@ -142,9 +144,6 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	// done engine
 	E9_Done();
 
-	done:
-	// done debug
-	D9_DONE();
 	return 0;
 }
 

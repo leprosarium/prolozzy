@@ -5,7 +5,6 @@
 #define __DIZMAP_H__
 
 #include "E9System.h"
-#include "D9Debug.h"
 #include "DizPaint.h"
 
 #include <vector>

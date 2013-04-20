@@ -5,7 +5,6 @@
 #define __EDIAPP_H__
 
 #include "E9System.h"
-#include "D9Debug.h"
 #include "E9App.h"
 #include "EdiDef.h"
 #include "EdiPaint.h"

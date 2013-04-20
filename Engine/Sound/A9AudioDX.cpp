@@ -5,6 +5,7 @@
 #include "A9AudioDX.h"
 #include "E9Math.h"
 #include "F9Files.h"
+#include "D9Log.h"
 
 #define A9_LOGERROR( prefix )	dlog( LOGSND, L"AUDIO: %S (%S)\n", prefix, ErrorDesc(hr) );
 

@@ -2,8 +2,8 @@
 // I9FFDX.cpp
 //////////////////////////////////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
-#include "D9Debug.h"
 #include "I9FFDX.h"
+#include "D9Log.h"
 
 #define I9_FF_MAXFORCE		DI_FFNOMINALMAX // 10000
 

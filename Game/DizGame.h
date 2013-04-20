@@ -5,7 +5,6 @@
 #define __DIZGAME_H__
 
 #include "E9System.h"
-#include "D9Debug.h"
 #include "DizCfg.h"
 #include "DizPaint.h"
 #include "DizMap.h"

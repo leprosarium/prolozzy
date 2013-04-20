@@ -3,6 +3,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
 #include "I9InputDX.h"
+#include "D9Log.h"
 
 #define I9_KEYBOARD_BUFFERSIZE	64
 #define I9_MOUSE_BUFFERSIZE		64

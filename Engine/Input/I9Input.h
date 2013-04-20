@@ -15,8 +15,8 @@
 
 #include "E9System.h"
 #include "E9Engine.h"
-#include "D9Debug.h"
 #include "I9Def.h"
+#include <assert.h>
 
 #define I9_API_DEFAULT			0				// default api
 

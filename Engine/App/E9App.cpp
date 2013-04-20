@@ -2,8 +2,8 @@
 // E9App.cpp
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
-#include "D9Debug.h"
 #include "E9App.h"
+#include "D9Log.h"
 
 const char*	e9App::m_cmdline					= NULL;
 char	    e9App::m_path[MAX_PATH]				= "";

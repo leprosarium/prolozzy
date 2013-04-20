@@ -7,6 +7,7 @@
 #include "F9FileRes.h"
 #include "F9ArchiveZip.h"
 #include "F9ArchivePak.h"
+#include "D9Log.h"
 
 f9Files::f9Files()
 {

@@ -7,6 +7,7 @@
 
 #include "F9Archive.h"
 #include "F9FileDisk.h"
+#include <string>
 #include <hash_map>
 //#include "zlib.h"
 

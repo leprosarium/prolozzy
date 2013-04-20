@@ -9,6 +9,7 @@
 #include "F9FileDisk.h"
 #include "..\\Libs\\zlib\\zlib.h"
 
+#include <string>
 #include <hash_map>
 
 struct f9ZipFileInfo

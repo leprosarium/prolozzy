@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
 #include "E9Engine.h"
-#include "D9Debug.h"
+#include "D9Log.h"
 
 HWND e9Engine::m_hwnd = NULL;
 HINSTANCE e9Engine::m_hinstance = NULL;

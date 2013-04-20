@@ -4,7 +4,6 @@
 #include "stdafx.h"
 #include "E9System.h"
 #include "E9Engine.h"
-#include "D9Debug.h"
 
 #ifdef E9_ENABLE_ZIP
 // make sure the paths to the libs are ok

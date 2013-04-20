@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "I9Input.h"
 #include "I9InputDX.h"
+#include "D9Log.h"
 
 i9Input* i9_input = NULL;
 

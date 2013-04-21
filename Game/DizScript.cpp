@@ -18,8 +18,8 @@
 
 static ssize_t Log_write(void *handle, char *buffer, size_t size)
 { 
-	int ch = reinterpret_cast<int>(handle);
-	D9_LogBuf(ch, buffer, size);
+	size_t ch = reinterpret_cast<size_t>(handle);
+	d9Log::printBuf(ch, buffer, size);
 	return size;
 }
 

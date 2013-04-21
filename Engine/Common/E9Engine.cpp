@@ -8,22 +8,22 @@
 HWND e9Engine::m_hwnd = NULL;
 HINSTANCE e9Engine::m_hinstance = NULL;
 
-void E9_OpenChannels( BOOL open )
+void E9_OpenChannels(bool open)
 {
 	dword logflags = D9_LOGFLAG_DEFAULT;
 	if(!open) logflags &= ~D9_LOGFLAG_OPEN;
 
-	D9_LogSetChannel( LOGNUL, "NUL", logflags,				DWORD_GREY		);
-	D9_LogSetChannel( LOGSYS, "SYS", D9_LOGFLAG_DEFAULT,	DWORD_RED		);
-	D9_LogSetChannel( LOGERR, "ERR", D9_LOGFLAG_DEFAULT,	DWORD_RED		);
-	D9_LogSetChannel( LOGENG, "ENG", logflags, 				DWORD_BLUE		);
-	D9_LogSetChannel( LOGDBG, "DBG", logflags, 				DWORD_ORANGE	);
-	D9_LogSetChannel( LOGFIL, "FIL", logflags, 				DWORD_DGREEN	);
-	D9_LogSetChannel( LOGINP, "INP", logflags, 				DWORD_GREEN		);
-	D9_LogSetChannel( LOGRND, "RND", logflags, 				DWORD_LRED		);
-	D9_LogSetChannel( LOGSND, "SND", logflags, 				DWORD_LRED		);
-	D9_LogSetChannel( LOGGS , "GS ", logflags, 				DWORD_LBLUE		);
-	D9_LogSetChannel( LOGAPP, "APP", logflags, 				DWORD_GREEN		);
+	d9Log::setChannel( LOGNUL, "NUL", logflags,				DWORD_GREY);
+	d9Log::setChannel( LOGSYS, "SYS", D9_LOGFLAG_DEFAULT,	DWORD_RED);
+	d9Log::setChannel( LOGERR, "ERR", D9_LOGFLAG_DEFAULT,	DWORD_RED);
+	d9Log::setChannel( LOGENG, "ENG", logflags, 			DWORD_BLUE);
+	d9Log::setChannel( LOGDBG, "DBG", logflags, 			DWORD_ORANGE);
+	d9Log::setChannel( LOGFIL, "FIL", logflags, 			DWORD_DGREEN);
+	d9Log::setChannel( LOGINP, "INP", logflags, 			DWORD_GREEN);
+	d9Log::setChannel( LOGRND, "RND", logflags, 			DWORD_LRED);
+	d9Log::setChannel( LOGSND, "SND", logflags, 			DWORD_LRED);
+	d9Log::setChannel( LOGGS , "GS ", logflags, 			DWORD_LBLUE);
+	d9Log::setChannel( LOGAPP, "APP", logflags, 			DWORD_GREEN);
 }
 
 BOOL E9_Init()

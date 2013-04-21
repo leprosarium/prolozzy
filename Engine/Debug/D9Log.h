@@ -18,8 +18,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Defines
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#define D9_LOG_CHANNELMAX				64					// max number of log channels
-#define D9_LOG_NAMESIZE					32					// size of a channel name
+
 #define D9_LOG_BUFFERSIZE				1024				// size of a single log message and of the storing buffer
 
 // flags
@@ -29,38 +28,45 @@
 #define D9_LOGFLAG_CALLBACK				(1<<3)				// send to callback
 #define D9_LOGFLAG_DEFAULT				(D9_LOGFLAG_OPEN|D9_LOGFLAG_FILE|D9_LOGFLAG_DEBUG|D9_LOGFLAG_CALLBACK)
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// d9Log class
-///////////////////////////////////////////////////////////////////////////////////////////////////
-typedef std::function<void(int,LPCWSTR)> d9LogCallback;
-
 struct d9LogChannel
 {
-			d9LogChannel();
+	d9LogChannel() : m_flags(), m_color(0xffffffff) {}
 
-	char	m_name[D9_LOG_NAMESIZE];	// channel name
-	dword	m_flags;					// status flags (0=closed)
-	dword	m_color;					// color option
+	std::string m_name;	// channel name
+	dword	m_flags;	// status flags (0=closed)
+	dword	m_color;	// color option
 };
 
 class d9Log
 {
 public:
+	static const int ChannelMax = 64;					// max number of log channels
 
-static	void			Init( const char* logfile, d9LogCallback callback = nullptr );
-static	void			Clear();
-static	void			SetChannel( int ch, const char* name, dword flags, dword color );
-static	void			Store( BOOL enable );
+	typedef std::function<void(int,LPCWSTR)> callback;
+private:
+	static std::string m_logfile;				// log file
+	static d9LogChannel	m_logc[ChannelMax];		// channels
+	static bool m_store;						// if log is stored or not
+	static std::wstring	m_buffer;				// stored log
+	static callback m_callback;					// log user callback
+public:
 
-static	void			PrintV( int ch, LPCWSTR fmt, va_list args );
-static	void			PrintF( int ch, LPCWSTR fmt, ... );
-static	void			PrintF( LPCWSTR fmt, ... );
-static	void			PrintBuf(int ch, LPCSTR buffer, size_t size);
-static	char			m_logfile[D9_LOG_NAMESIZE];		// log file
-static	d9LogChannel	m_logc[D9_LOG_CHANNELMAX];		// channels
-static	BOOL			m_store;						// if log is stored or not
-static	std::wstring	m_buffer;						// stored log
-static	d9LogCallback	m_callback;						// log user callback
+	static void Init(const char* logfile, callback c = nullptr);
+	static void	clear();
+	static void store(bool enable);
+
+	static void printV(size_t ch, LPCWSTR fmt, va_list args);
+	static void printF(size_t ch, LPCWSTR fmt, ... ) { va_list	args; va_start(args, fmt); printV(ch, fmt, args); va_end(args); }
+	static void printF(LPCWSTR fmt, ... ) { va_list	args; va_start(args, fmt); printV(0, fmt, args); va_end(args); }
+	static void printBuf(size_t ch, LPCSTR buffer, size_t size);
+
+
+	static void setChannel(size_t ch, const char* name, dword flags, dword color=0xffffffff);
+	static void	setFlag(size_t ch, dword flag, bool on) { if(on) m_logc[ch].m_flags |= flag; else m_logc[ch].m_flags &= ~flag; }
+	static dword getColor(size_t ch) { return m_logc[ch].m_color; }
+	static void setCallback(callback c) { m_callback = c; }
+
+	static void	openChannel(int ch, bool open) { setFlag(ch, D9_LOGFLAG_OPEN, open); }
 
 };
 
@@ -68,20 +74,8 @@ static	d9LogCallback	m_callback;						// log user callback
 // INTERFACE
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define	dlog	D9_LogPrintF
+#define	dlog	d9Log::printF
 
-inline	void	D9_LogBuf( int ch, LPCSTR buffer, size_t size) { d9Log::PrintBuf(ch, buffer, size); }
-inline	void	D9_LogInit( const char* logfile, d9LogCallback callback=nullptr  )											{ d9Log::Init( logfile, callback ); }
-inline	void	D9_LogPrintV( int ch, LPCWSTR fmt, va_list args )													{ d9Log::PrintV( ch, fmt, args ); }
-inline	void	D9_LogPrintF( int ch, LPCWSTR fmt, ... )															{ va_list args;	va_start(args, fmt); D9_LogPrintV(ch, fmt, args); va_end(args); }
-inline	void	D9_LogPrintF( LPCWSTR fmt, ... )																	{ va_list args; va_start(args, fmt); D9_LogPrintV(0, fmt, args); va_end(args); }
-inline	void	D9_LogSetCallback( d9LogCallback callback )																{ d9Log::m_callback = callback; }
-inline	void	D9_LogSetChannel( int ch, const char* name, dword flags=D9_LOGFLAG_DEFAULT, dword color=0xffffffff )	{ d9Log::SetChannel( ch, name, flags, color ); }
-inline	void	D9_LogSetChannelFlag( int ch, dword flag, BOOL on )														{ if(on) d9Log::m_logc[ch].m_flags |= flag; else d9Log::m_logc[ch].m_flags &= ~flag; }
-inline	dword	D9_LogGetChannelColor( int ch )																			{ return d9Log::m_logc[ch].m_color; }
-inline	void	D9_LogOpenChannel( int ch, BOOL open )																	{ D9_LogSetChannelFlag( ch, D9_LOGFLAG_OPEN, open ); }
-inline	void	D9_LogStore( BOOL enable )																				{ d9Log::Store( enable ); }
-inline	LPCWSTR	D9_LogGetBuffer()																						{ return d9Log::m_buffer.c_str(); }
 
 #endif
 ///////////////////////////////////////////////////////////////////////////////////////////////////

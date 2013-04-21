@@ -119,9 +119,9 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	PlEngine e(sizeof(av) / sizeof(*av) - 1, av);
 
 	// init debug
-	BOOL openlog = TRUE;
+	bool openlog = true;
 
-	D9_LogInit("editor.log",nullptr);													\
+	d9Log::Init("editor.log");													\
 	E9_OpenChannels( openlog );		
 	
 	// init engine

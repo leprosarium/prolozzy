@@ -119,7 +119,7 @@ ssize_t Prolog::Read(char *buffer, size_t size)
 				memcpy(buffer, Cmd.c_str(), sz);
 				Cmd = "";
 				PL_prompt_next(0);
-				D9_LogBuf(LOGDBG, buffer, sz);
+				d9Log::printBuf(LOGDBG, buffer, sz);
 				E9_AppSetCallback(E9_APP_ONPAINT, pnt);
 				return sz;
 			}
@@ -151,7 +151,7 @@ bool cDizDebug::Init()
 
 	// console
 	_visible = false;
-	D9_LogSetCallback([this](int ch,LPCWSTR msg) {this->ConsolePush( ch, msg );});
+	d9Log::setCallback([this](int ch,LPCWSTR msg) {this->ConsolePush( ch, msg );});
 
 	//log
 	dlog(LOGAPP, L"%S v%S\n",GAME_NAME,GAME_VERSION);
@@ -380,7 +380,7 @@ void Console::Draw()
 	R9_DrawBar(rect, COLOR_BBKGR);
 	fV2 p = rect.p1 + fV2(ChrW, ChrH);
 	for(auto line = begin() + PageBegin; p.y < rect.p2.y && line != end(); ++line, p.y += static_cast<float>(ChrH)) // show as many as you can
-		R9_DrawText(p, line->c_str(), D9_LogGetChannelColor(line->Ch));
+		R9_DrawText(p, line->c_str(), d9Log::getColor(line->Ch));
 	R9_SetClipping(oldclip);
 }
 

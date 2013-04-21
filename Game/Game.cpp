@@ -64,11 +64,11 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	PlEngine e(sizeof(av) / sizeof(*av) - 1, av);
 	
 	// init debug
-	BOOL openlog = false;
+	int openlog = 0;
 	ini_getint( file_getfullpath(GetIniFile()), "ADVANCED", "log",  &openlog );
 
-	D9_LogInit(GetLogFile(),nullptr);													\
-	E9_OpenChannels( openlog );	
+	d9Log::Init(GetLogFile());													\
+	E9_OpenChannels( openlog != 0);	
 
 	// init engine
 	if(E9_Init())

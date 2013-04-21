@@ -42,7 +42,7 @@ static	HINSTANCE	m_hinstance;		// main hinstance
 #define LOGAPP				10			// application
 //		...
 
-		void		E9_OpenChannels( BOOL open=TRUE );		// open debug channels; called by debug init
+		void		E9_OpenChannels(bool open = true);		// open debug channels; called by debug init
 		BOOL		E9_Init();								// init engine general stuff
 		void		E9_Done();								// done engine
 inline	HWND		E9_GetHWND()							{ return e9Engine::m_hwnd; }

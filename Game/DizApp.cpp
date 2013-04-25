@@ -70,12 +70,12 @@ bool cDizApp::Init()
 
 bool cDizApp::InitApp()
 {
-	E9_AppSetStr(E9_APP_NAME,GAME_NAME);
-	E9_AppSetStr(E9_APP_ICON,MAKEINTRESOURCE(IDI_ICON));
+	e9App::Name(GAME_NAME);
+	e9App::Icon(MAKEINTRESOURCE(IDI_ICON));
 
-	BOOL cool = true;
-	ini_getint( file_getfullpath(GetIniFile()), "ADVANCED", "cool",	&cool );
-	E9_AppSetInt(E9_APP_COOL,cool);
+	bool cool = true;
+	ini_get( file_getfullpath(GetIniFile()), "ADVANCED", "cool", cool);
+	e9App::Cool(cool);
 	
 	return true;
 }
@@ -159,7 +159,7 @@ bool cDizApp::InitVideo()
 	}
 
 	R9_SetFilter(Filter::Point);
-	E9_AppSetInt(E9_APP_WINDOWED,cfg.windowed);
+	e9App::Windowed(cfg.windowed);
 
 	return true;
 }
@@ -185,7 +185,7 @@ void cDizApp::Done()
 	dlog(LOGAPP, L"App done.\n");
 }
 
-void cDizApp::Activate( BOOL active )
+void cDizApp::Activate( bool active )
 {
 	if(active)
 	{
@@ -242,8 +242,8 @@ bool cDizApp::ToggleVideo()
 
 	// reacquire
 	R9_SetFilter(Filter::Point);
-	E9_AppSetInt(E9_APP_WINDOWED,R9_GetCfg().windowed);
-	E9_AppSetCursor(R9_GetCfg().windowed ? E9_CURSOR_ARROW : E9_CURSOR_NONE);
+	e9App::Windowed(R9_GetCfg().windowed);
+	e9App::SetCursor(R9_GetCfg().windowed ? Cursor::Arrow : Cursor::None);
 	g_dizdebug.Layout();
 	g_paint.Reacquire();
 	g_paint.Layout();
@@ -259,7 +259,7 @@ bool cDizApp::Update()
 	static int timersec=0;		// timer for one sec
 	static int gameframecount = 0;
 	
-	timersec += E9_AppGetInt(E9_APP_DELTATIME);
+	timersec += e9App::DeltaTime();
 	if(timersec>=1000)
 	{
 		timersec %= 1000;
@@ -268,12 +268,12 @@ bool cDizApp::Update()
 	}
 
 	// input
-	float dtime = (float)E9_AppGetInt(E9_APP_DELTATIME) / 1000.0f;
+	float dtime = (float)e9App::DeltaTime() / 1000.0f;
 	if(I9_IsReady()) I9_Update(dtime);
 
 	g_sound.Update(); // update sounds
 
-	timergame += E9_AppGetInt(E9_APP_DELTATIME);
+	timergame += e9App::DeltaTime();
 	int gamefps = g_game.fps();
 	if(gamefps<1) gamefps=1;
 	int gameframetime = 1000/gamefps;
@@ -297,12 +297,12 @@ bool cDizApp::Update()
 	if( I9_IsReady() )
 	{
 		bool ctrl  = I9_GetKeyValue(I9K_LCONTROL) || I9_GetKeyValue(I9K_RCONTROL);
-		if( I9_GetKeyDown(I9K_F1) && E9_AppGetInt(E9_APP_WINDOWED) ) DialogBox( E9_GetHINSTANCE(), MAKEINTRESOURCE(IDD_INFO), E9_GetHWND(), DialogProcInfo );
+		if( I9_GetKeyDown(I9K_F1) && e9App::Windowed()) DialogBox( E9_GetHINSTANCE(), MAKEINTRESOURCE(IDD_INFO), E9_GetHWND(), DialogProcInfo );
 		if( I9_GetKeyDown(I9K_F10) ) 
 		{
 			// obsolete
 			// R9_ToggleVideoMode(); // toggle windowed mode (F10)
-			// E9_AppSetInt(E9_APP_WINDOWED,R9_GetCfg().m_windowed);
+			// e9App::SetInt(E9_APP_WINDOWED,R9_GetCfg().m_windowed);
 			// g_paint.Layout();
 
 			bool ok = ToggleVideo();
@@ -362,7 +362,7 @@ void cDizApp::Draw()
 void cDizApp::DrawStats()
 {
 	char sz[128];
-	sprintf(sz, "obj:%i, brs:%i, fps:%i/%i", g_game.m_obj.size(), g_game.m_visible_brushes, (int)m_gamefps, E9_AppGetInt(E9_APP_FPS));
+	sprintf(sz, "obj:%i, brs:%i, fps:%i/%i", g_game.m_obj.size(), g_game.m_visible_brushes, (int)m_gamefps, e9App::FPS());
 
 	float w = (float)ChrW*(int)strlen(sz)+4;
 	float h = (float)ChrH+4;

@@ -10,7 +10,7 @@
 #include "R9Resources.h"
 
 r9Cfg::r9Cfg() : 
-	windowed(1),
+	windowed(true),
 	width(CfgWidth),
 	height(CfgHeight),
 	bpp(CfgBPP),

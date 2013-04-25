@@ -130,7 +130,7 @@ void cGUI::Draw()
 	}
 
 	// mouse cursor (for full screen tests)
-	if(!E9_AppGetInt(E9_APP_WINDOWED))
+	if(!e9App::Windowed())
 		R9_DrawLine( fV2(m_mousex, m_mousey), fV2(m_mousex+10, m_mousey+10), 0xffffffff );
 
 }

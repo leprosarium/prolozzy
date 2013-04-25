@@ -23,7 +23,7 @@ public:
 		bool	InitVideo();
 
 		void	Done();
-		void	Activate( BOOL active );
+		void	Activate( bool active );
 		bool	ToggleVideo();  
 
 		bool	Update();

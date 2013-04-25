@@ -63,7 +63,7 @@ void Prolog::Open(bool o) {
 
 ssize_t Prolog::Read(char *buffer, size_t size)
 {
-	e9AppCallback pnt = E9_AppSetCallback(E9_APP_ONPAINT, [this]() { return this->Draw(); });
+	e9AppCallback pnt = e9App::SetCallback(Callback::OnPaint, [this]() { return this->Draw(); });
 
 	MSG	msg;
 	input.Open();
@@ -88,7 +88,7 @@ ssize_t Prolog::Read(char *buffer, size_t size)
 			}
 		}
 		e9App::UpdateClocks();
-		if(I9_IsReady()) { I9_Update(E9_AppGetInt(E9_APP_DELTATIME) / 1000.0f); }
+		if(I9_IsReady()) { I9_Update(e9App::DeltaTime() / 1000.0f); }
 		con.Update();
 		if(!single) input.Update();
 		Draw();
@@ -106,7 +106,7 @@ ssize_t Prolog::Read(char *buffer, size_t size)
 				if(!ascii) 
 					continue;
 				buffer[0]=ascii;
-				E9_AppSetCallback(E9_APP_ONPAINT, pnt);
+				e9App::SetCallback(Callback::OnPaint, pnt);
 				return 1;
 			}
 		}
@@ -120,7 +120,7 @@ ssize_t Prolog::Read(char *buffer, size_t size)
 				Cmd = "";
 				PL_prompt_next(0);
 				d9Log::printBuf(LOGDBG, buffer, sz);
-				E9_AppSetCallback(E9_APP_ONPAINT, pnt);
+				e9App::SetCallback(Callback::OnPaint, pnt);
 				return sz;
 			}
 		}

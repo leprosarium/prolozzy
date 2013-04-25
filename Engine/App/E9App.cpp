@@ -9,12 +9,12 @@ const char*	e9App::m_cmdline					= NULL;
 char	    e9App::m_path[MAX_PATH]				= "";
 HINSTANCE	e9App::m_hinstance					= NULL;
 HWND		e9App::m_hwnd						= NULL;
-BOOL		e9App::m_active						= FALSE;
-BOOL		e9App::m_minimized					= FALSE;
-BOOL		e9App::m_windowed					= TRUE;
-BOOL		e9App::m_cool						= TRUE;
-int			e9App::m_cursor						= 1; //arrow default
-HCURSOR		e9App::m_hcursor[E9_CURSOR_MAX]		= { NULL, NULL, NULL, NULL, NULL };
+bool		e9App::m_active						= false;
+bool		e9App::m_minimized					= false;
+bool		e9App::m_windowed					= true;
+bool		e9App::m_cool						= true;
+Cursor		e9App::m_cursor						= Cursor::Default;
+HCURSOR		e9App::m_hcursor[Cursor::Max]		= { NULL, NULL, NULL, NULL, NULL };
 
 int			e9App::m_frame						= 0;
 dword		e9App::m_tick						= 0;
@@ -23,17 +23,18 @@ float		e9App::m_fps						= 0;
 
 void*		e9App::m_param[4]					= {NULL,NULL,NULL,NULL};
 
-e9AppCallback e9App::m_callback[E9_APP_CALLBACKS] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+e9AppCallback e9App::m_callback[Callback::Max] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 
-e9AppCallback e9App::SetCallback( int idx, e9AppCallback callback )
+e9AppCallback e9App::SetCallback( Callback c, e9AppCallback callback )
 {
-	assert(0<=idx && idx<E9_APP_CALLBACKS);
+	assert(Callback::OnInit<=c && c <Callback::Max);
+	size_t idx = static_cast<size_t>(c);
 	e9AppCallback prev = m_callback[idx];
 	m_callback[idx] = callback;
 	return prev;
 }
 
-BOOL e9App::Init( HINSTANCE hinstance, const char* cmdline )
+bool e9App::Init( HINSTANCE hinstance, const char* cmdline )
 {
 	// init
 	m_hinstance	= hinstance;
@@ -42,19 +43,19 @@ BOOL e9App::Init( HINSTANCE hinstance, const char* cmdline )
 	E9_SetHINSTANCE(hinstance);
 
 	// cursors
-	m_hcursor[E9_CURSOR_NONE]	= NULL;
-	m_hcursor[E9_CURSOR_ARROW]	= LoadCursor(NULL, IDC_ARROW);
-	m_hcursor[E9_CURSOR_WAIT]	= LoadCursor(NULL, IDC_WAIT);
-	m_hcursor[E9_CURSOR_HAND]	= LoadCursor(NULL, IDC_HAND);
-	m_hcursor[E9_CURSOR_CUSTOM]	= NULL;
+	m_hcursor[static_cast<size_t>(Cursor::None)]	= NULL;
+	m_hcursor[static_cast<size_t>(Cursor::Arrow)]	= LoadCursor(NULL, IDC_ARROW);
+	m_hcursor[static_cast<size_t>(Cursor::Wait)]	= LoadCursor(NULL, IDC_WAIT);
+	m_hcursor[static_cast<size_t>(Cursor::Hand)]	= LoadCursor(NULL, IDC_HAND);
+	m_hcursor[static_cast<size_t>(Cursor::Custom)]	= NULL;
 
-	if(!InitWindow()) return FALSE;
+	if(!InitWindow()) return false;
 	E9_SetHWND(m_hwnd);
 
 	// user callback
 	BOOL ok=TRUE;
-	if(m_callback[E9_APP_ONINIT]) ok = m_callback[E9_APP_ONINIT]();
-	if(!ok) return FALSE; //@TODO: needs DestroyWindow(m_hwnd) ???
+	if(IsSet<Callback::OnInit>()) ok = Call<Callback::OnInit>();
+	if(!ok) return false; //@TODO: needs DestroyWindow(m_hwnd) ???
 
 	// show window
 	SetForegroundWindow( m_hwnd );
@@ -62,12 +63,12 @@ BOOL e9App::Init( HINSTANCE hinstance, const char* cmdline )
 	UpdateWindow( m_hwnd );
 	SetFocus( m_hwnd );
 
-	return TRUE;
+	return true;
 }
 
 void e9App::Done()
 {
-	if(m_callback[E9_APP_ONDONE]) m_callback[E9_APP_ONDONE]();
+	if(IsSet<Callback::OnDone>()) Call<Callback::OnDone>();
 }
 
 void e9App::Run()
@@ -98,7 +99,7 @@ void e9App::Run()
 		{
 			UpdateClocks();
 			BOOL ok = TRUE;
-			if(m_callback[E9_APP_ONRUN]) ok = m_callback[E9_APP_ONRUN]();
+			if(IsSet<Callback::OnRun>()) ok = Call<Callback::OnRun>();
 			if(!ok) break;
 		}
 		else
@@ -113,66 +114,25 @@ void e9App::Run()
 	dlog(LOGAPP, L"\nMain loop finished.\n");
 }
 
-void e9App::SetStr( int prop, const char* value )
+const char * e9App::Name()
 {
-	switch(prop)
-	{
-		case E9_APP_NAME:
-		{
-			if(!m_hwnd) return;
-			SetWindowText(m_hwnd,value);
-		}
-		case E9_APP_ICON:
-		{
-			if(!m_hwnd) return;
-			HICON hIcon = LoadIcon(m_hinstance,value);
-			if(hIcon==NULL) return;
+	if(!m_hwnd) return nullptr;
+	static char name[64];
+	GetWindowText(m_hwnd, name, 64);
+	return name;
+}
+
+void e9App::Name(const char * name) 
+{ 
+	if(m_hwnd) 
+		SetWindowText(m_hwnd, name); 
+}
+
+void e9App::Icon(const char * name) 
+{ 
+	if(m_hwnd)
+		if(HICON hIcon = LoadIcon(m_hinstance, name))
 			PostMessage(m_hwnd,WM_SETICON,ICON_BIG,(LPARAM)(HICON)hIcon);
-			return;
-		}
-	}
-}
-
-const char* e9App::GetStr( int prop )
-{
-	switch(prop)
-	{
-		case E9_APP_NAME:
-		{
-			if(!m_hwnd) return NULL;
-			static char name[64];
-			GetWindowText(m_hwnd,name,64);
-			return name;
-		}
-		case E9_APP_CMDLINE:	return m_cmdline;
-		case E9_APP_PATH:		return m_path;
-	}
-	return NULL;
-}
-
-void e9App::SetInt( int prop, int value )
-{
-	switch(prop)
-	{
-		case E9_APP_WINDOWED:	m_windowed = value; break;
-		case E9_APP_CURSOR:		m_cursor = value; break;
-		case E9_APP_COOL:		m_cool = value; break;
-	}
-}
-
-int e9App::GetInt( int prop )
-{
-	switch(prop)
-	{
-		case E9_APP_ACTIVE:		return m_active;
-		case E9_APP_WINDOWED:	return m_windowed;
-		case E9_APP_CURSOR:		return m_cursor;
-		case E9_APP_COOL:		return m_cool;
-		case E9_APP_FRAME:		return m_frame;
-		case E9_APP_DELTATIME:	return m_tick-m_ticklast;
-		case E9_APP_FPS:		return (int)m_fps;
-	}
-	return 0;
 }
 
 void e9App::SetVoid( int prop, void* value )
@@ -198,10 +158,10 @@ void* e9App::GetVoid( int prop )
 	return NULL;
 }
 
-void e9App::SetCursor( int cursor )
+void e9App::SetCursor( Cursor cursor )
 {
-	if(cursor<0 || cursor>=E9_CURSOR_MAX) return;
-	::SetCursor(m_hcursor[cursor]);
+	if(cursor < Cursor::None || cursor >= Cursor::Max) return;
+	::SetCursor(m_hcursor[static_cast<size_t>(cursor)]);
 	m_cursor = cursor;
 }
 
@@ -274,13 +234,13 @@ void e9App::UpdateClocks()
 
 LRESULT	CALLBACK e9App::WndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	if(m_callback[E9_APP_ONMSG]) 
+	if(IsSet<Callback::OnMsg>()) 
 	{
 		m_param[0] = (void*)(intptr)msg;
 		m_param[1] = (void*)(intptr)wParam;
 		m_param[2] = (void*)(intptr)lParam;
 		m_param[3] = NULL;
-		if(m_callback[E9_APP_ONMSG]()) return (LRESULT)m_param[3]; // return result fi user processed it
+		if(Call<Callback::OnMsg>()) return (LRESULT)m_param[3]; // return result fi user processed it
 	}
 
 	int cmd;
@@ -288,30 +248,30 @@ LRESULT	CALLBACK e9App::WndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 	{
 		case WM_ACTIVATEAPP:
 		{
-			BOOL active = (wParam!=0);
-			BOOL changed = (m_active!=active);
+			bool active = (wParam!=0);
+			bool changed = (m_active!=active);
 			m_active = active;
-			m_minimized = FALSE;
+			m_minimized = false;
 			if(changed) dlog(LOGAPP, L"APP: activate %S\n",m_active?"on":"off");
-			if(changed && m_callback[E9_APP_ONACTIVATE]) m_callback[E9_APP_ONACTIVATE]();
+			if(changed && IsSet<Callback::OnActivate>()) Call<Callback::OnActivate>();
 			break;
 		}
 
 		case WM_ACTIVATE:
 		{
-			BOOL active = !(LOWORD(wParam)==WA_INACTIVE);
-			BOOL changed = (m_active!=active);
+			bool active = !(LOWORD(wParam)==WA_INACTIVE);
+			bool changed = (m_active!=active);
 			m_active = active;
-			m_minimized = (HIWORD(wParam)!=0);
+			m_minimized = HIWORD(wParam)!=0;
 			if(changed) dlog(LOGAPP, L"APP: activate %S\n",m_active?"on":"off");
-			if(changed && m_callback[E9_APP_ONACTIVATE]) m_callback[E9_APP_ONACTIVATE]();
+			if(changed && IsSet<Callback::OnActivate>()) Call<Callback::OnActivate>();
 			break;
 		}
 
 		case WM_CLOSE:
-			if(m_callback[E9_APP_ONCLOSE]) 
+			if(IsSet<Callback::OnClose>()) 
 			{
-				int ret = m_callback[E9_APP_ONCLOSE]();
+				int ret = Call<Callback::OnClose>();
 				if(!ret) return 0;
 			}
 			break;
@@ -322,12 +282,12 @@ LRESULT	CALLBACK e9App::WndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 
 		case WM_PAINT:				
 			if(m_windowed && !m_minimized)
-				if(m_callback[E9_APP_ONPAINT]) m_callback[E9_APP_ONPAINT]();
+				if(IsSet<Callback::OnPaint>()) Call<Callback::OnPaint>();
 			break;
 
 		case WM_SETCURSOR:			
-			if(!m_windowed)	{ SetCursor(NULL); return 0; } // @TODO d3ddevice ShowCursor(FALSE);
-			::SetCursor(m_hcursor[m_cursor]);
+			if(!m_windowed)	{ SetCursor(Cursor::None); return 0; } // @TODO d3ddevice ShowCursor(FALSE);
+			::SetCursor(m_hcursor[static_cast<size_t>(m_cursor)]);
 			break;
 
 		case WM_SYSKEYUP:		// ignore ALT key press; was loosing app focus 

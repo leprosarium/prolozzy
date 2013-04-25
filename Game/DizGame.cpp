@@ -20,7 +20,7 @@ PREDICATE_M(game, command, 1)
 
 PREDICATE_M(game, setName, 1)
 {
-	E9_AppSetStr(E9_APP_NAME, A1);
+	e9App::Name(A1);
 	return true;
 }
 

@@ -334,7 +334,7 @@ void cEdiToolEdit::Reset()
 		m_dragcount = 0;
 		g_map.m_hideselected = FALSE;
 		g_map.m_refresh = TRUE;
-		E9_AppSetCursor(E9_CURSOR_ARROW);
+		e9App::SetCursor(Cursor::Arrow);
 	}
 	m_mode = 0;
 	m_selop = 0;
@@ -383,7 +383,7 @@ void cEdiToolEdit::Update( float dtime )
 			m_movedy = 0;
 			BrushMoveStart();
 			m_mode=2;
-			E9_AppSetCursor(E9_CURSOR_HAND);
+			e9App::SetCursor(Cursor::Hand);
 		}
 		else
 		if(I9_GetKeyDown(I9K_DELETE))	BrushDelete();
@@ -417,7 +417,7 @@ void cEdiToolEdit::Update( float dtime )
 		{
 			BrushMove();
 			m_mode=0;
-			E9_AppSetCursor(E9_CURSOR_ARROW);
+			e9App::SetCursor(Cursor::Arrow);
 		}
 	}
 

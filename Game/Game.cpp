@@ -34,7 +34,7 @@ int AppOnDone()
 int AppOnActivate()
 {
 	assert(g_dizapp!=NULL);
-	g_dizapp->Activate( E9_AppGetInt(E9_APP_ACTIVE) );
+	g_dizapp->Activate(e9App::Active());
 	return 0;
 }
 
@@ -64,27 +64,27 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	PlEngine e(sizeof(av) / sizeof(*av) - 1, av);
 	
 	// init debug
-	int openlog = 0;
-	ini_getint( file_getfullpath(GetIniFile()), "ADVANCED", "log",  &openlog );
+	bool open = false;
+	ini_get(file_getfullpath(GetIniFile()), "ADVANCED", "log",  open);
 
 	d9Log::Init(GetLogFile());													\
-	E9_OpenChannels( openlog != 0);	
+	E9_OpenChannels(open);	
 
 	// init engine
 	if(E9_Init())
 	{
 
 		// prepare application callbacks
-		E9_AppSetCallback( E9_APP_ONINIT,		AppOnInit );
-		E9_AppSetCallback( E9_APP_ONDONE,		AppOnDone );
-		E9_AppSetCallback( E9_APP_ONRUN,		AppOnRun );
-		E9_AppSetCallback( E9_APP_ONACTIVATE,	AppOnActivate );
-		E9_AppSetCallback( E9_APP_ONPAINT,		AppOnPaint );
+		e9App::SetCallback( Callback::OnInit,		AppOnInit );
+		e9App::SetCallback( Callback::OnDone,		AppOnDone );
+		e9App::SetCallback( Callback::OnRun,		AppOnRun );
+		e9App::SetCallback( Callback::OnActivate,	AppOnActivate );
+		e9App::SetCallback( Callback::OnPaint,		AppOnPaint );
 
 		// init and run application
-		if(E9_AppInit(hInstance, lpCmdLine))
-			E9_AppRun();
-		E9_AppDone(); // done application destroys partial init if needed
+		if(e9App::Init(hInstance, lpCmdLine))
+			e9App::Run();
+		e9App::Done(); // done application destroys partial init if needed
 
 		// done engine
 		E9_Done();

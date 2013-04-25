@@ -80,7 +80,7 @@ public:
 		BOOL		InitVideo();
 
 		void		Done();
-		void		Activate( BOOL active );				// called when application is activated or deactivated
+		void		Activate(bool active);					// called when application is activated or deactivated
 		void		Close();								// called when application wants to close
 		void		DropFile( LPCWSTR filepath );				// called when file is dropped
 		void		Scroll( int dx, int dy );				// called on scroll messages

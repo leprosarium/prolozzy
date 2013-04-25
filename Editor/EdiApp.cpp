@@ -128,10 +128,10 @@ BOOL cEdiApp::Init()
 	m_tool[m_toolcrt]->Switch(TRUE);
 
 	// load param
-	if(E9_AppGetStr(E9_APP_CMDLINE) && strstr(E9_AppGetStr(E9_APP_CMDLINE), "pmp"))
+	if(e9App::CmdLine() && strstr(e9App::CmdLine(), "pmp"))
 	{
 		std::ostringstream s;
-		s<< "editor:load('" << E9_AppGetStr(E9_APP_CMDLINE) << "')";
+		s<< "editor:load('" << e9App::CmdLine() << "')";
 		g_gui->ScriptPrologDo(s.str());
 	}
 
@@ -144,12 +144,12 @@ BOOL cEdiApp::Init()
 
 BOOL cEdiApp::InitApp()
 {
-	E9_AppSetStr(E9_APP_NAME,EDI_NAME);
-	E9_AppSetStr(E9_APP_ICON,MAKEINTRESOURCE(IDI_ICON));
+	e9App::Name(EDI_NAME);
+	e9App::Icon(MAKEINTRESOURCE(IDI_ICON));
 
-	BOOL cool = TRUE;
-	ini_getint( file_getfullpath(USER_INIFILE), "EDITOR", "options_cool",	&cool );
-	E9_AppSetInt(E9_APP_COOL,cool);
+	bool cool = true;
+	ini_get( file_getfullpath(USER_INIFILE), "EDITOR", "options_cool", cool);
+	e9App::Cool(cool);
 	
 	return TRUE;
 }
@@ -194,7 +194,6 @@ BOOL cEdiApp::InitVideo()
 	// default config
 	r9Cfg cfg;
 	Api api	= Api::Default;
-	cfg.windowed	= 1;
 	cfg.bpp		= 32;
 	cfg.width		= screensizelist[screensize][0]-delta/2;
 	cfg.height	= screensizelist[screensize][1]-delta;
@@ -223,7 +222,7 @@ BOOL cEdiApp::InitVideo()
 
 	R9_SetHandleReset(HandleReset);
 	R9_SetFilter(Filter::Point);
-	E9_AppSetInt(E9_APP_WINDOWED,cfg.windowed);
+	e9App::Windowed(cfg.windowed);
 
 	return TRUE;
 }
@@ -255,7 +254,7 @@ void cEdiApp::Done()
 	dlog(LOGAPP, L"App done.\n");
 }
 
-void cEdiApp::Activate( BOOL active )
+void cEdiApp::Activate(bool active)
 {
 	if(active)
 	{
@@ -270,7 +269,7 @@ void cEdiApp::Activate( BOOL active )
 	if(g_map.m_scrolling)
 	{
 		g_map.m_scrolling = 0;
-		E9_AppSetCursor(E9_CURSOR_ARROW);
+		e9App::SetCursor(Cursor::Arrow);
 	}
 	::InvalidateRect(E9_GetHWND(),NULL,0);
 }
@@ -323,7 +322,7 @@ void cEdiApp::HandleReset()
 
 BOOL cEdiApp::Update()
 {
-	float dtime = (float)E9_AppGetInt(E9_APP_DELTATIME) / 1000.0f;
+	float dtime = (float)e9App::DeltaTime() / 1000.0f;
 
 	// input
 	if(!I9_IsReady()) return TRUE;
@@ -415,7 +414,7 @@ void cEdiApp::Draw()
 void cEdiApp::DrawStats()
 {
 	char sz[64];
-	sprintf(sz, "fps: %i", E9_AppGetInt(E9_APP_FPS));
+	sprintf(sz, "fps: %i", e9App::FPS());
 	
 	float w = (float)ChrW*(int)strlen(sz)+4;
 	float h = (float)ChrH+4;
@@ -462,7 +461,7 @@ int cEdiApp::GetMouseY()
 
 void cEdiApp::WaitCursor( BOOL on )
 {
-	E9_AppSetCursor( on ? E9_CURSOR_WAIT : E9_CURSOR_ARROW );
+	e9App::SetCursor( on ? Cursor::Wait : Cursor::Arrow );
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

@@ -34,7 +34,7 @@ int AppOnDone()
 int AppOnActivate()
 {
 	assert(g_ediapp!=NULL);
-	g_ediapp->Activate( E9_AppGetInt(E9_APP_ACTIVE) );
+	g_ediapp->Activate(e9App::Active());
 	return 0;
 }
 
@@ -63,9 +63,9 @@ int AppOnPaint()
 int AppOnMsg()
 {
 	if(g_ediapp==NULL) return 0;
-	UINT msg		= (UINT)(intptr)E9_AppGetVoid(E9_APP_PARAM+0);
-	WPARAM wparam	= (WPARAM)E9_AppGetVoid(E9_APP_PARAM+1);
-	LPARAM lparam	= (LPARAM)E9_AppGetVoid(E9_APP_PARAM+2);
+	UINT msg		= (UINT)(intptr)e9App::GetVoid(E9_APP_PARAM+0);
+	WPARAM wparam	= (WPARAM)e9App::GetVoid(E9_APP_PARAM+1);
+	LPARAM lparam	= (LPARAM)e9App::GetVoid(E9_APP_PARAM+2);
 	
 	switch(msg)
 	{
@@ -128,18 +128,18 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	if(!E9_Init()) return 1;
 
 	// prepare application callbacks
-	E9_AppSetCallback( E9_APP_ONINIT,		AppOnInit );
-	E9_AppSetCallback( E9_APP_ONDONE,		AppOnDone );
-	E9_AppSetCallback( E9_APP_ONRUN,		AppOnRun );
-	E9_AppSetCallback( E9_APP_ONACTIVATE,	AppOnActivate );
-	E9_AppSetCallback( E9_APP_ONCLOSE,		AppOnClose );
-	E9_AppSetCallback( E9_APP_ONPAINT,		AppOnPaint );
-	E9_AppSetCallback( E9_APP_ONMSG,		AppOnMsg );
+	e9App::SetCallback( Callback::OnInit,		AppOnInit );
+	e9App::SetCallback( Callback::OnDone,		AppOnDone );
+	e9App::SetCallback( Callback::OnRun,		AppOnRun );
+	e9App::SetCallback( Callback::OnActivate,	AppOnActivate );
+	e9App::SetCallback( Callback::OnClose,		AppOnClose );
+	e9App::SetCallback( Callback::OnPaint,		AppOnPaint );
+	e9App::SetCallback( Callback::OnMsg,		AppOnMsg );
 
 	// init and run application
-	if(E9_AppInit(hInstance, lpCmdLine))
-		E9_AppRun();
-	E9_AppDone(); // done application destroys partial init if needed
+	if(e9App::Init(hInstance, lpCmdLine))
+		e9App::Run();
+	e9App::Done(); // done application destroys partial init if needed
 
 	// done engine
 	E9_Done();

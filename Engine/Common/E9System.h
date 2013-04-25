@@ -91,6 +91,7 @@ inline	void		sys_releasesemaphore( HSEMAPHORE semaphore )					{ ReleaseSemaphore
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL	ini_getchr	( const char* file, const char* group, const char* key, char* value );
 BOOL	ini_getint	( const char* file, const char* group, const char* key, int* value );
+bool	ini_get	( const char* file, const char* group, const char* key, bool & value );
 BOOL	ini_getflt	( const char* file, const char* group, const char* key, float* value );
 BOOL	ini_getstr	( const char* file, const char* group, const char* key, char* value, int size );	// size include space for eos
 BOOL	ini_getbin	( const char* file, const char* group, const char* key, void* value, int size );

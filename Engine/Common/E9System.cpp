@@ -2,8 +2,13 @@
 // E9System.cpp
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
+
+#include <sstream>
+
 #include "E9System.h"
 #include "E9Engine.h"
+
+
 
 #ifdef E9_ENABLE_ZIP
 // make sure the paths to the libs are ok
@@ -57,6 +62,15 @@ BOOL ini_getchr( const char* file, const char* group, const char* key, char* val
 BOOL ini_getint( const char* file, const char* group, const char* key, int* value )
 {
 	_GETPRIVATEPROFILEINT( int, "%i" );
+}
+
+bool ini_get( const char* file, const char* group, const char* key, bool & v )
+{
+	char sz[64]; sz[0]=0;
+	int val;
+	GetPrivateProfileString( group, key, "", sz, 64, file );
+	if( 1==sscanf( sz, "%i", &val ) ) { v = val != 0; return true; }
+	return false;
 }
 
 BOOL ini_getflt( const char* file, const char* group, const char* key, float* value )

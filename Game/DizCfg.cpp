@@ -206,7 +206,7 @@ void cDizCfg::LoadRenderCfg( r9Cfg& cfg, Api & api )
 			api = Api::DirectX;
 		else if(apiv == static_cast<int>(Api::OpenGL))
 			api = Api::OpenGL;
-	ini_getint( inifile, "VIDEO", "windowed",	&cfg.windowed );
+	ini_get( inifile, "VIDEO", "windowed",	cfg.windowed );
 	ini_getint( inifile, "VIDEO", "bpp",		&cfg.bpp );
 	ini_getint( inifile, "VIDEO", "width",		&cfg.width );
 	ini_getint( inifile, "VIDEO", "height",		&cfg.height );

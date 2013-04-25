@@ -87,7 +87,7 @@ struct r9Vertex
 
 struct r9Cfg
 {
-	int windowed;		// windowed
+	bool windowed;		// windowed
 	int bpp;			// bpp 16/32 (ignored in windowed)
 	int width;		// resolution width
 	int height;		// resolution height
@@ -98,7 +98,7 @@ struct r9Cfg
 
 struct r9DisplayMode
 {
-	int		windowed;		// windowed 1/0 (1 for current display mode)
+	bool	windowed;		// windowed 1/0 (1 for current display mode)
 	int		bpp;			// bpp 16/32
 	int		width;		// resolution width
 	int		height;		// resolution height

@@ -75,11 +75,11 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	{
 
 		// prepare application callbacks
-		e9App::SetCallback( Callback::OnInit,		AppOnInit );
-		e9App::SetCallback( Callback::OnDone,		AppOnDone );
-		e9App::SetCallback( Callback::OnRun,		AppOnRun );
-		e9App::SetCallback( Callback::OnActivate,	AppOnActivate );
-		e9App::SetCallback( Callback::OnPaint,		AppOnPaint );
+		e9App::OnInit = AppOnInit;
+		e9App::OnDone = AppOnDone;
+		e9App::OnRun = AppOnRun;
+		e9App::OnActivate = AppOnActivate;
+		e9App::OnPaint = AppOnPaint;
 
 		// init and run application
 		if(e9App::Init(hInstance, lpCmdLine))

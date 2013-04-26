@@ -60,12 +60,9 @@ int AppOnPaint()
 	return 0;
 }
 
-int AppOnMsg()
+LRESULT AppOnMsg(UINT msg, WPARAM wparam, LPARAM lparam)
 {
 	if(g_ediapp==NULL) return 0;
-	UINT msg		= (UINT)(intptr)e9App::GetVoid(E9_APP_PARAM+0);
-	WPARAM wparam	= (WPARAM)e9App::GetVoid(E9_APP_PARAM+1);
-	LPARAM lparam	= (LPARAM)e9App::GetVoid(E9_APP_PARAM+2);
 	
 	switch(msg)
 	{
@@ -128,13 +125,13 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	if(!E9_Init()) return 1;
 
 	// prepare application callbacks
-	e9App::SetCallback( Callback::OnInit,		AppOnInit );
-	e9App::SetCallback( Callback::OnDone,		AppOnDone );
-	e9App::SetCallback( Callback::OnRun,		AppOnRun );
-	e9App::SetCallback( Callback::OnActivate,	AppOnActivate );
-	e9App::SetCallback( Callback::OnClose,		AppOnClose );
-	e9App::SetCallback( Callback::OnPaint,		AppOnPaint );
-	e9App::SetCallback( Callback::OnMsg,		AppOnMsg );
+	e9App::OnInit = AppOnInit;
+	e9App::OnDone = AppOnDone;
+	e9App::OnRun = AppOnRun;
+	e9App::OnActivate = AppOnActivate;
+	e9App::OnClose = AppOnClose;
+	e9App::OnPaint = AppOnPaint;
+	e9App::OnMsg = AppOnMsg;
 
 	// init and run application
 	if(e9App::Init(hInstance, lpCmdLine))

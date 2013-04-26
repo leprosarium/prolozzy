@@ -21,18 +21,14 @@ dword		e9App::m_tick						= 0;
 dword		e9App::m_ticklast					= 0;
 float		e9App::m_fps						= 0;
 
-void*		e9App::m_param[4]					= {NULL,NULL,NULL,NULL};
+e9App::Callback e9App::OnInit;
+e9App::Callback e9App::OnDone;
+e9App::Callback e9App::OnRun;
+e9App::Callback e9App::OnActivate;
+e9App::Callback e9App::OnClose;
+e9App::Callback e9App::OnPaint;
+std::function<LRESULT (UINT, WPARAM, LPARAM)> e9App::OnMsg;
 
-e9AppCallback e9App::m_callback[Callback::Max] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
-
-e9AppCallback e9App::SetCallback( Callback c, e9AppCallback callback )
-{
-	assert(Callback::OnInit<=c && c <Callback::Max);
-	size_t idx = static_cast<size_t>(c);
-	e9AppCallback prev = m_callback[idx];
-	m_callback[idx] = callback;
-	return prev;
-}
 
 bool e9App::Init( HINSTANCE hinstance, const char* cmdline )
 {
@@ -54,7 +50,7 @@ bool e9App::Init( HINSTANCE hinstance, const char* cmdline )
 
 	// user callback
 	BOOL ok=TRUE;
-	if(IsSet<Callback::OnInit>()) ok = Call<Callback::OnInit>();
+	if(OnInit) ok = OnInit();
 	if(!ok) return false; //@TODO: needs DestroyWindow(m_hwnd) ???
 
 	// show window
@@ -68,7 +64,7 @@ bool e9App::Init( HINSTANCE hinstance, const char* cmdline )
 
 void e9App::Done()
 {
-	if(IsSet<Callback::OnDone>()) Call<Callback::OnDone>();
+	if(OnDone) OnDone();
 }
 
 void e9App::Run()
@@ -99,7 +95,7 @@ void e9App::Run()
 		{
 			UpdateClocks();
 			BOOL ok = TRUE;
-			if(IsSet<Callback::OnRun>()) ok = Call<Callback::OnRun>();
+			if(OnRun) ok = OnRun();
 			if(!ok) break;
 		}
 		else
@@ -133,29 +129,6 @@ void e9App::Icon(const char * name)
 	if(m_hwnd)
 		if(HICON hIcon = LoadIcon(m_hinstance, name))
 			PostMessage(m_hwnd,WM_SETICON,ICON_BIG,(LPARAM)(HICON)hIcon);
-}
-
-void e9App::SetVoid( int prop, void* value )
-{
-	switch(prop)
-	{
-		case E9_APP_PARAM:		m_param[0] = value; break;
-		case E9_APP_PARAM+1:	m_param[1] = value; break;
-		case E9_APP_PARAM+2:	m_param[2] = value; break;
-		case E9_APP_PARAM+3:	m_param[3] = value; break;
-	}
-}
-
-void* e9App::GetVoid( int prop )
-{
-	switch(prop)
-	{
-		case E9_APP_PARAM:		return m_param[0];
-		case E9_APP_PARAM+1:	return m_param[1];
-		case E9_APP_PARAM+2:	return m_param[2];
-		case E9_APP_PARAM+3:	return m_param[3];
-	}
-	return NULL;
 }
 
 void e9App::SetCursor( Cursor cursor )
@@ -234,13 +207,11 @@ void e9App::UpdateClocks()
 
 LRESULT	CALLBACK e9App::WndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	if(IsSet<Callback::OnMsg>()) 
+	if(OnMsg) 
 	{
-		m_param[0] = (void*)(intptr)msg;
-		m_param[1] = (void*)(intptr)wParam;
-		m_param[2] = (void*)(intptr)lParam;
-		m_param[3] = NULL;
-		if(Call<Callback::OnMsg>()) return (LRESULT)m_param[3]; // return result fi user processed it
+		OnMsg(msg, wParam, lParam);
+//		m_param[3] = NULL;
+//		if(Call<Callback::OnMsg>()) return (LRESULT)m_param[3]; // return result fi user processed it
 	}
 
 	int cmd;
@@ -253,7 +224,7 @@ LRESULT	CALLBACK e9App::WndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 			m_active = active;
 			m_minimized = false;
 			if(changed) dlog(LOGAPP, L"APP: activate %S\n",m_active?"on":"off");
-			if(changed && IsSet<Callback::OnActivate>()) Call<Callback::OnActivate>();
+			if(changed && OnActivate) OnActivate();
 			break;
 		}
 
@@ -264,14 +235,14 @@ LRESULT	CALLBACK e9App::WndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 			m_active = active;
 			m_minimized = HIWORD(wParam)!=0;
 			if(changed) dlog(LOGAPP, L"APP: activate %S\n",m_active?"on":"off");
-			if(changed && IsSet<Callback::OnActivate>()) Call<Callback::OnActivate>();
+			if(changed && OnActivate) OnActivate();
 			break;
 		}
 
 		case WM_CLOSE:
-			if(IsSet<Callback::OnClose>()) 
+			if(OnClose) 
 			{
-				int ret = Call<Callback::OnClose>();
+				int ret = OnClose();
 				if(!ret) return 0;
 			}
 			break;
@@ -282,7 +253,7 @@ LRESULT	CALLBACK e9App::WndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 
 		case WM_PAINT:				
 			if(m_windowed && !m_minimized)
-				if(IsSet<Callback::OnPaint>()) Call<Callback::OnPaint>();
+				if(OnPaint) OnPaint();
 			break;
 
 		case WM_SETCURSOR:			

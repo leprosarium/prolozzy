@@ -14,19 +14,6 @@
 #include "E9System.h"
 #include "E9Engine.h"
 
-// callbacks
-enum class Callback
-{
-	OnInit = 0,	// called in Init, after window was created but is still hidden; user return 0 if failure or 1 if success
-	OnDone,		// called in Done
-	OnRun,		// called in main loop when the application is active; return 0 to exit or 1 to continue
-	OnActivate,	// called when application gets activated or deactivated; check the active state
-	OnClose,	// called when application receive close message return 0 to refuse closing
-	OnPaint,	// called when application need painting and is windowed, deactivated and not minimized
-	OnMsg,		// called on every window message, uses params 0..3 (available only in windows)
-	Max			// dummy
-};
-
 // properties
 
 #define E9_APP_PARAM			11	// generic callback param (void-r) 4 values (0=msg,1=wparam,2=lparam,3=return)
@@ -45,16 +32,12 @@ enum class Cursor
 
 #define E9_APP_CLASSNAME		"E9_APPCLASS"
 
-//typedef int	(*e9AppCallback)();
-typedef std::function<int ()> e9AppCallback;
 
 class e9App
 {
 public:
-	template<Callback C>
-	static bool IsSet() { return m_callback[static_cast<size_t>(C)]; }
-	template<Callback C>
-	static int Call() { return m_callback[static_cast<size_t>(C)](); }
+
+	typedef std::function<int ()> Callback;
 
 	static const char * Name();
 	static void Name(const char * name);
@@ -73,25 +56,20 @@ public:
 	static int DeltaTime() { return m_tick - m_ticklast; }
 	static int FPS() { return static_cast<int>(m_fps); }
 
-	static e9AppCallback SetCallback(Callback idx, e9AppCallback callback);	// set a callback
 	static bool Init(HINSTANCE	hinstance, const char* cmdline);	// init the application
 	static void	Done();												// done the application
 	static void Run();												// main loop
 
-static	void		SetVoid( int prop, void* value );				// set void* property
-static	void*		GetVoid( int prop );			 				// get void* property
-static	void		UpdateClocks();
+	static void UpdateClocks();
 protected:
 
-static	int			InitWindow();
-
-static	LRESULT CALLBACK WndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
+	static int InitWindow();
+	static LRESULT CALLBACK WndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
 
 private:
 	static HWND m_hwnd;						// main window handle
 	static HINSTANCE m_hinstance;				// instance handle
 
-	static void* m_param[4];					// generic void params
 	static HCURSOR m_hcursor[Cursor::Max];		// mouse cursors
 	static bool m_minimized;					// minimized state
 	static char m_path[MAX_PATH];				// path to exe
@@ -106,8 +84,16 @@ private:
 	static dword m_tick;						// real tick
 	static dword m_ticklast;					// old real tick
 
-// callbacks
-static	e9AppCallback	m_callback[Callback::Max];
+public:
+	static Callback OnInit;			// called in Init, after window was created but is still hidden; user return 0 if failure or 1 if success
+	static Callback OnDone;			// called in Done
+	static Callback OnRun;			// called in main loop when the application is active; return 0 to exit or 1 to continue
+	static Callback OnActivate;		// called when application gets activated or deactivated; check the active state
+	static Callback OnClose;		// called when application receive close message return 0 to refuse closing
+	static Callback OnPaint;		// called when application need painting and is windowed, deactivated and not minimized
+	static std::function<LRESULT (UINT, WPARAM, LPARAM)> OnMsg;		// called on every window message
+
+
 };
 
 #endif

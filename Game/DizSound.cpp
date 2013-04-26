@@ -151,7 +151,7 @@ void cDizSound::Update()
 	if(A9_IsReady())
 	{
 		samples.Update();	
-		music.Update( e9App::DeltaTime() / 1000.f);
+		music.Update( App.DeltaTime() / 1000.f);
 		A9_Update();
 	}
 }

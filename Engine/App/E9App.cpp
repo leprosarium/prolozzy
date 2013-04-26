@@ -5,30 +5,25 @@
 #include "E9App.h"
 #include "D9Log.h"
 
-const char*	e9App::m_cmdline					= NULL;
-char	    e9App::m_path[MAX_PATH]				= "";
-HINSTANCE	e9App::m_hinstance					= NULL;
-HWND		e9App::m_hwnd						= NULL;
-bool		e9App::m_active						= false;
-bool		e9App::m_minimized					= false;
-bool		e9App::m_windowed					= true;
-bool		e9App::m_cool						= true;
-Cursor		e9App::m_cursor						= Cursor::Default;
-HCURSOR		e9App::m_hcursor[Cursor::Max]		= { NULL, NULL, NULL, NULL, NULL };
+e9App App;
 
-int			e9App::m_frame						= 0;
-dword		e9App::m_tick						= 0;
-dword		e9App::m_ticklast					= 0;
-float		e9App::m_fps						= 0;
-
-e9App::Callback e9App::OnInit;
-e9App::Callback e9App::OnDone;
-e9App::Callback e9App::OnRun;
-e9App::Callback e9App::OnActivate;
-e9App::Callback e9App::OnClose;
-e9App::Callback e9App::OnPaint;
-std::function<LRESULT (UINT, WPARAM, LPARAM)> e9App::OnMsg;
-
+e9App::e9App() :
+	m_cmdline(),
+	m_hinstance(),
+	m_hwnd(),
+	m_active(),
+	m_minimized(),
+	m_windowed(true),
+	m_cool(true),
+	m_cursor(Cursor::Default),
+	m_frame(),
+	m_tick(),
+	m_ticklast(),
+	m_fps()
+{
+	m_path[0] = 0;
+	for(HCURSOR & h: m_hcursor) h = nullptr;
+}
 
 bool e9App::Init( HINSTANCE hinstance, const char* cmdline )
 {
@@ -110,7 +105,7 @@ void e9App::Run()
 	dlog(LOGAPP, L"\nMain loop finished.\n");
 }
 
-const char * e9App::Name()
+const char * e9App::Name() const
 {
 	if(!m_hwnd) return nullptr;
 	static char name[64];
@@ -148,7 +143,7 @@ int e9App::InitWindow()
 	ZeroMemory(&wcex, sizeof(wcex));
 	wcex.cbSize			= sizeof(WNDCLASSEX);
 	wcex.style			= CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
-	wcex.lpfnWndProc	= (WNDPROC)WndProc;
+	wcex.lpfnWndProc	= (WNDPROC)_WndProc;
 	wcex.cbClsExtra		= 0;
 	wcex.cbWndExtra		= 0;
 	wcex.hInstance		= m_hinstance;
@@ -205,11 +200,15 @@ void e9App::UpdateClocks()
 			
 }
 
+LRESULT	CALLBACK e9App::_WndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+{
+	return App.WndProc(hwnd, msg, wParam, lParam);
+}
 LRESULT	CALLBACK e9App::WndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	if(OnMsg) 
 	{
-		OnMsg(msg, wParam, lParam);
+		App.OnMsg(msg, wParam, lParam);
 //		m_param[3] = NULL;
 //		if(Call<Callback::OnMsg>()) return (LRESULT)m_param[3]; // return result fi user processed it
 	}

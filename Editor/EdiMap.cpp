@@ -497,7 +497,7 @@ void cEdiMap::Update( float dtime )
 		{
 			m_scrolling = 1;
 			m_scrollofs = mx-rc.p1.x;
-			e9App::SetCursor(Cursor::Hand);
+			App.SetCursor(Cursor::Hand);
 		}
 		else
 		{
@@ -506,7 +506,7 @@ void cEdiMap::Update( float dtime )
 			{
 				m_scrolling = 2;
 				m_scrollofs = my-rc.p1.y;
-				e9App::SetCursor(Cursor::Hand);
+				App.SetCursor(Cursor::Hand);
 			}
 		}
 	}
@@ -514,7 +514,7 @@ void cEdiMap::Update( float dtime )
 	if(m_scrolling && !I9_GetKeyValue(I9_MOUSE_B1))
 	{
 		m_scrolling = 0;
-		e9App::SetCursor(Cursor::Arrow);
+		App.SetCursor(Cursor::Arrow);
 	}
 
 	if(m_scrolling==1) // scroll horizontal

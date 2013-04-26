@@ -66,8 +66,8 @@ ssize_t Prolog::Read(char *buffer, size_t size)
 	struct Pnt
 	{
 		e9App::Callback tmp;
-		Pnt(e9App::Callback pnt) : tmp(e9App::OnPaint) { e9App::OnPaint = pnt; }; 
-		~Pnt() { e9App::OnPaint = tmp; }
+		Pnt(e9App::Callback pnt) : tmp(App.OnPaint) { App.OnPaint = pnt; }; 
+		~Pnt() { App.OnPaint = tmp; }
 	} pnt([this]() { return this->Draw(); });
 
 	MSG	msg;
@@ -92,8 +92,8 @@ ssize_t Prolog::Read(char *buffer, size_t size)
 				return 0;
 			}
 		}
-		e9App::UpdateClocks();
-		if(I9_IsReady()) { I9_Update(e9App::DeltaTime() / 1000.0f); }
+		App.UpdateClocks();
+		if(I9_IsReady()) { I9_Update(App.DeltaTime() / 1000.0f); }
 		con.Update();
 		if(!single) input.Update();
 		Draw();

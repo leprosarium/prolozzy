@@ -34,7 +34,7 @@ int AppOnDone()
 int AppOnActivate()
 {
 	assert(g_dizapp!=NULL);
-	g_dizapp->Activate(e9App::Active());
+	g_dizapp->Activate(App.Active());
 	return 0;
 }
 
@@ -75,16 +75,16 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	{
 
 		// prepare application callbacks
-		e9App::OnInit = AppOnInit;
-		e9App::OnDone = AppOnDone;
-		e9App::OnRun = AppOnRun;
-		e9App::OnActivate = AppOnActivate;
-		e9App::OnPaint = AppOnPaint;
+		App.OnInit = AppOnInit;
+		App.OnDone = AppOnDone;
+		App.OnRun = AppOnRun;
+		App.OnActivate = AppOnActivate;
+		App.OnPaint = AppOnPaint;
 
 		// init and run application
-		if(e9App::Init(hInstance, lpCmdLine))
-			e9App::Run();
-		e9App::Done(); // done application destroys partial init if needed
+		if(App.Init(hInstance, lpCmdLine))
+			App.Run();
+		App.Done(); // done application destroys partial init if needed
 
 		// done engine
 		E9_Done();

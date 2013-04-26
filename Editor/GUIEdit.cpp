@@ -306,7 +306,7 @@ void cGUIEdit::Draw()
 		if(m_edit)
 		{
 			static dword s_time = 0;
-			s_time += e9App::DeltaTime();
+			s_time += App.DeltaTime();
 			if(s_time<=400)
 			{
 				rc1.p1.x = (float)rc.left + Chr2Pos(m_sel2) + deltax;

@@ -36,65 +36,67 @@ enum class Cursor
 class e9App
 {
 public:
-
 	typedef std::function<int ()> Callback;
 
-	static const char * Name();
-	static void Name(const char * name);
-	static void Icon(const char * name);
-	static void Windowed(bool w) { m_windowed = w; }
-	static void Cool(bool c) { m_cool = c; }
-	static void SetCursor(Cursor cursor);
+	e9App();
+
+	void Name(const char * name);
+	void Icon(const char * name);
+	void Windowed(bool w) { m_windowed = w; }
+	void Cool(bool c) { m_cool = c; }
+	void SetCursor(Cursor cursor);
 
 
-	static const char * CmdLine() { return m_cmdline; }
-	static const char * Path() { return m_path; }
-	static bool Active() { return m_active; }
-	static bool Windowed() { return m_windowed; }
-	static bool Cool() { return m_cool; }
-	static int Frame() { return m_frame; }
-	static int DeltaTime() { return m_tick - m_ticklast; }
-	static int FPS() { return static_cast<int>(m_fps); }
+	const char * Name() const;
+	const char * CmdLine() const { return m_cmdline; }
+	const char * Path() const { return m_path; }
+	bool Active() const { return m_active; }
+	bool Windowed() const { return m_windowed; }
+	bool Cool() const { return m_cool; }
+	int Frame() const { return m_frame; }
+	int DeltaTime() const { return m_tick - m_ticklast; }
+	int FPS() const { return static_cast<int>(m_fps); }
 
-	static bool Init(HINSTANCE	hinstance, const char* cmdline);	// init the application
-	static void	Done();												// done the application
-	static void Run();												// main loop
+	bool Init(HINSTANCE	hinstance, const char* cmdline);	// init the application
+	void Done();												// done the application
+	void Run();												// main loop
 
-	static void UpdateClocks();
+	void UpdateClocks();
 protected:
 
-	static int InitWindow();
-	static LRESULT CALLBACK WndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
+	int InitWindow();
+	static LRESULT CALLBACK _WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	LRESULT CALLBACK WndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
 
 private:
-	static HWND m_hwnd;						// main window handle
-	static HINSTANCE m_hinstance;				// instance handle
+	HWND m_hwnd;						// main window handle
+	HINSTANCE m_hinstance;				// instance handle
 
-	static HCURSOR m_hcursor[Cursor::Max];		// mouse cursors
-	static bool m_minimized;					// minimized state
-	static char m_path[MAX_PATH];				// path to exe
-	static const char* m_cmdline;				// pointer to command line string
-	static bool m_windowed;						// if windowed or fullscreen
-	static bool m_cool;							// cool cpu
-	static bool m_active;						// active state
+	HCURSOR m_hcursor[Cursor::Max];		// mouse cursors
+	bool m_minimized;					// minimized state
+	char m_path[MAX_PATH];				// path to exe
+	const char* m_cmdline;				// pointer to command line string
+	bool m_windowed;						// if windowed or fullscreen
+	bool m_cool;							// cool cpu
+	bool m_active;						// active state
 
-	static Cursor m_cursor;						// current cursor index
-	static int m_frame;							// current frame
-	static float m_fps;							// fps value
-	static dword m_tick;						// real tick
-	static dword m_ticklast;					// old real tick
+	Cursor m_cursor;						// current cursor index
+	int m_frame;							// current frame
+	float m_fps;							// fps value
+	dword m_tick;						// real tick
+	dword m_ticklast;					// old real tick
 
 public:
-	static Callback OnInit;			// called in Init, after window was created but is still hidden; user return 0 if failure or 1 if success
-	static Callback OnDone;			// called in Done
-	static Callback OnRun;			// called in main loop when the application is active; return 0 to exit or 1 to continue
-	static Callback OnActivate;		// called when application gets activated or deactivated; check the active state
-	static Callback OnClose;		// called when application receive close message return 0 to refuse closing
-	static Callback OnPaint;		// called when application need painting and is windowed, deactivated and not minimized
-	static std::function<LRESULT (UINT, WPARAM, LPARAM)> OnMsg;		// called on every window message
-
-
+	Callback OnInit;			// called in Init, after window was created but is still hidden; user return 0 if failure or 1 if success
+	Callback OnDone;			// called in Done
+	Callback OnRun;			// called in main loop when the application is active; return 0 to exit or 1 to continue
+	Callback OnActivate;		// called when application gets activated or deactivated; check the active state
+	Callback OnClose;		// called when application receive close message return 0 to refuse closing
+	Callback OnPaint;		// called when application need painting and is windowed, deactivated and not minimized
+	std::function<LRESULT (UINT, WPARAM, LPARAM)> OnMsg;		// called on every window message
 };
+
+extern e9App App;
 
 #endif
 ///////////////////////////////////////////////////////////////////////////////////////////////////

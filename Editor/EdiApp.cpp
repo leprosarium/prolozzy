@@ -128,10 +128,10 @@ BOOL cEdiApp::Init()
 	m_tool[m_toolcrt]->Switch(TRUE);
 
 	// load param
-	if(e9App::CmdLine() && strstr(e9App::CmdLine(), "pmp"))
+	if(App.CmdLine() && strstr(App.CmdLine(), "pmp"))
 	{
 		std::ostringstream s;
-		s<< "editor:load('" << e9App::CmdLine() << "')";
+		s<< "editor:load('" << App.CmdLine() << "')";
 		g_gui->ScriptPrologDo(s.str());
 	}
 
@@ -144,12 +144,12 @@ BOOL cEdiApp::Init()
 
 BOOL cEdiApp::InitApp()
 {
-	e9App::Name(EDI_NAME);
-	e9App::Icon(MAKEINTRESOURCE(IDI_ICON));
+	App.Name(EDI_NAME);
+	App.Icon(MAKEINTRESOURCE(IDI_ICON));
 
 	bool cool = true;
 	ini_get( file_getfullpath(USER_INIFILE), "EDITOR", "options_cool", cool);
-	e9App::Cool(cool);
+	App.Cool(cool);
 	
 	return TRUE;
 }
@@ -222,7 +222,7 @@ BOOL cEdiApp::InitVideo()
 
 	R9_SetHandleReset(HandleReset);
 	R9_SetFilter(Filter::Point);
-	e9App::Windowed(cfg.windowed);
+	App.Windowed(cfg.windowed);
 
 	return TRUE;
 }
@@ -269,7 +269,7 @@ void cEdiApp::Activate(bool active)
 	if(g_map.m_scrolling)
 	{
 		g_map.m_scrolling = 0;
-		e9App::SetCursor(Cursor::Arrow);
+		App.SetCursor(Cursor::Arrow);
 	}
 	::InvalidateRect(E9_GetHWND(),NULL,0);
 }
@@ -322,7 +322,7 @@ void cEdiApp::HandleReset()
 
 BOOL cEdiApp::Update()
 {
-	float dtime = (float)e9App::DeltaTime() / 1000.0f;
+	float dtime = (float)App.DeltaTime() / 1000.0f;
 
 	// input
 	if(!I9_IsReady()) return TRUE;
@@ -414,7 +414,7 @@ void cEdiApp::Draw()
 void cEdiApp::DrawStats()
 {
 	char sz[64];
-	sprintf(sz, "fps: %i", e9App::FPS());
+	sprintf(sz, "fps: %i", App.FPS());
 	
 	float w = (float)ChrW*(int)strlen(sz)+4;
 	float h = (float)ChrH+4;
@@ -461,7 +461,7 @@ int cEdiApp::GetMouseY()
 
 void cEdiApp::WaitCursor( BOOL on )
 {
-	e9App::SetCursor( on ? Cursor::Wait : Cursor::Arrow );
+	App.SetCursor( on ? Cursor::Wait : Cursor::Arrow );
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

@@ -20,7 +20,7 @@ PREDICATE_M(game, command, 1)
 
 PREDICATE_M(game, setName, 1)
 {
-	e9App::Name(A1);
+	App.Name(A1);
 	return true;
 }
 

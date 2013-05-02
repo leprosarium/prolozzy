@@ -43,27 +43,25 @@
 class f9File
 {
 public:
-				f9File		();
-virtual			~f9File		();
-								
-virtual	int		Open		( const char* name, int mode )				{ return F9_FAIL; }
-virtual	int		Close		()											{ return F9_FAIL; }
-inline	BOOL	IsOpen		()											{ return m_open; }
-virtual	int64	Read		( void* data, int64 size )					{ return 0; }
-virtual	int64	Write		( void* data, int64 size )					{ return 0; }
-virtual	int		Seek		( int64 offset, int origin = F9_SEEK_SET )	{ return F9_FAIL; }
-virtual	int64	Tell		()											{ return F9_FAIL; }
-virtual	int64 	Size		()											{ return F9_FAIL; }
-virtual	int		Eof			()											{ return (m_pos<m_size) ? F9_OK : F9_FAIL; }
+	f9File(int type) : m_type(type), m_mode(F9_READ), m_open(), m_pos(0), m_size(0) {}
+	virtual ~f9File() {}
+	virtual int Open(const char* name, int mode) = 0;
+	virtual int Close() = 0;
+	virtual	int64 Read(void * data, int64 size) = 0;
+	virtual	int64 Write(void * data, int64 size) { return 0; }
+	virtual	int Seek(int64 offset, int origin = F9_SEEK_SET) = 0;
+	virtual	int64 Tell() = 0;
+	virtual int64 Size() = 0;
+	virtual	int Eof() const { return m_pos < m_size ? F9_OK : F9_FAIL; }
 
-public:
-		int		m_type;		// file type
-		int		m_mode;		// open mode
-		BOOL	m_open;		// if opened
+	bool IsOpen() const	{ return m_open; }
 
 protected:
-		int64	m_pos;		// current pos
-		int64	m_size;		// file size
+	int m_type;		// file type
+	int m_mode;		// open mode
+	bool m_open;	// if opened
+	int64 m_pos;	// current pos
+	int64 m_size;	// file size
 };
 
 typedef f9File* F9FILE;

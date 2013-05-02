@@ -259,7 +259,7 @@ bool Samples::Load(const char* path, int group)
 		for(int i=0;i<archivefiles;i++)
 		{
 			std::string filename = F9_ArchiveGetFileName(0,i);
-			if(strstr(filename.c_str(), spath)==filename)
+			if(filename.find(spath) == 0)
 				Callback(filename.c_str(),false);
 		}
 
@@ -435,7 +435,7 @@ bool Music::Load(const char* path, int group)
 		for(int i=0;i<archivefiles;i++)
 		{
 			std::string filename = F9_ArchiveGetFileName(0,i);
-			if(strstr(filename.c_str(), spath)==filename)
+			if(filename.find(spath) == 0)
 				callback(filename.c_str(), false);
 		}
 

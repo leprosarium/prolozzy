@@ -12,20 +12,19 @@
 class f9FileMem : public f9File
 {
 public:
-				f9FileMem	();
-virtual			~f9FileMem	();
+	f9FileMem() : f9File(F9_FILE_MEM), m_addr(nullptr) {}
 
-virtual	int		Open		( const char* name, int mode );
-virtual	int		Close		();
-virtual	int64	Read		( void* data, int64 size );
-virtual	int64	Write		( void* data, int64 size );
-virtual	int		Seek		( int64 offset, int origin = F9_SEEK_SET );
-virtual	int64	Tell		();
-virtual	int64 	Size		();
-virtual	int		Eof			();
+	virtual int Open(const char * name, int mode);
+	virtual	int Close();
+	virtual int64 Read(void * data, int64 size);
+	virtual	int64 Write(void * data, int64 size);
+	virtual int Seek(int64 offset, int origin = F9_SEEK_SET);
+	virtual	int64 Tell();
+	virtual	int64 Size();
+	virtual	int	Eof();
 
 protected:
-		byte*	m_addr;		// data buffer address
+	byte * m_addr;		// data buffer address
 };
 
 #endif

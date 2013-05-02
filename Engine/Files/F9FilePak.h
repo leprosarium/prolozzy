@@ -13,24 +13,22 @@ struct f9PakFileInfo;
 class f9FilePak : public f9File
 {
 public:
-				f9FilePak	();
-virtual			~f9FilePak	();
+	f9FilePak () : f9File(F9_FILE_PAK), m_fileinfo(nullptr), m_arcname(nullptr) {}
 
-virtual	int		Open		( const char* name, int mode );
-virtual	int		Close		();
-virtual	int64	Read		( void* data, int64 size );
-virtual	int		Seek		( int64 offset, int origin = F9_SEEK_SET );
-virtual	int64	Tell		();
-virtual	int64 	Size		();
-virtual	int		Eof			();
+	virtual int Open(const char* name, int mode);
+	virtual int Close();
+	virtual int64 Read(void* data, int64 size);
+	virtual int Seek(int64 offset, int origin = F9_SEEK_SET);
+	virtual int64 Tell();
+	virtual int64 Size();
+	virtual int Eof();
 
 protected:
-		f9PakFileInfo*		m_fileinfo;				// info from pak
-		char*				m_arcname;				// just a pointer to zip archive name
-		f9FileDisk	 		m_arcfile;				// archive disk file, opened on Open
+	f9PakFileInfo * m_fileinfo;		// info from pak
+	char * m_arcname;				// just a pointer to zip archive name
+	f9FileDisk m_arcfile;			// archive disk file, opened on Open
 
-
-friend	class f9ArchivePak;
+	friend	class f9ArchivePak;
 };
 
 #endif

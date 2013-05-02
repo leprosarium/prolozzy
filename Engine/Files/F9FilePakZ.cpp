@@ -6,29 +6,17 @@
 #include "F9FilePakZ.h"
 #include "F9ArchivePak.h"
 
-f9FilePakZ::f9FilePakZ()
-{
-	m_type		= F9_FILE_PAKZ;
-	m_fileinfo	= NULL;
-	m_arcname	= NULL;
-	m_data		= NULL;
-}
-
-f9FilePakZ::~f9FilePakZ()
-{
-}
-
-int f9FilePakZ::Open( const char* name, int mode )
+int f9FilePakZ::Open(const char * name, int mode)
 {
 	if(IsOpen()) Close();
-	if(name==NULL) return F9_FAIL;
+	if(!name) return F9_FAIL;
 	if(!F9_ISREADONLY(mode)) return F9_FAIL; // readonly
 
 	// archive should set those
-	if( !m_arcname || m_fileinfo==NULL ) return F9_FAIL;
+	if( !m_arcname || !m_fileinfo) return F9_FAIL;
 
 	m_mode	= mode;
-	m_data	= NULL;
+	m_data	= nullptr;
 	m_size	= 0;
 	m_pos	= 0;
 
@@ -38,28 +26,28 @@ int f9FilePakZ::Open( const char* name, int mode )
 		f9FileDisk file;
 		if(file.Open( m_arcname, m_mode )!=F9_OK) return F9_FAIL;
 		if(file.Seek( m_fileinfo->m_offset, F9_SEEK_SET )!=F9_OK) { file.Close(); return F9_FAIL; }
-		byte* datac = (byte*)malloc(m_fileinfo->m_sizec);
-		int sizec = (int)file.Read(datac, m_fileinfo->m_sizec);
+		std::auto_ptr<byte> datac(new byte[m_fileinfo->m_sizec]);
+		int sizec = (int)file.Read(datac.get(), m_fileinfo->m_sizec);
 		file.Close();
-		if(sizec != m_fileinfo->m_sizec) { free(datac); return F9_FAIL; }
+		if(sizec != m_fileinfo->m_sizec)
+			return F9_FAIL;
 		
 		// size may be less than sizec !
 		dword size = std::max( m_fileinfo->m_size, std::max<dword>(64,m_fileinfo->m_sizec) );
 
+		
 		m_data = (byte*)malloc(size);
 		m_size = m_fileinfo->m_size;
-		if( !decompress_data( datac, m_fileinfo->m_sizec, m_data, size ) ||
+		if( !decompress_data( datac.get(), m_fileinfo->m_sizec, m_data, size ) ||
 			size != m_fileinfo->m_size )
 		{
-			free(datac);
 			free(m_data); 
-			m_data=NULL;
+			m_data = nullptr;
 			return F9_FAIL;
 		}
-		free(datac);
 	}
 
-	m_open = TRUE;
+	m_open = true;
 	return F9_OK;
 }
 
@@ -68,17 +56,17 @@ int f9FilePakZ::Close()
 	if(!IsOpen()) return F9_FAIL;
 	if(m_data) free(m_data);
 
-	m_arcname	= NULL;
-	m_fileinfo	= NULL;
-	m_data		= NULL;
+	m_arcname	= nullptr;
+	m_fileinfo	= nullptr;
+	m_data		= nullptr;
 	m_size		= 0;
 	m_pos		= 0;
 
-	m_open = FALSE;
+	m_open = false;
 	return F9_OK;
 }
 
-int f9FilePakZ::Seek( int64 offset, int origin )
+int f9FilePakZ::Seek(int64 offset, int origin)
 {
 	if(!IsOpen()) return F9_FAIL;
 	
@@ -110,14 +98,14 @@ int64 f9FilePakZ::Size()
 int f9FilePakZ::Eof()
 {
 	if(!IsOpen()) return F9_FAIL;
-	return (m_pos==m_size) ? 1 : 0;
+	return m_pos == m_size ? 1 : 0;
 }
 
-int64 f9FilePakZ::Read( void* data, int64 size )
+int64 f9FilePakZ::Read(void* data, int64 size)
 {
-	if(!IsOpen() || data==NULL) return 0;
-	if( m_pos+size > m_size ) size = m_size - m_pos; // bound
-	if(size>0) memcpy( data, m_data+m_pos, (sizet)size );
+	if(!IsOpen() || !data) return 0;
+	if( m_pos + size > m_size ) size = m_size - m_pos; // bound
+	if(size > 0) memcpy(data, m_data + m_pos, (sizet)size );
 	m_pos += size;
 	return size;
 }

@@ -82,19 +82,5 @@ inline	int		F9_FileSize				( F9FILE file )											{ 	assert(file); return (in
 // helper for memory files ext must not exceed 5 characters but may be NULL - uses sprint!
 inline	char*	F9_MakeFileName		( const char* name, void* addr, int size )						{ return sprint("#%x#%x#%s",(dwordptr)addr,size,name?name:""); }
 
-/*
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// User funcions (can be used as callbacks)
-///////////////////////////////////////////////////////////////////////////////////////////////////
-void*	file_open		( char* name, int mode=FS_READ );
-int		file_close		( void* file );
-int		file_read		( void* buffer, int size, void* file );
-int		file_write		( void* buffer, int size, void* file );
-int		file_seek		( void* file, int offset, int origin=SEEK_SET );
-int		file_tell		( void* file );
-int		file_eof		( void* file );
-int		file_size		( void* file );
-*/
-
 #endif
 ///////////////////////////////////////////////////////////////////////////////////////////////////

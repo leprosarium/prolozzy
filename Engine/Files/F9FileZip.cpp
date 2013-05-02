@@ -6,17 +6,11 @@
 #include "F9FileDisk.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-f9FileZip::f9FileZip()
+f9FileZip::f9FileZip() : f9File(F9_FILE_ZIP), m_arcname(nullptr), m_offset(-1)
 {
-	m_type			= F9_FILE_ZIP;
-	m_arcname		= NULL;
-	m_offset		= -1;
 	memset( &m_zips, 0, sizeof(z_stream) );
 }
 
-f9FileZip::~f9FileZip()
-{
-}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // OPEN( .zip, mode )
@@ -82,7 +76,7 @@ BOOL f9FileZip::Open( const char* name, int mode )
 	m_pos	= 0;
 	m_size	= m_localheader.sizeuncomp;
 	
-	m_open = TRUE;
+	m_open = true;
 	return F9_OK;
 }
 
@@ -95,7 +89,7 @@ int f9FileZip::Close()
 	m_arcname	= NULL;
 	m_offset	= -1;
 
-	m_open = FALSE;
+	m_open = false;
 	return F9_OK;
 }
 
@@ -145,7 +139,7 @@ int64 f9FileZip::Size()
 
 int64 f9FileZip::Read( void* data, int64 size )
 {
-	if(!IsOpen() || data==NULL) return 0;
+	if(!IsOpen() || !data) return 0;
 
 	BOOL  error			= FALSE;
 	int64 read_before	= 0;	// ?

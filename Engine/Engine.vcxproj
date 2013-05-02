@@ -130,7 +130,6 @@
     <ClCompile Include="Files\F9Archive.cpp" />
     <ClCompile Include="Files\F9ArchivePak.cpp" />
     <ClCompile Include="Files\F9ArchiveZip.cpp" />
-    <ClCompile Include="Files\F9File.cpp" />
     <ClCompile Include="Files\F9FileDisk.cpp" />
     <ClCompile Include="Files\F9FileMem.cpp" />
     <ClCompile Include="Files\F9FilePak.cpp" />

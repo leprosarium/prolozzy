@@ -232,7 +232,7 @@ bool Tiles::Load( char* path, int group )
 		for(int i=0;i<archivefiles;i++)
 		{
 			std::string filename = F9_ArchiveGetFileName(0,i);
-			if(strstr(filename.c_str(),path)==filename)
+			if(filename.find(path) == 0)
 				callback(filename.c_str(),false);
 		}
 	}
@@ -856,10 +856,8 @@ bool Fonts::Load( char* path, int group )
 		for(int i=0;i<archivefiles;i++)
 		{
 			std::string filename = F9_ArchiveGetFileName(0,i);
-			if(strstr(filename.c_str(),path)==filename)
-			{
+			if(filename.find(path) == 0)
 				FFCallback_Font(filename.c_str(),false);
-			}
 		}
 	}
 

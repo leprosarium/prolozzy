@@ -4,47 +4,36 @@
 #include "stdafx.h"
 #include "F9FileRes.h"
 
-f9FileRes::f9FileRes()
-{
-	m_type	= F9_FILE_RES;
-	m_addr	= NULL;
-}
-
-f9FileRes::~f9FileRes()
-{
-}
-
-int f9FileRes::Open( const char* name, int mode )
+int f9FileRes::Open(const char* name, int mode)
 {
 	if(IsOpen()) Close();
-	if(name==NULL) return F9_FAIL;
+	if(!name) return F9_FAIL;
 	if(!F9_ISREADONLY(mode)) return F9_FAIL; // readonly
 
 	// open
 	m_mode = mode;
-	m_addr = NULL;
+	m_addr = nullptr;
 	m_size = 0;
 	m_pos  = 0;
 
 	// resource
-	HRSRC hrsrc;
-	hrsrc = FindResourceEx(NULL, F9_FILERES_GROUP, name,  MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL) ); 
-	if(hrsrc==NULL) return F9_FAIL;
-	m_size = SizeofResource(NULL,hrsrc); if(m_size<=0) return F9_FAIL;
-	HGLOBAL hglobal = LoadResource(NULL,hrsrc); if(hglobal==NULL) return F9_FAIL;
-	m_addr = (byte*)LockResource(hglobal); if(m_addr==NULL) return F9_FAIL;
+	HRSRC hrsrc = FindResourceEx(NULL, F9_FILERES_GROUP, name,  MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL) ); 
+	if(!hrsrc) return F9_FAIL;
+	m_size = SizeofResource(NULL, hrsrc); if(m_size<=0) return F9_FAIL;
+	HGLOBAL hglobal = LoadResource(NULL,hrsrc); if(!hglobal) return F9_FAIL;
+	m_addr = (byte*)LockResource(hglobal); if(!m_addr) return F9_FAIL;
 
-	m_open = TRUE;
+	m_open = true;
 	return F9_OK;
 }
 
 int f9FileRes::Close()
 {
 	if(!IsOpen()) return F9_FAIL;
-	m_addr = NULL;
+	m_addr = nullptr;
 	m_size = 0;
 	m_pos  = 0;
-	m_open = FALSE;
+	m_open = false;
 	return F9_OK;
 }
 
@@ -52,11 +41,8 @@ int f9FileRes::Seek( int64 offset, int origin )
 {
 	if(!IsOpen()) return F9_FAIL;
 	if(origin==F9_SEEK_SET && offset>=0 && offset<=m_size) { m_pos = offset; return F9_OK; }
-	else
 	if(origin==F9_SEEK_CUR && m_pos+offset>=0 && m_pos+offset<=m_size) { m_pos += offset; return F9_OK; }
-	else
 	if(origin==F9_SEEK_END && m_size-offset>=0 && m_size-offset<=m_size) { m_pos = m_size-offset; return F9_OK; }
-	else
 	return F9_FAIL;
 }
 
@@ -75,16 +61,16 @@ int64 f9FileRes::Size()
 int f9FileRes::Eof()
 {
 	if(!IsOpen()) return F9_FAIL;
-	return (m_pos==m_size) ? 1 : 0;
+	return m_pos == m_size ? 1 : 0;
 }
 
 int64 f9FileRes::Read( void* data, int64 size )
 {
-	if(!IsOpen() || data==NULL) return 0;
+	if(!IsOpen() || !data) return 0;
 	int64 s = size;
-	if(m_pos+s>m_size) s=m_size-m_pos;
-	memcpy(data,m_addr+m_pos,(sizet)s);
-	m_pos+=s;
+	if(m_pos + s > m_size) s = m_size - m_pos;
+	memcpy(data, m_addr + m_pos, (sizet)s);
+	m_pos += s;
 	return s;
 }
 

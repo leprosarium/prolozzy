@@ -10,19 +10,18 @@
 class f9FileDisk : public f9File
 {
 public:
-				f9FileDisk	();
-virtual			~f9FileDisk	();
+	f9FileDisk() : f9File(F9_FILE_DISK), m_file(nullptr) {}
+	virtual ~f9FileDisk() { Close(); }
+	virtual int Open(const char* name, int mode);
+	virtual	int Close();
+	virtual	int64 Read(void* data, int64 size);
+	virtual	int64 Write(void* data, int64 size);
+	virtual	int Seek(int64 offset, int origin = F9_SEEK_SET);
+	virtual	int64 Tell();
+	virtual	int64 Size();
+	virtual	int Eof();
 
-virtual	int		Open		( const char* name, int mode );
-virtual	int		Close		();
-virtual	int64	Read		( void* data, int64 size );
-virtual	int64	Write		( void* data, int64 size );
-virtual	int		Seek		( int64 offset, int origin = F9_SEEK_SET );
-virtual	int64	Tell		();
-virtual	int64 	Size		();
-virtual	int		Eof			();
-
-inline	FILE*	GetFILE		() { return m_file; }
+	FILE * GetFILE() const { return m_file; }
 
 protected:
 		FILE*	m_file;		// file handler

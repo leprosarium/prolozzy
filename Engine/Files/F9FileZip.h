@@ -123,31 +123,30 @@ class f9FileZip : public f9File
 {
 
 public:
-				f9FileZip	();
-virtual			~f9FileZip	();
+	f9FileZip();
 
-virtual	int		Open		( const char* name, int mode );
-virtual	int		Close		();
-virtual	int64	Read		( void* data, int64 size );
-virtual	int		Seek		( int64 offset, int origin = F9_SEEK_SET );
-virtual	int64	Tell		();
-virtual	int64 	Size		();
+	virtual	int Open(const char* name, int mode);
+	virtual	int Close();
+	virtual	int64 Read(void* data, int64 size);
+	virtual	int Seek(int64 offset, int origin = F9_SEEK_SET);
+	virtual	int64 Tell();
+	virtual	int64 Size();
 	
 protected:
-		BOOL	InitZlib	(int mode);
-		void	Reset		();
+	BOOL InitZlib(int mode);
+	void Reset();
 
 protected:
-		char*				m_arcname;				// just a pointer to zip archive name
-		int 				m_offset; 				// offset of file in zip archive (-1 if not initialized); set by archive
+	char * m_arcname;					// just a pointer to zip archive name
+	int m_offset; 						// offset of file in zip archive (-1 if not initialized); set by archive
 
-		f9FileDisk	 		m_arcfile;				// archive disk file
-		zipLocalFileHeader	m_localheader;			// local header info
-		z_stream			m_zips;					// zip stream
+	f9FileDisk m_arcfile;				// archive disk file
+	zipLocalFileHeader m_localheader;	// local header info
+	z_stream m_zips;					// zip stream
 	
-		byte				m_zipBuffer[ZIP_INFLATE_BUFFER_SIZE];
+	byte m_zipBuffer[ZIP_INFLATE_BUFFER_SIZE];
 
-friend	class f9ArchiveZip;
+	friend	class f9ArchiveZip;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

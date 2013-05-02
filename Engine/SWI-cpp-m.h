@@ -25,6 +25,7 @@
 #ifndef _SWI_CPP_H
 #define _SWI_CPP_H
 
+#include <SWI-Stream.h>
 #include <SWI-Prolog.h>
 #include <string.h>
 #include <string>

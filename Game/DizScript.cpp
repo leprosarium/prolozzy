@@ -10,7 +10,8 @@
 #include "DizApp.h"
 #include "DizDebug.h"
 
-#include "SWI-Stream.h"
+#include <SWI-Stream.h>
+
 
 #include <string>
 #include <iostream>
@@ -37,13 +38,6 @@ cDizScript::cDizScript()
 	Soutput->handle = reinterpret_cast<void *>(LOGGS);
 	Serror->handle  = reinterpret_cast<void *>(LOGAPP);
 
-}
-
-void registerHandler(functor_t &handler, const char * name, int ar = 0) 
-{
-	atom_t na = PL_new_atom(name);
-	handler = PL_new_functor(na, ar);
-	PL_unregister_atom(na);
 }
 
 bool cDizScript::Init()
@@ -92,6 +86,39 @@ void cDizScript::CallHandler(functor_t handler, const PlTermv &av )
 		dlog(L"Dizzy.pl 1111 not found: %s", static_cast<LPCWSTR>(ee));
 	}
 }
+
+ssize_t read_stream(void *handle, char *buf, size_t bufsize)
+{
+	if(f9File * f = reinterpret_cast<f9File *>(handle))
+		return static_cast<ssize_t>(f->Read(buf, bufsize));
+	return -1;
+}
+
+int close_stream(void *handle)
+{
+	if(f9File * f = reinterpret_cast<f9File *>(handle))
+		f->Close();
+	return 0;
+}
+
+
+static IOFUNCTIONS stream_functions =
+{ (Sread_function)  read_stream,
+  (Swrite_function) nullptr,
+  (Sseek_function)  nullptr,
+  (Sclose_function) close_stream,
+					nullptr
+};
+
+
+PREDICATE_M(core, open_resource, 2)
+{
+	if(f9File * f = F9_FileOpen(A1))
+		return PL_unify_stream(A2, Snew(f, SIO_INPUT|SIO_FBUF, &stream_functions));
+	return false;
+}
+
+
 
 PREDICATE_M(core, ticktime, 1)
 {
@@ -380,10 +407,6 @@ PREDICATE_M(core, hudShader, 1)
 {
 	g_paint.hud.shader(BlendAtom().Get(A1));
 	return true;
-
-//	int sh = A1;
-//	g_paint.hud.shader(sh >= static_cast<int>(Blend::Min) && sh < static_cast<int>(Blend::Max) ? static_cast<Blend>(sh) : Blend::Alpha);
-//	return true;
 }
 
 PREDICATE_M(core, hudColor, 1)

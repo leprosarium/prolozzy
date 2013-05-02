@@ -69,7 +69,7 @@ reloadMap:-
 	File = "data\\map\\dizzy.pmp",
 	map:reset,
 	setup_call_cleanup(
-	    catch(open(File, read, S), Ex, (core:dl(Ex), fail)), file:loadTerms(S), close(S)),
+	    catch(core:open_resource(File, S), Ex, (core:dl(Ex), fail)), file:loadTerms(S), close(S)),
 	game:objectsSetNames,
 	menu:main.
 

@@ -97,7 +97,7 @@ ssize_t read_stream(void *handle, char *buf, size_t bufsize)
 int close_stream(void *handle)
 {
 	if(f9File * f = reinterpret_cast<f9File *>(handle))
-		f->Close();
+		F9_FileClose(f);
 	return 0;
 }
 

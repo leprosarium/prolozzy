@@ -85,11 +85,11 @@ bool cDizApp::InitFiles()
 	if(!F9_Init()) return false;
 	// add pak archive
 	const char* pakfile = GetPakFile();
-	int arc = F9_ArchiveOpen(pakfile, F9_READ | F9_ARCHIVE_PAK );
-	if(arc==-1)
-		dlog(LOGAPP, L"Pak archive %S not found, running from data folder.\n",pakfile);
-	else
+	if(f9Archive * arc = F9_ArchiveOpen(pakfile, F9_READ | F9_ARCHIVE_PAK ))
 		dlog(LOGAPP, L"Pak archive %S opened, data folder is ignored.\n",pakfile);
+	else
+		dlog(LOGAPP, L"Pak archive %S not found, running from data folder.\n",pakfile);
+
 	return true;
 }
 

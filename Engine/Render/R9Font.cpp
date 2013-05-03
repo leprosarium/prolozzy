@@ -65,13 +65,13 @@ BOOL r9Font::Create( const char* filename )
 	byte* buffer;
 	F9FILE file = F9_FileOpen( filename );
 	if(!file) return FALSE;
-	int	size = F9_FileSize(file);
+	int size = static_cast<int>(file->Size());
 	if(size==0) { F9_FileClose(file); return FALSE; }
-	buffer = (byte*)malloc( size );
-	F9_FileRead( buffer, size, file );
+	buffer = new byte[size];
+	file->Read( buffer, size);
 	F9_FileClose(file);
 
-	byte* buffer0 = buffer;
+	byte * buffer0 = buffer;
 
 	// HEADER (24 bytes)
 
@@ -101,7 +101,7 @@ BOOL r9Font::Create( const char* filename )
 		m_char[ci].w	= *((byte*)buffer); buffer += sizeof(byte);
 	}
 	
-	free(buffer0);
+	delete [] buffer0;
 	return TRUE;
 }
 

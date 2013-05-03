@@ -84,10 +84,10 @@ void cDizCfg::Init()
 	// read info file
 	F9FILE f = F9_FileOpen("Data\\dizzy.inf");
 	if(!f) { dlog(LOGAPP, L"dizzy.inf not found\n"); return; }
-	int size = F9_FileSize(f);
+	int size = static_cast<int>(f->Size());
 	if(size==0) { F9_FileClose(f); return; }
 	m_info = new char[size+1]; m_info[size]=0;
-	F9_FileRead(m_info,size,f);
+	f->Read(m_info, size);
 	F9_FileClose(f);
 }
 

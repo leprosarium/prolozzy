@@ -14,9 +14,9 @@
 // use our file system
 void* ymfopen	( char* filename )							{ return F9_FileOpen(filename); }
 int	  ymfclose	( void* file )								{ return F9_FileClose((F9FILE)file); }
-int	  ymfseek	( void* file, int pos, int mode )			{ return F9_FileSeek((F9FILE)file,pos,mode); }
-int	  ymftell	( void* file )								{ return F9_FileTell((F9FILE)file); }
-int	  ymfread	( void* buffer, int size, void* file )		{ return F9_FileRead(buffer,size,(F9FILE)file); }
+int	  ymfseek	( void* file, int pos, int mode )			{ return static_cast<F9FILE>(file)->Seek(pos, mode); }
+int	  ymftell	( void* file )								{ return static_cast<int>(static_cast<F9FILE>(file)->Tell()); }
+int	  ymfread	( void* buffer, int size, void* file )		{ return static_cast<int>(static_cast<F9FILE>(file)->Read(buffer,size)); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 a9Codec_ym::a9Codec_ym()

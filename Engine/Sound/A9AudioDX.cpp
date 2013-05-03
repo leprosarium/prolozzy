@@ -454,13 +454,13 @@ int a9AudioDX::StreamPrecache( const char* filename, A9STREAM _stream )
 	{
 		F9FILE f = F9_FileOpen(filename);
 		if(!f) return A9_FAIL;
-		F9_FileSeek(f,0,2);
-		stream->m_filesize = F9_FileTell(f);
+		f->Seek(0,2);
+		stream->m_filesize = static_cast<int>(f->Tell());
 		// @TODO: test size if necessary ...
-		F9_FileSeek(f,0,0);
+		f->Seek(0,0);
 		stream->m_filemem = (byte*)malloc(stream->m_filesize );
 		if(stream->m_filemem==NULL) { F9_FileClose(f); return A9_FAIL; }
-		ret = F9_FileRead(stream->m_filemem,stream->m_filesize ,f);
+		ret = static_cast<int>(f->Read(stream->m_filemem,stream->m_filesize));
 		F9_FileClose(f);
 		if(ret!=stream->m_filesize) { free(stream->m_filemem); stream->m_filemem=NULL; return A9_FAIL; }
 	}

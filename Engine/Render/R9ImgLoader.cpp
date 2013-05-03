@@ -124,11 +124,11 @@ BOOL R9_ImgReadTGA( F9FILE file, r9Img* img )
 	if(!file || !img || img->isValid()) return FALSE;
 	img->clear();
 
-	int size;
+	int64 size;
 	r9ImgHeaderTGA header;
 
 	// header
-	size = F9_FileRead(&header,sizeof(header),file);
+	size = file->Read(&header, sizeof(header));
 	if(size<sizeof(header))return FALSE;
 	if(header.m_ImageType==3 && header.m_PixelDepth!=8) return FALSE;
 	if(header.m_ImageType==2 && (header.m_PixelDepth!=24 && header.m_PixelDepth!=32)) return FALSE;
@@ -141,7 +141,7 @@ BOOL R9_ImgReadTGA( F9FILE file, r9Img* img )
 	R9_ImgCreate(img);
 
 	// read
-	size = F9_FileRead( img->m_data, img->m_size, file );
+	size = file->Read( img->m_data, img->m_size);
 	if(size!=img->m_size) return FALSE; // read error
 
 	// upsidedown
@@ -174,8 +174,8 @@ bool R9_ImgWriteTGA( F9FILE file, r9Img* img )
 	header.m_PixelDepth					= R9_PFBpp(img->m_pf);
 	header.m_ImageDescriptor			= 0; // upside down
 
-	F9_FileWrite( &header, sizeof(header), file );
-	F9_FileWrite( img->m_data, img->m_size, file );
+	file->Write( &header, sizeof(header));
+	file->Write( img->m_data, img->m_size);
 
 	R9_ImgFlipV(img);
 
@@ -187,11 +187,11 @@ BOOL R9_ImgReadHeaderTGA( F9FILE file, r9Img* img )
 	if(!file || !img || img->isValid()) return FALSE;
 	img->clear();
 
-	int size;
+	int64 size;
 	r9ImgHeaderTGA header;
 
 	// header
-	size = F9_FileRead(&header,sizeof(header),file);
+	size = file->Read(&header,sizeof(header));
 	if(size<sizeof(header))return FALSE;
 	if(header.m_PixelDepth!=24 && header.m_PixelDepth!=32) return FALSE;
 	if(header.m_width==0 || header.m_height==0) return FALSE;

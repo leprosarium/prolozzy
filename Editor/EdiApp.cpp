@@ -156,9 +156,8 @@ BOOL cEdiApp::InitApp()
 
 BOOL cEdiApp::InitFiles()
 {
-	BOOL ok = F9_Init();
-	if(!ok) return FALSE;
-	int arc = F9_ArchiveOpen("editor.pak", F9_READ | F9_ARCHIVE_PAK );
+	if(!F9_Init()) return FALSE;
+	F9_ArchiveOpen("editor.pak", F9_READ | F9_ARCHIVE_PAK );
 	dlog(LOGAPP, L"using editor.pak file.\n");
 	return TRUE;
 }

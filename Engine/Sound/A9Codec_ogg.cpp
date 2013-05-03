@@ -18,10 +18,10 @@
 #define PCMSIZE 4096	// pcm read buffer size
 
 // use our file system
-size_t ogg_read		(void *ptr, size_t size, size_t nmemb, void *datasource) { return F9_FileRead(ptr, (int)(size*nmemb), (F9FILE)datasource); }
-int    ogg_seek		(void *datasource, ogg_int64_t offset, int whence) { return F9_FileSeek((F9FILE)datasource, (int)offset, whence); }
+size_t ogg_read		(void *ptr, size_t size, size_t nmemb, void *datasource) { return static_cast<size_t>(static_cast<F9FILE>(datasource)->Read(ptr, (int)(size*nmemb))); }
+int    ogg_seek		(void *datasource, ogg_int64_t offset, int whence) { return static_cast<F9FILE>(datasource)->Seek((int)offset, whence); }
 int    ogg_close	(void *datasource) { return F9_FileClose((F9FILE)datasource); }
-long   ogg_tell		(void *datasource) { return F9_FileTell((F9FILE)datasource); }
+long   ogg_tell		(void *datasource) { return static_cast<long>(static_cast<F9FILE>(datasource)->Tell()); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 a9Codec_ogg::a9Codec_ogg()

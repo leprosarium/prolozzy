@@ -1301,12 +1301,12 @@ bool cEdiMap::LoadMap(const std::string &filename)
 	// open file
 	F9FILE file = F9_FileOpen(filename.c_str());
 	if(!file) { dlog(LOGAPP, L"  map file not found.\n"); return false; }
-	F9_FileSeek(file,0,2);
-	int filesize = F9_FileTell(file);
-	F9_FileSeek(file,0,0);
+	file->Seek(0,2);
+	int64 filesize = file->Tell();
+	file->Seek(0,0);
 
 	// read chunks
-	int size;
+	int64 size;
 	int chunkid=0;
 	int chunksize=0;
 	int chunkcount=0;
@@ -1316,8 +1316,8 @@ bool cEdiMap::LoadMap(const std::string &filename)
 
 	while(true)
 	{
-		if( F9_FileRead(&chunkid,4,file)!=4 )	{ ERROR_CHUNK("header"); }
-		if( F9_FileRead(&chunksize,4,file)!=4 )	{ ERROR_CHUNK("header"); }
+		if( file->Read(&chunkid, 4)!=4 )	{ ERROR_CHUNK("header"); }
+		if( file->Read(&chunksize,4)!=4 )	{ ERROR_CHUNK("header"); }
 		
 		switch(chunkid)
 		{
@@ -1326,7 +1326,7 @@ bool cEdiMap::LoadMap(const std::string &filename)
 				if( chunksize!=strlen(MAP_ID) )	{ ERROR_CHUNK("size"); }
 				buffer = (char*)malloc(chunksize);
 				size = 0;
-				size += F9_FileRead(buffer, chunksize, file);
+				size += file->Read(buffer, chunksize);
 				if(size!=chunksize) { free(buffer);  ERROR_CHUNK("size"); }
 
 				if(memcmp(buffer,MAP_ID,chunksize)!=0) { dlog(LOGAPP, L"invalid map id: '%S' (current version: '%S')\n", buffer, MAP_ID); free(buffer); F9_FileClose(file); return false; }
@@ -1338,12 +1338,12 @@ bool cEdiMap::LoadMap(const std::string &filename)
 			{
 				if( chunksize!= 6*4 ) { ERROR_CHUNK("size"); }
 				size = 0;
-				size += F9_FileRead(&m_mapw, 4, file);
-				size += F9_FileRead(&m_maph, 4, file);
-				size += F9_FileRead(&g_map.m_roomw, 4, file);
-				size += F9_FileRead(&g_map.m_roomh, 4, file);
-				size += F9_FileRead(&g_map.m_camx, 4, file);
-				size += F9_FileRead(&g_map.m_camy, 4, file);
+				size += file->Read(&m_mapw, 4);
+				size += file->Read(&m_maph, 4);
+				size += file->Read(&g_map.m_roomw, 4);
+				size += file->Read(&g_map.m_roomh, 4);
+				size += file->Read(&g_map.m_camx, 4);
+				size += file->Read(&g_map.m_camy, 4);
 				if( size!=chunksize ) { ERROR_CHUNK("size"); }
 				
 				break;
@@ -1351,7 +1351,7 @@ bool cEdiMap::LoadMap(const std::string &filename)
 
 			case MAP_CHUNKMARKERS2:
 			{
-				F9_FileSeek(file,chunksize,1); // skip
+				file->Seek(chunksize,1); // skip
 				break;
 			}
 
@@ -1365,7 +1365,7 @@ bool cEdiMap::LoadMap(const std::string &filename)
 					for(int j = 0; j  < BRUSH_MAX; j++)
 					{	
 						int val = 0;
-						if(!F9_FileRead(&val, sizeof(val), file)) { ERROR_CHUNK("size"); }
+						if(!file->Read(&val, sizeof(val))) { ERROR_CHUNK("size"); }
 
 						g_map.m_brush[i].m_data[j] = val;
 					}
@@ -1376,10 +1376,10 @@ bool cEdiMap::LoadMap(const std::string &filename)
 			default:
 			{
 				dlog(LOGAPP, L"  unknown chunk: id=%x size=%i\n", chunkid, chunksize);
-				if(chunksize>0) F9_FileSeek(file,chunksize,1);
+				if(chunksize>0) file->Seek(chunksize,1);
 			}
 		}
-		if( F9_FileTell(file)>=filesize) break;
+		if( file->Tell()>=filesize) break;
 
 	}
 

@@ -9,18 +9,6 @@
 #include "F9ArchivePak.h"
 #include "D9Log.h"
 
-f9Files::f9Files()
-{
-	m_resources = 0;
-}
-
-f9Files::~f9Files()
-{
-}
-
-void f9Files::Init()
-{
-}
 
 void f9Files::Done()
 {
@@ -29,33 +17,31 @@ void f9Files::Done()
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-int f9Files::ArchiveOpen( const char* name, int mode, const char* password )
+f9Archive * f9Files::ArchiveOpen( const char* name, int mode, const char* password )
 {
 
 	// check if already opened (in list)
-	int idx = ArchiveFind( name );
-	if( idx!=-1 ) return idx;
+	f9Archive * arc = ArchiveFind( name );
+	if(arc) return arc;
 
 	// create archive
-	f9Archive* arc = NULL;
 	#ifndef EXCLUDE_FILEZIP
 	if( mode & F9_ARCHIVE_ZIP )	arc = new f9ArchiveZip(); else
 	#endif
 	#ifndef	EXCLUDE_FILEPAK
 	if( mode & F9_ARCHIVE_PAK )	arc = new f9ArchivePak();
 	#endif
-	if( arc==NULL ) return -1;
+	if(!arc) return nullptr;
 	mode &= 255; // remove archive type from the mode
 
 	if( arc->Open( name, mode, password )!=F9_OK )
 	{
 		delete arc;
-		return -1;
+		return nullptr;
 	}
 
-	idx = m_archives.size();
 	m_archives.push_back(arc);
-	return idx;
+	return arc;
 }
 
 void f9Files::ArchiveClose( int idx )
@@ -75,32 +61,32 @@ f9Archive* f9Files::ArchiveGet( int idx )
 	return m_archives[idx];
 }
 
-int f9Files::ArchiveFind( const char* name )
+f9Archive * f9Files::ArchiveFind( const char* name )
 {
-	for(int i=0,e=static_cast<int>(m_archives.size()); i<e; i++)
-		if(m_archives[i] && 0==stricmp(m_archives[i]->m_name, name) ) 
-			return i;
-	return -1;
+	for(f9Archive * a: m_archives)
+		if(a && 0==stricmp(a->m_name, name) ) 
+			return a;
+	return nullptr;
 }
 
-int f9Files::ArchiveFindContaining( const char* filename )
+f9Archive * f9Files::ArchiveFindContaining(const char* filename)
 {
-	for(int i=0, e=static_cast<int>(m_archives.size()); i<e; i++)
-		if( m_archives[i] && m_archives[i]->FileFind( filename ) != -1 )	
-			return i;
-	return -1;
+	for(f9Archive * a: m_archives)
+		if( a && a->FileFind( filename ) != -1 )	
+			return a;
+	return nullptr;
 }
 
-int f9Files::ArchiveFindContainingEx( const char* path )
+f9Archive * f9Files::ArchiveFindContainingEx(const char * path)
 {
-	if(m_archives.size()==0) return -1;
+	if(m_archives.size()==0) return nullptr;
 
 	int j,k;
 	k = (int)strlen(path);
-	for(int i=0, e=static_cast<int>(m_archives.size()); i<e; i++)
+	for(f9Archive * a: m_archives)
 	{
-		if(!m_archives[i]) continue;
-		char* arcname = m_archives[i]->m_name;	assert(arcname);
+		if(!a) continue;
+		char* arcname = a->m_name;	assert(arcname);
 		const char* sz = file_path2file( arcname );		assert(sz);
 		int ap =(int)(sz - arcname);
 		if( ap >= k ) continue; // file path is smaller than archive dir !
@@ -110,10 +96,10 @@ int f9Files::ArchiveFindContainingEx( const char* path )
 
 		if( j<ap ) continue; // archive dir not at the begining of file dir !
 
-		if( m_archives[i]->FileFind( path+ap ) != -1 )	return i;
+		if(a->FileFind( path+ap ) != -1 ) return a;
 	}
 
-	return -1;
+	return nullptr;
 }
 
 int	f9Files::ArchiveGetFileCount( int idx )
@@ -126,10 +112,10 @@ int	f9Files::ArchiveGetFileCount( int idx )
 
 std::string f9Files::ArchiveGetFileName( int idx, int fileidx )
 {
-	if(idx < 0 || idx >= static_cast<int>(m_archives.size())) return 0;
+	if(idx < 0 || idx >= static_cast<int>(m_archives.size())) return std::string();
 	f9Archive* archive = m_archives[idx];		
-	if(!archive) return NULL;
-	if(idx<0 || idx>=archive->FileCount()) return NULL;
+	if(!archive) return std::string();
+	if(idx<0 || idx>=archive->FileCount()) return std::string();
 	return archive->FileGetName(fileidx);
 }
 
@@ -137,16 +123,14 @@ std::string f9Files::ArchiveGetFileName( int idx, int fileidx )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 f9File* f9Files::FileOpen( const char* name, int mode )
 {
-	if( name==NULL ) return NULL;
+	if(!name) return nullptr;
 	BOOL readonly = F9_ISREADONLY(mode);
 
 	// ARCHIVE FILE
 	if(readonly)
 	{
-		int idx = ArchiveFindContainingEx( name );
-		if(idx!=-1)
+		if(f9Archive * arc = ArchiveFindContainingEx(name))
 		{
-			f9Archive* arc = ArchiveGet(idx); assert(arc);
 			const char* sz = file_path2file(arc->m_name); assert(sz);
 			int ap = (int)( sz - arc->m_name );
 			return arc->FileOpen( name+ap, mode ); // we open the path from inside the archive
@@ -164,7 +148,7 @@ f9File* f9Files::FileOpen( const char* name, int mode )
 	}
 	
 	// RESOURCES FILES
-	if( readonly && m_resources )
+	if( readonly && _searchInResources )
 	{
 		file = new f9FileRes();
 		if(file->Open(name,mode)==F9_OK) return file;
@@ -176,7 +160,7 @@ f9File* f9Files::FileOpen( const char* name, int mode )
 	if(file->Open(name,mode)==F9_OK) return file;
 	delete file;
 
-	return NULL;
+	return nullptr;
 }
 
 int f9Files::FileClose( f9File* file )
@@ -190,15 +174,15 @@ int f9Files::FileClose( f9File* file )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // INTERFACE
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-f9Files* f9_files = NULL;
+f9Files* f9_files = nullptr;
 
-BOOL F9_Init()
+bool F9_Init()
 {
-	if(f9_files) return TRUE;
+	if(f9_files) return true;
 	dlog(LOGFIL, L"Files init.\n");
 	f9_files = new f9Files();
 	f9_files->Init();
-	return TRUE;
+	return true;
 }
 
 void F9_Done()
@@ -206,22 +190,9 @@ void F9_Done()
 	if(!f9_files) return;
 	f9_files->Done();
 	delete  f9_files ;
-	f9_files = NULL;
+	f9_files = nullptr;
 	dlog(LOGFIL, L"Files done.\n");
 }
 
-/*
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// User funcions (can be used as callbacks)
-///////////////////////////////////////////////////////////////////////////////////////////////////
-void*	file_open		( char* name, int mode )					{ return f9Files::FileOpen(name, mode); }
-int		file_close		( void* file )								{ return f9Files::FileClose((cFile*)file); }
-int		file_read		( void* buffer, int size, void* file )		{ return ((cFile*)file)->Read( buffer, size ); }
-int		file_write		( void* buffer, int size, void* file )		{ return ((cFile*)file)->Write( buffer, size ); }
-int		file_seek		( void* file, int offset, int origin )		{ return ((cFile*)file)->Seek( offset, origin ); }
-int		file_tell		( void* file )								{ return ((cFile*)file)->Tell(); }
-int		file_eof		( void* file )								{ return ((cFile*)file)->Eof(); }
-int		file_size		( void* file )								{ return ((cFile*)file)->Size(); }
-*/
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

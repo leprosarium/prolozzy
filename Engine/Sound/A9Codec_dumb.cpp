@@ -15,9 +15,9 @@
 
 // use our file system
 void*	dumb_open	(const char *filename)			{ return F9_FileOpen((char*)filename); }
-int		dumb_skip	(void *f, long n)				{ return F9_FileSeek((F9FILE)f,n,1); }
-int		dumb_getc	(void *f)						{ int c=0; if(1!=F9_FileRead(&c,1,(F9FILE)f)) return -1; else return c; }
-long	dumb_getnc	(char *ptr, long n, void *f)	{ return F9_FileRead(ptr,n,(F9FILE)f); }
+int		dumb_skip	(void *f, long n)				{ return static_cast<F9FILE>(f)->Seek(n,1); }
+int		dumb_getc	(void *f)						{ int c=0; if(1!=static_cast<F9FILE>(f)->Read(&c,1)) return -1; else return c; }
+long	dumb_getnc	(char *ptr, long n, void *f)	{ return static_cast<long>(static_cast<F9FILE>(f)->Read(ptr,n)); }
 void	dumb_close	(void *f)						{ F9_FileClose((F9FILE)f); }
 
 DUMBFILE_SYSTEM dumb_fs;

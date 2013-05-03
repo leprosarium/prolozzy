@@ -59,7 +59,7 @@ int	a9Codec_wav::BeginRender( int pos, int loop )
 {
 	if(m_status!=A9_CODEC_OPENED) return A9_FAIL;
 	m_loop = loop;
-	int ret = F9_FileSeek(m_file, m_datapos+pos*m_info.SampleSize(), 0);
+	int ret = m_file->Seek(m_datapos + pos * m_info.SampleSize(), 0);
 	if(ret!=0) return A9_FAIL; 
 
 	m_status = A9_CODEC_RENDERING;
@@ -77,12 +77,12 @@ int	a9Codec_wav::Render( byte* buffer, int size )
 
 	while(1)
 	{
-		int datapos = F9_FileTell(m_file) - m_datapos;				// current position in file pcm data in bytes
+		int datapos = static_cast<int>(m_file->Tell()) - m_datapos;				// current position in file pcm data in bytes
 		int dataeof = datapos > datasize-m_info.SampleSize();	// eof in file pcm data
 
 		if( m_loop && dataeof ) // reached end of data from file
 		{
-			F9_FileSeek( m_file, m_datapos, 0 ); // rewind for read
+			m_file->Seek(m_datapos, 0 ); // rewind for read
 			datapos = 0;
 		}
 
@@ -90,7 +90,7 @@ int	a9Codec_wav::Render( byte* buffer, int size )
 		int readsize = buffersize-rendersize;
 		if( datapos + readsize > datasize ) readsize = datasize-datapos;
 
-		int ret = F9_FileRead( buffer+renderpos, readsize, m_file );
+		int ret = static_cast<int>(m_file->Read(buffer + renderpos, readsize));
 		if( ret==0 ) return 0; // nothing to read eof
 		renderpos += ret;
 		rendersize += ret;
@@ -119,7 +119,7 @@ int	a9Codec_wav::Close()
 
 int a9Codec_wav::ReadWaveInfo( F9FILE file, WAVEFORMATEX* wfe, int* datapos, int* datasize )
 {
-	int				r;
+	int64			r;
 	int				size;
 	char			header[] = "RIFF";
 	WAVEFORMATEX*	pwfe = NULL;
@@ -127,22 +127,22 @@ int a9Codec_wav::ReadWaveInfo( F9FILE file, WAVEFORMATEX* wfe, int* datapos, int
 	*datasize = 0;
 	*datapos = 0;
 
-	r = F9_FileRead(header, 4, file); if(r!=4) return A9_FAIL;
+	r = file->Read(header, 4); if(r!=4) return A9_FAIL;
 	if(0!=strcmp(header, "RIFF")) return A9_FAIL;
 
-	r = F9_FileRead(&size, 4, file); if(r!=4) return A9_FAIL;
+	r = file->Read(&size, 4); if(r!=4) return A9_FAIL;
 
-	r = F9_FileRead(header, 4, file);	if(r!=4) return A9_FAIL;
+	r = file->Read(header, 4);	if(r!=4) return A9_FAIL;
 	if(0!=strcmp(header, "WAVE")) return A9_FAIL;
 	
 	do
 	{
-		r = F9_FileRead(header, 4, file); if(r!=4) return A9_FAIL;
+		r = file->Read(header, 4); if(r!=4) return A9_FAIL;
 		if(0==strcmp(header, "fmt "))
 		{
-			r = F9_FileRead(&size, 4, file); if(r!=4) return A9_FAIL;
+			r = file->Read(&size, 4); if(r!=4) return A9_FAIL;
 			pwfe = (WAVEFORMATEX*)malloc(size);
-			r = F9_FileRead(pwfe, size, file);	if(r!=size) { free(pwfe); return A9_FAIL; }
+			r = file->Read(pwfe, size);	if(r!=size) { free(pwfe); return A9_FAIL; }
 			if(size>sizeof(WAVEFORMATEX)) size = sizeof(WAVEFORMATEX);
 			memcpy( wfe, pwfe, size );
 			free(pwfe);
@@ -151,18 +151,18 @@ int a9Codec_wav::ReadWaveInfo( F9FILE file, WAVEFORMATEX* wfe, int* datapos, int
 		else
 		if(0==strcmp(header, "data"))
 		{
-			r = F9_FileRead(&size, 4, file); if(r!=4) return A9_FAIL;
-			*datapos = F9_FileTell(file);
+			r = file->Read(&size, 4); if(r!=4) return A9_FAIL;
+			*datapos = static_cast<int>(file->Tell());
 			*datasize = size;
 			return A9_OK;
 		}
 		else // unknown chunk
 		{
-			r = F9_FileRead(&size, 4, file); if(r!=4) return A9_FAIL;
-			F9_FileSeek(file, size, 1);
+			r = file->Read(&size, 4); if(r!=4) return A9_FAIL;
+			file->Seek(size, 1);
 		}
 	}
-	while(!F9_FileEof(file));
+	while(!file->Eof());
 
 	return A9_FAIL;
 }

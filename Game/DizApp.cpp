@@ -74,7 +74,7 @@ bool cDizApp::InitApp()
 	App.Icon(MAKEINTRESOURCE(IDI_ICON));
 
 	bool cool = true;
-	ini_get( file_getfullpath(GetIniFile()), "ADVANCED", "cool", cool);
+	ini_get( file_getfullpath(GetIniFile()), "ADVANCED", "cool") >> cool;
 	App.Cool(cool);
 	
 	return true;
@@ -99,7 +99,7 @@ bool cDizApp::InitInput()
 	strcpy( inifile, file_getfullpath(GetIniFile()) );
 
 	int input_enabled = 1;
-	ini_getint( inifile, "INPUT", "enabled",	&input_enabled );
+	ini_get(inifile, "INPUT", "enabled") >> input_enabled;
 	if(!input_enabled) return true; // no input
 	
 	BOOL ok = I9_Init(E9_GetHWND(),E9_GetHINSTANCE(),I9_API_DEFAULT);
@@ -109,9 +109,9 @@ bool cDizApp::InitInput()
 	int keyboard	= 1;
 	int mouse		= 0;
 	int joystick	= 1;
-	ini_getint( inifile, "INPUT", "keyboard",	&keyboard );
-	ini_getint( inifile, "INPUT", "mouse",		&mouse );
-	ini_getint( inifile, "INPUT", "joystick",	&joystick );
+	ini_get(inifile, "INPUT", "keyboard") >> keyboard;
+	ini_get(inifile, "INPUT", "mouse") >> mouse;
+	ini_get(inifile, "INPUT", "joystick") >> joystick;
 	if(keyboard)	ok = I9_DeviceInit(I9_DEVICE_KEYBOARD);
 	if(mouse)		ok = I9_DeviceInit(I9_DEVICE_MOUSE);
 	if(joystick)	ok = I9_DeviceInit(I9_DEVICE_JOYSTICK1);
@@ -129,7 +129,7 @@ bool cDizApp::InitAudio()
 	strcpy( inifile, file_getfullpath(GetIniFile()) );
 
 	int audio_enabled = 1;
-	ini_getint( inifile, "AUDIO", "enabled",	&audio_enabled  );
+	ini_get(inifile, "AUDIO", "enabled") >> audio_enabled;
 	if(!audio_enabled) return true; // no audio
 	
 	if(!A9_Init(E9_GetHWND(),A9_API_DEFAULT)) return false;

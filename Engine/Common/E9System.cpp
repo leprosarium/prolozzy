@@ -38,85 +38,36 @@ BOOL sys_senddata( HWND fromhwnd, HWND tohwnd, int cmd, int slot, int size, char
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Ini Tools
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#define	_GETPRIVATEPROFILEINT( type, tc )												\
-{																						\
-	char sz[64]; sz[0]=0;																\
-	type temp;																			\
-	GetPrivateProfileString( group, key, "", sz, 64, file );							\
-	if( 1==sscanf( sz, tc, &temp ) ) { *(type*)value = temp; return TRUE; }				\
-	return FALSE;																		\
-}
 
-#define	_SETPRIVATEPROFILEINT( type, tc )												\
-{																						\
-	char sz[64];																		\
-	sprintf(sz,tc,(type)value);															\
-	WritePrivateProfileString( group, key, sz, file );									\
-}
-
-BOOL ini_getchr( const char* file, const char* group, const char* key, char* value )
-{
-	_GETPRIVATEPROFILEINT( char, "%c" );
-}
-
-BOOL ini_getint( const char* file, const char* group, const char* key, int* value )
-{
-	_GETPRIVATEPROFILEINT( int, "%i" );
-}
-
-bool ini_get( const char* file, const char* group, const char* key, bool & v )
+std::istringstream ini_get(const std::string & file, const std::string & group, const std::string & key)
 {
 	char sz[64]; sz[0]=0;
-	int val;
-	GetPrivateProfileString( group, key, "", sz, 64, file );
-	if( 1==sscanf( sz, "%i", &val ) ) { v = val != 0; return true; }
-	return false;
+	std::istringstream o;
+	if(GetPrivateProfileString(group.c_str(), key.c_str(), "", sz, 64, file.c_str()))
+		o.str(sz);
+	else
+		o.setstate(std::ios::failbit);
+	return o;
 }
 
-BOOL ini_getflt( const char* file, const char* group, const char* key, float* value )
+template<>
+void ini_set<std::string>(const std::string & file, const std::string & group, const std::string & key, const std::string & value)
 {
-	_GETPRIVATEPROFILEINT( float, "%f" );
+	WritePrivateProfileString(group.c_str(), key.c_str(), value.c_str(), file.c_str());	
 }
-
-BOOL ini_getstr( const char* file, const char* group, const char* key, char* value, int size )
-{
-	return(0!=GetPrivateProfileString( group, key, "", value, size, file ));
-}
-
-BOOL ini_getbin( const char* file, const char* group, const char* key, void* value, int size )
-{
-	return GetPrivateProfileStruct( group, key, value, size, file );
-}
-
-void ini_setchr( const char* file, const char* group, const char* key, char value )
-{
-	_SETPRIVATEPROFILEINT( char, "%c" );
-}
-
-void ini_setint( const char* file, const char* group, const char* key, int value )
-{
-	_SETPRIVATEPROFILEINT( int, "%i" );
-}
-
-void ini_setflt( const char* file, const char* group, const char* key, float value )
-{
-	_SETPRIVATEPROFILEINT( float, "%f" );
-}
-
-void ini_setstr( const char* file, const char* group, const char* key, const char* value )
-{
-	WritePrivateProfileString( group, key, value, file );
-}
-
-void ini_setbin( const char* file, const char* group, const char* key, void* value, int size )
-{
-	WritePrivateProfileStruct( group, key, value, size, file );
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Files
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+//std::string	file_getfullpath(const std::string & file)
+//{
+//	static char path[MAX_PATH];
+//	if(GetFullPathName(file.c_str(), MAX_PATH , path, nullptr) != 0) return path;
+//	return std::string();
+//}
+
 const char* file_getfullpath( const char* file )
 {
 	static char path[256];

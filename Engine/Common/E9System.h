@@ -82,25 +82,20 @@ inline	void		sys_releasesemaphore( HSEMAPHORE semaphore )					{ ReleaseSemaphore
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Ini Tools
-// Obs: 
-// 1. file, group and key must be present and valid
-// 2. value is preserved if key not found (except for strings)
-// Exemple:
-//   int my_int = 0; // default
-//	 ret = ini_getint( file_getfullpath("test.ini"), "TEST", "MY_INT", &my_int );
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL	ini_getchr	( const char* file, const char* group, const char* key, char* value );
-BOOL	ini_getint	( const char* file, const char* group, const char* key, int* value );
-bool	ini_get	( const char* file, const char* group, const char* key, bool & value );
-BOOL	ini_getflt	( const char* file, const char* group, const char* key, float* value );
-BOOL	ini_getstr	( const char* file, const char* group, const char* key, char* value, int size );	// size include space for eos
-BOOL	ini_getbin	( const char* file, const char* group, const char* key, void* value, int size );
 
-void	ini_setchr	( const char* file, const char* group, const char* key, char value );
-void	ini_setint	( const char* file, const char* group, const char* key, int value );
-void	ini_setflt	( const char* file, const char* group, const char* key, float value );
-void	ini_setstr	( const char* file, const char* group, const char* key, const char* value );
-void	ini_setbin	( const char* file, const char* group, const char* key, void* value, int size );
+std::istringstream ini_get(const std::string & file, const std::string & group, const std::string & key);
+
+template<class T>
+void ini_set(const std::string & file, const std::string & group, const std::string & key, const T & value)
+{
+	std::ostringstream o;
+	o << value;
+	ini_set(file, group, key, o.str());
+}
+
+template<>
+void ini_set<std::string>(const std::string & file, const std::string & group, const std::string & key, const std::string & value);
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -118,6 +113,10 @@ char		file_path2drive		( const char* path );
 void		file_pathsplit		( const char* path, char* drive, char* dir, char* fname, char* ext );	// bufers must have enought space _MAX_DRIVE, _MAX_DIR, _MAX_FNAME, _MAX_EXT
 void		file_findfiles		( const char* path, file_ffcallback ffcallback, dword flags );		// path must include terminal '\'; use FINDFILE flags
 void		file_delete			( const char* path );
+
+//std::string	file_getfullpath(const std::string & file);
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

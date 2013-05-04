@@ -35,18 +35,15 @@ PREDICATE_M(core, ini, 4)
 	PlTerm val = A4;	
 	if(val.type() == PL_VARIABLE)
 	{
-		char value[256]; value[0]=0;
-		if(GetPrivateProfileString(A2, A3, "", value, 256, tmp_fullpath ) == 0)
+		std::string value;
+		if(!(ini_get(tmp_fullpath, A2, A3) >> value))
 			return false;
 		PlTerm ct;
-		if (PL_chars_to_term(value, ct))
+		if (PL_chars_to_term(value.c_str(), ct))
 			return A4 = ct;
-		PlTerm at;
-		if(PL_unify_atom_chars(at, value))
-			return A4 = at;
-		throw PlResourceError(ct);
+		return A4 = val;
 	}
-	WritePrivateProfileString(A2, A3, val, tmp_fullpath );
+	ini_set<std::string>(tmp_fullpath, A2, A3, val);
 	return true;
 }
 
@@ -148,7 +145,7 @@ BOOL cEdiApp::InitApp()
 	App.Icon(MAKEINTRESOURCE(IDI_ICON));
 
 	bool cool = true;
-	ini_get( file_getfullpath(USER_INIFILE), "EDITOR", "options_cool", cool);
+	ini_get( file_getfullpath(USER_INIFILE), "EDITOR", "options_cool") >> cool;
 	App.Cool(cool);
 	
 	return TRUE;
@@ -182,13 +179,13 @@ BOOL cEdiApp::InitVideo()
 
 	int screensize = 1;
 	int delta = 64; // substract from screen size
-	ini_getint( inifile, "EDITOR", "options_screensize",	&screensize);
+	ini_get(inifile, "EDITOR", "options_screensize") >> screensize;
 	if(screensize<0||screensize>=4) screensize=1;
 	int screensizelist[4][2]={ {640,480}, {800,600}, {1024,768}, {1280,1024} };
 
 	// custom sizes
-	ini_getint( inifile, "EDITOR", "options_screenw",	&screensizelist[3][0]);
-	ini_getint( inifile, "EDITOR", "options_screenh",	&screensizelist[3][1]);
+	ini_get(inifile, "EDITOR", "options_screenw") >> screensizelist[3][0];
+	ini_get(inifile, "EDITOR", "options_screenh") >> screensizelist[3][1];
 
 	// default config
 	r9Cfg cfg;
@@ -200,7 +197,7 @@ BOOL cEdiApp::InitVideo()
 
 	// load config
 	int apiv;
-	if(ini_getint( inifile, "EDITOR", "options_videoapi", &apiv))
+	if(ini_get(inifile, "EDITOR", "options_videoapi") >> apiv)
 		if(apiv == static_cast<int>(Api::DirectX))
 			api = Api::DirectX;
 		else if(apiv == static_cast<int>(Api::OpenGL))
@@ -569,16 +566,12 @@ PREDICATE_M(edi, tileReload, 0)
 	g_paint.TileUnload();
 
 	// load from 2 ini dirs
-	BOOL ok = TRUE;
 	int loads = 0;
-	static char tilepath[256];
-	
-	if(ini_getstr( file_getfullpath(USER_INIFILE), "editor", "options_tiledir", tilepath, 256 )) 
-	{
-		if(g_paint.TileLoad(tilepath)) loads++;
-	}
-	else dlog(LOGAPP, L"TileDir not specified in editor.ini\n");
-
+	std::string tilepath;
+	if(ini_get(file_getfullpath(USER_INIFILE), "editor", "options_tiledir") >> tilepath)
+		if(g_paint.TileLoad(tilepath.c_str())) loads++;
+	else 
+		dlog(LOGAPP, L"TileDir not specified in editor.ini\n");
 	return loads > 0;
 }
 

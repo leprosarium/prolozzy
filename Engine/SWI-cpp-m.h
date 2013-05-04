@@ -109,6 +109,7 @@ public:
 					/* C --> PlTerm */
   PlTerm(const char *text);
   PlTerm(LPCWSTR text);
+  PlTerm(const std::string &);
 
   PlTerm(long val);
   PlTerm(double val);
@@ -143,6 +144,7 @@ public:
   bool operator =(const PlAtom &a);	/* atom */
   bool operator =(const char *v);	/* atom (from char *) */
   bool operator =(LPCWSTR v);
+  bool operator =(const std::string & v);
   bool operator =(long v);		/* integer */
   bool operator =(int v);		/* integer */
   bool operator =(int64_t v);		/* integer */
@@ -179,6 +181,7 @@ public:
 					/* comparison (string) */
   bool operator ==(const char *s);
   bool operator ==(LPCWSTR s);
+  bool operator ==(const std::string & s);
   bool operator ==(const PlAtom &a);
 };
 
@@ -368,6 +371,14 @@ PlTerm::PlTerm(LPCWSTR text)
 { if ( !(ref = PL_new_atom_wchars(wcslen(text), text) ))
     throw PlResourceError();
 }
+
+__inline
+PlTerm::PlTerm(const std::string & text)
+{ if ( !(ref = PL_new_term_ref()) ||
+       !PL_put_atom_chars(ref, text.c_str()) )
+    throw PlResourceError();
+}
+
 
 __inline
 PlTerm::PlTerm(long val)
@@ -791,6 +802,12 @@ __inline bool PlTerm::operator =(LPCWSTR v)		/* term = atom */
   return rc != FALSE;
 }
 
+__inline bool PlTerm::operator =(const std::string &v)		/* term = atom */
+{
+	return (*this) = v.c_str();
+}
+
+
 __inline bool PlTerm::operator =(long v)
 { int rc = PL_unify_integer(ref, v);
   term_t ex;
@@ -914,6 +931,13 @@ __inline bool PlTerm::operator ==(LPCWSTR s)
   throw PlTypeError("text", ref);
 }
 
+__inline bool PlTerm::operator ==(const std::string & s)
+{ 
+	char *s0;
+	if(PL_get_chars(ref, &s0, CVT_ALL))
+		return s == s0;
+	throw PlTypeError("text", ref);
+}
 
 __inline bool PlTerm::operator ==(const PlAtom &a)
 { atom_t v;

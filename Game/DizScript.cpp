@@ -501,12 +501,12 @@ PREDICATE_M(core, ini, 4)
 	PlTerm val = A4;	
 	if(val.type() == PL_VARIABLE)
 	{
-		char value[256]; value[0]=0;
-		if(GetPrivateProfileString(A2, A3, "", value, 256, tmp_fullpath ) == 0)
-			return false;
-		return A4 = value;
+		std::string value;
+		if(ini_get(tmp_fullpath, A2, A3) >> value)
+			return A4 = value;
+		return false;
 	}
-	WritePrivateProfileString(A2, A3, val, tmp_fullpath );
+	ini_set<std::string>(tmp_fullpath, A2, A3, val);
 	return true;
 }
 

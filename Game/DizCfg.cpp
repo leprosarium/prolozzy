@@ -7,34 +7,30 @@
 
 cDizCfg g_cfg;
 
+std::string GetFileName(const std::string & ext)
+{
+	char apppath[MAX_PATH];
+	if(GetModuleFileName( NULL, apppath, MAX_PATH ))
+		return file_path2name(apppath) + "." + ext;
+	return std::string("dizzy.") + ext;		
+}
+
 const char* GetIniFile()
 {
-	static char name[64] = "dizzy.ini";
-	char apppath[MAX_PATH];
-	if(!GetModuleFileName( NULL, apppath, MAX_PATH )) return name;
-	strcpy(name,file_path2file(apppath));
-	strcpy(const_cast<char *>(file_path2ext(name)),"ini");
-	return name;
+	static std::string name = GetFileName("ini");
+	return name.c_str();
 }
 
 const char* GetPakFile()
 {
-	static char name[64] = "dizzy.pak";
-	char apppath[MAX_PATH];
-	if(!GetModuleFileName( NULL, apppath, MAX_PATH )) return name;
-	strcpy(name,file_path2file(apppath));
-	strcpy(const_cast<char *>(file_path2ext(name)),"pak");
-	return name;
+	static std::string name = GetFileName("pak");
+	return name.c_str();
 }
 
 const char* GetLogFile()
 {
-	static char name[64] = "dizzy.log";
-	char apppath[MAX_PATH];
-	if(!GetModuleFileName( NULL, apppath, MAX_PATH )) return name;
-	strcpy(name,file_path2file(apppath));
-	strcpy(const_cast<char *>(file_path2ext(name)),"log");
-	return name;
+	static std::string name = GetFileName("log");
+	return name.c_str();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -101,10 +97,7 @@ void cDizCfg::Done()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 bool cDizCfg::Load()
 {
-	char inifile[256];
-
-	// USER
-	strcpy( inifile, file_getfullpath(GetIniFile()) );
+	std::string inifile = file_getfullpath(GetIniFile());
 
 	// VIDEO
 	ini_get(inifile, "VIDEO",	"scale") >> m_scale;
@@ -145,10 +138,7 @@ bool cDizCfg::Load()
 
 bool cDizCfg::Save()
 {
-	char inifile[256];
-
-	// USER
-	strcpy( inifile, file_getfullpath(GetIniFile()) );
+	std::string inifile = file_getfullpath(GetIniFile());
 
 	// VIDEO
 	ini_set( inifile, "VIDEO",	"scale",		m_scale					);
@@ -189,8 +179,7 @@ bool cDizCfg::Save()
 
 void cDizCfg::LoadRenderCfg( r9Cfg& cfg, Api & api )
 {
-	char inifile[256];
-	strcpy( inifile, file_getfullpath(GetIniFile()) );
+	std::string inifile = file_getfullpath(GetIniFile());
 
 	api				= Api::Default;
 	cfg.windowed	= 1;

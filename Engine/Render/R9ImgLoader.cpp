@@ -2,6 +2,9 @@
 // R9ImgLoader.cpp
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
+
+#include <string>
+
 #include "R9ImgLoader.h"
 
 #ifdef R9_ENABLE_PNG
@@ -41,10 +44,10 @@ BOOL R9_ImgLoadFile( const char* name, r9Img* img )
 
 	// type
 	int type = R9_IMG_UNKNOWN;
-	const char* ext = file_path2ext(name);
-	if( stricmp(ext,"tga")==0 ) type = R9_IMG_TGA; else
-	if( stricmp(ext,"jpg")==0 ) type = R9_IMG_JPG; else
-	if( stricmp(ext,"png")==0 ) type = R9_IMG_PNG; // else...
+	std::string ext = file_path2ext(name);
+	if( ext == "tga") type = R9_IMG_TGA; else
+	if( ext == "jpg") type = R9_IMG_JPG; else
+	if( ext == "png") type = R9_IMG_PNG; // else...
 	if( type==R9_IMG_UNKNOWN ) return FALSE; // unsupported file format
 
 	// read
@@ -68,10 +71,10 @@ bool R9_ImgSaveFile( const char* name, r9Img* img )
 
 	// type
 	int type = R9_IMG_UNKNOWN;
-	const char* ext = file_path2ext(name);
-	if( stricmp(ext,"png")==0 )	type = R9_IMG_PNG; else
-	if( stricmp(ext,"jpg")==0 ) type = R9_IMG_JPG; else
-	if( stricmp(ext,"tga")==0 )	type = R9_IMG_TGA; // else...
+	std::string ext = file_path2ext(name);
+	if(ext == "png") type = R9_IMG_PNG; else
+	if(ext == "jpg") type = R9_IMG_JPG; else
+	if(ext == "tga") type = R9_IMG_TGA; // else...
 	if( type==R9_IMG_UNKNOWN ) return false; // unsupported file format
 
 	// write
@@ -96,10 +99,10 @@ BOOL R9_ImgLoadHeader( const char* name, r9Img* img )
 
 	// type
 	int type = R9_IMG_UNKNOWN;
-	const char* ext = file_path2ext(name);
-	if( stricmp(ext,"tga")==0 ) type = R9_IMG_TGA; else
-	if( stricmp(ext,"jpg")==0 ) type = R9_IMG_JPG; else
-	if( stricmp(ext,"png")==0 ) type = R9_IMG_PNG; // else...
+	std::string ext = file_path2ext(name);
+	if(ext == "tga") type = R9_IMG_TGA; else
+	if(ext == "jpg") type = R9_IMG_JPG; else
+	if(ext == "png") type = R9_IMG_PNG; // else...
 	if( type==R9_IMG_UNKNOWN ) return FALSE; // unsupported file format
 
 	// read

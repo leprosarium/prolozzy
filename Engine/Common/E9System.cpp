@@ -61,18 +61,28 @@ void ini_set<std::string>(const std::string & file, const std::string & group, c
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-//std::string	file_getfullpath(const std::string & file)
-//{
-//	static char path[MAX_PATH];
-//	if(GetFullPathName(file.c_str(), MAX_PATH , path, nullptr) != 0) return path;
-//	return std::string();
-//}
-
-const char* file_getfullpath( const char* file )
+std::string	file_getfullpath(const std::string & file)
 {
-	static char path[256];
-	if(GetFullPathName( file, 255, path, NULL )!=0) return path;
-	return NULL;
+	static char path[MAX_PATH];
+	if(GetFullPathName(file.c_str(), MAX_PATH , path, nullptr) != 0) return path;
+	return std::string();
+}
+
+std::string file_path2ext(const std::string	& path)
+{
+	std::string::size_type p = path.rfind('.');
+	if(p == std::string::npos)
+		return std::string();
+	return path.substr(p + 1);
+}
+
+std::string file_path2name(const std::string & path)
+{
+	std::string nm = file_path2file(path.c_str());
+	std::string::size_type p = nm.rfind('.');
+	if(p == std::string::npos)
+		return nm;
+	return nm.substr(0, p);
 }
 
 const char* file_path2file(const char* path)
@@ -82,33 +92,6 @@ const char* file_path2file(const char* path)
 	if(!(p = strrchr(path, '\\')))	return path;
 	if(strlen((p + 1)) > 0)			return (p + 1);
 	return NULL;
-}
-
-int	file_path2dir(const char* path)
-{
-	const char *p = NULL;
-	if(!path || !(p = file_path2file(path))) return 0;
-	return (int)(p - path);
-}
-
-const char* file_path2ext(const char* path)
-{
-	const char *p = NULL;
-	if(!path) return NULL;
-	if(!(p = strrchr(path, '.')))	return NULL;
-	if(strlen((p + 1)) > 0)			return  (p + 1);
-	return NULL;
-}
-
-char file_path2drive(const char* path)
-{
-	if( !path || path[0]==0 || path[1] != ':') return 0;
-	return path[0];
-}
-
-void file_pathsplit( const char* path, char* drive, char* dir, char* fname, char* ext )
-{
-	_splitpath( path, drive, dir, fname, ext );
 }
 
 void file_findfiles( const char* path, file_ffcallback ffcallback, dword flags )
@@ -151,9 +134,9 @@ void file_findfiles( const char* path, file_ffcallback ffcallback, dword flags )
 	FindClose(h);
 }
 
-void file_delete( const char* path )
+void file_delete(const std::string & path)
 {
-	DeleteFile(path);
+	DeleteFile(path.c_str());
 }
 
 

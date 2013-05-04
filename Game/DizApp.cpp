@@ -85,18 +85,22 @@ bool cDizApp::InitFiles()
 	if(!F9_Init()) return false;
 	// add pak archive
 	const char* pakfile = GetPakFile();
+
+//	F9_ArchiveOpen("data\\tiles.pak", F9_READ | F9_ARCHIVE_PAK );
 	if(f9Archive * arc = F9_ArchiveOpen(pakfile, F9_READ | F9_ARCHIVE_PAK ))
 		dlog(LOGAPP, L"Pak archive %S opened, data folder is ignored.\n",pakfile);
 	else
 		dlog(LOGAPP, L"Pak archive %S not found, running from data folder.\n",pakfile);
+
+
+
 
 	return true;
 }
 
 bool cDizApp::InitInput()
 {
-	char inifile[256];
-	strcpy( inifile, file_getfullpath(GetIniFile()) );
+	std::string inifile = file_getfullpath(GetIniFile());
 
 	int input_enabled = 1;
 	ini_get(inifile, "INPUT", "enabled") >> input_enabled;
@@ -125,11 +129,8 @@ bool cDizApp::InitInput()
 
 bool cDizApp::InitAudio()
 {
-	char inifile[256];
-	strcpy( inifile, file_getfullpath(GetIniFile()) );
-
 	int audio_enabled = 1;
-	ini_get(inifile, "AUDIO", "enabled") >> audio_enabled;
+	ini_get(file_getfullpath(GetIniFile()), "AUDIO", "enabled") >> audio_enabled;
 	if(!audio_enabled) return true; // no audio
 	
 	if(!A9_Init(E9_GetHWND(),A9_API_DEFAULT)) return false;
@@ -138,9 +139,6 @@ bool cDizApp::InitAudio()
 
 bool cDizApp::InitVideo()
 {
-	char inifile[256];
-	strcpy( inifile, file_getfullpath(GetIniFile()) );
-
 	// load config
 	Api api;
 	r9Cfg cfg;

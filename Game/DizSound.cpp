@@ -160,12 +160,11 @@ void cDizSound::Update()
 // SAMPLES
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool isSupportedExt(const char * ext) 
+bool isSupportedExt(const std::string & ext) 
 {
-	static const char * supported_ext[] = {".wav",".ogg",".ym",".mod",".it",".xm",".s3m"};
-	static const size_t count = sizeof(supported_ext) / sizeof(*supported_ext);
-	for(size_t i = 0, e = count; i < e; ++i)
-		if(strcmp(supported_ext[i], ext) == 0) return true;
+	static const std::string supported_ext[] = {"wav", "ogg", "ym", "mod", "it", "xm", "s3m"};
+	for(const std::string & e: supported_ext)
+		if(e == ext) return true;
 	return false;
 }
 
@@ -183,24 +182,21 @@ void Samples::Update()
 
 bool Samples::LoadFile(const char* filepath, size_t & total, size_t & fail, size_t & duplicates, int group)
 {
-	char fname[_MAX_FNAME];
-	char ext[_MAX_EXT];
-	file_pathsplit(filepath, 0, 0, fname, ext);
-	
-	if(!isSupportedExt(ext)) return false; // ignore files with unsupported extensions
+	if(!isSupportedExt(file_path2ext(filepath))) return false; // ignore files with unsupported extensions
 
 	total++;
 
 	// check name format
-	char nm[_MAX_FNAME];
-	int instances = 1;
-	int ret = sscanf(fname,"%s %i",nm,&instances);
-	if(ret==0) 
+	std::istringstream fname(file_path2name(filepath));
+	std::string nm;
+	if(!(fname >> nm))
 	{ 
 		fail++; 
 		dlog(LOGAPP, L"! %S (bad name)\n", filepath); 
 		return false; 
 	}
+	int instances = 1;
+	fname >> instances; 
 	if(instances<1) instances=1;
 
 	// check unique id
@@ -370,16 +366,11 @@ Music::Music() :_stream(nullptr),
 
 bool Music::LoadFile( const char* filepath, size_t & total, size_t & fail, size_t & duplicates, int group)
 {
-	// check name and extension
-	char fname[_MAX_FNAME];
-	char ext[_MAX_EXT];
-	file_pathsplit(filepath, 0, 0, fname, ext);
-	
-	if(!isSupportedExt(ext)) return false; // ignore files with unsupported extensions
+	if(!isSupportedExt(file_path2ext(filepath))) return false; // ignore files with unsupported extensions
 
 	total++;
 
-	PlAtom id(fname);
+	PlAtom id(file_path2name(filepath));
 	// check unique id
 	if(Find(id) != -1)
 	{

@@ -22,7 +22,7 @@ void d9Log::Init(const char* logfile, callback callback)
 
 void d9Log::clear()
 {
-	file_delete(m_logfile.c_str());
+	file_delete(m_logfile);
 }
 
 void d9Log::setChannel(size_t ch, const char* name, dword flags, dword color)

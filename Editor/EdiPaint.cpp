@@ -45,8 +45,8 @@ BOOL cEdiPaint::TileLoadFile( const char* filepath )
 {
 	
 	// check file type (not counted if unaccepted); only TGA and PNG files accepted
-	const char* ext = file_path2ext(filepath); if(!ext) return FALSE;
-	if( 0!=stricmp(ext,"tga") && 0!=strcmp(ext,"png") ) return FALSE;
+	std::string ext = file_path2ext(filepath);
+	if(ext != "tga" && ext != "png") return FALSE;
 	const char* name = file_path2file(filepath); if(!name) return FALSE;
 	
 	gstile_total++;

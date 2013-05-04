@@ -174,8 +174,7 @@ BOOL cEdiApp::InitInput()
 
 BOOL cEdiApp::InitVideo()
 {
-	char inifile[256];
-	strcpy( inifile, file_getfullpath(USER_INIFILE) );
+	std::string inifile = file_getfullpath(USER_INIFILE);
 
 	int screensize = 1;
 	int delta = 64; // substract from screen size

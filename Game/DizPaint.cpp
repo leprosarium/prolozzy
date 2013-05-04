@@ -120,8 +120,8 @@ bool Tiles::LoadFile( const char* filepath, size_t & total, size_t & fail, size_
 {
 	
 	// check file type (not counted if unaccepted); only TGA and PNG files accepted
-	const char* ext = file_path2ext(filepath); if(!ext) return false;
-	if( 0!=stricmp(ext,"tga") && 0!=strcmp(ext,"png") ) return false;
+	std::string ext = file_path2ext(filepath);
+	if(ext != "tga" && ext != "png") return false;
 	const char* name = file_path2file(filepath); if(!name) return false;
 	
 	total++;
@@ -782,8 +782,7 @@ bool Fonts::LoadFile( const char* filepath, int group )
 
 	// check file type (not counted if unaccepted);
 	const char* name = file_path2file(filepath); if(!name) return false;
-	const char* ext = file_path2ext(filepath); if(!ext) return false;
-	if(0!=stricmp(ext,"fnt")) return false;
+	if(file_path2ext(filepath) != "fnt") return false;
 	
 	gsfont_total++;
 

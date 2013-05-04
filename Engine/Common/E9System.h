@@ -105,16 +105,18 @@ void ini_set<std::string>(const std::string & file, const std::string & group, c
 #define	FILE_FINDREC		(1<<1)								// request to go recursive on found directories
 typedef std::function<void(const char *, BOOL)> file_ffcallback;		// filepath=found file including requested path, dir=1 if filepath is a directory
 
-const char*	file_getfullpath	( const char* file );
 const char*	file_path2file		( const char* path );
-int			file_path2dir		( const char* path );
-const char*	file_path2ext		( const char* path );
-char		file_path2drive		( const char* path );
-void		file_pathsplit		( const char* path, char* drive, char* dir, char* fname, char* ext );	// bufers must have enought space _MAX_DRIVE, _MAX_DIR, _MAX_FNAME, _MAX_EXT
 void		file_findfiles		( const char* path, file_ffcallback ffcallback, dword flags );		// path must include terminal '\'; use FINDFILE flags
-void		file_delete			( const char* path );
 
-//std::string	file_getfullpath(const std::string & file);
+
+std::string	file_getfullpath(const std::string & file);
+
+std::string	file_path2name(const std::string & path);
+std::string	file_path2ext(const std::string & path);
+
+void file_delete(const std::string & path);
+
+
 
 
 

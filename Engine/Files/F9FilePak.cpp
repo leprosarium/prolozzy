@@ -12,12 +12,12 @@ int f9FilePak::Open(const char* name, int mode)
 	if(!F9_ISREADONLY(mode)) return F9_FAIL; // readonly
 
 	// archive should set those
-	if( !m_arcname || !m_fileinfo) return F9_FAIL;
+	if( !m_fileinfo) return F9_FAIL;
 
 	m_mode = mode;
 
 	// arc disk file
-	if(m_arcfile.Open( m_arcname, m_mode )!=F9_OK) return F9_FAIL;
+	if(m_arcfile.Open( m_arcname.c_str(), m_mode )!=F9_OK) return F9_FAIL;
 	if(m_arcfile.Seek( m_fileinfo->m_offset, F9_SEEK_SET )!=F9_OK) { m_arcfile.Close(); return F9_FAIL; }
 
 	m_open = true;
@@ -29,7 +29,7 @@ int f9FilePak::Close()
 	if(!IsOpen()) return F9_FAIL;
 	m_arcfile.Close();
 
-	m_arcname	= nullptr;
+	m_arcname.clear();
 	m_fileinfo	= nullptr;
 
 	m_open = false;

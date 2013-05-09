@@ -137,7 +137,7 @@ protected:
 	void Reset();
 
 protected:
-	char * m_arcname;					// just a pointer to zip archive name
+	std::string m_arcname;				// just a pointer to zip archive name
 	int m_offset; 						// offset of file in zip archive (-1 if not initialized); set by archive
 
 	f9FileDisk m_arcfile;				// archive disk file

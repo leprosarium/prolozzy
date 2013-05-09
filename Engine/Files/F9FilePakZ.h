@@ -14,7 +14,7 @@ struct f9PakFileInfo;
 class f9FilePakZ : public f9File
 {
 public:
-	f9FilePakZ() : f9File(F9_FILE_PAKZ), m_fileinfo(nullptr), m_arcname(nullptr), m_data(nullptr) {}
+	f9FilePakZ() : f9File(F9_FILE_PAKZ), m_fileinfo(nullptr), m_data(nullptr) {}
 	virtual int Open(const char* name, int mode);
 	virtual int Close();
 	virtual int64 Read(void* data, int64 size);
@@ -25,7 +25,7 @@ public:
 
 protected:
 	f9PakFileInfo * m_fileinfo;		// info from pak
-	char * m_arcname;				// just a pointer to zip archive name
+	std::string  m_arcname;				// just a pointer to zip archive name
 	byte * m_data;					// unpacked data
 
 	friend	class f9ArchivePak;

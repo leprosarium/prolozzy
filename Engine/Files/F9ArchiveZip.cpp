@@ -7,24 +7,21 @@
 #include "F9FileZip.h"
 #include <algorithm>
 
-f9ArchiveZip::f9ArchiveZip()
+f9ArchiveZip::f9ArchiveZip() : f9Archive(F9_ARCHIVE_ZIP)
 {
-	m_type = F9_ARCHIVE_ZIP;
 }
 
 f9ArchiveZip::~f9ArchiveZip()
 {
 }
 
-int f9ArchiveZip::Open( const char *name, int mode, const char* password )
+int f9ArchiveZip::Open(const std::string & name, int mode, const std::string & password )
 {
 	if( IsOpen() ) Close();
-	if( name == NULL ) return F9_FAIL;
 	if(!F9_ISREADONLY(mode)) return F9_FAIL; // readonly
 
-	f9Archive::Open( name, mode, password );
+	f9Archive::Open(name, mode, password);
 	if( !ReadFAT() ) { Close(); return F9_FAIL; }
-	
 	return F9_OK;
 }
 
@@ -41,48 +38,44 @@ int f9ArchiveZip::Close()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // files serve
 //////////////////////////////////////////////////////////////////////////////////////////////////
-f9File* f9ArchiveZip::FileOpen( const char* name, int mode )
+f9File * f9ArchiveZip::FileOpen(const std::string &  name, int mode)
 {
-	if( !IsOpen() ) return NULL;
-	if( name == NULL ) return NULL;
-	if( (mode & 3) != (m_mode & 3) ) return NULL; // open mode must match
+	if( !IsOpen() ) return nullptr;
+	if( (mode & 3) != (m_mode & 3) ) return nullptr; // open mode must match
 
-	int i = FileFind( name );
-	if( i<0 ) return NULL;
+	int i = FileFind(name);
+	if(i < 0) return nullptr;
 
-	f9FileZip* fzip	= new f9FileZip();
+	f9FileZip * fzip = new f9FileZip();
 	fzip->m_offset	= m_fat[i]->m_offset;
 	fzip->m_arcname	= m_name;
 
-	if( fzip->Open(name, m_mode)!=F9_OK )
+	if(fzip->Open(name.c_str(), m_mode) != F9_OK)
 	{
 		delete fzip;
-		return NULL;
+		return nullptr;
 	}
-	
 	return fzip;
 }
 
-int f9ArchiveZip::FileFind( const char* name )
+int f9ArchiveZip::FileFind( const std::string & name ) const
 {
-
 	std::string nm(name);
 	std::transform(nm.begin(), nm.end(), nm.begin(), ::tolower);
-
-	Hash::iterator i = index.find(nm);
+	auto i = index.find(nm);
 	if (i == index.end())
 		return -1;
 	return i->second;
 }
 
-std::string f9ArchiveZip::FileGetName( int idx )
+std::string f9ArchiveZip::FileGetName(int idx) const
 {
 	if(idx >= 0 && idx < static_cast<int>(m_fat.size())) 
 		return m_fat[idx]->m_name;
 	return std::string();
 }
 
-dword f9ArchiveZip::FileGetSize( int idx )
+dword f9ArchiveZip::FileGetSize(int idx) const
 {
 	if(idx >= 0 && idx < static_cast<int>(m_fat.size()))
 		return m_fat[idx]->m_size;
@@ -92,7 +85,7 @@ dword f9ArchiveZip::FileGetSize( int idx )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // private
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL f9ArchiveZip::ReadFAT()
+bool f9ArchiveZip::ReadFAT()
 {
 
 	int				i;
@@ -109,23 +102,23 @@ BOOL f9ArchiveZip::ReadFAT()
 	f9ZipFileInfo*	fi;
 	
 	// open archive file
-	if( file.Open(m_name, F9_READ ) ) return FALSE;
+	if( file.Open(m_name.c_str(), F9_READ ) ) return false;
 	filesize = (int)file.Size();
 
 	// read central dir buffer
 	cebuffsize =  std::min<int>(filesize, ZIP_CENTRAL_END_BUFFER_SIZE);
 	cebuff = (char*)malloc( cebuffsize ); 
-	if(!cebuff) { file.Close(); return FALSE; }
+	if(!cebuff) { file.Close(); return false; }
 	file.Seek( filesize-cebuffsize );
 	if( cebuffsize!=file.Read( cebuff, cebuffsize ) ) 
-	{ free(cebuff); file.Close(); return FALSE; }
+	{ free(cebuff); file.Close(); return false; }
 
 	// find central directory end
 	for(i = cebuffsize-4; i >= 0; i--)
 	{
 		if( *(dword*)(cebuff+i) == ZIP_CENTRAL_END_SIGN ) break;
 	}		
-	if( i<0 ) { free(cebuff); file.Close(); return FALSE; }
+	if( i<0 ) { free(cebuff); file.Close(); return false; }
 	int centralendpos = i; // filesize - cebuffsize + i // if we used to seek and reread centralend from the file
 
 	// read central directory
@@ -142,7 +135,7 @@ BOOL f9ArchiveZip::ReadFAT()
 		
 		if( fh->sign != ZIP_FILE_HEADER_SIGN)
 		{
-			free(cebuff); free(central); return FALSE;
+			free(cebuff); free(central); return false;
 		}
 		
 		char fname[MAX_PATH];
@@ -175,7 +168,7 @@ BOOL f9ArchiveZip::ReadFAT()
 	free( cebuff );
 	free( central );
 	
-	return TRUE;
+	return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

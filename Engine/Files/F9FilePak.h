@@ -13,7 +13,7 @@ struct f9PakFileInfo;
 class f9FilePak : public f9File
 {
 public:
-	f9FilePak () : f9File(F9_FILE_PAK), m_fileinfo(nullptr), m_arcname(nullptr) {}
+	f9FilePak () : f9File(F9_FILE_PAK), m_fileinfo(nullptr) {}
 
 	virtual int Open(const char* name, int mode);
 	virtual int Close();
@@ -25,7 +25,7 @@ public:
 
 protected:
 	f9PakFileInfo * m_fileinfo;		// info from pak
-	char * m_arcname;				// just a pointer to zip archive name
+	std::string m_arcname;			// just a pointer to zip archive name
 	f9FileDisk m_arcfile;			// archive disk file, opened on Open
 
 	friend	class f9ArchivePak;

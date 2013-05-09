@@ -8,26 +8,25 @@
 
 #include <algorithm>
 
-f9ArchivePak::f9ArchivePak()
+f9ArchivePak::f9ArchivePak() : f9Archive(F9_ARCHIVE_PAK)
 {
-	m_type = F9_ARCHIVE_PAK;
-	m_header.m_fatfiles	=0;
-	m_header.m_fatoffset=sizeof(f9PakHeader);
-	m_header.m_fatsizec	=0;
-	m_header.m_fatsize  =0;
+	m_header.m_fatfiles	= 0;
+	m_header.m_fatoffset = sizeof(f9PakHeader);
+	m_header.m_fatsizec	= 0;
+	m_header.m_fatsize  = 0;
 }
 
 f9ArchivePak::~f9ArchivePak()
 {
+	Close();
 }
 
-int f9ArchivePak::Open( const char *name, int mode, const char* password )
+int f9ArchivePak::Open(const std::string & name, int mode, const std::string & password)
 {
 	if(IsOpen()) Close();
-	if(name==NULL) return F9_FAIL;
 	if(!F9_ISREADONLY(mode)) return F9_FAIL; // readonly
 
-	f9Archive::Open( name, mode, password );
+	f9Archive::Open(name, mode, password);
 
 	if( !ReadHeader() ) { Close(); return F9_FAIL; }
 	if( !ReadFAT() )	{ Close(); return F9_FAIL; }
@@ -48,16 +47,15 @@ int f9ArchivePak::Close()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // files serve
 //////////////////////////////////////////////////////////////////////////////////////////////////
-f9File* f9ArchivePak::FileOpen( const char* name, int mode )
+f9File * f9ArchivePak::FileOpen(const std::string & name, int mode)
 {
-	if(!IsOpen()) return NULL;
-	if(name==NULL) return NULL;
-	if( (mode & 3) != (m_mode & 3) ) return NULL; // open mode must match
+	if(!IsOpen()) return nullptr;
+	if( (mode & 3) != (m_mode & 3) ) return nullptr; // open mode must match
 
-	int i = FileFind( name );
-	if( i<0 ) return NULL;
+	int i = FileFind(name);
+	if(i < 0) return nullptr;
 
-	f9File* file = NULL;
+	f9File * file = nullptr;
 	
 	if( m_fat[i]->m_flags & F9_PAK_COMPRESSED )
 	{
@@ -72,35 +70,34 @@ f9File* f9ArchivePak::FileOpen( const char* name, int mode )
 		((f9FilePak*)file)->m_fileinfo = m_fat[i];
 	}
 
-	if( file->Open(name, m_mode)!=F9_OK )
+	if( file->Open(name.c_str(), m_mode)!=F9_OK )
 	{
 		delete file;
-		return NULL;
+		return nullptr;
 	}
 	
 	return file;
 }
 
-int f9ArchivePak::FileFind( const char* name )
+int f9ArchivePak::FileFind(const std::string & name) const
 {
-
 	std::string nm(name);
 	std::transform(nm.begin(), nm.end(), nm.begin(), ::tolower);
 
-	Hash::iterator i = index.find(nm);
-	if(i==index.end())
+	auto i = index.find(nm);
+	if(i == index.end())
 		return -1;
 	return i->second;
 }
 
-std::string f9ArchivePak::FileGetName( int idx )
+std::string f9ArchivePak::FileGetName(int idx) const
 {
 	if(idx >= 0 && idx < static_cast<int>(m_fat.size()))
 		return m_fat[idx]->m_name;	
 	return std::string();
 }
 
-dword f9ArchivePak::FileGetSize( int idx )
+dword f9ArchivePak::FileGetSize(int idx) const
 {
 	if(idx >= 0 && idx < static_cast<int>(m_fat.size()))
 		return m_fat[idx]->m_size;
@@ -110,43 +107,43 @@ dword f9ArchivePak::FileGetSize( int idx )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // private
 //////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL f9ArchivePak::ReadHeader()
+bool f9ArchivePak::ReadHeader()
 {
 	// read file
 	f9FileDisk file;
-	if(F9_OK!=file.Open( m_name, F9_READ )) return FALSE;
+	if(F9_OK!=file.Open( m_name.c_str(), F9_READ )) return false;
 	int headersize = (int)file.Read( &m_header, sizeof(f9PakHeader) );
 	file.Close();
-	if( headersize != sizeof(f9PakHeader) ) return FALSE;
+	if( headersize != sizeof(f9PakHeader) ) return false;
 	// check id
 	dword id = (((dword)F9_PAK_VERSION)<<24) + (((dword)'K')<<16) + (((dword)'A')<<8) + ((dword)'P');
-	if(m_header.m_id != id) return FALSE; // wrong pack version
-	return TRUE;
+	if(m_header.m_id != id) return false; // wrong pack version
+	return true;
 }
 
-BOOL f9ArchivePak::ReadFAT()
+bool f9ArchivePak::ReadFAT()
 {
 	// header must be all valid
-	if(m_header.m_fatfiles==0) return TRUE; // no fat entries
+	if(m_header.m_fatfiles==0) return true; // no fat entries
 	assert(m_header.m_fatsizec!=0); // check
 	assert(m_header.m_fatsize!=0); // check
 
 	// read fat from file
 	f9FileDisk file;
-	if(F9_OK!=file.Open(m_name, F9_READ )) return FALSE;
-	if(F9_OK!=file.Seek(m_header.m_fatoffset,0)) { file.Close(); return FALSE; }
+	if(F9_OK!=file.Open(m_name.c_str(), F9_READ )) return false;
+	if(F9_OK!=file.Seek(m_header.m_fatoffset,0)) { file.Close(); return false; }
 	byte* bufferc = (byte*)malloc(m_header.m_fatsizec);
 	int fatsizec = (int)file.Read(bufferc,m_header.m_fatsizec);
 	file.Close();
-	if(fatsizec!=m_header.m_fatsizec) { free(bufferc); return FALSE; }
+	if(fatsizec!=m_header.m_fatsizec) { free(bufferc); return false; }
 
 	// password
-	if(m_password) decrypt_data(bufferc, m_header.m_fatsizec, m_password);
+	if(!m_password.empty()) decrypt_data(bufferc, m_header.m_fatsizec, m_password.c_str());
 
 	// check crc
 	dword crc=0;
 	for(int i=0;i<(int)m_header.m_fatsizec;i++) crc+=bufferc[i];
-	if(crc!=m_header.m_fatcrc) { free(bufferc); return FALSE; }
+	if(crc!=m_header.m_fatcrc) { free(bufferc); return false; }
 
 	// uncompress
 	dword buffersize = m_header.m_fatsize;
@@ -154,7 +151,7 @@ BOOL f9ArchivePak::ReadFAT()
 	// assert(m_header.m_fatsize>=m_header.m_fatsizec);
 	byte* buffer = (byte*)malloc(m_header.m_fatsize);
 	dword fatsize = m_header.m_fatsize;
-	if(!decompress_data( bufferc, m_header.m_fatsizec, buffer, fatsize )) { free(bufferc); free(buffer); return FALSE; }
+	if(!decompress_data( bufferc, m_header.m_fatsizec, buffer, fatsize )) { free(bufferc); free(buffer); return false; }
 	assert(fatsize==m_header.m_fatsize);
 
 	// read fat entries
@@ -181,7 +178,7 @@ BOOL f9ArchivePak::ReadFAT()
 	
 	free(buffer);
 	free(bufferc);
-	return TRUE;
+	return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

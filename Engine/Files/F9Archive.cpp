@@ -4,13 +4,8 @@
 #include "stdafx.h"
 #include "F9Archive.h"
 
-f9Archive::f9Archive()
+f9Archive::f9Archive(int type) : type(type), m_mode(F9_READ), m_open()
 {
-	m_type		= F9_ARCHIVE_NONE;
-	m_mode		= F9_READ;
-	m_open		= FALSE;
-	m_name		= NULL;
-	m_password	= NULL;
 }
 
 f9Archive::~f9Archive()
@@ -18,24 +13,21 @@ f9Archive::~f9Archive()
 	Close();
 }
 
-int f9Archive::Open( const char* name, int mode, const char* password )
+int f9Archive::Open( const std::string & name, int mode, const std::string & password)
 {
 	if( IsOpen() ) Close();
-	if( name == NULL ) return F9_FAIL;
 
-	m_name = sstrdup( name );
-	m_password = sstrdup( password );
+	m_name = name;
+	m_password = password;
 	m_mode = mode;
-	m_open = TRUE;
+	m_open = true;
 	return F9_OK;
 }
 
 int f9Archive::Close() 
 {
 	if( !IsOpen() ) return F9_FAIL;
-	if(m_name) { free(m_name); m_name=NULL; }
-	if(m_password) { free(m_password); m_password=NULL; }
-	m_open = FALSE;
+	m_open = false;
 	return F9_OK;
 }
 

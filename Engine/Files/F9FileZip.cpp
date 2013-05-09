@@ -6,7 +6,7 @@
 #include "F9FileDisk.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-f9FileZip::f9FileZip() : f9File(F9_FILE_ZIP), m_arcname(nullptr), m_offset(-1)
+f9FileZip::f9FileZip() : f9File(F9_FILE_ZIP), m_offset(-1)
 {
 	memset( &m_zips, 0, sizeof(z_stream) );
 }
@@ -25,12 +25,12 @@ BOOL f9FileZip::Open( const char* name, int mode )
 	if(!F9_ISREADONLY(mode)) return F9_FAIL; // readonly
 
 	// archive should set those
-	if( !m_arcname || m_offset==-1 ) return F9_FAIL;
+	if( m_offset==-1 ) return F9_FAIL;
 
 	m_mode = mode;
 
 	// arc disk file
-	if(m_arcfile.Open( m_arcname, m_mode )!=F9_OK) return F9_FAIL;
+	if(m_arcfile.Open(m_arcname.c_str(), m_mode)!=F9_OK) return F9_FAIL;
 	
 	// local header
 	if( m_arcfile.Seek( m_offset, F9_SEEK_SET )!=F9_OK ||
@@ -86,7 +86,7 @@ int f9FileZip::Close()
 	InitZlib(ZLIB_END);
 	m_arcfile.Close();
 
-	m_arcname	= NULL;
+	m_arcname.clear();
 	m_offset	= -1;
 
 	m_open = false;

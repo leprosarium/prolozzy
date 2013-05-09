@@ -39,28 +39,28 @@ class f9ArchivePak : public f9Archive
 {
 public:
 						
-						f9ArchivePak	();
-virtual					~f9ArchivePak	();
+	f9ArchivePak();
+	virtual ~f9ArchivePak();
 						
-virtual	int				Open			( const char *name, int mode = F9_READ, const char* password=NULL );
-virtual	int				Close			();
+	virtual int Open(const std::string & name, int mode = F9_READ, const std::string & password = std::string());
+	virtual	int Close();
 						
-virtual	f9File*	 		FileOpen		( const char* name, int mode = F9_READ );
-virtual	int				FileCount		()									{ return m_fat.size(); }
-virtual	int				FileFind		( const char* name );
-virtual	std::string		FileGetName		( int idx );
-virtual	dword			FileGetSize		( int idx );
-inline	f9PakFileInfo*	FileGetInfo		( int idx )							{ return idx >= 0 && idx < static_cast<int>(m_fat.size()) ? m_fat[idx] : 0; }
+	virtual	f9File * FileOpen(const std::string & name, int mode = F9_READ);
+	virtual	int FileCount() const { return m_fat.size(); }
+	virtual	int	FileFind(const std::string & name ) const;
+	virtual	std::string	FileGetName(int idx) const;
+	virtual	dword FileGetSize(int idx) const;
+	inline	f9PakFileInfo *	FileGetInfo(int idx) { return idx >= 0 && idx < static_cast<int>(m_fat.size()) ? m_fat[idx] : 0; }
 
 private:
-		BOOL			ReadHeader		();
-		BOOL			ReadFAT			();
+	bool ReadHeader();
+	bool ReadFAT();
 
-	f9PakHeader				m_header;	// archive header
+	f9PakHeader m_header;
 	typedef std::vector<f9PakFileInfo*> InfoList;
-	InfoList m_fat;		// file allocation table
+	InfoList m_fat;		
 	typedef std::hash_map<std::string, int>	Hash;
-	Hash					index;		// hash for FAT (name,idx)
+	Hash index;
 };
 
 #endif

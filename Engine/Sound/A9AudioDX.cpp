@@ -483,7 +483,7 @@ A9STREAM a9AudioDX::StreamCreate( const char* filename, int flags )
 	if(ret==A9_OK && stream->m_filemem)
 	{
 		// change the filename to point to the memory buffer
-		std::string name = file_path2name(filename);
+		std::string name = file_path2file(filename);
 		filename = F9_MakeFileName(name.c_str(), stream->m_filemem, stream->m_filesize );
 		if(filename==NULL) goto error; // fail
 	}

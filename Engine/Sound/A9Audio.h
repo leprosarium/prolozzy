@@ -84,9 +84,9 @@ virtual	int				Get( int prop );											// get driver prop
 virtual	void			Set( int prop, int val );									// set driver prop
 virtual	void			Update();													// update driver
 
-virtual A9BUFFERPROTO	BufferPrecache( const char* filename );							// create a buffer proto, for faster creation of the buffer at runtime (file decompressed in memory)
+virtual A9BUFFERPROTO	BufferPrecache( const std::string & filename );						// create a buffer proto, for faster creation of the buffer at runtime (file decompressed in memory)
 virtual void			BufferDeprecache( A9BUFFERPROTO proto );					// destroy a buffer proto
-virtual	A9BUFFER		BufferCreate( const char* filename, int flags = A9_FLAG_VOLUME );	// create buffer
+virtual	A9BUFFER		BufferCreate(const std::string & filename, int flags = A9_FLAG_VOLUME );	// create buffer
 virtual	A9BUFFER		BufferCreateFromProto( A9BUFFERPROTO proto, int flags = A9_FLAG_VOLUME );			// create buffer from proto
 virtual	A9BUFFER		BufferCreateFromMemory( a9Info* info, void* audiodata, int flags = A9_FLAG_VOLUME );	// create buffer from memory; audiodata must have the right size (info->DataSize())
 virtual	void			BufferDestroy( A9BUFFER buffer );							// destroy buffer
@@ -98,7 +98,7 @@ virtual	int				BufferGetPosition( A9BUFFER buffer );						// get Buffer position
 virtual	void			BufferSetPosition( A9BUFFER buffer, int pos );				// set Buffer position
 inline	BOOL			BufferIsPlaying( A9BUFFER buffer )							{ return BufferGet(buffer,A9_STATUS); }
 
-virtual	A9STREAM		StreamCreate( const char* filename, int flags = A9_FLAG_VOLUME ); // create stream
+virtual	A9STREAM		StreamCreate( const std::string & filename, int flags = A9_FLAG_VOLUME ); // create stream
 virtual	void			StreamDestroy( A9STREAM stream );							// destroy stream
 virtual int				StreamPlay( A9STREAM stream, BOOL loop=FALSE );				// play stream
 virtual int				StreamStop( A9STREAM stream );								// stop stream
@@ -129,9 +129,9 @@ inline	int				A9_Get( int prop )												{ assert(a9_audio); return a9_audio-
 inline	void			A9_Set( int prop, int val )										{ assert(a9_audio); a9_audio->Set(prop,val); }
 inline	void			A9_Update()														{ assert(a9_audio); a9_audio->Update(); }
 
-inline	A9BUFFERPROTO	A9_BufferPrecache( const char* filename )						{ assert(a9_audio); return a9_audio->BufferPrecache(filename); }
+inline	A9BUFFERPROTO	A9_BufferPrecache( const std::string & filename )				{ assert(a9_audio); return a9_audio->BufferPrecache(filename); }
 inline	void			A9_BufferDeprecache( A9BUFFERPROTO proto )						{ assert(a9_audio); a9_audio->BufferDeprecache(proto); }
-inline	A9BUFFER		A9_BufferCreate( const char* filename, int flags=A9_FLAG_VOLUME )	{ assert(a9_audio); return a9_audio->BufferCreate(filename,flags); }
+inline	A9BUFFER		A9_BufferCreate( const std::string & filename, int flags=A9_FLAG_VOLUME )	{ assert(a9_audio); return a9_audio->BufferCreate(filename,flags); }
 inline	A9BUFFER		A9_BufferCreateFromProto( A9BUFFERPROTO proto, int flags = A9_FLAG_VOLUME )		{ assert(a9_audio); return a9_audio->BufferCreateFromProto(proto,flags); }
 inline	A9BUFFER		A9_BufferCreateFromMemory( a9Info* info, void* audiodata, int flags = A9_FLAG_VOLUME )	{ assert(a9_audio); return a9_audio->BufferCreateFromMemory(info,audiodata,flags); }
 inline	void			A9_BufferDestroy( A9BUFFER buffer )								{ assert(a9_audio); a9_audio->BufferDestroy(buffer); }
@@ -143,7 +143,7 @@ inline	int				A9_BufferGetPosition( A9BUFFER buffer )							{ assert(a9_audio); 
 inline	void			A9_BufferSetPosition( A9BUFFER buffer, int pos )				{ assert(a9_audio); a9_audio->BufferSetPosition(buffer,pos); }
 inline	BOOL			A9_BufferIsPlaying( A9BUFFER buffer )							{ assert(a9_audio); return a9_audio->BufferIsPlaying(buffer); }
 
-inline	A9STREAM		A9_StreamCreate( const char* filename, int flags=A9_FLAG_VOLUME )	{ assert(a9_audio); return a9_audio->StreamCreate(filename,flags); }
+inline	A9STREAM		A9_StreamCreate( const std::string & filename, int flags=A9_FLAG_VOLUME )	{ assert(a9_audio); return a9_audio->StreamCreate(filename,flags); }
 inline	void			A9_StreamDestroy( A9STREAM stream )								{ assert(a9_audio); a9_audio->StreamDestroy(stream); }
 inline	int				A9_StreamPlay( A9STREAM stream, BOOL loop )						{ assert(a9_audio); return a9_audio->StreamPlay(stream,loop); }
 inline	int				A9_StreamStop( A9STREAM stream )								{ assert(a9_audio); return a9_audio->StreamStop(stream); }

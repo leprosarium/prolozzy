@@ -25,7 +25,7 @@ int a9Codec_wav::Done()
 	return A9_OK;
 }
 
-int	a9Codec_wav::Open( const char* name )
+int	a9Codec_wav::Open( const std::string & name )
 {
 	if(m_status!=A9_CODEC_CLOSED) return A9_FAIL;
 	

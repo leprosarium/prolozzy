@@ -70,7 +70,7 @@ f9File * f9ArchivePak::FileOpen(const std::string & name, int mode)
 		((f9FilePak*)file)->m_fileinfo = m_fat[i];
 	}
 
-	if( file->Open(name.c_str(), m_mode)!=F9_OK )
+	if( file->Open(name, m_mode)!=F9_OK )
 	{
 		delete file;
 		return nullptr;
@@ -111,7 +111,7 @@ bool f9ArchivePak::ReadHeader()
 {
 	// read file
 	f9FileDisk file;
-	if(F9_OK!=file.Open( m_name.c_str(), F9_READ )) return false;
+	if(F9_OK!=file.Open( m_name, F9_READ )) return false;
 	int headersize = (int)file.Read( &m_header, sizeof(f9PakHeader) );
 	file.Close();
 	if( headersize != sizeof(f9PakHeader) ) return false;
@@ -130,7 +130,7 @@ bool f9ArchivePak::ReadFAT()
 
 	// read fat from file
 	f9FileDisk file;
-	if(F9_OK!=file.Open(m_name.c_str(), F9_READ )) return false;
+	if(F9_OK!=file.Open(m_name, F9_READ )) return false;
 	if(F9_OK!=file.Seek(m_header.m_fatoffset,0)) { file.Close(); return false; }
 	byte* bufferc = (byte*)malloc(m_header.m_fatsizec);
 	int fatsizec = (int)file.Read(bufferc,m_header.m_fatsizec);

@@ -4,15 +4,14 @@
 #include "stdafx.h"
 #include "F9FileDisk.h"
 
-int f9FileDisk::Open( const char* name, int mode )
+int f9FileDisk::Open( const std::string & name, int mode )
 {
 	if(IsOpen()) Close();
-	if(!name) return F9_FAIL;
 
 	// open
 	m_mode = mode;
 	char szmode[4][4] = {"rb","wb","r+b","w+b"};
-	m_file = fopen(name, szmode[mode & 3]);
+	m_file = fopen(name.c_str(), szmode[mode & 3]);
 	if(!m_file) return F9_FAIL;
 	
 	m_open = true;

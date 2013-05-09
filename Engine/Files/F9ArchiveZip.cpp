@@ -50,7 +50,7 @@ f9File * f9ArchiveZip::FileOpen(const std::string &  name, int mode)
 	fzip->m_offset	= m_fat[i]->m_offset;
 	fzip->m_arcname	= m_name;
 
-	if(fzip->Open(name.c_str(), m_mode) != F9_OK)
+	if(fzip->Open(name, m_mode) != F9_OK)
 	{
 		delete fzip;
 		return nullptr;
@@ -102,7 +102,7 @@ bool f9ArchiveZip::ReadFAT()
 	f9ZipFileInfo*	fi;
 	
 	// open archive file
-	if( file.Open(m_name.c_str(), F9_READ ) ) return false;
+	if( file.Open(m_name, F9_READ ) ) return false;
 	filesize = (int)file.Size();
 
 	// read central dir buffer

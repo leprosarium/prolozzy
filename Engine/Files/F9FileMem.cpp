@@ -5,18 +5,18 @@
 #include "F9FileMem.h"
 
 
-int f9FileMem::Open( const char* name, int mode )
+int f9FileMem::Open(const std::string & name, int mode )
 {
 	if(IsOpen()) Close();
-	if(!name) return F9_FAIL;
-	if(name[0]!='#') return F9_FAIL;
+	if(name.empty()) return F9_FAIL;
+	if(name[0] != '#') return F9_FAIL;
 
 	// open
 	m_mode = mode;
 	m_addr = nullptr;
 	m_size = 0;
 	m_pos  = 0;
-	if(2!=sscanf(name,"#%x#%x#",&m_addr,&m_size)) return F9_FAIL; // bad name format
+	if(2!=sscanf(name.c_str(),"#%x#%x#",&m_addr,&m_size)) return F9_FAIL; // bad name format
 	if(!m_addr || m_size<0) return F9_FAIL; // bad name format
 	
 	m_open = true;

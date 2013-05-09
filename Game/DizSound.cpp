@@ -210,7 +210,7 @@ bool Samples::LoadFile(const std::string & filepath, size_t & total, size_t & fa
 	}
 
 	// load and decompress
-	A9BUFFERPROTO bufferproto = A9_BufferPrecache(filepath.c_str());
+	A9BUFFERPROTO bufferproto = A9_BufferPrecache(filepath);
 	if(!bufferproto)
 	{
 		fail++;

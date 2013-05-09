@@ -47,7 +47,7 @@ int a9Codec_ogg::Done()
 	return A9_OK;
 }
 
-int	a9Codec_ogg::Open( const char* name )
+int	a9Codec_ogg::Open( const std::string & name )
 {
 	if(m_status!=A9_CODEC_CLOSED) return A9_FAIL;
 

@@ -95,9 +95,9 @@ bool R9_ImgSaveFile( const std::string & name, r9Img* img )
 	return ret;
 }
 
-BOOL R9_ImgLoadHeader( const char* name, r9Img* img )
+bool R9_ImgLoadHeader( const std::string & name, r9Img* img )
 {
-	if(!name || !img || img->isValid() ) return FALSE;
+	if(!img || img->isValid() ) return false;
 	img->clear();
 
 	// type
@@ -106,12 +106,12 @@ BOOL R9_ImgLoadHeader( const char* name, r9Img* img )
 	if(ext == "tga") type = R9_IMG_TGA; else
 	if(ext == "jpg") type = R9_IMG_JPG; else
 	if(ext == "png") type = R9_IMG_PNG; // else...
-	if( type==R9_IMG_UNKNOWN ) return FALSE; // unsupported file format
+	if( type==R9_IMG_UNKNOWN ) return false; // unsupported file format
 
 	// read
-	BOOL ret = FALSE;
+	bool ret = false;
 	F9FILE file = files->OpenFile(name);
-	if(!file) return FALSE;
+	if(!file) return false;
 	switch(type)
 	{
 		case R9_IMG_TGA:	ret = R9_ImgReadHeaderTGA( file, img ); break;

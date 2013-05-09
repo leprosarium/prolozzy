@@ -51,7 +51,7 @@ private:
 	static callback m_callback;					// log user callback
 public:
 
-	static void Init(const char* logfile, callback c = nullptr);
+	static void Init(const std::string & logfile, callback c = nullptr);
 	static void	clear();
 	static void store(bool enable);
 
@@ -61,7 +61,7 @@ public:
 	static void printBuf(size_t ch, LPCSTR buffer, size_t size);
 
 
-	static void setChannel(size_t ch, const char* name, dword flags, dword color=0xffffffff);
+	static void setChannel(size_t ch, const std::string & name, dword flags, dword color=0xffffffff);
 	static void	setFlag(size_t ch, dword flag, bool on) { if(on) m_logc[ch].m_flags |= flag; else m_logc[ch].m_flags &= ~flag; }
 	static dword getColor(size_t ch) { return m_logc[ch].m_color; }
 	static void setCallback(callback c) { m_callback = c; }

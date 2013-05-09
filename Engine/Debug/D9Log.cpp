@@ -10,9 +10,9 @@ bool d9Log::m_store = false;
 std::wstring d9Log::m_buffer;
 d9Log::callback d9Log::m_callback;
 
-void d9Log::Init(const char* logfile, callback callback)
+void d9Log::Init(const std::string & logfile, callback callback)
 { 
-	if(logfile)
+	if(!logfile.empty())
 	{
 		m_logfile = logfile;
 		clear();
@@ -25,7 +25,7 @@ void d9Log::clear()
 	file_delete(m_logfile);
 }
 
-void d9Log::setChannel(size_t ch, const char* name, dword flags, dword color)
+void d9Log::setChannel(size_t ch, const std::string & name, dword flags, dword color)
 { 
 	if(ch >= ChannelMax) return;
 	m_logc[ch].m_name = name;

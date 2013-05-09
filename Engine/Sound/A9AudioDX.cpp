@@ -295,9 +295,8 @@ void a9AudioDX::BufferUnlock( A9BUFFER _buffer )
 	buffer->m_lockdata = NULL;
 }
 
-A9BUFFER a9AudioDX::BufferCreate( const char* filename, int flags )
+A9BUFFER a9AudioDX::BufferCreate( const std::string & filename, int flags )
 {
-	assert(filename!=NULL);	
 	int ret;
 	a9BufferDX* buffer = NULL;
 	a9Info* info;
@@ -439,7 +438,7 @@ void a9AudioDX::BufferSetPosition( A9BUFFER _buffer, int pos )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // STREAMS
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-int a9AudioDX::StreamPrecache( const char* filename, A9STREAM _stream )
+int a9AudioDX::StreamPrecache( const std::string & filename, A9STREAM _stream )
 {
 	a9StreamDX* stream = (a9StreamDX*)_stream;
 	assert(stream);
@@ -468,32 +467,32 @@ int a9AudioDX::StreamPrecache( const char* filename, A9STREAM _stream )
 	return A9_OK;
 }
 
-A9STREAM a9AudioDX::StreamCreate( const char* filename, int flags )
+A9STREAM a9AudioDX::StreamCreate( const std::string & filename, int flags )
 {
-	assert(filename!=NULL);
 	int ret;
 	a9Info info;
 
 	// create stream
 	a9StreamDX* stream = new a9StreamDX();
 
+	std::string fn = filename;
+
 	// precache (small music files)
 	#ifdef A9_STREAMPRECACHE
-	ret = StreamPrecache( filename, stream );
+	ret = StreamPrecache( fn, stream );
 	if(ret==A9_OK && stream->m_filemem)
 	{
 		// change the filename to point to the memory buffer
-		std::string name = file_path2file(filename);
-		filename = F9_MakeFileName(name.c_str(), stream->m_filemem, stream->m_filesize );
-		if(filename==NULL) goto error; // fail
+		fn = F9_MakeFileName(file_path2file(fn), stream->m_filemem, stream->m_filesize );
+		if(fn.empty()) goto error; // fail
 	}
 	#endif
 
 	// create codec
-	int codectype = A9_CodecFind(filename);
+	int codectype = A9_CodecFind(fn);
 	stream->m_codec = A9_CodecCreate(codectype);
 	if(stream->m_codec==NULL) goto error;
-	ret = A9_CodecOpen(stream->m_codec,filename); 
+	ret = A9_CodecOpen(stream->m_codec,fn); 
 	if(ret!=A9_OK) goto error;
 
 	// create buffer

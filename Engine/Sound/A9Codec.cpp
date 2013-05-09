@@ -2,7 +2,11 @@
 // A9Codec.cpp
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
+
+#include <string>
+
 #include "A9Codec.h"
+
 #ifdef A9_ENABLE_WAV	
 	#include "A9Codec_wav.h"
 #endif
@@ -32,20 +36,11 @@ a9Codec::a9Codec()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // INTERFACE
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-int A9_CodecFind( const char* filename )
+int A9_CodecFind( const std::string & filename )
 {
-	if(filename==NULL) return A9_CODEC_UNKNOWN;
-	int len = (int)strlen(filename);
-	if(len<3) return A9_CODEC_UNKNOWN;
-	int i; // find extention dot
-	for(i=len-1;i>=0;i--) 
-		if(filename[i]=='.') break;
-	if(i==-1) return A9_CODEC_UNKNOWN;
-	char fileext[4];
-	strcpy(fileext,filename+i+1);
-	strlwr(fileext);
+	std::string ext = file_path2ext(filename);
 
-	struct tFileSuport { int codec; const char* extensions; };
+	struct tFileSuport { int codec; std::string extensions; };
 	static tFileSuport filesupport[] = 
 	{
 		#ifdef A9_ENABLE_WAV
@@ -55,7 +50,10 @@ int A9_CodecFind( const char* filename )
 		{ A9_CODEC_OGG,		"ogg" },
 		#endif
 		#ifdef A9_ENABLE_DUMB
-		{ A9_CODEC_DUMB,	"mod,it,xm,s3m" },
+		{ A9_CODEC_DUMB,	"mod" },
+		{ A9_CODEC_DUMB,	"it" },
+		{ A9_CODEC_DUMB,	"xm" },
+		{ A9_CODEC_DUMB,	"s3m" },
 		#endif
 		#ifdef A9_ENABLE_YM
 		{ A9_CODEC_YM,		"ym" },
@@ -63,8 +61,8 @@ int A9_CodecFind( const char* filename )
 		{ A9_CODEC_UNKNOWN, "" }
 	};
 
-	for(i=0;filesupport[i].codec!=A9_CODEC_UNKNOWN;i++)
-		if(strstr(filesupport[i].extensions,fileext)!=NULL)
+	for(int i = 0;filesupport[i].codec!=A9_CODEC_UNKNOWN;i++)
+		if(ext == filesupport[i].extensions)
 			return filesupport[i].codec;
 	
 	return A9_CODEC_UNKNOWN;
@@ -197,10 +195,9 @@ int	A9_CodecDecodeToWave( A9CODEC codec, byte* buffer )
 	return A9_OK;
 }
 
-int A9_CodecDecodeToWave( const char* filename, byte* &buffer, int& size )
+int A9_CodecDecodeToWave( const std::string & filename, byte* &buffer, int& size )
 {
 	// load and decode file
-	if(!filename) return A9_FAIL;
 	int codectype = A9_CodecFind(filename);
 	A9CODEC codec = A9_CodecCreate(codectype);
 	if(!codec) return A9_FAIL;

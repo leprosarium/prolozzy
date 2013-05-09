@@ -82,7 +82,7 @@ R9TEXTURE r9Render::TextureCreate(r9Img* img)
 
 
 
-R9TEXTURE r9Render::TextureLoad( const char* filename )
+R9TEXTURE r9Render::TextureLoad( const std::string & filename )
 {
 	r9Img img;
 	if(!R9_ImgLoadFile(filename, &img)) return nullptr;
@@ -319,14 +319,12 @@ bool r9Render::MakeFont()
 	dword memsize = r9_fonttga_buffer[0];
 	byte * memfile = new byte[memsize];
 	if(decompress_data((byte*)(r9_fonttga_buffer+2),r9_fonttga_buffer[1],memfile,memsize))
-		if(char *filename = F9_MakeFileName("font.tga",memfile,memsize))
-			if(R9TEXTURE tex = TextureLoad(filename))
-			{
-				m_font->SetTexture(tex);
-				delete [] memfile;
-				return true;
-
-			}
+		if(R9TEXTURE tex = TextureLoad(F9_MakeFileName("font.tga",memfile,memsize)))
+		{
+			m_font->SetTexture(tex);
+			delete [] memfile;
+			return true;
+		}
 	delete m_font; m_font=nullptr;
 	delete [] memfile;
 	return false;

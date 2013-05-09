@@ -1276,7 +1276,7 @@ bool cEdiMap::SaveMapImage(const std::string & filename )
 		y+=h;
 	}
 
-	bool ok = R9_ImgSaveFile(filename.c_str(), &imghuge);
+	bool ok = R9_ImgSaveFile(filename, &imghuge);
 	R9_ImgDestroy(&imghuge);
 	return ok;
 }

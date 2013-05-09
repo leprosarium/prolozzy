@@ -55,7 +55,7 @@ virtual	void		Update();
 		byte*			BufferLock( A9BUFFER buffer );
 		void			BufferUnlock( A9BUFFER buffer );
 inline	BOOL			BufferIsLocked( A9BUFFER buffer )								{ assert(buffer); return ((a9BufferDX*)buffer)->m_lockdata!=NULL; }
-virtual	A9BUFFER		BufferCreate( const char* filename, int flags = A9_FLAG_VOLUME );
+virtual	A9BUFFER		BufferCreate( const std::string & filename, int flags = A9_FLAG_VOLUME );
 virtual	A9BUFFER		BufferCreateFromMemory( a9Info* info, void* audiodata, int flags = A9_FLAG_VOLUME );
 virtual	void			BufferDestroy( A9BUFFER buffer );
 virtual int				BufferPlay( A9BUFFER buffer, BOOL loop=FALSE );
@@ -65,8 +65,8 @@ virtual	void			BufferSet( A9BUFFER buffer, int prop, int val );
 virtual	int				BufferGetPosition( A9BUFFER buffer );
 virtual	void			BufferSetPosition( A9BUFFER buffer, int pos );
 
-		int				StreamPrecache( const char* filename, A9STREAM stream );				// precache small files
-virtual	A9STREAM		StreamCreate( const char* filename, int flags = A9_FLAG_VOLUME ); 
+		int				StreamPrecache( const std::string & filename, A9STREAM stream );				// precache small files
+virtual	A9STREAM		StreamCreate( const std::string & filename, int flags = A9_FLAG_VOLUME ); 
 virtual	void			StreamDestroy( A9STREAM stream );
 virtual int				StreamPlay( A9STREAM stream, BOOL loop=FALSE );
 virtual int				StreamStop( A9STREAM stream );

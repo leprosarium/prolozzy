@@ -182,7 +182,7 @@ public:
 
 	// texture
 	R9TEXTURE TextureCreate(r9Img* img);					// create texture from image
-	R9TEXTURE TextureLoad(const char* filename);			// load a texture from file
+	R9TEXTURE TextureLoad(const std::string & filename);			// load a texture from file
 	virtual	R9TEXTURE TextureCreateTarget(int width, int height) = 0;	// create a texture with render target support
 	virtual	void TextureDestroy(R9TEXTURE tex) = 0;				// destroy texture
 
@@ -387,7 +387,7 @@ inline	Api			R9_GetApi()												{ assert(r9_render); return r9_render->GetAp
 inline	void		R9_SetHandleReset( r9HandleReset callback )				{ assert(r9_render); r9_render->m_handlereset = callback; }
 
 inline	R9TEXTURE	R9_TextureCreate( r9Img* img )							{ assert(r9_render); return r9_render->TextureCreate(img); }
-inline	R9TEXTURE	R9_TextureLoad( const char* filename )					{ assert(r9_render); return r9_render->TextureLoad(filename); }
+inline	R9TEXTURE	R9_TextureLoad( const std::string & filename )					{ assert(r9_render); return r9_render->TextureLoad(filename); }
 inline	R9TEXTURE	R9_TextureCreateTarget( int width, int height )			{ assert(r9_render); return r9_render->TextureCreateTarget(width,height); }
 inline	void		R9_TextureDestroy( R9TEXTURE tex )						{ assert(r9_render); r9_render->TextureDestroy(tex); }
 

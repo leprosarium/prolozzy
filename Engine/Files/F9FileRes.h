@@ -17,7 +17,7 @@ class f9FileRes : public f9File
 public:
 	f9FileRes() : f9File(F9_FILE_RES), m_addr(nullptr) {} 
 	
-	virtual int Open(const char* name, int mode);
+	virtual int Open(const std::string & name, int mode);
 	virtual int Close();
 	virtual int64 Read(void* data, int64 size);
 	virtual int Seek(int64 offset, int origin = F9_SEEK_SET);

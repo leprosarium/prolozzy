@@ -125,7 +125,7 @@ class f9FileZip : public f9File
 public:
 	f9FileZip();
 
-	virtual	int Open(const char* name, int mode);
+	virtual	int Open(const std::string & name, int mode);
 	virtual	int Close();
 	virtual	int64 Read(void* data, int64 size);
 	virtual	int Seek(int64 offset, int origin = F9_SEEK_SET);

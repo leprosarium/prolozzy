@@ -45,7 +45,7 @@ void F9_Done()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void Files::DoIndex(f9Archive * arc, const std::string & file) {
 
-	if(arc->Open(file.c_str(), F9_READ) != F9_OK)
+	if(arc->Open(file, F9_READ) != F9_OK)
 	{
 		delete arc;
 		return;
@@ -79,7 +79,7 @@ f9File * Files::OpenFile(const std::string & name)
 	
 	auto f = Index.find(name);
 	if(f != Index.end() && f->second)
-		return f->second->FileOpen(name.c_str());
+		return f->second->FileOpen(name);
 	return 0;
 }
 

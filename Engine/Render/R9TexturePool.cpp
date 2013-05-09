@@ -32,7 +32,7 @@ int r9TexturePool::Load( const std::string & name, bool noduplicate )
 		int idx = Find(name);
 		if(idx!=-1) return idx;
 	}
-	R9TEXTURE texture = R9_TextureLoad(name.c_str());
+	R9TEXTURE texture = R9_TextureLoad(name);
 	if(!texture) return -1;
 	return Add(texture, name);
 }

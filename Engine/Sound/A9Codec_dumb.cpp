@@ -53,11 +53,12 @@ int a9Codec_dumb::Done()
 	return A9_OK;
 }
 
-int	a9Codec_dumb::Open( const char* name )
+int	a9Codec_dumb::Open( const std::string & filename )
 {
 	if(m_status!=A9_CODEC_CLOSED) return A9_FAIL;
 	// set user callbacks
 	// load
+	const char * name = filename.c_str();
 	m_duh = load_duh(name);
 	if(!m_duh) 
 	{

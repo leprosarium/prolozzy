@@ -18,10 +18,9 @@ f9FileZip::f9FileZip() : f9File(F9_FILE_ZIP), m_offset(-1)
 // m_arcname = name of the zip archive
 // m_offset	= offset of the filelocalheader in the zip archive
 //////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL f9FileZip::Open( const char* name, int mode )
+BOOL f9FileZip::Open( const std::string & name, int mode )
 {
 	if(IsOpen()) Close();
-	if(name==NULL) return F9_FAIL;
 	if(!F9_ISREADONLY(mode)) return F9_FAIL; // readonly
 
 	// archive should set those
@@ -30,7 +29,7 @@ BOOL f9FileZip::Open( const char* name, int mode )
 	m_mode = mode;
 
 	// arc disk file
-	if(m_arcfile.Open(m_arcname.c_str(), m_mode)!=F9_OK) return F9_FAIL;
+	if(m_arcfile.Open(m_arcname, m_mode)!=F9_OK) return F9_FAIL;
 	
 	// local header
 	if( m_arcfile.Seek( m_offset, F9_SEEK_SET )!=F9_OK ||

@@ -6,10 +6,9 @@
 #include "F9FilePakZ.h"
 #include "F9ArchivePak.h"
 
-int f9FilePakZ::Open(const char * name, int mode)
+int f9FilePakZ::Open(const std::string & name, int mode)
 {
 	if(IsOpen()) Close();
-	if(!name) return F9_FAIL;
 	if(!F9_ISREADONLY(mode)) return F9_FAIL; // readonly
 
 	// archive should set those
@@ -24,7 +23,7 @@ int f9FilePakZ::Open(const char * name, int mode)
 	if(m_fileinfo->m_sizec>0 && m_fileinfo->m_size>0)
 	{
 		f9FileDisk file;
-		if(file.Open( m_arcname.c_str(), m_mode )!=F9_OK) return F9_FAIL;
+		if(file.Open( m_arcname, m_mode )!=F9_OK) return F9_FAIL;
 		if(file.Seek( m_fileinfo->m_offset, F9_SEEK_SET )!=F9_OK) { file.Close(); return F9_FAIL; }
 		std::auto_ptr<byte> datac(new byte[m_fileinfo->m_sizec]);
 		int sizec = (int)file.Read(datac.get(), m_fileinfo->m_sizec);

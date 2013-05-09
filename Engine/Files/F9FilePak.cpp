@@ -5,10 +5,9 @@
 #include "F9FilePak.h"
 #include "F9ArchivePak.h"
 
-int f9FilePak::Open(const char* name, int mode)
+int f9FilePak::Open(const std::string & name, int mode)
 {
 	if(IsOpen()) Close();
-	if(!name) return F9_FAIL;
 	if(!F9_ISREADONLY(mode)) return F9_FAIL; // readonly
 
 	// archive should set those
@@ -17,7 +16,7 @@ int f9FilePak::Open(const char* name, int mode)
 	m_mode = mode;
 
 	// arc disk file
-	if(m_arcfile.Open( m_arcname.c_str(), m_mode )!=F9_OK) return F9_FAIL;
+	if(m_arcfile.Open( m_arcname, m_mode )!=F9_OK) return F9_FAIL;
 	if(m_arcfile.Seek( m_fileinfo->m_offset, F9_SEEK_SET )!=F9_OK) { m_arcfile.Close(); return F9_FAIL; }
 
 	m_open = true;

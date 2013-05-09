@@ -19,6 +19,7 @@
 #include <vector>
 #include <map>
 #include <assert.h>
+#include <sstream>
 
 #include "F9Archive.h"
 
@@ -27,7 +28,14 @@ bool F9_Init();
 void F9_Done();
 
 // helper for memory files ext must not exceed 5 characters but may be NULL - uses sprint!
-inline char * F9_MakeFileName(const char * name, void * addr, int size) { return sprint("#%x#%x#%s",(dwordptr)addr,size,name?name:""); }
+inline std::string F9_MakeFileName(const std::string & name, void * addr, int size) 
+{ 
+	std::ostringstream o;
+	o << "#" << std::hex << (dwordptr)addr << "#" << size << "#";
+	if(!name.empty())
+		o << name;
+	return o.str();
+}
 
 class Files
 {
@@ -48,7 +56,7 @@ public:
 	static f9File * OpenFile(const std::string & name, int mode = F9_READ)
 	{
 		f9File * file = new FileType();
-		if(file->Open(name.c_str(), mode) == F9_OK)
+		if(file->Open(name, mode) == F9_OK)
 			return file;
 		delete file;
 		return 0;

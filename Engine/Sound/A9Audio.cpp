@@ -55,7 +55,7 @@ void a9Audio::Update()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // BUFFERS
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-A9BUFFERPROTO a9Audio::BufferPrecache( const char* filename ) 
+A9BUFFERPROTO a9Audio::BufferPrecache( const std::string & filename ) 
 { 
 	int ret;
 	a9BufferProto* proto = NULL;
@@ -64,7 +64,7 @@ A9BUFFERPROTO a9Audio::BufferPrecache( const char* filename )
 	int codectype = A9_CodecFind(filename);
 	A9CODEC codec = A9_CodecCreate(codectype);
 	if(codec==NULL) goto error;
-	ret = A9_CodecOpen(codec,filename); 
+	ret = A9_CodecOpen(codec,filename.c_str()); 
 	if(ret!=A9_OK) goto error;
 	ret = A9_CodecBeginRender(codec,0,0);
 	if(ret!=A9_OK) goto error;
@@ -107,7 +107,7 @@ A9BUFFER a9Audio::BufferCreateFromProto( A9BUFFERPROTO proto, int flags )
 	return BufferCreateFromMemory(&proto->m_info, proto->m_data, flags);
 }
 
-A9BUFFER a9Audio::BufferCreate( const char* filename, int flags ) { return NULL; }
+A9BUFFER a9Audio::BufferCreate( const std::string & filename, int flags ) { return NULL; }
 A9BUFFER a9Audio::BufferCreateFromMemory( a9Info* info, void* audiodata, int flags ) { return NULL; }
 void a9Audio::BufferDestroy( A9BUFFER buffer ) {}
 int a9Audio::BufferPlay( A9BUFFER buffer, BOOL loop ) { return A9_FAIL; }
@@ -120,7 +120,7 @@ void a9Audio::BufferSetPosition( A9BUFFER buffer, int pos ) {}
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // STREAMS
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-A9STREAM a9Audio::StreamCreate( const char* filename, int flags ) { return NULL; }
+A9STREAM a9Audio::StreamCreate( const std::string & filename, int flags ) { return NULL; }
 void a9Audio::StreamDestroy( A9STREAM stream ) {}
 int a9Audio::StreamPlay( A9STREAM stream, BOOL loop ) { return A9_FAIL; }
 int a9Audio::StreamStop( A9STREAM stream ) { return A9_FAIL; }

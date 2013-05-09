@@ -47,11 +47,11 @@ int a9Codec_ym::Done()
 	return A9_OK;
 }
 
-int	a9Codec_ym::Open( const char* name )
+int	a9Codec_ym::Open( const std::string & name )
 {
 	if(m_status!=A9_CODEC_CLOSED) return A9_FAIL;
 	m_ym = ymMusicCreate(); if(!m_ym) return A9_FAIL;
-	if(!ymMusicLoad(m_ym,name)) return A9_FAIL;
+	if(!ymMusicLoad(m_ym, name.c_str())) return A9_FAIL;
 	
 	ymMusicInfo_t yminfo;
 	ymMusicGetInfo(m_ym,&yminfo);

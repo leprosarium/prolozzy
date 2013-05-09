@@ -566,7 +566,7 @@ PREDICATE_M(edi, tileReload, 0)
 	int loads = 0;
 	std::string tilepath;
 	if(ini_get(file_getfullpath(USER_INIFILE), "editor", "options_tiledir") >> tilepath)
-		if(g_paint.TileLoad(tilepath.c_str())) loads++;
+		if(g_paint.TileLoad(tilepath)) loads++;
 	else 
 		dlog(LOGAPP, L"TileDir not specified in editor.ini\n");
 	return loads > 0;

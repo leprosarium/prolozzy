@@ -45,8 +45,8 @@ BOOL cGUI::Init()
 	// fonts
 	BOOL ok;
 	m_font = new r9Font(); 
-	ok = m_font->Create("Editor\\Font\\font.fnt");
-	R9TEXTURE tex = R9_TextureLoad("Editor\\Font\\font.tga");
+	ok = m_font->Create("editor\\font\\font.fnt");
+	R9TEXTURE tex = R9_TextureLoad("editor\\font\\font.tga");
 	m_font->SetTexture(tex);
 	m_font->SetSpace(4); // !
 	

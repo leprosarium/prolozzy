@@ -29,7 +29,7 @@ int	a9Codec_wav::Open( const char* name )
 {
 	if(m_status!=A9_CODEC_CLOSED) return A9_FAIL;
 	
-	m_file = F9_FileOpen( name ); 
+	m_file = files->OpenFile(name); 
 	if(!m_file) return A9_FAIL;
 
 	int ret;
@@ -39,8 +39,8 @@ int	a9Codec_wav::Open( const char* name )
 	int datasize = 0;
 	WAVEFORMATEX wfe;
 	ret = ReadWaveInfo( m_file, &wfe, &datapos, &datasize );
-	if(ret!=A9_OK) { F9_FileClose(m_file); return ret; }
-	if(datasize<=0) { F9_FileClose(m_file); return A9_FAIL; }
+	if(ret!=A9_OK) { files->FileClose(m_file); return ret; }
+	if(datasize<=0) { files->FileClose(m_file); return A9_FAIL; }
 
 	m_info.m_depth		= wfe.wBitsPerSample;
 	m_info.m_signed		= 1;
@@ -111,7 +111,7 @@ int	a9Codec_wav::EndRender()
 int	a9Codec_wav::Close()
 {
 	if(m_status!=A9_CODEC_OPENED) return A9_FAIL;
-	if(m_file) F9_FileClose(m_file);
+	if(m_file) files->FileClose(m_file);
 	m_file = NULL;
 	m_status = A9_CODEC_CLOSED;
 	return A9_OK;

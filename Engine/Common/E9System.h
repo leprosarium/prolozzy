@@ -71,7 +71,7 @@ inline	int			sys_msgbox( HWND hwnd, LPCWSTR text, LPCWSTR caption, dword type = 
 inline	int			sys_desktopwidth()												{ return GetSystemMetrics(SM_CXSCREEN); }
 inline	int			sys_desktopheight()												{ return GetSystemMetrics(SM_CYSCREEN); }
 		BOOL		sys_senddata( HWND fromhwnd, HWND tohwnd, int cmd, int slot, int size, char* data );
-inline	void		sys_outputdebugstring( LPCWSTR msg )						{ OutputDebugStringW( msg ); }
+inline	void		sys_outputdebugstring( LPCWSTR msg )							{ OutputDebugStringW( msg ); }
 
 typedef HANDLE HSEMAPHORE;
 inline	HSEMAPHORE	sys_createsemaphore( const char* name=NULL )					{ return (HSEMAPHORE)CreateSemaphore(NULL, 1, 1, name); }
@@ -103,14 +103,11 @@ void ini_set<std::string>(const std::string & file, const std::string & group, c
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #define	FILE_FINDDIR		(1<<0)								// request directories list
 #define	FILE_FINDREC		(1<<1)								// request to go recursive on found directories
-typedef std::function<void(const char *, BOOL)> file_ffcallback;		// filepath=found file including requested path, dir=1 if filepath is a directory
 
-const char*	file_path2file		( const char* path );
-void		file_findfiles		( const char* path, file_ffcallback ffcallback, dword flags );		// path must include terminal '\'; use FINDFILE flags
-
+void file_findfiles( const std::string & path, const std::string & mask, std::function<void(const std::string &, bool)> ffcallback, dword flags);
 
 std::string	file_getfullpath(const std::string & file);
-
+std::string	file_path2file(const std::string & path);
 std::string	file_path2name(const std::string & path);
 std::string	file_path2ext(const std::string & path);
 

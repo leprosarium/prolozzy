@@ -12,8 +12,8 @@
 #endif
 
 // use our file system
-void* ymfopen	( char* filename )							{ return F9_FileOpen(filename); }
-int	  ymfclose	( void* file )								{ return F9_FileClose((F9FILE)file); }
+void* ymfopen	( char* filename )							{ return files->OpenFile(filename); }
+int	  ymfclose	( void* file )								{ files->FileClose((F9FILE)file); return 0; }
 int	  ymfseek	( void* file, int pos, int mode )			{ return static_cast<F9FILE>(file)->Seek(pos, mode); }
 int	  ymftell	( void* file )								{ return static_cast<int>(static_cast<F9FILE>(file)->Tell()); }
 int	  ymfread	( void* buffer, int size, void* file )		{ return static_cast<int>(static_cast<F9FILE>(file)->Read(buffer,size)); }

@@ -97,7 +97,7 @@ ssize_t read_stream(void *handle, char *buf, size_t bufsize)
 int close_stream(void *handle)
 {
 	if(f9File * f = reinterpret_cast<f9File *>(handle))
-		F9_FileClose(f);
+		files->FileClose(f);
 	return 0;
 }
 
@@ -113,7 +113,7 @@ static IOFUNCTIONS stream_functions =
 
 PREDICATE_M(core, open_resource, 2)
 {
-	if(f9File * f = F9_FileOpen(A1))
+	if(f9File * f = files->OpenFile(A1))
 		return PL_unify_stream(A2, Snew(f, SIO_INPUT|SIO_FBUF, &stream_functions));
 	return false;
 }

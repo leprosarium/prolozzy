@@ -20,7 +20,7 @@
 // use our file system
 size_t ogg_read		(void *ptr, size_t size, size_t nmemb, void *datasource) { return static_cast<size_t>(static_cast<F9FILE>(datasource)->Read(ptr, (int)(size*nmemb))); }
 int    ogg_seek		(void *datasource, ogg_int64_t offset, int whence) { return static_cast<F9FILE>(datasource)->Seek((int)offset, whence); }
-int    ogg_close	(void *datasource) { return F9_FileClose((F9FILE)datasource); }
+int    ogg_close	(void *datasource) { files->FileClose((F9FILE)datasource); return 0; }
 long   ogg_tell		(void *datasource) { return static_cast<long>(static_cast<F9FILE>(datasource)->Tell()); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -53,10 +53,10 @@ int	a9Codec_ogg::Open( const char* name )
 
 	// set user callbacks
 	ov_callbacks mycallbacks = { ogg_read, ogg_seek, ogg_close, ogg_tell };
-	m_file = F9_FileOpen( name ); 
+	m_file = files->OpenFile(name); 
 	if(!m_file) return A9_FAIL;
 
-	if(ov_open_callbacks(m_file, &m_oggfile, NULL, 0, mycallbacks) < 0) { F9_FileClose(m_file); return A9_UNSUPORTED; }
+	if(ov_open_callbacks(m_file, &m_oggfile, NULL, 0, mycallbacks) < 0) { files->FileClose(m_file); return A9_UNSUPORTED; }
 
 	m_pcmbuf = (byte*)malloc(PCMSIZE);
 	m_pcmpos = 0;

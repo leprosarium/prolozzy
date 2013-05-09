@@ -14,11 +14,11 @@
 #define DUMB_SEC 65536.0f
 
 // use our file system
-void*	dumb_open	(const char *filename)			{ return F9_FileOpen((char*)filename); }
+void*	dumb_open	(const char *filename)			{ return files->OpenFile(filename); }
 int		dumb_skip	(void *f, long n)				{ return static_cast<F9FILE>(f)->Seek(n,1); }
 int		dumb_getc	(void *f)						{ int c=0; if(1!=static_cast<F9FILE>(f)->Read(&c,1)) return -1; else return c; }
 long	dumb_getnc	(char *ptr, long n, void *f)	{ return static_cast<long>(static_cast<F9FILE>(f)->Read(ptr,n)); }
-void	dumb_close	(void *f)						{ F9_FileClose((F9FILE)f); }
+void	dumb_close	(void *f)						{ files->FileClose((F9FILE)f); }
 
 DUMBFILE_SYSTEM dumb_fs;
 

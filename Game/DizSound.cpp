@@ -180,7 +180,7 @@ void Samples::Update()
 		if(Playing(i) != -1) _playingVoices++;
 }
 
-bool Samples::LoadFile(const char* filepath, size_t & total, size_t & fail, size_t & duplicates, int group)
+bool Samples::LoadFile(const std::string & filepath, size_t & total, size_t & fail, size_t & duplicates, int group)
 {
 	if(!isSupportedExt(file_path2ext(filepath))) return false; // ignore files with unsupported extensions
 
@@ -192,7 +192,7 @@ bool Samples::LoadFile(const char* filepath, size_t & total, size_t & fail, size
 	if(!(fname >> nm))
 	{ 
 		fail++; 
-		dlog(LOGAPP, L"! %S (bad name)\n", filepath); 
+		dlog(LOGAPP, L"! %S (bad name)\n", filepath.c_str()); 
 		return false; 
 	}
 	int instances = 1;
@@ -205,16 +205,16 @@ bool Samples::LoadFile(const char* filepath, size_t & total, size_t & fail, size
 	{
 		fail++;
 		duplicates++;
-		dlog(LOGSYS, L"! %S (duplicate id)\n", filepath);
+		dlog(LOGSYS, L"! %S (duplicate id)\n", filepath.c_str());
 		return false;
 	}
 
 	// load and decompress
-	A9BUFFERPROTO bufferproto = A9_BufferPrecache(filepath);
+	A9BUFFERPROTO bufferproto = A9_BufferPrecache(filepath.c_str());
 	if(!bufferproto)
 	{
 		fail++;
-		dlog(LOGSYS, L"! %S (failed to load)\n", filepath);
+		dlog(LOGSYS, L"! %S (failed to load)\n", filepath.c_str());
 		return false;
 	}
 
@@ -222,46 +222,20 @@ bool Samples::LoadFile(const char* filepath, size_t & total, size_t & fail, size
 	push_back(tSoundProto(id, group, instances, bufferproto));
 
 	if(g_dizdebug.active()) // log for developers
-		dlog(LOGAPP, L"  %S [%i]\n", filepath, instances );
+		dlog(LOGAPP, L"  %S [%i]\n", filepath.c_str(), instances );
 
 	return true;
 }
 
-bool Samples::Load(const char* path, int group)
+bool Samples::Load(const std::string & path, int group)
 {
 	if(!A9_IsReady()) { dlog(LOGAPP, L"Sound disabled - no samples are loaded.\n"); return false; }
-
-	if(!path || !path[0]) return false; // invalid path
-	char spath[256];
-	strcpy(spath, path);
-
-	int szlen = (int)strlen(spath);
-	if(spath[szlen-1]!='\\') strcat(spath,"\\");
-	_strlwr(spath);
-	dlog(LOGAPP, L"Loading samples from \"%S\" (group=%i)\n", spath, group);
-
-	// init
+	dlog(LOGAPP, L"Loading samples from \"%S\" (group=%i)\n", path.c_str(), group);
 	size_t total = 0;
 	size_t fail = 0;
 	size_t duplicates = 0;
-
-	auto Callback = [this, &total, &fail, &duplicates, group](const char* filepath, BOOL dir) { if(!dir) LoadFile(filepath, total, fail, duplicates, group); };
-
-	// find files on disk
-	int archivefiles = F9_ArchiveGetFileCount(0);
-	if(archivefiles == 0) // if no archive found then open from disk
-		file_findfiles( spath, Callback, FILE_FINDREC );
-	else // if archive opened, load from it
-		for(int i=0;i<archivefiles;i++)
-		{
-			std::string filename = F9_ArchiveGetFileName(0,i);
-			if(filename.find(spath) == 0)
-				Callback(filename.c_str(),false);
-		}
-
-	// report
+	files->FindFiles(path, [this, &total, &fail, &duplicates, group](const std::string & filepath) { LoadFile(filepath, total, fail, duplicates, group); } );
 	dlog(LOGAPP, L"Samples report: total=%u, failed=%u (duplicates=%u)\n\n", total, fail, duplicates);
-
 	return true;
 }
 
@@ -364,7 +338,7 @@ Music::Music() :_stream(nullptr),
 }
 
 
-bool Music::LoadFile( const char* filepath, size_t & total, size_t & fail, size_t & duplicates, int group)
+bool Music::LoadFile( const std::string & filepath, size_t & total, size_t & fail, size_t & duplicates, int group)
 {
 	if(!isSupportedExt(file_path2ext(filepath))) return false; // ignore files with unsupported extensions
 
@@ -376,16 +350,16 @@ bool Music::LoadFile( const char* filepath, size_t & total, size_t & fail, size_
 	{
 		fail++;
 		duplicates++;
-		dlog(LOGSYS, L"! %S (duplicate id)\n", filepath);
+		dlog(LOGSYS, L"! %S (duplicate id)\n", filepath.c_str());
 		return false;
 	}
 
 	// load and decompress
-	A9STREAM stream = A9_StreamCreate(filepath);
+	A9STREAM stream = A9_StreamCreate(filepath.c_str());
 	if(!stream)
 	{
 		fail++;
-		dlog(LOGSYS, L"! %S (failed to load)\n", filepath);
+		dlog(LOGSYS, L"! %S (failed to load)\n", filepath.c_str());
 		return false;
 	}
 
@@ -393,46 +367,20 @@ bool Music::LoadFile( const char* filepath, size_t & total, size_t & fail, size_
 	push_back(tMusicProto(id, group, stream));
 
 	if(g_dizdebug.active()) // log for developers
-		dlog(LOGAPP, L"  %S\n", filepath );
+		dlog(LOGAPP, L"  %S\n", filepath.c_str());
 
 	return true;
 }
 
-bool Music::Load(const char* path, int group)
+bool Music::Load(const std::string & path, int group)
 {
 	if(!A9_IsReady()) { dlog(LOGAPP, L"Sound disabled - no musics are loaded.\n"); return false; }
-
-	if(!path || !path[0]) return false; // invalid path
-	char spath[256];
-	strcpy(spath, path);
-
-	int szlen = (int)strlen(spath);
-	if(spath[szlen-1]!='\\') strcat(spath,"\\");
-	_strlwr(spath);
-	dlog(LOGAPP, L"Loading musics from \"%S\" (group=%i)\n", spath, group);
-
-	// init
+	dlog(LOGAPP, L"Loading musics from \"%S\" (group=%i)\n", path.c_str(), group);
 	size_t total = 0;
 	size_t fail	= 0;
 	size_t duplicates = 0;
-
-	auto callback = [this, &total, &fail, &duplicates, group](const char* filepath, BOOL dir) { if(!dir) LoadFile(filepath, total, fail, duplicates, group); };
-
-	// find files on disk
-	int archivefiles = F9_ArchiveGetFileCount(0);
-	if(archivefiles==0) // if no archive found then open from disk
-		file_findfiles( spath, callback, FILE_FINDREC );
-	else // if archive opened, load from it
-		for(int i=0;i<archivefiles;i++)
-		{
-			std::string filename = F9_ArchiveGetFileName(0,i);
-			if(filename.find(spath) == 0)
-				callback(filename.c_str(), false);
-		}
-
-	// report
+	files->FindFiles(path, [this, &total, &fail, &duplicates, group](const std::string & filepath) { LoadFile(filepath, total, fail, duplicates, group); } );
 	dlog(LOGAPP, L"Music report: total=%u, failed=%u (duplicates=%u)\n\n", total, fail, duplicates );
-
 	return true;
 }
 

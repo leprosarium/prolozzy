@@ -59,17 +59,16 @@ BOOL r9Font::Create( int chrw, int chrh, int cols, int start, int count )
 	return TRUE;
 }
 
-BOOL r9Font::Create( const char* filename )
+BOOL r9Font::Create( const std::string & filename )
 {
 	
-	byte* buffer;
-	F9FILE file = F9_FileOpen( filename );
+	F9FILE file = files->OpenFile(filename);
 	if(!file) return FALSE;
 	int size = static_cast<int>(file->Size());
-	if(size==0) { F9_FileClose(file); return FALSE; }
-	buffer = new byte[size];
+	if(size==0) { files->FileClose(file); return FALSE; }
+	byte * buffer = new byte[size];
 	file->Read( buffer, size);
-	F9_FileClose(file);
+	files->FileClose(file);
 
 	byte * buffer0 = buffer;
 

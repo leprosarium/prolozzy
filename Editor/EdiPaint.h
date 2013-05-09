@@ -105,6 +105,9 @@ inline	void	MakeBBW	( int &x1, int &y1, int &x2, int &y2 )		{ x1 = m_data[BRUSH_
 //////////////////////////////////////////////////////////////////////////////////////////////////
 class cEdiPaint
 {
+	bool TileLoadFile(const std::string & filepath, size_t & total, size_t & fail, size_t & duplicates);
+
+
 public:
 						cEdiPaint		();
 						~cEdiPaint		();
@@ -118,9 +121,8 @@ public:
 		int				TileAdd			( int id );			// add a new empty tile; id must be unique
 		void			TileDel			( int idx );		// delete tile by index
 		int				TileFind		( int id )			{ Hash::iterator i = index.find(id); if(i == index.end()) return -1; return i->second; }
-		BOOL			TileLoad		( const char* path );		// load tiles from a path
-		BOOL			TileLoadFile	( const char* filepath );	// load a tile file
-		void			TileUnload		();					// unload load tiles (destroy)
+		bool			TileLoad		( const std::string & path );	// load tiles from a path
+		void			TileUnload		();								// unload load tiles (destroy)
 
 		// Draw scaled
 		void			DrawTile		( int idx, int x, int y, const iRect & map, dword color=0xffffffff, int flip=0, int frame=0, Blend blend = Blend::Alpha, float scale=1.0f );
@@ -136,7 +138,7 @@ public:
 		// tiles
 		std::vector<cTile *> m_tile;	// tiles list
 		Hash			index;			// hash for tiles (id,idx)
-		char			m_tilepath[256];// path to tiles (obtained from the tilefile at load)
+		std::string 	m_tilepath;		// path to tiles (obtained from the tilefile at load)
 
 		// Others
 		int				m_brushrect;						// draw brush rectangles, vor blind visibility debug

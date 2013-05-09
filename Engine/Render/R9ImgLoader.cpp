@@ -5,7 +5,10 @@
 
 #include <string>
 
+#include "E9Config.h"
 #include "R9ImgLoader.h"
+#include "F9FileDisk.h"
+#include "D9Log.h"
 
 #ifdef R9_ENABLE_PNG
 #ifdef _DEBUG
@@ -37,9 +40,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // LOADER
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL R9_ImgLoadFile( const char* name, r9Img* img )
+bool R9_ImgLoadFile(const std::string & name, r9Img* img )
 {
-	if(!name || !img || img->isValid() ) return FALSE;
+	if(!img || img->isValid() ) return FALSE;
 	img->clear();
 
 	// type
@@ -51,23 +54,23 @@ BOOL R9_ImgLoadFile( const char* name, r9Img* img )
 	if( type==R9_IMG_UNKNOWN ) return FALSE; // unsupported file format
 
 	// read
-	BOOL ret = FALSE;
-	F9FILE file = F9_FileOpen(name, F9_READ); 
-	if(!file) return FALSE;
-	switch(type)
+	bool ret = false;
+	if(f9File * file = files->OpenFile(name))
 	{
-		case R9_IMG_TGA:	ret = R9_ImgReadTGA( file, img ); break;
-		case R9_IMG_PNG:	ret = R9_ImgReadPNG( file, img ); break;
-		case R9_IMG_JPG:	ret = R9_ImgReadJPG( file, img ); break;
+		switch(type)
+		{
+			case R9_IMG_TGA:	ret = R9_ImgReadTGA( file, img ); break;
+			case R9_IMG_PNG:	ret = R9_ImgReadPNG( file, img ); break;
+			case R9_IMG_JPG:	ret = R9_ImgReadJPG( file, img ); break;
+		}
+		files->FileClose(file);
 	}
-	F9_FileClose(file);
-
 	return ret;
 }
 
-bool R9_ImgSaveFile( const char* name, r9Img* img )
+bool R9_ImgSaveFile( const std::string & name, r9Img* img )
 {
-	if(!name || !img || !img->isValid()) return FALSE;
+	if(!img || !img->isValid()) return FALSE;
 
 	// type
 	int type = R9_IMG_UNKNOWN;
@@ -79,7 +82,7 @@ bool R9_ImgSaveFile( const char* name, r9Img* img )
 
 	// write
 	bool ret = false;
-	F9FILE file = F9_FileOpen(name, F9_WRITE); 
+	F9FILE file = Files::OpenFile<f9FileDisk>(name, F9_WRITE); 
 	if(!file) return ret;
 	switch(type)
 	{
@@ -87,7 +90,7 @@ bool R9_ImgSaveFile( const char* name, r9Img* img )
 		case R9_IMG_PNG:	ret = R9_ImgWritePNG( file, img ); break;
 		case R9_IMG_JPG:	ret = R9_ImgWriteJPG( file, img ); break;
 	}
-	F9_FileClose(file);
+	files->FileClose(file);
 
 	return ret;
 }
@@ -107,14 +110,15 @@ BOOL R9_ImgLoadHeader( const char* name, r9Img* img )
 
 	// read
 	BOOL ret = FALSE;
-	F9FILE file = F9_FileOpen(name, F9_READ); if(!file) return FALSE;
+	F9FILE file = files->OpenFile(name);
+	if(!file) return FALSE;
 	switch(type)
 	{
 		case R9_IMG_TGA:	ret = R9_ImgReadHeaderTGA( file, img ); break;
 		case R9_IMG_PNG:	ret = R9_ImgReadHeaderPNG( file, img ); break;
 		case R9_IMG_JPG:	ret = R9_ImgReadHeaderJPG( file, img ); break;
 	}
-	F9_FileClose(file);
+	files->FileClose(file);
 
 	return ret;
 }
@@ -122,9 +126,9 @@ BOOL R9_ImgLoadHeader( const char* name, r9Img* img )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // TGA LOADER
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL R9_ImgReadTGA( F9FILE file, r9Img* img )
+bool R9_ImgReadTGA( F9FILE file, r9Img* img )
 {
-	if(!file || !img || img->isValid()) return FALSE;
+	if(!file || !img || img->isValid()) return false;
 	img->clear();
 
 	int64 size;
@@ -132,10 +136,10 @@ BOOL R9_ImgReadTGA( F9FILE file, r9Img* img )
 
 	// header
 	size = file->Read(&header, sizeof(header));
-	if(size<sizeof(header))return FALSE;
-	if(header.m_ImageType==3 && header.m_PixelDepth!=8) return FALSE;
-	if(header.m_ImageType==2 && (header.m_PixelDepth!=24 && header.m_PixelDepth!=32)) return FALSE;
-	if(header.m_width==0 || header.m_height==0) return FALSE;
+	if(size<sizeof(header))return false;
+	if(header.m_ImageType==3 && header.m_PixelDepth!=8) return false;
+	if(header.m_ImageType==2 && (header.m_PixelDepth!=24 && header.m_PixelDepth!=32)) return false;
+	if(header.m_width==0 || header.m_height==0) return false;
 
 	// set img
 	img->m_width	= header.m_width;
@@ -145,13 +149,13 @@ BOOL R9_ImgReadTGA( F9FILE file, r9Img* img )
 
 	// read
 	size = file->Read( img->m_data, img->m_size);
-	if(size!=img->m_size) return FALSE; // read error
+	if(size!=img->m_size) return false; // read error
 
 	// upsidedown
 	if((header.m_ImageDescriptor & 32) == 0) 
 		R9_ImgFlipV(img);
 
-	return TRUE;
+	return true;
 }
 
 bool R9_ImgWriteTGA( F9FILE file, r9Img* img )
@@ -185,9 +189,9 @@ bool R9_ImgWriteTGA( F9FILE file, r9Img* img )
 	return true;
 }
 
-BOOL R9_ImgReadHeaderTGA( F9FILE file, r9Img* img )
+bool R9_ImgReadHeaderTGA( F9FILE file, r9Img* img )
 {
-	if(!file || !img || img->isValid()) return FALSE;
+	if(!file || !img || img->isValid()) return false;
 	img->clear();
 
 	int64 size;
@@ -195,16 +199,16 @@ BOOL R9_ImgReadHeaderTGA( F9FILE file, r9Img* img )
 
 	// header
 	size = file->Read(&header,sizeof(header));
-	if(size<sizeof(header))return FALSE;
-	if(header.m_PixelDepth!=24 && header.m_PixelDepth!=32) return FALSE;
-	if(header.m_width==0 || header.m_height==0) return FALSE;
+	if(size<sizeof(header))return false;
+	if(header.m_PixelDepth!=24 && header.m_PixelDepth!=32) return false;
+	if(header.m_width==0 || header.m_height==0) return false;
 
 	// set img
 	img->m_width	= header.m_width;
 	img->m_height	= header.m_height;
 	img->m_pf		= header.m_PixelDepth==24 ? R9_PF_RGB : R9_PF_ARGB;
 
-	return TRUE;
+	return true;
 }
 
 
@@ -218,14 +222,14 @@ static F9FILE r9_imgpng_file = NULL;
 static void	R9_ImgPNG_ReadData( png_structp png_ptr, png_bytep data, png_size_t length )
 {
 	assert(r9_imgpng_file!=NULL);
-	int ret = F9_FileRead( data, (int)length, r9_imgpng_file );
+	auto ret = r9_imgpng_file->Read( data, length);
 	assert(ret==length);
 }
 
 static void R9_ImgPNG_WriteData( png_structp png_ptr, png_bytep data, png_size_t length )
 {
 	assert(r9_imgpng_file!=NULL);
-	int ret = F9_FileWrite( data, (int)length, r9_imgpng_file );
+	auto ret = r9_imgpng_file->Write(data, length);
 	assert(ret==length);
 }
 
@@ -250,18 +254,18 @@ static void R9_ImgPNG_Warning( png_structp png_ptr, png_const_charp message )
 	dlog(LOGRND, L"%S", message);
 }
 
-BOOL R9_ImgReadPNG( F9FILE file, r9Img* img )
+bool R9_ImgReadPNG( F9FILE file, r9Img* img )
 {
-	if(file==NULL || img==NULL) return FALSE;
+	if(file==NULL || img==NULL) return false;
 	R9_ImgDestroy(img);
 	
 	// check png sig
 	const int headersize = 8;
 	byte header[headersize];
-	if(F9_FileRead( header, headersize, file )!=headersize) return FALSE;
+	if(file->Read( header, headersize) != headersize) return false;
 
 	BOOL ispng = png_check_sig(header, headersize) != 0;
-	if(!ispng) { dlog(LOGRND, L"png sig failed\n"); return FALSE; }
+	if(!ispng) { dlog(LOGRND, L"png sig failed\n"); return false; }
 
 	// create png structures
 	png_structp png_ptr = png_create_read_struct_2( PNG_LIBPNG_VER_STRING,
@@ -272,20 +276,20 @@ BOOL R9_ImgReadPNG( F9FILE file, r9Img* img )
 												R9_ImgPNG_Malloc,
 												R9_ImgPNG_Free );
 
-	if(png_ptr==NULL) return FALSE;
+	if(png_ptr==NULL) return false;
 
 	png_infop info_ptr = png_create_info_struct(png_ptr);
 	if(info_ptr == NULL) 
 	{
 		png_destroy_read_struct(&png_ptr, (png_infopp)NULL, (png_infopp)NULL);
-		return FALSE;
+		return false;
 	}
 
 	png_infop end_info = png_create_info_struct(png_ptr);
 	if(end_info == NULL) 
 	{
 		png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
-		return FALSE;
+		return false;
 	}
 
 	// set global file
@@ -339,7 +343,7 @@ BOOL R9_ImgReadPNG( F9FILE file, r9Img* img )
 	{
 		dlog(LOGRND, L"png wrong color format\n");
 		png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
-		return FALSE;
+		return false;
 	}
 
 	// Update the info pointer with the result of the transformations above...
@@ -368,7 +372,7 @@ BOOL R9_ImgReadPNG( F9FILE file, r9Img* img )
 	r9_imgpng_file = NULL;
 
 	R9_ImgFlipRGB(img); // it was BGR, we want it RGB !
-	return TRUE;
+	return true;
 }
 
 bool R9_ImgWritePNG( F9FILE file, r9Img* img )
@@ -459,18 +463,18 @@ bool R9_ImgWritePNG( F9FILE file, r9Img* img )
 	return true;
 }
 
-BOOL R9_ImgReadHeaderPNG( F9FILE file, r9Img* img )
+bool R9_ImgReadHeaderPNG( F9FILE file, r9Img* img )
 {
-	if(file==NULL || img==NULL) return FALSE;
+	if(file==NULL || img==NULL) return false;
 	R9_ImgDestroy(img);
 	
 	// check png sig
 	const int headersize = 8;
 	byte header[headersize];
-	if(F9_FileRead( header, headersize, file )!=headersize) return FALSE;
+	if(file->Read( header, headersize)!=headersize) return false;
 
 	BOOL ispng = png_check_sig(header, headersize) != 0;
-	if(!ispng) { dlog(LOGRND, L"png sig failed\n"); return FALSE; }
+	if(!ispng) { dlog(LOGRND, L"png sig failed\n"); return false; }
 
 	// create png structures
 	png_structp png_ptr = png_create_read_struct_2( PNG_LIBPNG_VER_STRING,
@@ -481,20 +485,20 @@ BOOL R9_ImgReadHeaderPNG( F9FILE file, r9Img* img )
 												R9_ImgPNG_Malloc,
 												R9_ImgPNG_Free );
 
-	if(png_ptr==NULL) return FALSE;
+	if(png_ptr==NULL) return false;
 
 	png_infop info_ptr = png_create_info_struct(png_ptr);
 	if(info_ptr == NULL) 
 	{
 		png_destroy_read_struct(&png_ptr, (png_infopp)NULL, (png_infopp)NULL);
-		return FALSE;
+		return false;
 	}
 
 	png_infop end_info = png_create_info_struct(png_ptr);
 	if(end_info == NULL) 
 	{
 		png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
-		return FALSE;
+		return false;
 	}
 
 	// set global file
@@ -527,14 +531,14 @@ BOOL R9_ImgReadHeaderPNG( F9FILE file, r9Img* img )
 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
 	r9_imgpng_file = NULL;
 
-	return TRUE;
+	return true;
 }
 
 #else
 
-BOOL	R9_ImgReadPNG		( F9FILE file, r9Img* img )	{ return FALSE; }
+bool	R9_ImgReadPNG		( F9FILE file, r9Img* img )	{ return false; }
 bool	R9_ImgWritePNG		( F9FILE file, r9Img* img )	{ return false; }
-BOOL	R9_ImgReadHeaderPNG	( F9FILE file, r9Img* img )	{ return FALSE; }
+bool	R9_ImgReadHeaderPNG	( F9FILE file, r9Img* img )	{ return false; }
 
 #endif
 
@@ -731,9 +735,9 @@ void R9_ImgSetQualityJPG( int quality )
 
 #else
 
-BOOL	R9_ImgReadJPG		( F9FILE file, r9Img* img )	{ return FALSE; }
+bool	R9_ImgReadJPG		( F9FILE file, r9Img* img )	{ return false; }
 bool	R9_ImgWriteJPG		( F9FILE file, r9Img* img )	{ return false; }
-BOOL	R9_ImgReadHeaderJPG	( F9FILE file, r9Img* img )	{ return FALSE; }
+bool	R9_ImgReadHeaderJPG	( F9FILE file, r9Img* img )	{ return false; }
 void	R9_ImgSetQualityJPG	( int quality )				{}
 
 #endif

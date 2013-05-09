@@ -452,16 +452,16 @@ int a9AudioDX::StreamPrecache( const char* filename, A9STREAM _stream )
 	// precache file if file format is small
 	if(codectype!=A9_CODEC_WAV && codectype!=A9_CODEC_OGG)
 	{
-		F9FILE f = F9_FileOpen(filename);
+		F9FILE f = files->OpenFile(filename);
 		if(!f) return A9_FAIL;
 		f->Seek(0,2);
 		stream->m_filesize = static_cast<int>(f->Tell());
 		// @TODO: test size if necessary ...
 		f->Seek(0,0);
 		stream->m_filemem = (byte*)malloc(stream->m_filesize );
-		if(stream->m_filemem==NULL) { F9_FileClose(f); return A9_FAIL; }
+		if(stream->m_filemem==NULL) { files->FileClose(f); return A9_FAIL; }
 		ret = static_cast<int>(f->Read(stream->m_filemem,stream->m_filesize));
-		F9_FileClose(f);
+		files->FileClose(f);
 		if(ret!=stream->m_filesize) { free(stream->m_filemem); stream->m_filemem=NULL; return A9_FAIL; }
 	}
 
@@ -483,8 +483,8 @@ A9STREAM a9AudioDX::StreamCreate( const char* filename, int flags )
 	if(ret==A9_OK && stream->m_filemem)
 	{
 		// change the filename to point to the memory buffer
-		const char* name = file_path2file(filename); assert(name);
-		filename = F9_MakeFileName(name, stream->m_filemem, stream->m_filesize );
+		std::string name = file_path2name(filename);
+		filename = F9_MakeFileName(name.c_str(), stream->m_filemem, stream->m_filesize );
 		if(filename==NULL) goto error; // fail
 	}
 	#endif

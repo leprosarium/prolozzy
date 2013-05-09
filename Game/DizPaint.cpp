@@ -115,48 +115,46 @@ void cDizPaint::Layout()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // TILES
 //////////////////////////////////////////////////////////////////////////////////////////////////
-
-bool Tiles::LoadFile( const char* filepath, size_t & total, size_t & fail, size_t & duplicates, int group)
+bool Tiles::LoadFile( const std::string & filepath, size_t & total, size_t & fail, size_t & duplicates, int group)
 {
 	
 	// check file type (not counted if unaccepted); only TGA and PNG files accepted
 	std::string ext = file_path2ext(filepath);
 	if(ext != "tga" && ext != "png") return false;
-	const char* name = file_path2file(filepath); if(!name) return false;
+	std::istringstream name(file_path2name(filepath));
 	
 	total++;
-
-	// check name format
-	char szt[128];
-	int id		= -1;
-	int frames	= 1;
-	int fpl = -1;
-	int ret = sscanf(name,"%i %s %i %i",&id,szt,&frames,&fpl);
-	if(ret==0 || id==-1) 
-	{ 
+	int id;
+	if(!(name >> id))
+	{
 		fail++; 
-		dlog(LOGSYS, L"! %S (bad name)\n", filepath); 
+		dlog(LOGSYS, L"! %S (bad name)\n", filepath.c_str()); 
 		return false; 
 	}
-	if(frames<1) frames=1;
-	if(fpl < 0) fpl = frames;
+
+	std::string szt;
+	int frames	= 1;
+	name >> szt >> frames;
+
+	int fpl;
+	if(! (name >> fpl))
+		fpl = frames;
 	
 	// check unique id
-	int idx = Find(id);
-	if( idx!=-1 )
+	if(Find(id) != -1)
 	{
 		fail++;
 		duplicates++;
-		dlog(LOGSYS, L"! %S (duplicate id)\n", filepath, id);
+		dlog(LOGSYS, L"! %S (duplicate id)\n", filepath.c_str(), id);
 		return false;
 	}
 
 	// load image rgba
 	r9Img img;
-	if(!R9_ImgLoadFile(filepath,&img))
+	if(!R9_ImgLoadFile(filepath, &img))
 	{
 		fail++;
-		dlog(LOGSYS, L"! %S (load failed)\n", filepath);
+		dlog(LOGSYS, L"! %S (load failed)\n", filepath.c_str());
 		return false;
 	}
 
@@ -169,73 +167,50 @@ bool Tiles::LoadFile( const char* filepath, size_t & total, size_t & fail, size_
 		!R9_ImgBitBltSafe(&img,0,0,img.m_width,img.m_height,&imga,0,0) ) 
 	{
 		fail++;
-		dlog(LOGSYS, L"! %S (alpha failed)\n", filepath);
+		dlog(LOGSYS, L"! %S (alpha failed)\n", filepath.c_str());
 		R9_ImgDestroy(&img);
 		return false;
 	}
 
-	cTile *tile;
-	if(R9TEXTURE tex = R9_TextureCreate(&img))
-	{
-		// create new tile
-		idx = Add(id);
-		tile = Get(idx);
-		tile->tex = tex;
-	}
-	else 
+	R9TEXTURE tex = R9_TextureCreate(&img);
+	if(!tex)
 	{
 		fail++;
-		dlog(LOGSYS, L"! %S (texture failed)\n", filepath);
+		dlog(LOGSYS, L"! %S (texture failed)\n", filepath.c_str());
 		return false;
 	}
-
-	// set current options
+	cTile *tile = Get(Add(id));
+	tile->tex = tex;
 	tile->group	= group;
-	tile->frames	= frames;
+	tile->frames = frames;
 	tile->fx = fpl;
 	tile->fy = frames / fpl;
 	if(frames % fpl)
 		tile->fy += 1;
 	tile->img = std::move(imga);
-	tile->name	= sstrdup(filepath);
+	tile->name = sstrdup(filepath.c_str());
 
 	R9_ImgDestroy(&img);
 
 	if(g_dizdebug.active()) // log for developers
-		dlog(LOGAPP, L"  %S [%i]\n", filepath, frames );
+		dlog(LOGAPP, L"  %S [%i]\n", filepath.c_str(), frames );
 	
 	return true;
 }
 
-bool Tiles::Load( char* path, int group )
+
+
+bool Tiles::Load(const std::string & path, int group )
 {
-	if(!path || !path[0]) return false; // invalid path
-	int szlen = (int)strlen(path);
-	if(path[szlen-1]!='\\') strcat(path,"\\");
-	_strlwr(path);
-	dlog(LOGAPP, L"Loading tiles from \"%S\" (group=%i)\n", path, group);
+	dlog(LOGAPP, L"Loading tiles from \"%S\" (group=%i)\n", path.c_str(), group);
+
 
 	// init
 	size_t total = 0;
 	size_t fail = 0;
 	size_t duplicates = 0;
-	auto callback = [this, &total, &fail, &duplicates, group](const char* filepath, BOOL dir) { if(!dir) LoadFile(filepath, total, fail, duplicates, group); };
 
-	// find files on disk
-	int archivefiles = F9_ArchiveGetFileCount(0);
-	if(archivefiles==0) // if no archive found then open from disk
-	{
-		file_findfiles( path, callback, FILE_FINDREC );
-	}
-	else // if archive opened, load from it
-	{
-		for(int i=0;i<archivefiles;i++)
-		{
-			std::string filename = F9_ArchiveGetFileName(0,i);
-			if(filename.find(path) == 0)
-				callback(filename.c_str(),false);
-		}
-	}
+	files->FindFiles(path, [this, &total, &fail, &duplicates, group](const std::string & filepath) { LoadFile(filepath, total, fail, duplicates, group); } );
 
 	// report
 	dlog(LOGAPP, L"Tiles report: total=%u, failed=%u (duplicates=%u)\n\n", total, fail, duplicates );
@@ -771,39 +746,29 @@ void HUD::SetClipping( const iRect & dst )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // Fonts
 //////////////////////////////////////////////////////////////////////////////////////////////////
-
-int		gsfont_total;			// status report on total fonts declared (load+failed)
-int		gsfont_fail;			// status report on fonts failed to load
-int		gsfont_duplicates;		// status report on id duplicates
-int		gsfont_group;			// current font group
-
-bool Fonts::LoadFile( const char* filepath, int group )
+bool Fonts::LoadFile(const std::string & filepath, size_t & total, size_t & fail, size_t & duplicates, int group)
 {
-
-	// check file type (not counted if unaccepted);
-	const char* name = file_path2file(filepath); if(!name) return false;
 	if(file_path2ext(filepath) != "fnt") return false;
+	std::istringstream name(file_path2name(filepath));
 	
-	gsfont_total++;
+	total++;
 
-	// check name format
-	char szt[128];
-	int id = -1;
-	int ret = sscanf(name,"%i %s",&id,szt);
-	if(ret==0 || id==-1) 
-	{ 
-		gsfont_fail++; 
-		dlog(LOGSYS, L"! %S (bad name)\n", filepath); 
+	int id;
+	if(!(name >> id))
+	{
+		fail++; 
+		dlog(LOGSYS, L"! %S (bad name)\n", filepath.c_str()); 
 		return false; 
 	}
-	
-	// check unique id
-	int idx = Find(id);
-	if( idx!=-1 )
+
+	std::string szt;
+	name >> szt;
+
+	if(Find(id) !=-1)
 	{
-		gsfont_fail++;
-		gsfont_duplicates++;
-		dlog(LOGSYS, L"! %S (duplicate id)\n", filepath, id);
+		fail++;
+		duplicates++;
+		dlog(LOGSYS, L"! %S (duplicate id)\n", filepath.c_str(), id);
 		return false;
 	}
 
@@ -812,57 +777,29 @@ bool Fonts::LoadFile( const char* filepath, int group )
 	font.font->Create(8,8,8,32,128);
 	if(!font.font->Create(filepath))
 	{
-		gsfont_fail++;
-		dlog(LOGSYS, L"! %S (failed to load)\n", filepath);
+		fail++;
+		dlog(LOGSYS, L"! %S (failed to load)\n", filepath.c_str());
 		return false;
 	}
 	push_back(std::move(font));
 
 	if(g_dizdebug.active()) // log for developers
-		dlog(LOGAPP, L"  %S\n", filepath );
-	
+		dlog(LOGAPP, L"  %S\n", filepath.c_str() );
 	return true;
 }
 
-void FFCallback_Font( const char* filepath, BOOL dir )
+bool Fonts::Load(const std::string & path, int group )
 {
-	if(dir) return;
-	bool ret = g_paint.fonts.LoadFile(filepath, gsfont_group);
-}
+	dlog(LOGAPP, L"Loading fonts from \"%S\" (group=%i)\n", path.c_str(), group);
 
-bool Fonts::Load( char* path, int group )
-{
-	if(!path || !path[0]) return false; // invalid path
-	int szlen = (int)strlen(path);
-	if(path[szlen-1]!='\\') strcat(path,"\\");
-	_strlwr(path);
-	dlog(LOGAPP, L"Loading fonts from \"%S\" (group=%i)\n", path, group);
+	size_t total = 0;
+	size_t fail = 0;
+	size_t duplicates = 0;
 
-	// init
-	gsfont_total		= 0;
-	gsfont_fail			= 0;
-	gsfont_duplicates	= 0;
-	gsfont_group		= group;
-
-	// find files on disk
-	int archivefiles = F9_ArchiveGetFileCount(0);
-	if(archivefiles==0) // if no archive found then open from disk
-	{
-		file_findfiles( path, FFCallback_Font, FILE_FINDREC );
-	}
-	else // if archive opened, load from it
-	{
-		for(int i=0;i<archivefiles;i++)
-		{
-			std::string filename = F9_ArchiveGetFileName(0,i);
-			if(filename.find(path) == 0)
-				FFCallback_Font(filename.c_str(),false);
-		}
-	}
+	files->FindFiles(path, [this, &total, &fail, &duplicates, group](const std::string & filepath) { LoadFile(filepath, total, fail, duplicates, group); } );
 
 	// report
-	dlog(LOGAPP, L"Fonts report: total=%i, failed=%i (duplicates=%i)\n\n", gsfont_total, gsfont_fail, gsfont_duplicates );
-
+	dlog(LOGAPP, L"Fonts report: total=%u, failed=%u (duplicates=%u)\n\n", total, fail, duplicates );
 	return true;
 }
 

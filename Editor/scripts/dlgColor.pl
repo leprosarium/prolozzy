@@ -62,7 +62,7 @@ setPalette(PPal) :-
 	->  Pal = 0
 	;   Pal = PPal),
 
-	format(string(ImgName), 'Editor\\Graphics\\pal~d.tga', [Pal]),
+	format(string(ImgName), 'editor\\graphics\\pal~d.tga', [Pal]),
 	(   gui:imgFind(ImgName, Img);
 	gui:imgLoad(ImgName, Img);false),
 

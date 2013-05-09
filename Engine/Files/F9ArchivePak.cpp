@@ -81,15 +81,6 @@ f9File* f9ArchivePak::FileOpen( const char* name, int mode )
 	return file;
 }
 
-int f9ArchivePak::FileClose(f9File* file)
-{
-	if(!IsOpen()) return F9_FAIL;
-	if(!file) return F9_FAIL;
-	if(file->Close()!=F9_OK) return F9_FAIL;
-	delete file;
-	return F9_OK;
-}
-
 int f9ArchivePak::FileFind( const char* name )
 {
 

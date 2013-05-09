@@ -177,7 +177,7 @@ class Tiles : std::vector<cTile>
 {
 	IntIndex Index;
 	typedef std::vector<cTile> Cont;
-	bool LoadFile(const char* filepath, size_t & total, size_t & fail, size_t & duplicates, int group);	// load a tile file
+	bool LoadFile(const std::string & file, size_t & total, size_t & fail, size_t & duplicates, int group);	// load a tile file
 
 public:
 	using Cont::size;
@@ -198,7 +198,7 @@ public:
 	int Add(int id);								// add a new empty tile; id must be unique
 	void Del(int idx);								// delete tile by index
 	int Find(int id) const { auto i = Index.find(id); return i != Index.end() ? i->second : -1; }
-	bool Load(char* path, int group = 0);			// load tiles from a path, and set the specified group
+	bool Load(const std::string & path, int group = 0); 	// load tiles from a path, and set the specified group
 	void Unload(int group=0 );						// unload load tiles (destroy) from a specified group
 
 	bool Reacquire(); // called before render reset to reload render resources
@@ -208,6 +208,7 @@ public:
 class Fonts : std::vector<cFont>
 {
 	typedef std::vector<cFont> Cont;
+	bool LoadFile(const std::string & filepath, size_t & total, size_t & fail, size_t & duplicates, int group = 0);
 public:
 	using Cont::clear;
 
@@ -215,9 +216,8 @@ public:
 	cFont * Get(int idx) { return InvalidIdx(idx)? nullptr : &(*this)[idx]; }
 	const cFont * Get(int idx) const { return InvalidIdx(idx)? nullptr : &(*this)[idx]; }
 	void Del(int idx) {	if(!InvalidIdx(idx)) erase(begin() + idx); }
-	bool LoadFile(const char* filepath, int group = 0);
 	int	Find(int id) const { for(size_type i=0;i<size(); i++) if((*this)[i].id==id) return i; return -1; }
-	bool Load(char * path, int group = 0);	// load fonts from a path and set the specified group
+	bool Load(const std::string & path, int group = 0);	// load fonts from a path and set the specified group
 	void Unload(int group = 0);				// unload fonts (destroy) from the specified group
 
 	void Unacquire() { std::for_each(begin(), end(), [](cFont &f) { if(f.font) f.font->SetTexture(nullptr); }); }

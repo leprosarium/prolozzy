@@ -15,6 +15,7 @@ f9Archive::f9Archive()
 
 f9Archive::~f9Archive()
 {
+	Close();
 }
 
 int f9Archive::Open( const char* name, int mode, const char* password )

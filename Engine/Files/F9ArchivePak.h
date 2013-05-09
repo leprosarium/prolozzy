@@ -46,7 +46,6 @@ virtual	int				Open			( const char *name, int mode = F9_READ, const char* passwo
 virtual	int				Close			();
 						
 virtual	f9File*	 		FileOpen		( const char* name, int mode = F9_READ );
-virtual	int				FileClose		( f9File* file );
 virtual	int				FileCount		()									{ return m_fat.size(); }
 virtual	int				FileFind		( const char* name );
 virtual	std::string		FileGetName		( int idx );

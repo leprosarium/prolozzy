@@ -90,7 +90,7 @@ loadResources :-
 
 
 loadImg(Img) :-
-	format(string(Path), 'Editor\\Graphics\\~a.tga', [Img]),
+	format(string(Path), 'editor\\graphics\\~a.tga', [Img]),
 	gui:imgLoad(Path, Idx),
 	recordz(img, img(Img, Idx)).
 

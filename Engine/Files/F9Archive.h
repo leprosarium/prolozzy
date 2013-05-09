@@ -22,7 +22,6 @@ inline	BOOL			IsOpen			()									{ return m_open; }
 						
 // file serve			
 virtual	f9File*			FileOpen		( const char* name, int mode = F9_READ )	{ return NULL; }
-virtual	int				FileClose		( f9File* file )					{ return F9_FAIL; }
 virtual	int				FileCount		()									{ return 0; }
 virtual	int				FileFind		( const char* name )				{ return -1; }		// get arc file's index in the archive
 virtual	std::string		FileGetName		( int idx ) = 0;										// get arc file's name

@@ -78,66 +78,61 @@ std::string file_path2ext(const std::string	& path)
 
 std::string file_path2name(const std::string & path)
 {
-	std::string nm = file_path2file(path.c_str());
+	std::string nm = file_path2file(path);
 	std::string::size_type p = nm.rfind('.');
 	if(p == std::string::npos)
 		return nm;
 	return nm.substr(0, p);
 }
 
-const char* file_path2file(const char* path)
+std::string file_path2file(const std::string & path)
 {
-	const char* p = NULL;
-	if(!path) return NULL;
-	if(!(p = strrchr(path, '\\')))	return path;
-	if(strlen((p + 1)) > 0)			return (p + 1);
-	return NULL;
+	std::string::size_type p = path.rfind('\\');
+	if(p == std::string::npos)
+		return path;
+	return path.substr(p + 1);
 }
 
-void file_findfiles( const char* path, file_ffcallback ffcallback, dword flags )
+void file_findfiles( const std::string & path, const std::string & mask, std::function<void(const std::string &, bool)> ffcallback, dword flags)
 {
-	char fpath[256];
-	char spath[256];
-	if(path) strcpy(spath,path); else spath[0]=0;
-	strcat(spath,"*.*");
-
+	std::string query = path + mask;
 	WIN32_FIND_DATA data;
-	HANDLE h = FindFirstFile( spath, &data );
-	if(h==INVALID_HANDLE_VALUE) return;
+	HANDLE h = FindFirstFile(query.c_str(), &data);
+	if(h == INVALID_HANDLE_VALUE) return;
 	do
-	{	// check
-		if(data.dwFileAttributes & FILE_ATTRIBUTE_SYSTEM ) continue;
-
-		// directory
-		if( data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) 
+	{	
+		if(data.dwFileAttributes & FILE_ATTRIBUTE_SYSTEM) continue;
+		if(data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) 
 		{
-			if( 0==strcmp(data.cFileName,"." ) ) continue;
-			if( 0==strcmp(data.cFileName,".." ) ) continue;
+			if(data.cFileName[0] == '.' && (!data.cFileName[1] || data.cFileName[1] == '.' && !data.cFileName[2])) continue;
 
-			if(path) strcpy(fpath,path); else fpath[0]=0;
-			strcat(fpath,data.cFileName);
-			_strlwr(fpath);
-			if( flags & FILE_FINDDIR )	ffcallback( fpath, 1 );
-			strcat(fpath,"\\");
-			if( flags & FILE_FINDREC )	file_findfiles( fpath, ffcallback, flags );
+			std::string dir = path + data.cFileName;
+			std::transform(dir.begin(), dir.end(), dir.begin(), ::tolower);
+			if(flags & FILE_FINDDIR)
+				ffcallback(dir, true);
+			if(flags & FILE_FINDREC)
+				file_findfiles(dir + "\\", mask, ffcallback, flags);
 		}
-		else // file
+		else
 		{
-			if(path) strcpy(fpath,path); else fpath[0]=0;
-			strcat(fpath,data.cFileName);
-			_strlwr(fpath);
-			ffcallback( fpath, 0 );
+			std::string file = path + data.cFileName;
+			std::transform(file.begin(), file.end(), file.begin(), ::tolower);
+			ffcallback(file, false);
 		}
 
-	}while(FindNextFile(h,&data));
-	
+	} while(FindNextFile(h, &data));
 	FindClose(h);
 }
+
 
 void file_delete(const std::string & path)
 {
 	DeleteFile(path.c_str());
 }
+
+
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

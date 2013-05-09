@@ -41,7 +41,7 @@ PREDICATE_M(core, ini, 4)
 		PlTerm ct;
 		if (PL_chars_to_term(value.c_str(), ct))
 			return A4 = ct;
-		return A4 = val;
+		return A4 = value;
 	}
 	ini_set<std::string>(tmp_fullpath, A2, A3, val);
 	return true;
@@ -154,8 +154,7 @@ BOOL cEdiApp::InitApp()
 BOOL cEdiApp::InitFiles()
 {
 	if(!F9_Init()) return FALSE;
-	F9_ArchiveOpen("editor.pak", F9_READ | F9_ARCHIVE_PAK );
-	dlog(LOGAPP, L"using editor.pak file.\n");
+	files->MakeIndex("editor\\");
 	return TRUE;
 }
 
@@ -243,7 +242,6 @@ void cEdiApp::Done()
 	R9_Done();
 	R9_DoneInterface();
 	I9_Done();
-	F9_ArchiveClose(0); // close first archive if found
 	F9_Done();
 
 	dlog(LOGAPP, L"App done.\n");

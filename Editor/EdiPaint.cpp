@@ -37,134 +37,98 @@ void cEdiPaint::Done()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // TILES
 //////////////////////////////////////////////////////////////////////////////////////////////////
-int		gstile_total;			// status report on total tiles declared (load+failed)
-int		gstile_fail;			// status report on tiles failed to load
-int		gstile_duplicates;		// status report on id duplicates
 
-BOOL cEdiPaint::TileLoadFile( const char* filepath )
+bool cEdiPaint::TileLoadFile( const std::string & filepath, size_t & total, size_t & fail, size_t & duplicates)
 {
-	
 	// check file type (not counted if unaccepted); only TGA and PNG files accepted
 	std::string ext = file_path2ext(filepath);
-	if(ext != "tga" && ext != "png") return FALSE;
-	const char* name = file_path2file(filepath); if(!name) return FALSE;
+	if(ext != "tga" && ext != "png") return false;
+	std::istringstream name(file_path2name(filepath));
 	
-	gstile_total++;
-
-	// check name format
-	char szt[256];
-	int id		= -1;
-	int frames	= 1;
-	int fpl = -1;
-	int ret = sscanf(name,"%i %s %i %i",&id,szt,&frames,&fpl);
-	if(ret==0 || id==-1) 
+	total++;
+	int id;
+	if(!(name >> id))
 	{ 
-		gstile_fail++; 
-		dlog(LOGSYS, L"! %S (bad name)\n", filepath); 
-		return FALSE; 
+		fail++; 
+		dlog(LOGSYS, L"! %S (bad name)\n", filepath.c_str()); 
+		return false; 
 	}
-	if(frames<1) frames=1;
-	if(fpl < 0) fpl = frames;	
+	std::string szt;
+	int frames	= 1;
+	name >> szt >> frames;
+
+	int fpl;
+	if(! (name >> fpl))
+		fpl = frames;
 	// check unique id
-	int idx = TileFind(id);
-	if( idx!=-1 )
+	if( TileFind(id)!=-1 )
 	{
-		gstile_fail++;
-		gstile_duplicates++;
-		dlog(LOGSYS, L"! %S (duplicate id)\n", filepath, id);
-		return FALSE;
+		fail++;
+		duplicates++;
+		dlog(LOGSYS, L"! %S (duplicate id)\n", filepath.c_str(), id);
+		return false;
 	}
 
 	// load image rgba
-	strcpy(szt,m_tilepath);strcat(szt,filepath);
 	r9Img img;
-	if(!R9_ImgLoadFile(szt,&img))
+	if(!R9_ImgLoadFile(filepath,&img))
 	{
-		gstile_fail++;
-		dlog(LOGSYS, L"! %S (load failed)\n", filepath);
-		return FALSE;
+		fail++;
+		dlog(LOGSYS, L"! %S (load failed)\n", filepath.c_str());
+		return false;
 	}
 
 	// create new tile
-	idx = TileAdd(id);
-	cTile* tile = TileGet(idx); assert(tile!=NULL);
-	tile->m_tex = R9_TextureCreate(&img);
-	if(tile->m_tex==NULL)
+	R9TEXTURE tex = R9_TextureCreate(&img);
+	if(!tex)
 	{
-		TileDel(idx);
-		gstile_fail++;
-		dlog(LOGSYS, L"! %S (texture failed)\n", filepath);
-		return FALSE;
+		fail++;
+		dlog(LOGSYS, L"! %S (texture failed)\n", filepath.c_str());
+		return false;
 	}
-
-	// set current options
+	cTile* tile = TileGet(TileAdd(id));
+	tile->m_tex = tex;
 	tile->m_frames	= frames;
 	tile->fx = fpl;
 	tile->fy = frames / fpl;
 	if(frames % fpl)
 		tile->fy += 1;
-	tile->m_name	= sstrdup(filepath);
+	tile->m_name = sstrdup(filepath.c_str());
 
 	R9_ImgDestroy(&img);
 	
-	dlog(LOGAPP, L"  %S [%i]\n", filepath, frames );
+	dlog(LOGAPP, L"  %S [%i]\n", filepath.c_str(), frames );
 	
-	return TRUE;
+	return true;
 }
 
-void FFCallback_Tile( const char* filepath, BOOL dir )
+bool cEdiPaint::TileLoad( const std::string & path )
 {
-	if(dir) return;
-	int n = (int)strlen(g_paint.m_tilepath);
-	BOOL ret = g_paint.TileLoadFile(filepath+n);
-}
+	m_tilepath = path;
+	if(!m_tilepath.empty() && *m_tilepath.rbegin() != '\\')
+		m_tilepath += "\\";
+	dlog(LOGAPP, L"Loading tiles from \"%S\"\n", m_tilepath.c_str());
 
-BOOL cEdiPaint::TileLoad( const char* path )
-{
-	if(!path || !path[0]) return FALSE; // invalid path
-	strcpy(m_tilepath,path);
-	int szlen = (int)strlen(m_tilepath);
-	if( szlen>0 && m_tilepath[szlen-1]!='\\' ) strcat(m_tilepath,"\\");
-	_strlwr(m_tilepath);
-	dlog(LOGAPP, L"Loading tiles from \"%S\"\n", m_tilepath);
+	size_t total = 0;
+	size_t fail = 0;
+	size_t duplicates = 0;
 
-	// init
-	gstile_total		= 0;
-	gstile_fail			= 0;
-	gstile_duplicates	= 0;
+	file_findfiles(m_tilepath, "*.*", [this, &total, &fail, &duplicates](const std::string & filepath, bool) { TileLoadFile(filepath, total, fail, duplicates); }, FILE_FINDREC );
 
-	// find files on disk
-	file_findfiles( m_tilepath, FFCallback_Tile, FILE_FINDREC );
-
-	// report
-	dlog(LOGAPP, L"Tiles report: total=%i, failed=%i (duplicates=%i)\n", gstile_total, gstile_fail, gstile_duplicates );
+	dlog(LOGAPP, L"Tiles report: total=%u, failed=%u (duplicates=%u)\n", total, fail, duplicates );
 
 	// sort by id
-	int i;
-	BOOL ok;
-	do
-	{
-		ok=TRUE;
-		for(i=1;i<TileCount();i++)
-		{
-			if(m_tile[i-1]->m_id > m_tile[i]->m_id)
-			{
-				ok = FALSE;
-				std::swap(m_tile[i-1], m_tile[i]);
-			}
-		}
-	}
-	while(!ok);
+	std::sort(m_tile.begin(), m_tile.end(), [](cTile * t1, cTile * t2) { return t1->m_id < t2->m_id; });
 
 	// rehash after reordering
 	index.clear();
-	for(i=0;i<TileCount();i++)
+	for(int i=0;i<TileCount();i++)
 	{
 		cTile* tile = g_paint.TileGet(i); assert(tile!=NULL);
 		index.insert(Hash::value_type(tile->m_id, i));
 	}
 
-	return TRUE;
+	return true;
 }
 
 void cEdiPaint::TileUnload()

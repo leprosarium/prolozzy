@@ -83,18 +83,7 @@ bool cDizApp::InitApp()
 bool cDizApp::InitFiles()
 {
 	if(!F9_Init()) return false;
-	// add pak archive
-	const char* pakfile = GetPakFile();
-
-//	F9_ArchiveOpen("data\\tiles.pak", F9_READ | F9_ARCHIVE_PAK );
-	if(f9Archive * arc = F9_ArchiveOpen(pakfile, F9_READ | F9_ARCHIVE_PAK ))
-		dlog(LOGAPP, L"Pak archive %S opened, data folder is ignored.\n",pakfile);
-	else
-		dlog(LOGAPP, L"Pak archive %S not found, running from data folder.\n",pakfile);
-
-
-
-
+	files->MakeIndex("data\\");
 	return true;
 }
 
@@ -177,7 +166,6 @@ void cDizApp::Done()
 	R9_DoneInterface();
 	A9_Done();
 	I9_Done();
-	F9_ArchiveClose(0); // close first archive if found
 	F9_Done();
 
 	dlog(LOGAPP, L"App done.\n");

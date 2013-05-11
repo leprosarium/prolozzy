@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "F9FileDisk.h"
 
-int f9FileDisk::Open( const std::string & name, int mode )
+bool f9FileDisk::Open( const std::string & name, int mode )
 {
 	if(IsOpen()) Close();
 
@@ -12,24 +12,24 @@ int f9FileDisk::Open( const std::string & name, int mode )
 	m_mode = mode;
 	char szmode[4][4] = {"rb","wb","r+b","w+b"};
 	m_file = fopen(name.c_str(), szmode[mode & 3]);
-	if(!m_file) return F9_FAIL;
+	if(!m_file) return false;
 	
 	m_open = true;
-	return F9_OK;
+	return true;
 }
 
-int f9FileDisk::Close()
+bool f9FileDisk::Close()
 {
-	if(!IsOpen()) return F9_FAIL;
-	if(m_file && fclose(m_file)) return F9_FAIL;
+	if(!IsOpen()) return false;
+	if(m_file && fclose(m_file)) return false;
 	m_open = false;
-	return F9_OK;
+	return true;
 }
 
-int f9FileDisk::Seek(int64 offset, int origin)
+bool f9FileDisk::Seek(int64 offset, int origin)
 {
-	if(!IsOpen()) return F9_FAIL;
-	return !fseek(m_file, (long)offset, origin) ? F9_OK : F9_FAIL;
+	if(!IsOpen()) return false;
+	return !fseek(m_file, (long)offset, origin);
 }
 
 int64 f9FileDisk::Tell()
@@ -42,16 +42,16 @@ int64 f9FileDisk::Size()
 {
 	if(!IsOpen()) return F9_FAIL;
 	int64 p = Tell(); 
-	if(p != F9_OK) return F9_FAIL;
-	if(Seek(0, SEEK_END) != F9_OK) return F9_FAIL;
+	if(p == F9_FAIL) return F9_FAIL;
+	if(!Seek(0, SEEK_END)) return F9_FAIL;
 	int64 s = Tell();
-	if(Seek(p) != F9_OK) return F9_FAIL;
+	if(!Seek(p)) return F9_FAIL;
 	return s;
 }
 
-int f9FileDisk::Eof()
+bool f9FileDisk::Eof()
 {
-	if(!IsOpen()) return F9_FAIL;
+	if(!IsOpen()) return true;
 	return feof(m_file);
 }
 

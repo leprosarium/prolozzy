@@ -59,8 +59,7 @@ int	a9Codec_wav::BeginRender( int pos, int loop )
 {
 	if(m_status!=A9_CODEC_OPENED) return A9_FAIL;
 	m_loop = loop;
-	int ret = m_file->Seek(m_datapos + pos * m_info.SampleSize(), 0);
-	if(ret!=0) return A9_FAIL; 
+	if(! m_file->Seek(m_datapos + pos * m_info.SampleSize(), 0)) return A9_FAIL; 
 
 	m_status = A9_CODEC_RENDERING;
 	return A9_OK;

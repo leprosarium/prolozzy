@@ -6,13 +6,13 @@
 #include "F9FilePakZ.h"
 #include "F9ArchivePak.h"
 
-int f9FilePakZ::Open(const std::string & name, int mode)
+bool f9FilePakZ::Open(const std::string & name, int mode)
 {
 	if(IsOpen()) Close();
-	if(!F9_ISREADONLY(mode)) return F9_FAIL; // readonly
+	if(!F9_ISREADONLY(mode)) return false; // readonly
 
 	// archive should set those
-	if( !m_fileinfo) return F9_FAIL;
+	if( !m_fileinfo) return false;
 
 	m_mode	= mode;
 	m_data	= nullptr;
@@ -23,13 +23,13 @@ int f9FilePakZ::Open(const std::string & name, int mode)
 	if(m_fileinfo->m_sizec>0 && m_fileinfo->m_size>0)
 	{
 		f9FileDisk file;
-		if(file.Open( m_arcname, m_mode )!=F9_OK) return F9_FAIL;
-		if(file.Seek( m_fileinfo->m_offset, F9_SEEK_SET )!=F9_OK) { file.Close(); return F9_FAIL; }
+		if(!file.Open( m_arcname, m_mode )) return false;
+		if(!file.Seek( m_fileinfo->m_offset, F9_SEEK_SET )) { file.Close(); return false; }
 		std::auto_ptr<byte> datac(new byte[m_fileinfo->m_sizec]);
 		int sizec = (int)file.Read(datac.get(), m_fileinfo->m_sizec);
 		file.Close();
 		if(sizec != m_fileinfo->m_sizec)
-			return F9_FAIL;
+			return false;
 		
 		// size may be less than sizec !
 		dword size = std::max( m_fileinfo->m_size, std::max<dword>(64,m_fileinfo->m_sizec) );
@@ -42,17 +42,17 @@ int f9FilePakZ::Open(const std::string & name, int mode)
 		{
 			free(m_data); 
 			m_data = nullptr;
-			return F9_FAIL;
+			return false;
 		}
 	}
 
 	m_open = true;
-	return F9_OK;
+	return true;
 }
 
-int f9FilePakZ::Close()
+bool f9FilePakZ::Close()
 {
-	if(!IsOpen()) return F9_FAIL;
+	if(!IsOpen()) return false;
 	if(m_data) free(m_data);
 
 	m_arcname.clear();
@@ -62,12 +62,12 @@ int f9FilePakZ::Close()
 	m_pos		= 0;
 
 	m_open = false;
-	return F9_OK;
+	return true;
 }
 
-int f9FilePakZ::Seek(int64 offset, int origin)
+bool f9FilePakZ::Seek(int64 offset, int origin)
 {
-	if(!IsOpen()) return F9_FAIL;
+	if(!IsOpen()) return false;
 	
 	// convert to F9_SEEK_SET
 	int64 pos = offset;
@@ -79,7 +79,7 @@ int f9FilePakZ::Seek(int64 offset, int origin)
 	if(pos>m_size) pos = m_size;
 
 	m_pos = pos;
-	return F9_OK;
+	return true;
 }
 
 int64 f9FilePakZ::Tell()
@@ -94,10 +94,10 @@ int64 f9FilePakZ::Size()
 	return m_size;
 }
 
-int f9FilePakZ::Eof()
+bool f9FilePakZ::Eof()
 {
-	if(!IsOpen()) return F9_FAIL;
-	return m_pos == m_size ? 1 : 0;
+	if(!IsOpen()) return true;
+	return m_pos == m_size;
 }
 
 int64 f9FilePakZ::Read(void* data, int64 size)

@@ -56,7 +56,7 @@ public:
 	static f9File * OpenFile(const std::string & name, int mode = F9_READ)
 	{
 		f9File * file = new FileType();
-		if(file->Open(name, mode) == F9_OK)
+		if(file->Open(name, mode))
 			return file;
 		delete file;
 		return 0;

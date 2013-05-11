@@ -42,8 +42,8 @@ public:
 	f9ArchivePak();
 	virtual ~f9ArchivePak();
 						
-	virtual int Open(const std::string & name, int mode = F9_READ, const std::string & password = std::string());
-	virtual	int Close();
+	virtual bool Open(const std::string & name, int mode = F9_READ, const std::string & password = std::string());
+	virtual	bool Close();
 						
 	virtual	f9File * FileOpen(const std::string & name, int mode = F9_READ);
 	virtual	int FileCount() const { return m_fat.size(); }

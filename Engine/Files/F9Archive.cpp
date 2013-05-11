@@ -13,7 +13,7 @@ f9Archive::~f9Archive()
 	Close();
 }
 
-int f9Archive::Open( const std::string & name, int mode, const std::string & password)
+bool f9Archive::Open( const std::string & name, int mode, const std::string & password)
 {
 	if( IsOpen() ) Close();
 
@@ -21,14 +21,14 @@ int f9Archive::Open( const std::string & name, int mode, const std::string & pas
 	m_password = password;
 	m_mode = mode;
 	m_open = true;
-	return F9_OK;
+	return true;
 }
 
-int f9Archive::Close() 
+bool f9Archive::Close() 
 {
-	if( !IsOpen() ) return F9_FAIL;
+	if( !IsOpen() ) return false;
 	m_open = false;
-	return F9_OK;
+	return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -14,14 +14,14 @@ class f9FileMem : public f9File
 public:
 	f9FileMem() : f9File(F9_FILE_MEM), m_addr(nullptr) {}
 
-	virtual int Open(const std::string & name, int mode);
-	virtual	int Close();
+	virtual bool Open(const std::string & name, int mode);
+	virtual	bool Close();
 	virtual int64 Read(void * data, int64 size);
 	virtual	int64 Write(void * data, int64 size);
-	virtual int Seek(int64 offset, int origin = F9_SEEK_SET);
+	virtual bool Seek(int64 offset, int origin = F9_SEEK_SET);
 	virtual	int64 Tell();
 	virtual	int64 Size();
-	virtual	int	Eof();
+	virtual	bool Eof();
 
 protected:
 	byte * m_addr;		// data buffer address

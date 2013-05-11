@@ -12,6 +12,7 @@
 #include "F9ArchivePak.h"
 #include "D9Log.h"
 
+Files * files = nullptr;
 
 void Files::FileClose(f9File * file)
 {
@@ -19,11 +20,6 @@ void Files::FileClose(f9File * file)
 	file->Close();
 	delete file;
 }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// INTERFACE
-///////////////////////////////////////////////////////////////////////////////////////////////////
-Files * files = nullptr;
 
 bool F9_Init()
 {
@@ -41,11 +37,9 @@ void F9_Done()
 	dlog(LOGFIL, L"Files done.\n");
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 void Files::DoIndex(f9Archive * arc, const std::string & file) {
 
-	if(arc->Open(file, F9_READ) != F9_OK)
+	if(!arc->Open(file, F9_READ))
 	{
 		delete arc;
 		return;
@@ -55,14 +49,13 @@ void Files::DoIndex(f9Archive * arc, const std::string & file) {
 		Index[arc->FileGetName(idx)] = arc;
 }
 
-
 void Files::MakeIndex(const std::string & path)
 {
 	file_findfiles("", "*.pak", [this](const std::string & s, bool) { DoIndex<f9ArchivePak>(s); }, 0);
 	file_findfiles(path, "*.*", [this](const std::string & s, bool) { Index[s] = 0; }, FILE_FINDREC);
 
 	for(Map::value_type i: Index)
-		dlog(1, L"idx: %S %p\n", i.first.c_str(), i.second);
+		dlog(LOGFIL, L"idx: %S %p\n", i.first.c_str(), i.second);
 }
 
 f9File * Files::OpenFile(const std::string & name)

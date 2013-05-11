@@ -16,8 +16,8 @@ public:
 	f9Archive(int type);
 	virtual ~f9Archive();
 						
-	virtual int Open(const std::string & name , int mode = F9_READ, const std::string & password = std::string() );
-	virtual int Close();
+	virtual bool Open(const std::string & name , int mode = F9_READ, const std::string & password = std::string() );
+	virtual bool Close();
 	inline bool IsOpen() const { return m_open; }
 						
 	virtual	f9File * FileOpen(const std::string & name, int mode = F9_READ) { return nullptr; }

@@ -18,26 +18,26 @@ f9FileZip::f9FileZip() : f9File(F9_FILE_ZIP), m_offset(-1)
 // m_arcname = name of the zip archive
 // m_offset	= offset of the filelocalheader in the zip archive
 //////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL f9FileZip::Open( const std::string & name, int mode )
+bool f9FileZip::Open( const std::string & name, int mode )
 {
 	if(IsOpen()) Close();
-	if(!F9_ISREADONLY(mode)) return F9_FAIL; // readonly
+	if(!F9_ISREADONLY(mode)) return false; // readonly
 
 	// archive should set those
-	if( m_offset==-1 ) return F9_FAIL;
+	if( m_offset==-1 ) return false;
 
 	m_mode = mode;
 
 	// arc disk file
-	if(m_arcfile.Open(m_arcname, m_mode)!=F9_OK) return F9_FAIL;
+	if(!m_arcfile.Open(m_arcname, m_mode)) return false;
 	
 	// local header
-	if( m_arcfile.Seek( m_offset, F9_SEEK_SET )!=F9_OK ||
+	if( !m_arcfile.Seek( m_offset, F9_SEEK_SET ) ||
 		(m_arcfile.Read( &m_localheader, sizeof(m_localheader) ) != sizeof(m_localheader) ) ||
 		 m_localheader.sign != ZIP_LOCAL_FILE_HEADER_SIGN	)
 	{
 		m_arcfile.Close();
-		return F9_FAIL;
+		return false;
 	}
 	
 	m_arcfile.Seek(m_localheader.sizename, F9_SEEK_CUR); // skip name
@@ -60,7 +60,7 @@ BOOL f9FileZip::Open( const std::string & name, int mode )
 	    default: // unsupported compress method
 		{
 			m_arcfile.Close();
-			return F9_FAIL;
+			return false;
 		}
 	}
 
@@ -68,7 +68,7 @@ BOOL f9FileZip::Open( const std::string & name, int mode )
 	if( !InitZlib(ZLIB_INIT) ) 
 	{
 		m_arcfile.Close();
-		return F9_FAIL;
+		return false;
 	}
 
 	// position and size
@@ -76,12 +76,12 @@ BOOL f9FileZip::Open( const std::string & name, int mode )
 	m_size	= m_localheader.sizeuncomp;
 	
 	m_open = true;
-	return F9_OK;
+	return true;
 }
 
-int f9FileZip::Close()
+bool f9FileZip::Close()
 {
-	if(!IsOpen()) return F9_FAIL;
+	if(!IsOpen()) return false;
 	InitZlib(ZLIB_END);
 	m_arcfile.Close();
 
@@ -89,24 +89,24 @@ int f9FileZip::Close()
 	m_offset	= -1;
 
 	m_open = false;
-	return F9_OK;
+	return true;
 }
 
-int f9FileZip::Seek( int64 offset, int origin )
+bool f9FileZip::Seek( int64 offset, int origin )
 {
-	if(!IsOpen()) return F9_FAIL;
+	if(!IsOpen()) return false;
 
 	int64 off = offset;
 	if( origin==F9_SEEK_SET ) off = offset - m_pos;
 	if( origin==F9_SEEK_END ) off = m_size - offset - m_pos;
-	if( off==0 ) return F9_OK;
+	if( off==0 ) return true;
 		
 	if( m_localheader.compression == ZIP_CM_STORED )
 	{
 		int64 curpos = m_arcfile.Tell();
-		if( m_arcfile.Seek(off, F9_SEEK_CUR)!=F9_OK ) return F9_FAIL;
+		if(! m_arcfile.Seek(off, F9_SEEK_CUR)) return false;
 		m_pos += (m_arcfile.Tell() - curpos);
-		return F9_OK;
+		return true;
 	}
 	
 	// move forward
@@ -114,7 +114,7 @@ int f9FileZip::Seek( int64 offset, int origin )
 	{
 		char c;
 		for(int64 i = 0; i < off; i++) Read(&c, 1);
-		return F9_OK;
+		return true;
 	}
 	else 
 	// rewind and seek
@@ -123,7 +123,7 @@ int f9FileZip::Seek( int64 offset, int origin )
 		Reset();	
 		return Seek( oldpos + off, F9_SEEK_SET );
 	}
-	return F9_OK;
+	return true;
 }
 
 int64 f9FileZip::Tell()

@@ -5,41 +5,41 @@
 #include "F9FileMem.h"
 
 
-int f9FileMem::Open(const std::string & name, int mode )
+bool f9FileMem::Open(const std::string & name, int mode )
 {
 	if(IsOpen()) Close();
-	if(name.empty()) return F9_FAIL;
-	if(name[0] != '#') return F9_FAIL;
+	if(name.empty()) return false;
+	if(name[0] != '#') return false;
 
 	// open
 	m_mode = mode;
 	m_addr = nullptr;
 	m_size = 0;
 	m_pos  = 0;
-	if(2!=sscanf(name.c_str(),"#%x#%x#",&m_addr,&m_size)) return F9_FAIL; // bad name format
-	if(!m_addr || m_size<0) return F9_FAIL; // bad name format
+	if(2!=sscanf(name.c_str(),"#%x#%x#",&m_addr,&m_size)) return false; // bad name format
+	if(!m_addr || m_size<0) return false; // bad name format
 	
 	m_open = true;
-	return F9_OK;
+	return true;
 }
 
-int f9FileMem::Close()
+bool f9FileMem::Close()
 {
-	if(!IsOpen()) return F9_FAIL;
+	if(!IsOpen()) return false;
 	m_addr = nullptr;
 	m_size = 0;
 	m_pos  = 0;
 	m_open = false;
-	return F9_OK;
+	return true;
 }
 
-int f9FileMem::Seek(int64 offset, int origin)
+bool f9FileMem::Seek(int64 offset, int origin)
 {
-	if(!IsOpen()) return F9_FAIL;
-	if(origin==F9_SEEK_SET && offset>=0 && offset<=m_size) { m_pos = offset; return F9_OK; }
-	if(origin==F9_SEEK_CUR && m_pos+offset>=0 && m_pos+offset<=m_size) { m_pos += offset; return F9_OK; }
-	if(origin==F9_SEEK_END && m_size-offset>=0 && m_size-offset<=m_size) { m_pos = m_size-offset; return F9_OK; }
-	return F9_FAIL;
+	if(!IsOpen()) return false;
+	if(origin==F9_SEEK_SET && offset>=0 && offset<=m_size) { m_pos = offset; return true; }
+	if(origin==F9_SEEK_CUR && m_pos+offset>=0 && m_pos+offset<=m_size) { m_pos += offset; return true; }
+	if(origin==F9_SEEK_END && m_size-offset>=0 && m_size-offset<=m_size) { m_pos = m_size-offset; return true; }
+	return false;
 }
 
 int64 f9FileMem::Tell()
@@ -54,10 +54,10 @@ int64 f9FileMem::Size()
 	return m_size;
 }
 
-int f9FileMem::Eof()
+bool f9FileMem::Eof()
 {
-	if(!IsOpen()) return F9_FAIL;
-	return (m_pos==m_size) ? 1 : 0;
+	if(!IsOpen()) return true;
+	return (m_pos==m_size);
 }
 
 int64 f9FileMem::Read(void * data, int64 size)

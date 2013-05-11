@@ -12,7 +12,6 @@
 // Defines
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #define F9_FAIL				-1
-#define F9_OK				0
 
 // open modes
 #define F9_READ				0	// "rb"
@@ -45,14 +44,14 @@ class f9File
 public:
 	f9File(int type) : m_type(type), m_mode(F9_READ), m_open(), m_pos(0), m_size(0) {}
 	virtual ~f9File() {}
-	virtual int Open(const std::string & name, int mode) = 0;
-	virtual int Close() = 0;
+	virtual bool Open(const std::string & name, int mode) = 0;
+	virtual bool Close() = 0;
 	virtual	int64 Read(void * data, int64 size) = 0;
 	virtual	int64 Write(void * data, int64 size) { return 0; }
-	virtual	int Seek(int64 offset, int origin = F9_SEEK_SET) = 0;
+	virtual	bool Seek(int64 offset, int origin = F9_SEEK_SET) = 0;
 	virtual	int64 Tell() = 0;
 	virtual int64 Size() = 0;
-	virtual	int Eof() const { return m_pos < m_size ? F9_OK : F9_FAIL; }
+	virtual	bool Eof() const { return m_pos < m_size; }
 
 	bool IsOpen() const	{ return m_open; }
 

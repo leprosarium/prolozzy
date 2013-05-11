@@ -21,27 +21,27 @@ f9ArchivePak::~f9ArchivePak()
 	Close();
 }
 
-int f9ArchivePak::Open(const std::string & name, int mode, const std::string & password)
+bool f9ArchivePak::Open(const std::string & name, int mode, const std::string & password)
 {
 	if(IsOpen()) Close();
-	if(!F9_ISREADONLY(mode)) return F9_FAIL; // readonly
+	if(!F9_ISREADONLY(mode)) return false; // readonly
 
 	f9Archive::Open(name, mode, password);
 
-	if( !ReadHeader() ) { Close(); return F9_FAIL; }
-	if( !ReadFAT() )	{ Close(); return F9_FAIL; }
+	if( !ReadHeader() ) { Close(); return false; }
+	if( !ReadFAT() )	{ Close(); return false; }
 	
-	return F9_OK;
+	return true;
 }
 
-int f9ArchivePak::Close()
+bool f9ArchivePak::Close()
 {
-	if(!IsOpen()) return F9_FAIL;
+	if(!IsOpen()) return false;
 	index.clear();
 	for(InfoList::iterator i = m_fat.begin(), e = m_fat.end(); i != e; ++i) delete *i;
 	m_fat.clear();
 	f9Archive::Close();	
-	return F9_OK;
+	return true;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -70,7 +70,7 @@ f9File * f9ArchivePak::FileOpen(const std::string & name, int mode)
 		((f9FilePak*)file)->m_fileinfo = m_fat[i];
 	}
 
-	if( file->Open(name, m_mode)!=F9_OK )
+	if(! file->Open(name, m_mode))
 	{
 		delete file;
 		return nullptr;
@@ -111,7 +111,7 @@ bool f9ArchivePak::ReadHeader()
 {
 	// read file
 	f9FileDisk file;
-	if(F9_OK!=file.Open( m_name, F9_READ )) return false;
+	if(!file.Open( m_name, F9_READ )) return false;
 	int headersize = (int)file.Read( &m_header, sizeof(f9PakHeader) );
 	file.Close();
 	if( headersize != sizeof(f9PakHeader) ) return false;
@@ -130,8 +130,8 @@ bool f9ArchivePak::ReadFAT()
 
 	// read fat from file
 	f9FileDisk file;
-	if(F9_OK!=file.Open(m_name, F9_READ )) return false;
-	if(F9_OK!=file.Seek(m_header.m_fatoffset,0)) { file.Close(); return false; }
+	if(!file.Open(m_name, F9_READ )) return false;
+	if(!file.Seek(m_header.m_fatoffset,0)) { file.Close(); return false; }
 	byte* bufferc = (byte*)malloc(m_header.m_fatsizec);
 	int fatsizec = (int)file.Read(bufferc,m_header.m_fatsizec);
 	file.Close();

@@ -5,40 +5,29 @@
 #include "F9FilePak.h"
 #include "F9ArchivePak.h"
 
-bool f9FilePak::Open(const std::string & name, int mode)
+bool f9FilePak::DoOpen(const std::string & name, int mode)
 {
-	if(IsOpen()) Close();
-	if(!F9_ISREADONLY(mode)) return false; // readonly
+	if(!IsReadOnlyMode(mode)) return false; // readonly
 
 	// archive should set those
 	if( !m_fileinfo) return false;
 
-	m_mode = mode;
-
 	// arc disk file
-	if(!m_arcfile.Open( m_arcname, m_mode )) return false;
+	if(!m_arcfile.Open( m_arcname, mode )) return false;
 	if(!m_arcfile.Seek( m_fileinfo->m_offset, F9_SEEK_SET )) { m_arcfile.Close(); return false; }
-
-	m_open = true;
 	return true;
 }
 
-bool f9FilePak::Close()
+bool f9FilePak::DoClose()
 {
-	if(!IsOpen()) return false;
 	m_arcfile.Close();
-
 	m_arcname.clear();
 	m_fileinfo	= nullptr;
-
-	m_open = false;
 	return true;
 }
 
-bool f9FilePak::Seek(int64 offset, int origin)
+bool f9FilePak::DoSeek(int64 offset, int origin)
 {
-	if(!IsOpen()) return false;
-	
 	// convert to F9_SEEK_SET
 	if(origin==F9_SEEK_END)	offset = m_fileinfo->m_size - offset;
 	if(origin==F9_SEEK_CUR)	offset = Tell() + offset;
@@ -53,31 +42,26 @@ bool f9FilePak::Seek(int64 offset, int origin)
 	return m_arcfile.Seek(offset, origin);
 }
 
-int64 f9FilePak::Tell()
+int64 f9FilePak::DoTell() const
 {
-	if(!IsOpen()) return F9_FAIL;
 	int64 pos = m_arcfile.Tell();
 	pos -= m_fileinfo->m_offset;
 	assert(pos >= 0 && pos <= m_fileinfo->m_size );
 	return pos;
 }
 
-int64 f9FilePak::Size()
+int64 f9FilePak::DoSize()
 {
-	if(!IsOpen()) return F9_FAIL;
 	return m_fileinfo->m_size;
 }
 
-bool f9FilePak::Eof()
+bool f9FilePak::DoEof() const
 {
-	if(!IsOpen()) return true;
 	return Tell() == m_fileinfo->m_size;
 }
 
-int64 f9FilePak::Read(void * data, int64 size)
+int64 f9FilePak::DoRead(void * data, int64 size)
 {
-	if(!IsOpen() || !data) return 0;
-	
 	// bound
 	int64 pos = Tell();
 	if( pos + size > m_fileinfo->m_size ) size = m_fileinfo->m_size - pos;

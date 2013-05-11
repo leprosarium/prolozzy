@@ -11,25 +11,21 @@ f9FileZip::f9FileZip() : m_offset(-1)
 	memset( &m_zips, 0, sizeof(z_stream) );
 }
 
-
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // OPEN( .zip, mode )
 // before call, you must set:
 // m_arcname = name of the zip archive
 // m_offset	= offset of the filelocalheader in the zip archive
 //////////////////////////////////////////////////////////////////////////////////////////////////
-bool f9FileZip::Open( const std::string & name, int mode )
+bool f9FileZip::DoOpen( const std::string & name, int mode )
 {
-	if(IsOpen()) Close();
-	if(!F9_ISREADONLY(mode)) return false; // readonly
+	if(!IsReadOnlyMode(mode)) return false; // readonly
 
 	// archive should set those
 	if( m_offset==-1 ) return false;
 
-	m_mode = mode;
-
 	// arc disk file
-	if(!m_arcfile.Open(m_arcname, m_mode)) return false;
+	if(!m_arcfile.Open(m_arcname, mode)) return false;
 	
 	// local header
 	if( !m_arcfile.Seek( m_offset, F9_SEEK_SET ) ||
@@ -74,28 +70,22 @@ bool f9FileZip::Open( const std::string & name, int mode )
 	// position and size
 	m_pos	= 0;
 	m_size	= m_localheader.sizeuncomp;
-	
-	m_open = true;
+
 	return true;
 }
 
-bool f9FileZip::Close()
+bool f9FileZip::DoClose()
 {
-	if(!IsOpen()) return false;
 	InitZlib(ZLIB_END);
 	m_arcfile.Close();
 
 	m_arcname.clear();
 	m_offset	= -1;
-
-	m_open = false;
 	return true;
 }
 
-bool f9FileZip::Seek( int64 offset, int origin )
+bool f9FileZip::DoSeek( int64 offset, int origin )
 {
-	if(!IsOpen()) return false;
-
 	int64 off = offset;
 	if( origin==F9_SEEK_SET ) off = offset - m_pos;
 	if( origin==F9_SEEK_END ) off = m_size - offset - m_pos;
@@ -126,20 +116,8 @@ bool f9FileZip::Seek( int64 offset, int origin )
 	return true;
 }
 
-int64 f9FileZip::Tell()
+int64 f9FileZip::DoRead( void* data, int64 size )
 {
-	return m_pos;
-}
-
-int64 f9FileZip::Size()
-{
-	return m_size;
-}
-
-int64 f9FileZip::Read( void* data, int64 size )
-{
-	if(!IsOpen() || !data) return 0;
-
 	BOOL  error			= FALSE;
 	int64 read_before	= 0;	// ?
 	int64 bytes_to_read = size;	// bytes to be readed

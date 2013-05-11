@@ -18,7 +18,7 @@ f9ArchiveZip::~f9ArchiveZip()
 bool f9ArchiveZip::Open(const std::string & name, int mode, const std::string & password )
 {
 	if( IsOpen() ) Close();
-	if(!F9_ISREADONLY(mode)) return false; // readonly
+	if(!f9File::IsReadOnlyMode(mode)) return false; // readonly
 
 	f9Archive::Open(name, mode, password);
 	if( !ReadFAT() ) { Close(); return false; }

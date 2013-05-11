@@ -19,8 +19,6 @@
 #define F9_READWRITE		2	// "r+b"
 #define F9_WRITEREAD		3	// "w+b"
 
-#define F9_ISREADONLY(mode)	((mode & 3)==0)
-
 // seek modes ( better to match original values: 0,1,2 )
 #define F9_SEEK_SET			SEEK_SET
 #define F9_SEEK_CUR			SEEK_CUR
@@ -31,20 +29,38 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class f9File
 {
+	virtual bool DoOpen(const std::string & name, int mode) = 0;
+	virtual bool DoClose() = 0;
+	virtual	int64 DoRead(void * data, int64 size) = 0;
+	virtual	int64 DoWrite(void * data, int64 size) { return 0; }
+	virtual	bool DoSeek(int64 offset, int origin = F9_SEEK_SET) = 0;
+	virtual	int64 DoTell() const { 	return m_pos; } 
+	virtual	int64 DoSize() { return m_size; }
+	virtual	bool DoEof() const  { return m_pos >= m_size; }
 public:
 	f9File() : m_mode(F9_READ), m_open(), m_pos(0), m_size(0) {}
 	virtual ~f9File() {}
-	virtual bool Open(const std::string & name, int mode) = 0;
-	virtual bool Close() = 0;
-	virtual	int64 Read(void * data, int64 size) = 0;
-	virtual	int64 Write(void * data, int64 size) { return 0; }
-	virtual	bool Seek(int64 offset, int origin = F9_SEEK_SET) = 0;
-	virtual	int64 Tell() = 0;
-	virtual int64 Size() = 0;
-	virtual	bool Eof() const { return m_pos < m_size; }
+	bool Open(const std::string & name, int mode) 
+	{ 
+		if(IsOpen()) Close(); 
+		if(DoOpen(name, mode)) 
+		{ 
+			m_mode = mode; 
+			m_open = true; 
+		}
+		return m_open;
+	}
+	bool Close() { 	if(!IsOpen()) return false; if(DoClose()) m_open = false; return !m_open; }
+	int64 Read(void * data, int64 size) { if(!IsOpen() || !data) return 0; return DoRead(data, size); }
+	int64 Write(void * data, int64 size) { 	if(!IsOpen() || !data) return 0; return DoWrite(data, size); }
+	bool Seek(int64 offset, int origin = F9_SEEK_SET) { if(!IsOpen()) return false; return DoSeek(offset, origin); }
+	int64 Tell() const {  if(!IsOpen()) return F9_FAIL; return DoTell(); }
+	int64 Size() { if(!IsOpen()) return F9_FAIL; return DoSize(); }
+	bool Eof() const { 	if(!IsOpen()) return true; return DoEof(); }
 
 	bool IsOpen() const	{ return m_open; }
 
+	static bool IsReadOnlyMode(int mode) { return (mode & F9_WRITEREAD)==0; }
 protected:
 	int m_mode;		// open mode
 	bool m_open;	// if opened

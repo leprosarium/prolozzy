@@ -13,7 +13,7 @@ struct f9PakFileInfo;
 class f9FilePak : public f9File
 {
 public:
-	f9FilePak () : f9File(F9_FILE_PAK), m_fileinfo(nullptr) {}
+	f9FilePak () : m_fileinfo(nullptr) {}
 
 	virtual bool Open(const std::string & name, int mode);
 	virtual bool Close();

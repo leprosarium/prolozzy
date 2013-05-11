@@ -26,23 +26,13 @@
 #define F9_SEEK_CUR			SEEK_CUR
 #define F9_SEEK_END			SEEK_END
 
-//@HM: move in classes
-// file types
-#define F9_FILE_NONE		0
-#define F9_FILE_DISK		1
-#define F9_FILE_MEM			2
-#define F9_FILE_RES			3
-#define F9_FILE_PAK			4
-#define F9_FILE_PAKZ		5
-#define F9_FILE_ZIP			6
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // f9File class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class f9File
 {
 public:
-	f9File(int type) : m_type(type), m_mode(F9_READ), m_open(), m_pos(0), m_size(0) {}
+	f9File() : m_mode(F9_READ), m_open(), m_pos(0), m_size(0) {}
 	virtual ~f9File() {}
 	virtual bool Open(const std::string & name, int mode) = 0;
 	virtual bool Close() = 0;
@@ -56,7 +46,6 @@ public:
 	bool IsOpen() const	{ return m_open; }
 
 protected:
-	int m_type;		// file type
 	int m_mode;		// open mode
 	bool m_open;	// if opened
 	int64 m_pos;	// current pos

@@ -52,7 +52,7 @@ int64 f9FileDisk::Size()
 bool f9FileDisk::Eof()
 {
 	if(!IsOpen()) return true;
-	return feof(m_file);
+	return feof(m_file) != 0;
 }
 
 int64 f9FileDisk::Read( void* data, int64 size )

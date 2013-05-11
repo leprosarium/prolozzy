@@ -12,7 +12,7 @@
 class f9FileMem : public f9File
 {
 public:
-	f9FileMem() : f9File(F9_FILE_MEM), m_addr(nullptr) {}
+	f9FileMem() : m_addr(nullptr) {}
 
 	virtual bool Open(const std::string & name, int mode);
 	virtual	bool Close();

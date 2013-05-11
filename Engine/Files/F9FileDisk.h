@@ -10,7 +10,7 @@
 class f9FileDisk : public f9File
 {
 public:
-	f9FileDisk() : f9File(F9_FILE_DISK), m_file(nullptr) {}
+	f9FileDisk() : m_file(nullptr) {}
 	virtual ~f9FileDisk() { Close(); }
 	virtual bool Open(const std::string & name, int mode);
 	virtual	bool Close();

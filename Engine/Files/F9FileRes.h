@@ -15,7 +15,7 @@
 class f9FileRes : public f9File
 {
 public:
-	f9FileRes() : f9File(F9_FILE_RES), m_addr(nullptr) {} 
+	f9FileRes() : m_addr(nullptr) {} 
 	
 	virtual bool Open(const std::string & name, int mode);
 	virtual bool Close();

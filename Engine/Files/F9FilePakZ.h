@@ -14,7 +14,7 @@ struct f9PakFileInfo;
 class f9FilePakZ : public f9File
 {
 public:
-	f9FilePakZ() : f9File(F9_FILE_PAKZ), m_fileinfo(nullptr), m_data(nullptr) {}
+	f9FilePakZ() : m_fileinfo(nullptr), m_data(nullptr) {}
 	virtual bool Open(const std::string & name, int mode);
 	virtual bool Close();
 	virtual int64 Read(void* data, int64 size);

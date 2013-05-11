@@ -6,7 +6,7 @@
 #include "F9FileDisk.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-f9FileZip::f9FileZip() : f9File(F9_FILE_ZIP), m_offset(-1)
+f9FileZip::f9FileZip() : m_offset(-1)
 {
 	memset( &m_zips, 0, sizeof(z_stream) );
 }

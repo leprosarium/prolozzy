@@ -40,7 +40,7 @@ public:
 		int         GetFy(int frame) const { return frame / fx; }
 	int GetWidth () const					{ return fx > 0 ? m_tex->width / fx : m_tex->width; }
 	int	GetHeight () const					{ return fy > 0 ? m_tex->height / fy : m_tex->height; }
-		void Destroy() { R9_TextureDestroy(m_tex); if(m_name) free(m_name); }
+		void Destroy() { R9_TextureDestroy(m_tex); delete [] m_name; }
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

@@ -34,7 +34,7 @@ BOOL R9_ImgCreate( r9Img* img, BOOL clear )
 	if(img==NULL) return FALSE;
 	if(img->m_width==0 || img->m_height==0 || img->m_pf==R9_PF_UNKNOWN) return FALSE;
 	img->m_size	= img->m_width * img->m_height * R9_PFSpp(img->m_pf);
-	img->m_data	= (byte*)malloc(img->m_size);
+	img->m_data	= new byte[img->m_size];
 	if(clear) memset(img->m_data,0,img->m_size);
 	return TRUE;
 }
@@ -42,7 +42,7 @@ BOOL R9_ImgCreate( r9Img* img, BOOL clear )
 void R9_ImgDestroy( r9Img* img )
 { 
 	if(img==NULL) return;
-	if(img->m_data) free(img->m_data); 
+	delete [] img->m_data; 
 	img->m_width	= 0;
 	img->m_height	= 0;
 	img->m_pf		= R9_PF_UNKNOWN;
@@ -58,7 +58,7 @@ BOOL R9_ImgDuplicate( r9Img* src, r9Img* dst )
 	dst->m_height = src->m_height;
 	dst->m_pf = src->m_pf;
 	dst->m_size = src->m_size;
-	dst->m_data = (byte*)malloc(dst->m_size);
+	dst->m_data = new byte[dst->m_size];
 	memcpy(dst->m_data,src->m_data,dst->m_size);
 	return TRUE;
 }
@@ -67,14 +67,14 @@ BOOL R9_ImgFlipV( r9Img* img )
 {
 	if(!img || !img->isValid()) return FALSE;
 	int linesize = img->lineSize();
-	byte* temp = (byte*)malloc(linesize);
+	byte* temp = new byte[linesize];
 	for(int i=0;i<img->m_height/2;i++)
 	{
 		memcpy( temp, img->m_data + i*linesize, linesize );
 		memcpy( img->m_data + i*linesize, img->m_data + (img->m_height-1-i)*linesize, linesize );
 		memcpy( img->m_data + (img->m_height-1-i)*linesize, temp, linesize );
 	}
-	free(temp);
+	delete [] temp;
 	return TRUE;
 }
 

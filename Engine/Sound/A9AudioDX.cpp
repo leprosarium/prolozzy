@@ -457,11 +457,11 @@ int a9AudioDX::StreamPrecache( const std::string & filename, A9STREAM _stream )
 		stream->m_filesize = static_cast<int>(f->Tell());
 		// @TODO: test size if necessary ...
 		f->Seek(0,0);
-		stream->m_filemem = (byte*)malloc(stream->m_filesize );
+		stream->m_filemem = new byte[stream->m_filesize];
 		if(stream->m_filemem==NULL) { files->FileClose(f); return A9_FAIL; }
 		ret = static_cast<int>(f->Read(stream->m_filemem,stream->m_filesize));
 		files->FileClose(f);
-		if(ret!=stream->m_filesize) { free(stream->m_filemem); stream->m_filemem=NULL; return A9_FAIL; }
+		if(ret!=stream->m_filesize) { delete [] stream->m_filemem; stream->m_filemem=NULL; return A9_FAIL; }
 	}
 
 	return A9_OK;
@@ -506,7 +506,7 @@ A9STREAM a9AudioDX::StreamCreate( const std::string & filename, int flags )
 	error:
 	if(stream->m_buffer) BufferDestroy(stream->m_buffer);
 	if(stream->m_codec)	{ A9_CodecClose(stream->m_codec); A9_CodecDestroy(stream->m_codec); }
-	if(stream->m_filemem) free(stream->m_filemem);
+	delete [] stream->m_filemem;
 	delete stream;
 	return NULL;
 }
@@ -537,8 +537,7 @@ void a9AudioDX::StreamDestroy( A9STREAM _stream )
 	}
 
 	// destroy cache
-	if(stream->m_filemem)
-		free(stream->m_filemem);
+	delete [] stream->m_filemem;
 
 	delete stream;
 

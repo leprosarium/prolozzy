@@ -311,12 +311,12 @@ void cEdiToolEdit::Init()
 void cEdiToolEdit::Done()
 {
 	// draglist
-	if(m_drag) free(m_drag);
+	delete [] m_drag;
 	m_dragcount = 0;
 	m_dragsize = 0;
 	m_drag=NULL;
 	// clipboard
-	if(m_clip) free(m_clip);
+	delete [] m_clip;
 	m_clipcount = 0;
 	m_clipsize = 0;
 	m_clip=NULL;

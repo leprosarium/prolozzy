@@ -43,16 +43,14 @@ bool f9FileDisk::DoEof() const
 	return feof(m_file) != 0;
 }
 
-int64 f9FileDisk::DoRead( void* data, int64 size )
+int64 f9FileDisk::DoRead(void * data, int64 size)
 {
-	dword ret = (dword)fread(data, 1, (sizet)size, m_file);
-	return ret;
+	return fread(data, 1, static_cast<size_t>(size), m_file);
 }
 
-int64 f9FileDisk::DoWrite(void* data, int64 size )
+int64 f9FileDisk::DoWrite(void * data, int64 size )
 {
-	dword ret = (dword)fwrite(data, 1, (sizet)size, m_file);
-	return ret;
+	return fwrite(data, 1, static_cast<size_t>(size), m_file);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

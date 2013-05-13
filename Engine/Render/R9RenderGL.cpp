@@ -257,7 +257,7 @@ bool r9RenderGL::Init()
 
 void r9RenderGL::Finish()
 {
-	free(m_batchbuffer);
+	delete [] m_batchbuffer;
 	if(!m_cfg.windowed) ChangeDisplaySettings(NULL,0);
 	if(m_hrc) { m_wglMakeCurrent(NULL,NULL); m_wglDeleteContext(m_hrc); m_hrc=NULL; }
 	if(m_hdc) { ReleaseDC(m_hwnd,m_hdc); m_hdc=NULL; }
@@ -836,7 +836,7 @@ BOOL r9RenderGL::GL_CreateDevice()
 
 BOOL r9RenderGL::GL_BatchCreate()
 {
-	m_batchbuffer = (r9Vertex*)malloc(R9_BATCHSIZE_GL*sizeof(r9Vertex));
+	m_batchbuffer = new r9Vertex[R9_BATCHSIZE_GL];
 	memset(m_batchbuffer,0,R9_BATCHSIZE_GL*sizeof(r9Vertex)); // clear
 	return TRUE;
 }

@@ -58,7 +58,7 @@ int	a9Codec_ogg::Open( const std::string & name )
 
 	if(ov_open_callbacks(m_file, &m_oggfile, NULL, 0, mycallbacks) < 0) { files->FileClose(m_file); return A9_UNSUPORTED; }
 
-	m_pcmbuf = (byte*)malloc(PCMSIZE);
+	m_pcmbuf = new byte[PCMSIZE];
 	m_pcmpos = 0;
 	m_pcmcnt = 0;
 
@@ -151,7 +151,7 @@ int	a9Codec_ogg::EndRender()
 int	a9Codec_ogg::Close()
 {
 	if(m_status!=A9_CODEC_OPENED) return A9_FAIL;
-	if(m_pcmbuf) free(m_pcmbuf);
+	delete [] m_pcmbuf;
 	ov_clear(&m_oggfile); // closes m_file too
 	m_file = NULL;
 	m_status = A9_CODEC_CLOSED;

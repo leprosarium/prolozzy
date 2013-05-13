@@ -154,7 +154,7 @@ void cGUI::SetTxt( int idx, char* text )
 {
 	assert(0<=idx && idx<GV_MAX);
 	char* sz = m_var[idx].m_str;
-	if(sz) free(sz);
+	delete [] sz;
 	m_var[idx].m_str = sstrdup(text);
 }
 

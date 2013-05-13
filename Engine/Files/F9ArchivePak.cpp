@@ -132,10 +132,10 @@ bool f9ArchivePak::ReadFAT()
 	f9FileDisk file;
 	if(!file.Open(m_name, F9_READ )) return false;
 	if(!file.Seek(m_header.m_fatoffset,0)) { file.Close(); return false; }
-	byte* bufferc = (byte*)malloc(m_header.m_fatsizec);
+	byte* bufferc = new byte[m_header.m_fatsizec];
 	int fatsizec = (int)file.Read(bufferc,m_header.m_fatsizec);
 	file.Close();
-	if(fatsizec!=m_header.m_fatsizec) { free(bufferc); return false; }
+	if(fatsizec!=m_header.m_fatsizec) { delete [] bufferc; return false; }
 
 	// password
 	if(!m_password.empty()) decrypt_data(bufferc, m_header.m_fatsizec, m_password.c_str());
@@ -143,15 +143,15 @@ bool f9ArchivePak::ReadFAT()
 	// check crc
 	dword crc=0;
 	for(int i=0;i<(int)m_header.m_fatsizec;i++) crc+=bufferc[i];
-	if(crc!=m_header.m_fatcrc) { free(bufferc); return false; }
+	if(crc!=m_header.m_fatcrc) { delete [] bufferc; return false; }
 
 	// uncompress
 	dword buffersize = m_header.m_fatsize;
 	if(buffersize<m_header.m_fatsizec) buffersize = m_header.m_fatsizec; // safety
 	// assert(m_header.m_fatsize>=m_header.m_fatsizec);
-	byte* buffer = (byte*)malloc(m_header.m_fatsize);
+	byte* buffer = new byte[m_header.m_fatsize];
 	dword fatsize = m_header.m_fatsize;
-	if(!decompress_data( bufferc, m_header.m_fatsizec, buffer, fatsize )) { free(bufferc); free(buffer); return false; }
+	if(!decompress_data( bufferc, m_header.m_fatsizec, buffer, fatsize )) { delete [] bufferc; delete [] buffer; return false; }
 	assert(fatsize==m_header.m_fatsize);
 
 	// read fat entries
@@ -176,8 +176,8 @@ bool f9ArchivePak::ReadFAT()
 	}
 	assert(files!=m_header.m_fatfiles); // check
 	
-	free(buffer);
-	free(bufferc);
+	delete [] buffer;
+	delete [] bufferc;
 	return true;
 }
 

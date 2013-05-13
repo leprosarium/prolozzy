@@ -235,12 +235,12 @@ static void R9_ImgPNG_WriteData( png_structp png_ptr, png_bytep data, png_size_t
 
 static png_voidp R9_ImgPNG_Malloc( png_structp png_ptr, png_size_t size )
 {
-	return malloc((int)size);
+	return new byte[size];
 }
 
 static void R9_ImgPNG_Free( png_structp png_ptr, png_voidp data )
 {
-	if(data) free(data);
+	delete [] data;
 }
 
 static void R9_ImgPNG_FatalError( png_structp png_ptr, png_const_charp message )
@@ -358,7 +358,7 @@ bool R9_ImgReadPNG( F9FILE file, r9Img* img )
 	R9_ImgCreate(img);
 
 	// set up the row pointers...
-	png_bytep* rowpointers = (png_bytep*)malloc(img->m_height*sizeof(png_bytep));
+	png_bytep* rowpointers = new png_bytep[img->m_height];
 	for(int i=0; i<img->m_height; i++)
 	  rowpointers[i] = img->m_data + (i*rowbytes);
 
@@ -368,7 +368,7 @@ bool R9_ImgReadPNG( F9FILE file, r9Img* img )
 	// release
 	png_read_end(png_ptr, NULL);
 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
-	free(rowpointers);
+	delete [] rowpointers;
 	r9_imgpng_file = NULL;
 
 	R9_ImgFlipRGB(img); // it was BGR, we want it RGB !
@@ -445,7 +445,7 @@ bool R9_ImgWritePNG( F9FILE file, r9Img* img )
 	}
 
 	png_write_info(png_ptr, info_ptr);
-	png_bytep* rowpointers = (png_bytep*)malloc(img->m_height*sizeof(png_bytep));
+	png_bytep* rowpointers = new png_bytep[img->m_height];
 	for(int i=0; i<img->m_height; i++)
 		rowpointers[i] = (png_bytep)(img->m_data+(i*img->lineSize()));
 
@@ -454,7 +454,7 @@ bool R9_ImgWritePNG( F9FILE file, r9Img* img )
 	// release
 	png_write_end(png_ptr, info_ptr);
 	png_destroy_write_struct(&png_ptr, &info_ptr);
-	free(rowpointers);
+	delete [] rowpointers;
 	r9_imgpng_file = NULL;
 
 	// flip rgb back, if necessarily

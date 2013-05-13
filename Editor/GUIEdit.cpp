@@ -23,7 +23,7 @@ cGUIEdit::cGUIEdit()
 cGUIEdit::~cGUIEdit()
 {
 	char *txt = m_var[IV_TXT].m_str;
-	if(txt) free(txt);
+	delete [] txt;
 	m_var[IV_TXT].m_str = NULL;
 	SetBkTxt(NULL);
 }

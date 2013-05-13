@@ -29,9 +29,9 @@ BOOL i9Input::Init( HWND hwnd, HINSTANCE hinstance )
 	m_hwnd = hwnd;
 	m_hinstance = hinstance;
 
-	m_key	= (i9Key*)malloc( I9_KEYS * sizeof(i9Key) );
-	m_axe	= (i9Axe*)malloc( I9_AXES * sizeof(i9Axe) );
-	m_keyq	= (dword*)malloc( I9_QUEUESIZE * sizeof(dword) );
+	m_key	= new i9Key[I9_KEYS];
+	m_axe	= new i9Axe[I9_AXES];
+	m_keyq	= new dword[I9_QUEUESIZE];
 	memset( m_key, 0, I9_KEYS * sizeof(i9Key) );
 	memset( m_axe, 0, I9_AXES * sizeof(i9Axe) );
 	memset( m_keyq, 0, I9_QUEUESIZE * sizeof(dword) );
@@ -45,9 +45,9 @@ void i9Input::Done()
 		if(DeviceIsPresent(i))	
 			DeviceDone(i);
 
-	free(m_key); m_key=NULL;
-	free(m_axe); m_axe=NULL;
-	free(m_keyq); m_keyq=NULL;
+	delete [] m_key; m_key=NULL;
+	delete [] m_axe; m_axe=NULL;
+	delete [] m_keyq; m_keyq=NULL;
 }
 
 void i9Input::Update( float dtime )

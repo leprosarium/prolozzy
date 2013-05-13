@@ -73,7 +73,7 @@ A9BUFFERPROTO a9Audio::BufferPrecache( const std::string & filename )
 	// create proto
 	proto = new a9BufferProto();
 	proto->m_info = *A9_CodecGetInfo(codec);
-	proto->m_data = (byte*)malloc( proto->m_info.DataSize() );
+	proto->m_data = new byte[proto->m_info.DataSize()];
 
 	// fill data
 	if(proto->m_data==NULL) goto error;
@@ -88,7 +88,7 @@ A9BUFFERPROTO a9Audio::BufferPrecache( const std::string & filename )
 	return proto;	
 
 	error:
-	if(proto) { if(proto->m_data) free(proto->m_data); delete proto; }
+	if(proto) { delete [] proto->m_data; delete proto; }
 	if(codec) { A9_CodecEndRender(codec); A9_CodecClose(codec); A9_CodecDestroy(codec); }
 	return NULL;
 
@@ -97,7 +97,7 @@ A9BUFFERPROTO a9Audio::BufferPrecache( const std::string & filename )
 void a9Audio::BufferDeprecache( A9BUFFERPROTO proto ) 
 {
 	if(!proto) return;
-	if(proto->m_data) free(proto->m_data);
+	delete [] proto->m_data;
 	delete proto;
 }
 

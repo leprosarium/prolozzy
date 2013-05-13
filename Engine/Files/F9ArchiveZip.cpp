@@ -107,23 +107,23 @@ bool f9ArchiveZip::ReadFAT()
 
 	// read central dir buffer
 	cebuffsize =  std::min<int>(filesize, ZIP_CENTRAL_END_BUFFER_SIZE);
-	cebuff = (char*)malloc( cebuffsize ); 
+	cebuff = new char[cebuffsize]; 
 	if(!cebuff) { file.Close(); return false; }
 	file.Seek( filesize-cebuffsize );
 	if( cebuffsize!=file.Read( cebuff, cebuffsize ) ) 
-	{ free(cebuff); file.Close(); return false; }
+	{ delete [] cebuff; file.Close(); return false; }
 
 	// find central directory end
 	for(i = cebuffsize-4; i >= 0; i--)
 	{
 		if( *(dword*)(cebuff+i) == ZIP_CENTRAL_END_SIGN ) break;
 	}		
-	if( i<0 ) { free(cebuff); file.Close(); return false; }
+	if( i<0 ) { delete [] cebuff; file.Close(); return false; }
 	int centralendpos = i; // filesize - cebuffsize + i // if we used to seek and reread centralend from the file
 
 	// read central directory
 	centralend = (zipCentralEnd*) (cebuff + centralendpos);
-	central = (char *)malloc( centralend->size );
+	central = new char[centralend->size];
 	file.Seek( centralend->offset );
 	file.Read( central, centralend->size );
 	file.Close();
@@ -135,7 +135,7 @@ bool f9ArchiveZip::ReadFAT()
 		
 		if( fh->sign != ZIP_FILE_HEADER_SIGN)
 		{
-			free(cebuff); free(central); return false;
+			delete [] cebuff; delete [] central; return false;
 		}
 		
 		char fname[MAX_PATH];
@@ -165,8 +165,8 @@ bool f9ArchiveZip::ReadFAT()
 		index.insert(Hash::value_type(fi->m_name, idx));
 	}
 		
-	free( cebuff );
-	free( central );
+	delete [] cebuff;
+	delete [] central;
 	
 	return true;
 }

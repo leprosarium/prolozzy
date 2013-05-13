@@ -13,7 +13,7 @@
 inline char* sstrdup( const char* sz )
 {
 	if(sz==NULL) return NULL;
-	char* szdest = (char*)malloc( (int)strlen(sz)+1 ); 
+	char* szdest = new char[(int)strlen(sz)+1]; 
 	if(!szdest) return NULL;
 	strcpy(szdest,sz);
 	return szdest;

@@ -33,12 +33,12 @@ bool f9FilePakZ::DoOpen(const std::string & name, int mode)
 		dword size = std::max( m_fileinfo->m_size, std::max<dword>(64,m_fileinfo->m_sizec) );
 
 		
-		m_data = (byte*)malloc(size);
+		m_data = new byte[size];
 		m_size = m_fileinfo->m_size;
 		if( !decompress_data( datac.get(), m_fileinfo->m_sizec, m_data, size ) ||
 			size != m_fileinfo->m_size )
 		{
-			free(m_data); 
+			delete [] m_data; 
 			m_data = nullptr;
 			return false;
 		}
@@ -48,7 +48,7 @@ bool f9FilePakZ::DoOpen(const std::string & name, int mode)
 
 bool f9FilePakZ::DoClose()
 {
-	if(m_data) free(m_data);
+	if(m_data) delete [] m_data;
 
 	m_arcname.clear();
 	m_fileinfo	= nullptr;

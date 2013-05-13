@@ -74,7 +74,7 @@ BOOL r9Font::Create( const std::string & filename )
 
 	// HEADER (24 bytes)
 
-	if( !(buffer[0]=='F' && buffer[1]=='N' && buffer[2]=='T' && buffer[3]=='0') ) { free(buffer); return FALSE; }
+	if( !(buffer[0]=='F' && buffer[1]=='N' && buffer[2]=='T' && buffer[3]=='0') ) { delete [] buffer; return FALSE; }
 	buffer += 4;
 
 	m_chrw		= *((word*)buffer);			buffer += sizeof(word);

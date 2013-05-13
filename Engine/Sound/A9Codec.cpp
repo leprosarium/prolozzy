@@ -208,12 +208,12 @@ int A9_CodecDecodeToWave( const std::string & filename, byte* &buffer, int& size
 	
 	// alloc buffer
 	size = sizeof(a9WavHeader) + codec->m_info.DataSize();
-	buffer = (byte*)malloc( size );
+	buffer = new byte[size];
 	if(!buffer) { A9_CodecClose(codec); A9_CodecDestroy(codec); return A9_FAIL; }
 	
 	// write header and decoded data
 	ret = A9_CodecDecodeToWave(codec,buffer);
-	if(ret!=A9_OK) { free(buffer); A9_CodecClose(codec); A9_CodecDestroy(codec); return A9_FAIL; }
+	if(ret!=A9_OK) { delete [] buffer; A9_CodecClose(codec); A9_CodecDestroy(codec); return A9_FAIL; }
 
 	// close codec
 	A9_CodecClose(codec);

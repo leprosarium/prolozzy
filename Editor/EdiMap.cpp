@@ -281,7 +281,7 @@ cPartitionCel::cPartitionCel()
 
 cPartitionCel::~cPartitionCel()
 {
-	if(m_data!=NULL) free(m_data);
+	delete [] m_data;
 }
 
 void cPartitionCel::Add( int val )
@@ -405,7 +405,7 @@ void cEdiMap::Done()
 	if(m_target) { R9_TextureDestroy(m_target); m_target=NULL; }
 	
 	// brushes
-	if(m_brush) free(m_brush);
+	delete [] m_brush;
 	m_brush=NULL;
 	m_brushcount = 0;
 	m_brushsize	= 0;
@@ -891,7 +891,7 @@ void cEdiMap::BrushToBack( int idx )
 
 void cEdiMap::BrushClear()
 {
-	if(m_brush) free(m_brush);
+	delete [] m_brush;
 	m_brush=NULL;
 	m_brushcount = 0;
 	m_brushsize	= 0;
@@ -1324,13 +1324,13 @@ bool cEdiMap::LoadMap(const std::string &filename)
 			case MAP_CHUNKID:
 			{
 				if( chunksize!=strlen(MAP_ID) )	{ ERROR_CHUNK("size"); }
-				buffer = (char*)malloc(chunksize);
+				buffer = new char[chunksize];
 				size = 0;
 				size += file->Read(buffer, chunksize);
-				if(size!=chunksize) { free(buffer);  ERROR_CHUNK("size"); }
+				if(size!=chunksize) { delete [] buffer;  ERROR_CHUNK("size"); }
 
-				if(memcmp(buffer,MAP_ID,chunksize)!=0) { dlog(LOGAPP, L"invalid map id: '%S' (current version: '%S')\n", buffer, MAP_ID); free(buffer); files->FileClose(file); return false; }
-				free(buffer);
+				if(memcmp(buffer,MAP_ID,chunksize)!=0) { dlog(LOGAPP, L"invalid map id: '%S' (current version: '%S')\n", buffer, MAP_ID); delete [] buffer; files->FileClose(file); return false; }
+				delete [] buffer;
 				break;
 			}
 

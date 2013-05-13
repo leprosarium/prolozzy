@@ -140,11 +140,11 @@ int a9Codec_wav::ReadWaveInfo( F9FILE file, WAVEFORMATEX* wfe, int* datapos, int
 		if(0==strcmp(header, "fmt "))
 		{
 			r = file->Read(&size, 4); if(r!=4) return A9_FAIL;
-			pwfe = (WAVEFORMATEX*)malloc(size);
-			r = file->Read(pwfe, size);	if(r!=size) { free(pwfe); return A9_FAIL; }
+			pwfe = reinterpret_cast<WAVEFORMATEX*>(new byte[size]);
+			r = file->Read(pwfe, size);	if(r!=size) { delete [] pwfe; return A9_FAIL; }
 			if(size>sizeof(WAVEFORMATEX)) size = sizeof(WAVEFORMATEX);
 			memcpy( wfe, pwfe, size );
-			free(pwfe);
+			delete [] pwfe;
 			if(wfe->wFormatTag!=WAVE_FORMAT_PCM) return A9_UNSUPORTED;
 		}
 		else

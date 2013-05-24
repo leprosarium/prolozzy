@@ -642,7 +642,7 @@ void cDizGame::Draw()
 		for(int idx: m_obj)
 		{
 			tBrush & obj = g_map.ObjGet(idx);
-			if( obj.Get(BRUSH_LAYER)!=layer ) continue;
+			if( obj.layer() != layer ) continue;
 			if( obj.Get(BRUSH_DISABLE)!=0 ) continue;
 			if((obj.Get(BRUSH_DRAW) & 1)==0 ) continue;
 			ObjDraw(obj);

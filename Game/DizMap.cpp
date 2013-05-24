@@ -242,7 +242,7 @@ void cDizMap::DrawRoom( const iV2 & rp, int layer, int mode, const iV2 & ofs)
 		if( mode==DRAWMODE_MATERIAL && (brush.Get(BRUSH_DRAW)&2)==0 ) continue; // don't write material
 		if( mode==DRAWMODE_DENSITY  && (brush.Get(BRUSH_DRAW)&2)==0 ) continue; // don't write material
 		
-		if( brush.Get(BRUSH_LAYER) != layer ) continue; // filter layer
+		if( brush.layer() != layer ) continue; // filter layer
 
 		iV2 p = brush.pos() - rp * Room::Size + ofs;
 		int frame = brush.Get(BRUSH_FRAME);

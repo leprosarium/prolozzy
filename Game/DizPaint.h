@@ -109,11 +109,6 @@ public:
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // BRUSH OBJECTS
 //////////////////////////////////////////////////////////////////////////////////////////////////
-#define BRUSH_LAYER		0			// layer idx
-#define BRUSH_X			1			// position x in world
-#define BRUSH_Y			2			// position y in world
-#define BRUSH_W			3			// width of the object (usually the sprite width)
-#define BRUSH_H			4			// height of the object (usually the sprite height)
 #define BRUSH_TILE		5			// tile id
 #define BRUSH_FRAME		6			// current tile animation frame (starts with 0)
 #define BRUSH_MAP		7			// 4 values: x1,y1,x2,y2
@@ -144,29 +139,55 @@ struct tBrush
 	int		m_data[BRUSH_MAX];
 	PlAtom _id;
 	Blend _shader;
+	int _layer;		// layer idx
+	iV2 _pos;		//  position in world
+	iV2 _size;
 public:
-	tBrush() : _id("0"), _shader(Blend::Opaque) { 	memset(m_data, 0, sizeof(m_data)); Set(BRUSH_TILE, -1); Set(BRUSH_COLOR, 0xffffffff); }
+	tBrush() : _id("0"), _shader(Blend::Opaque), _layer() { 	memset(m_data, 0, sizeof(m_data)); Set(BRUSH_TILE, -1); Set(BRUSH_COLOR, 0xffffffff); }
 //	tBrush(int (&data)[BRUSH_MAX], const PlAtom &_id) : _id(_id) { memcpy(m_data, data, sizeof(m_data)); }
 	PlAtom id() const { return _id;}
 	void id(const PlAtom &id) { _id = id; }
-	int Get( int idx ) const { if (idx == BRUSH_SHADER) return static_cast<int>(shader()); return m_data[idx]; }
-	void Set( int idx, int val ) { m_data[idx] = val; if(idx == BRUSH_SHADER) shader(static_cast<Blend>(val)); }
-	void MakeBBW	( int &x1, int &y1, int &x2, int &y2 ) const{ x1 = Get(BRUSH_X); x2 = x1 + Get(BRUSH_W); y1 = Get(BRUSH_Y); y2 = y1 + Get(BRUSH_H); }
-	void MakeBBW	( iV2 & p1, iV2 & p2 ) const { p1 = pos(); p2 = p1 + size(); }
+	int Get( int idx ) const 
+	{ 
+		if(idx == 0) return _layer;
+		if(idx == 1) return _pos.x;
+		if(idx == 2) return _pos.y;
+		if(idx == 3) return _size.x;
+		if(idx == 4) return _size.y;
 
+		if (idx == BRUSH_SHADER) return static_cast<int>(shader()); return m_data[idx]; }
+	void Set( int idx, int val ) 
+	{ 
+		if(idx == 0)
+			_layer = val;
+		else if(idx == 1)
+			_pos.x = val;
+		else if(idx == 2)
+			_pos.y = val;
+		else if(idx == 3)
+			_size.x = val;
+		else if(idx == 4)
+			_size.y = val;
+		m_data[idx] = val; if(idx == BRUSH_SHADER) shader(static_cast<Blend>(val)); 
+	}
 	float mapScale() const { return Get(BRUSH_SCALE) > 0 ? Get(BRUSH_SCALE) / 100.0f : 1.0f; }		
 	float mapWith() const   { return ( Is<Flip::R>(Get(BRUSH_FLIP)) ? (Get(BRUSH_MAP+3) - Get(BRUSH_MAP+1)) : (Get(BRUSH_MAP+2) - Get(BRUSH_MAP+0)) ) * mapScale(); }
 	float mapHeight() const { return ( Is<Flip::R>(Get(BRUSH_FLIP)) ? (Get(BRUSH_MAP+2) - Get(BRUSH_MAP+0)) : (Get(BRUSH_MAP+3) - Get(BRUSH_MAP+1)) ) * mapScale(); }
 	static bool InvalidProp(int idx) { return idx < 0 || idx >= BRUSH_MAX; }	
 
-	iV2 pos() const { return iV2(Get(BRUSH_X), Get(BRUSH_Y)); }
-	iV2 size() const { return iV2(Get(BRUSH_W), Get(BRUSH_H)); }
+	iV2 pos() const { return _pos; }
+	iV2 size() const { return _size; }
 	iRect rect() const { iV2 p = pos(); return iRect(p, p + size()); }
 	iRect map() const { return iRect(Get(BRUSH_MAP+0), Get(BRUSH_MAP+1), Get(BRUSH_MAP+2), Get(BRUSH_MAP+3)); }
 	fV2 mapSize() const { fV2 sz = map().Size(); return (Is<Flip::R>(Get(BRUSH_FLIP)) ? fV2(sz.y, sz.x) : sz) * mapScale(); }
 
 	Blend shader() const { return _shader; }
 	void shader(Blend s) { _shader = s; }
+
+	int layer() const { return _layer; }
+	int x() const { return _pos.x; }
+	int y() const { return _pos.y; }
+
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

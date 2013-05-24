@@ -860,20 +860,13 @@ int cDizPlayer::CheckJumper()
 
 void cDizPlayer::CheckColliders()
 {
-	int x1,y1,x2,y2;
-	int cx1,cy1,cx2,cy2;
-	MakeBBW(x1,y1,x2,y2);
+	iRect pr = bbw();
 	for(int idx: g_game.m_collider)
 	{
 		tBrush & obj = g_map.ObjGet(idx);
 		if( obj.Get(BRUSH_DISABLE)!=0 ) continue; // only enabled objects
 		if(!(obj.Get(BRUSH_COLLIDER) & COLLIDER_HANDLE)) continue; // just those that request it
-		cx1 = obj.Get(BRUSH_X);
-		cy1 = obj.Get(BRUSH_Y);
-		cx2 = cx1+obj.Get(BRUSH_W);
-		cy2 = cy1+obj.Get(BRUSH_H);
-
-		bool collision = !( x2<=cx1 || x1>=cx2 || y2<=cy1 || y1>=cy2 );
+		bool collision = pr.Intersects(obj.rect());
 		if(!collision && !obj.Get(BRUSH_COLLISION)) continue; // no collision event
 
 		// call
@@ -889,7 +882,6 @@ void cDizPlayer::CheckColliders()
 bool cDizPlayer::CheckCollidersSnap()
 {
 	int x1,y1,x2,y2;
-	int cx1,cy1,cx2,cy2;
 	MakeBBW(x1,y1,x2,y2);
 
 	int stepu=0;			// move player up (deepest entering collider)
@@ -902,14 +894,14 @@ bool cDizPlayer::CheckCollidersSnap()
 		tBrush & obj = g_map.ObjGet(idx);
 		if( obj.Get(BRUSH_DISABLE)!=0 ) continue; // only enabled objects
 		if(!(obj.Get(BRUSH_COLLIDER) & COLLIDER_HARD)) continue; // only those that need it
-		obj.MakeBBW(cx1,cy1,cx2,cy2);
-		if( x2<=cx1 || x1>=cx2 ) continue;
+		iRect c = obj.rect();
+		if( x2<=c.p1.x || x1>=c.p2.x ) continue;
 		
-		if(y2<=cy1 && cy1<y2+DIZ_STEPY+1)	// collider's top is inside player's box
-			stepd = std::min(stepd, cy1-y2);
+		if(y2<=c.p1.y && c.p1.y < y2 + DIZ_STEPY + 1)	// collider's top is inside player's box
+			stepd = std::min(stepd, c.p1.y - y2);
 
-		if(y1<=cy1 && cy1<y2)				// collider's top is not too far under the player's bottom ( a smaller interval would be (y2-DIZ_STEPY<=cy1 && cy1<y2) )
-			stepu = std::max(stepu,y2-cy1);
+		if(y1<=c.p1.y && c.p1.y<y2)				// collider's top is not too far under the player's bottom ( a smaller interval would be (y2-DIZ_STEPY<=cy1 && cy1<y2) )
+			stepu = std::max(stepu, y2 - c.p1.y);
 	}	
 
 	if(stepu>0)

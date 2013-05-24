@@ -79,7 +79,10 @@ inline	void		MakeBBW				( int &x1, int &y1, int &x2, int &y2 ) const { x1 = _x-_
 		void		MakeBB				( int &x1, int &y1, int &x2, int &y2 ) const;		
 
 inline	cTile*		FindTile			()											{ return g_paint.tiles.Get(g_paint.tiles.Find(_tile)); }
-		
+
+	iRect bbw() const { iV2 p = pos(); iV2 hs = size() / 2; return iRect(p - hs, p + hs); }
+	
+
 		// not exported
 		bool		m_input;			// user input accepted
 		bool		m_debug;			// prevent player's update while debug movement

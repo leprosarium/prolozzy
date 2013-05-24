@@ -296,15 +296,14 @@ PREDICATE_M(core, colliderSnapDistance, 5)
 	int y2 = A4;
 
 	int dist = 0; // max distance from box bottom to collider top (if collider top is inside box)
-	int cx1,cy1,cx2,cy2;
 	for(int idx: g_game.m_collider)
 	{
 		tBrush & obj = g_map.ObjGet(idx);
 		if( obj.Get(BRUSH_DISABLE)!=0 ) continue; // only enabled objects
 		if(!(obj.Get(BRUSH_COLLIDER) & COLLIDER_HARD)) continue; // only those that need it
-		obj.MakeBBW(cx1,cy1,cx2,cy2);
-		if( x2<=cx1 || x1>=cx2 ) continue; // not intersecting
-		if(y1<=cy1 && cy1<y2) dist = std::max(dist,y2-cy1);
+		iRect c = obj.rect();
+		if( x2<=c.p1.x || x1 >= c.p2.x ) continue; // not intersecting
+		if(y1 <= c.p1.y && c.p1.y < y2) dist = std::max(dist,y2-c.p1.y);
 	}
 	return A5 = dist;
 }

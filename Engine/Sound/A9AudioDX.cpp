@@ -438,9 +438,8 @@ void a9AudioDX::BufferSetPosition( A9BUFFER _buffer, int pos )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // STREAMS
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-int a9AudioDX::StreamPrecache( const std::string & filename, A9STREAM _stream )
+int a9AudioDX::StreamPrecache( const std::string & filename, a9StreamDX * stream )
 {
-	a9StreamDX* stream = (a9StreamDX*)_stream;
 	assert(stream);
 	
 	// check format

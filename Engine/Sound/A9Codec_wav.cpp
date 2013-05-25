@@ -6,7 +6,6 @@
 
 a9Codec_wav::a9Codec_wav()
 {
-	m_type = A9_CODEC_WAV;
 	m_file = NULL;
 	m_datapos = 0;
 }

@@ -21,7 +21,6 @@ int	  ymfread	( void* buffer, int size, void* file )		{ return static_cast<int>(
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 a9Codec_ym::a9Codec_ym()
 {
-	m_type	= A9_CODEC_YM;
 	m_ym	= NULL;
 }
 

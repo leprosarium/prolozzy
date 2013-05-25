@@ -22,7 +22,6 @@
 
 a9Codec::a9Codec()
 {
-	m_type				= A9_CODEC_UNKNOWN;
 	m_loop				= 0;
 	m_status			= A9_CODEC_CLOSED; 
 

@@ -65,7 +65,7 @@ virtual	void			BufferSet( A9BUFFER buffer, int prop, int val );
 virtual	int				BufferGetPosition( A9BUFFER buffer );
 virtual	void			BufferSetPosition( A9BUFFER buffer, int pos );
 
-		int				StreamPrecache( const std::string & filename, A9STREAM stream );				// precache small files
+		int				StreamPrecache( const std::string & filename, a9StreamDX * stream );				// precache small files
 virtual	A9STREAM		StreamCreate( const std::string & filename, int flags = A9_FLAG_VOLUME ); 
 virtual	void			StreamDestroy( A9STREAM stream );
 virtual int				StreamPlay( A9STREAM stream, BOOL loop=FALSE );

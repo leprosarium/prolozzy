@@ -26,7 +26,6 @@ long   ogg_tell		(void *datasource) { return static_cast<long>(static_cast<F9FIL
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 a9Codec_ogg::a9Codec_ogg()
 {
-	m_type = A9_CODEC_OGG;
 	m_file = NULL;
 	m_pcmbuf = NULL;
 	m_pcmpos = 0;

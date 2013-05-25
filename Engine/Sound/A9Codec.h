@@ -35,7 +35,6 @@ virtual int			Render( byte* buffer, int size )		{ return 0; }
 virtual	int			EndRender()								{ return A9_FAIL; }
 virtual	int			Close()									{ return A9_FAIL; }
 
-		int			m_type;									// codec type
 		int			m_loop;									// if looping was requested when render begun
 		int			m_status;								// codec status
 		a9Info		m_info;									// info

@@ -95,7 +95,7 @@ public:
 		
 	cFont() : id(), group(), font() {}
 	cFont(int id, int group, r9Font * font) : id(id), group(group), font(font) {}
-	~cFont() { if(font) delete font; }
+	~cFont() { delete font; }
 	cFont(cFont && f) : id(f.id), group(f.group), font(f.font) { f.font = 0; }
 	cFont & operator = (cFont && f) { id = f.id; group = f.group; font = f.font; f.font = 0; return *this; }
 
@@ -144,7 +144,6 @@ struct tBrush
 	iV2 _size;
 public:
 	tBrush() : _id("0"), _shader(Blend::Opaque), _layer() { 	memset(m_data, 0, sizeof(m_data)); Set(BRUSH_TILE, -1); Set(BRUSH_COLOR, 0xffffffff); }
-//	tBrush(int (&data)[BRUSH_MAX], const PlAtom &_id) : _id(_id) { memcpy(m_data, data, sizeof(m_data)); }
 	PlAtom id() const { return _id;}
 	void id(const PlAtom &id) { _id = id; }
 	int Get( int idx ) const 
@@ -194,53 +193,60 @@ public:
 // DIZPAINT
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-class Tiles : std::vector<cTile>
+template<class T>
+class Indexed : std::vector<T>
 {
-	IntIndex Index;
-	typedef std::vector<cTile> Cont;
-	bool LoadFile(const std::string & file, size_t & total, size_t & fail, size_t & duplicates, int group);	// load a tile file
-
 public:
+	typedef std::vector<T> Cont;
+	IntIndex Index;
 	using Cont::size;
-
-	void clear() {  
-		Index.clear(); 
-		Cont::clear(); 
-	}
-	void erase(iterator i) { 
-		Index.erase(i->id);
-		Cont::erase(i); 
-	}
+	using Cont::begin;
+	using Cont::end;
 
 	bool InvalidIdx(int idx) const {return idx < 0 && static_cast<size_type>(idx) >= size(); }
+	T & get(int idx) { return (*this)[idx]; }
+	const T & get(int idx) const{ return (*this)[idx]; }
+	T * Get(int idx) { return InvalidIdx(idx) ? nullptr : & get(idx); }
+	const T * Get(int idx) const { return InvalidIdx(idx) ? nullptr : & get(idx); }
+	int	New() { push_back(T()); return size() - 1; }
 
-	cTile * Get(int idx) { return InvalidIdx(idx) ? nullptr : &(*this)[idx]; }
-	const cTile * Get(int idx) const { return InvalidIdx(idx) ? nullptr : &(*this)[idx]; }
-	int Add(int id);								// add a new empty tile; id must be unique
-	void Del(int idx);								// delete tile by index
+	void clear() { Index.clear(); Cont::clear(); }
+	void erase(iterator i) { Index.erase(i->id); Cont::erase(i); }
+	
 	int Find(int id) const { auto i = Index.find(id); return i != Index.end() ? i->second : -1; }
+	int Add(int id, T && t)
+	{
+		if(Find(id)!=-1) return -1; // duplicate id
+		push_back(std::move(t));
+		int idx = size() - 1;
+
+		Index.insert(IntIndex::value_type(id, idx));
+		return idx;
+	}
+	void Erase( int idx )
+	{
+		if(!InvalidIdx(idx))
+			erase(begin() + idx);
+	}
+
+};
+
+class Tiles : public Indexed<cTile>
+{
+	bool LoadFile(const std::string & file, size_t & total, size_t & fail, size_t & duplicates, int group);	// load a tile file
+public:
 	bool Load(const std::string & path, int group = 0); 	// load tiles from a path, and set the specified group
 	void Unload(int group=0 );						// unload load tiles (destroy) from a specified group
-
 	bool Reacquire(); // called before render reset to reload render resources
 	void Unacquire(); // called before render reset to free render resources
 };
 
-class Fonts : std::vector<cFont>
+class Fonts : public Indexed<cFont>
 {
-	typedef std::vector<cFont> Cont;
 	bool LoadFile(const std::string & filepath, size_t & total, size_t & fail, size_t & duplicates, int group = 0);
 public:
-	using Cont::clear;
-
-	bool InvalidIdx(int idx) const {return idx < 0 && static_cast<size_type>(idx) >= size(); }
-	cFont * Get(int idx) { return InvalidIdx(idx)? nullptr : &(*this)[idx]; }
-	const cFont * Get(int idx) const { return InvalidIdx(idx)? nullptr : &(*this)[idx]; }
-	void Del(int idx) {	if(!InvalidIdx(idx)) erase(begin() + idx); }
-	int	Find(int id) const { for(size_type i=0;i<size(); i++) if((*this)[i].id==id) return i; return -1; }
 	bool Load(const std::string & path, int group = 0);	// load fonts from a path and set the specified group
 	void Unload(int group = 0);				// unload fonts (destroy) from the specified group
-
 	void Unacquire() { std::for_each(begin(), end(), [](cFont &f) { if(f.font) f.font->SetTexture(nullptr); }); }
 
 };

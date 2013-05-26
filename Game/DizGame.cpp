@@ -503,7 +503,7 @@ bool cDizGame::Update()
 	{
 		for(int idx: m_obj)
 		{
-			tBrush & obj = g_map.ObjGet(idx);
+			tBrush & obj = g_map.objects.get(idx);
 			if( obj.Get(BRUSH_DISABLE)!=0 ) continue; // only enabled objects
 			if( obj.Get(BRUSH_ANIM)!=0 )
 			{
@@ -641,7 +641,7 @@ void cDizGame::Draw()
 		R9_SetClipping( rect );
 		for(int idx: m_obj)
 		{
-			tBrush & obj = g_map.ObjGet(idx);
+			tBrush & obj = g_map.objects.get(idx);
 			if( obj.layer() != layer ) continue;
 			if( obj.Get(BRUSH_DISABLE)!=0 ) continue;
 			if((obj.Get(BRUSH_DRAW) & 1)==0 ) continue;
@@ -786,8 +786,8 @@ void cDizGame::ObjGather()
 	iRect roombb = viewportMode() ? 
 		RoomBorderRect(Room::Size) :  // extended room bound to 3x3 rooms
 		RoomBorderRect(Room::Border); // room bound with small border
-	for(int i=0; i<g_map.ObjCount(); i++ )
-		if(g_map.ObjGet(i).rect().Intersects(roombb)) 
+	for(int i=0; i<g_map.objects.size(); i++ )
+		if(g_map.objects.get(i).rect().Intersects(roombb)) 
 			ObjAdd(i); // object is present in current bordered room
 }
 

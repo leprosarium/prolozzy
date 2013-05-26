@@ -13,14 +13,15 @@
 iV2 Room::Size(GAME_ROOMW, GAME_ROOMH);
 cDizMap	g_map;
 
+
 PREDICATE_M(map, brushCount, 1)
 {
-	return A1 = g_map.BrushCount();
+	return A1 = static_cast<int>(g_map.brushes.size());
 }
 
 PREDICATE_M(map, brushFind, 2)
 {
-	int idx = g_map.BrushFind(PlAtom(A1).handle);
+	int idx = g_map.brushes.Find(PlAtom(A1).handle);
 	if(idx == -1)
 		return false;
 	return A2 = idx;
@@ -30,50 +31,56 @@ PREDICATE_M(map, brushVar, 3)
 {
 	int idx = A1;
 	int var = A2;
-	if(g_map.InvalidBrushIndex(idx))
+	if(g_map.brushes.InvalidIdx(idx))
 		throw PlException("invalid brush index");
 	if(tBrush::InvalidProp(var)) 
 		throw PlException("invalid brush variable");
-	tBrush & brush = g_map.BrushGet(idx);
-	PlTerm val = A3;
-	if(val.type() == PL_VARIABLE)
-		return A3 = brush.Get(var);
-	brush.Set(var, val);
-	return true;
+	if(tBrush * brush = g_map.brushes.Get(idx))
+	{
+		PlTerm val = A3;
+		if(val.type() == PL_VARIABLE)
+			return A3 = brush->Get(var);
+		brush->Set(var, val);
+		return true;
+	}
+	return false;
 }
 
 PREDICATE_M(map, brushSet , 3) 
 {
 	int idx = A1;
-	if(g_map.InvalidBrushIndex(idx))
+	if(g_map.brushes.InvalidIdx(idx))
 		throw PlException("invalid brush index");
 	int var = A2;
 	if(tBrush::InvalidProp(var)) 
 		throw PlException("invalid brush variable");
-	tBrush & brush = g_map.BrushGet(idx);
+	if(tBrush * brush = g_map.brushes.Get(idx))
+	{
 
-	if(var == BRUSH_COLOR)
-	{
-		int64 color = A3;
-		brush.Set(var, static_cast<int>(color));
-	} 
-	else 
-	{
-		brush.Set(var, A3);
+		if(var == BRUSH_COLOR)
+		{
+			int64 color = A3;
+			brush->Set(var, static_cast<int>(color));
+		} 
+		else 
+		{
+			brush->Set(var, A3);
+		}
+		return true;
 	}
-	return true;
+	return false;
 }
 
 PREDICATE_M(map, objSet , 3) 
 {
 	int idx = A1;
-	if(g_map.InvalidObjIndex(idx)) 
+	if(g_map.objects.InvalidIdx(idx)) 
 		throw PlException("invalid object index");
 	int var = A2;
 	if(Object::InvalidProp(var)) 
 		throw PlException("invalid object variable"); 
 
-	tBrush & obj = g_map.ObjGet(idx);
+	tBrush & obj = g_map.objects.get(idx);
 	if(var == BRUSH_COLOR)
 	{
 		int64 color = A3;
@@ -88,24 +95,24 @@ PREDICATE_M(map, objSet , 3)
 
 PREDICATE_M(map, objCount, 1)
 {
-	return A1 = g_map.ObjCount(); 
+	return A1 = static_cast<int>(g_map.objects.size()); 
 }
 
 PREDICATE_M(map, objFind, 2)
 {
-	return A2 = g_map.ObjFind(PlAtom(A1).handle);
+	return A2 = g_map.objects.Find(PlAtom(A1).handle);
 }
 
 PREDICATE_M(map, objVar, 3)
 {
 	int idx = A1;
-	if(g_map.InvalidObjIndex(idx)) 
+	if(g_map.objects.InvalidIdx(idx)) 
 		throw PlException("invalid object index");
 	int var = A2;
 	if(Object::InvalidProp(var)) 
 		throw PlException("invalid object variable"); 
 
-	tBrush & obj = g_map.ObjGet(idx);
+	tBrush & obj = g_map.objects.get(idx);
 	PlTerm val = A3;
 	if(val.type() == PL_VARIABLE)
 		return A3 = obj.Get(var);
@@ -117,25 +124,25 @@ PREDICATE_M(map, objVar, 3)
 PREDICATE_M(map, objName, 2)
 {
 	int idx = A1;
-	if(g_map.InvalidObjIndex(idx)) 
+	if(g_map.objects.InvalidIdx(idx)) 
 		throw PlException("invalid object index");
 	PlTerm val = A2;
 	if(val.type() == PL_VARIABLE) {
-		return val = g_map.ObjGet(idx).Name().c_str();
+		return val = g_map.objects.get(idx).Name().c_str();
 	}
-	g_map.ObjGet(idx).Name(val); 
+	g_map.objects.get(idx).Name(val); 
 	return true;
 }
 
 PREDICATE_M(map, brushNew, 1)
 {
-	int idx = g_map.BrushNew();
+	int idx = g_map.brushes.New();
 	return A1 = idx;
 }
 
 PREDICATE_M(map, objNew, 1)
 {
-	int idx = g_map.ObjNew();
+	int idx = g_map.objects.New();
 	return A1 = idx;
 }
 
@@ -187,23 +194,8 @@ void cDizMap::Reset()
 	Rooms.clear();
 	m_mapw = 0;
 	m_maph = 0;
-	Brushes.clear();
-	BrushIndex.clear();
-	Objects.clear();
-	ObjIndex.clear();
-}
-
-
-int	cDizMap::BrushNew()
-{
-	Brushes.push_back(tBrush());
-	return Brushes.size() - 1;
-}
-
-int	cDizMap::ObjNew()
-{
-	Objects.push_back(Object());
-	return Objects.size() - 1;
+	brushes.clear();
+	objects.clear();
 }
 
 bool cDizMap::Reload()
@@ -236,7 +228,7 @@ void cDizMap::DrawRoom( const iV2 & rp, int layer, int mode, const iV2 & ofs)
 	{
 		int brushidx = part[i];
 
-		tBrush & brush = BrushGet(brushidx);
+		tBrush & brush = * brushes.Get(brushidx);
 
 		if( mode==DRAWMODE_NORMAL	&& (brush.Get(BRUSH_DRAW)&1)==0 ) continue; // don't draw
 		if( mode==DRAWMODE_MATERIAL && (brush.Get(BRUSH_DRAW)&2)==0 ) continue; // don't write material
@@ -298,13 +290,8 @@ void cDizMap::DrawRoom( const iV2 & rp, int layer, int mode, const iV2 & ofs)
 
 void cDizMap::PartitionAdd( int brushidx )
 {
-	tBrush & brush = BrushGet(brushidx);
+	const tBrush & brush = brushes.get(brushidx);
 	iRect rbrush = brush.rect();
-	/* @TODO find a way to optimize and get the partitions
-	int brx = rbrush.x1 % m_mapw; // roomx for top-left brush corner
-	int bry = rbrush.y1 / m_maph; // roomy for top-left brush corner
-	int rooms[4][2] = { {brx,bry}, {brx+1,bry}, {brx,bry+1}, br
-	*/
 	auto room = Rooms.begin();
 	for(iV2 r; r.y < Height(); ++r.y)
 		for(r.x = 0; r.x < Width(); ++r.x, ++room)
@@ -314,7 +301,7 @@ void cDizMap::PartitionAdd( int brushidx )
 
 void cDizMap::PartitionMake()
 {
-	for(int i=0, e=BrushCount(); i < e; ++i)
+	for(int i=0, e=brushes.size(); i < e; ++i)
 		PartitionAdd(i);
 }
 
@@ -327,40 +314,14 @@ void cDizMap::Resize( int width, int height )
 	m_mapw = width / Room::Size.x;
 	m_maph = height / Room::Size.y;
 
-	int count = Width() * Height();
 	Rooms.clear();
-	Rooms.resize(count);
+	Rooms.resize(Width() * Height());
 	PartitionMake();
 
-	ObjIndex.clear();
-	BrushIndex.clear();
-	for(size_t i = 0, e = Objects.size(); i != e; ++i) {
-		Object & o = ObjGet(i);
-		if(int id = o.Get(BRUSH_ID))
-		{
-			std::stringstream sid;
-			sid << "id" << id;
-			PlAtom aid(sid.str().c_str());
-			o.id(aid);
-			ObjIndex.insert(IntIndex::value_type(aid, i));
-		}
-	}
-	for(size_t i = 0, e = Brushes.size(); i != e; ++i) {
-		tBrush & b = BrushGet(i);
-		if(int id = b.Get(BRUSH_ID))
-		{
-			std::stringstream sid;
-			sid << "id" << id;
-			PlAtom aid(sid.str().c_str());
-			b.id(aid);
-			BrushIndex.insert(IntIndex::value_type(aid, i));
-		}
-	}
-
+	objects.Reindex();
+	brushes.Reindex();
 	g_game.Resize(Width(), Height());
 }
-
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////

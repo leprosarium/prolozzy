@@ -216,7 +216,7 @@ private:
 inline void cDizGame::ObjAdd( int idx )
 {
  	m_obj.push_back(idx);
-	tBrush & obj = g_map.ObjGet(idx);
+	tBrush & obj = g_map.objects.get(idx);
 	if( obj.Get(BRUSH_COLLIDER) )
 		m_collider.push_back(idx);
 

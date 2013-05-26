@@ -263,7 +263,7 @@ PREDICATE_M(core, materialGetFreeDist, 7)
 PREDICATE_M(core, objPresent, 1)
 {
 	int idx = A1;
-	if(g_map.InvalidObjIndex(idx)) 
+	if(g_map.objects.InvalidIdx(idx)) 
 		throw PlException("invalid object index");
 	g_game.ObjPresent(idx); 
 	return true;
@@ -298,7 +298,7 @@ PREDICATE_M(core, colliderSnapDistance, 5)
 	int dist = 0; // max distance from box bottom to collider top (if collider top is inside box)
 	for(int idx: g_game.m_collider)
 	{
-		tBrush & obj = g_map.ObjGet(idx);
+		tBrush & obj = g_map.objects.get(idx);
 		if( obj.Get(BRUSH_DISABLE)!=0 ) continue; // only enabled objects
 		if(!(obj.Get(BRUSH_COLLIDER) & COLLIDER_HARD)) continue; // only those that need it
 		iRect c = obj.rect();

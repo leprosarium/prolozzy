@@ -34,10 +34,36 @@ class Object : public tBrush
 	std::string _Name;
 public:
 	Object() : tBrush() {}
-//	Object(int (&data)[BRUSH_MAX], const PlAtom & id) : tBrush(data, id) {}
 	std::string Name() const { return _Name; }
 	void Name(const std::string & name) { _Name = name; std::transform(_Name.begin(), _Name.end(), _Name.begin(), ::toupper);  }
 };
+
+template<typename T>
+class Reindexed : public Indexed<T>
+{
+public:
+	void Reindex();
+};
+
+template<typename T>
+void Reindexed<T>::Reindex()
+{
+	Index.clear();
+	for(size_t i = 0, e = size(); i != e; ++i) {
+		T & b = get(i);
+		if(int id = b.Get(BRUSH_ID))
+		{
+			std::stringstream sid;
+			sid << "id" << id;
+			PlAtom aid(sid.str().c_str());
+			b.id(aid);
+			Index.insert(IntIndex::value_type(aid, i));
+		}
+	}
+}
+
+typedef Reindexed<tBrush> Brushes;
+typedef Reindexed<Object> Objects;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cDizMap
@@ -47,11 +73,6 @@ class cDizMap
 		int				m_mapw;				// map width in rooms
 		int				m_maph;				// map height in rooms
 
-		std::vector<tBrush> Brushes;							// brushes list (static brushes)
-		IntIndex BrushIndex;
-
-		std::vector<Object>	Objects;								// objects list (dynamic brushes)
-		IntIndex			ObjIndex;							// objects hash
 		std::vector<Room> Rooms;
 
 public:
@@ -70,27 +91,13 @@ public:
 		int			    RoomIdx(int rx, int ry) const { return rx + ry * Width(); }
 		bool			InvalidRoomCoord(int rx, int ry)	{ return rx < 0 || rx >= Width() || ry < 0 || ry >= Height(); }
 
-//inline	void			MakeRoomBBW			( int rx, int ry, int &x1, int &y1, int &x2, int &y2, int border=0 )	{ x1=rx*Room::Size.x-border; y1=ry*Room::Size.y-border; x2=(rx+1)*Room::Size.x+border; y2=(ry+1)*Room::Size.y+border; }
 		iRect			RoomBorderRect( const iV2 & room, const iV2 & border)	{ return Room::Rect(room).Deflate(border); }
 
 		int				Width() const { return m_mapw; }
 		int				Height() const { return m_maph; }
 
-		// brushes
-		bool			InvalidBrushIndex(int idx) { return idx < 0 || idx >= BrushCount(); }
-		int			    BrushNew		();
-		int				BrushCount		()					{ return Brushes.size(); }
-		tBrush &		BrushGet		( int idx )			{ return Brushes[idx]; }
-		int				BrushFind		( atom_t id )		{ IntIndex::iterator i = BrushIndex.find(id); if(i != BrushIndex.end()) return i->second; return -1; }
-
-
-		// objects
-		bool			InvalidObjIndex(int idx) { return idx < 0 || idx >= ObjCount(); }
-		int			    ObjNew		();
-		int					ObjCount		()					{ return Objects.size(); }
-		Object &			ObjGet			( int idx )			{ return Objects[idx]; }
-		int					ObjFind			( int id )			{ IntIndex::iterator i = ObjIndex.find(id); if(i != ObjIndex.end()) return i->second; return -1; }
-
+		Brushes brushes;
+		Objects objects;
 private:
 		// partition
 		void				PartitionAdd	( int brushidx );	// add a brush to partitioning

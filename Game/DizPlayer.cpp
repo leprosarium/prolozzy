@@ -863,7 +863,7 @@ void cDizPlayer::CheckColliders()
 	iRect pr = bbw();
 	for(int idx: g_game.m_collider)
 	{
-		tBrush & obj = g_map.ObjGet(idx);
+		tBrush & obj = g_map.objects.get(idx);
 		if( obj.Get(BRUSH_DISABLE)!=0 ) continue; // only enabled objects
 		if(!(obj.Get(BRUSH_COLLIDER) & COLLIDER_HANDLE)) continue; // just those that request it
 		bool collision = pr.Intersects(obj.rect());
@@ -891,7 +891,7 @@ bool cDizPlayer::CheckCollidersSnap()
 
 	for(int idx: g_game.m_collider)
 	{
-		tBrush & obj = g_map.ObjGet(idx);
+		tBrush & obj = g_map.objects.get(idx);
 		if( obj.Get(BRUSH_DISABLE)!=0 ) continue; // only enabled objects
 		if(!(obj.Get(BRUSH_COLLIDER) & COLLIDER_HARD)) continue; // only those that need it
 		iRect c = obj.rect();

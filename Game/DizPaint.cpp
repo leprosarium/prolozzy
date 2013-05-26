@@ -179,16 +179,18 @@ bool Tiles::LoadFile( const std::string & filepath, size_t & total, size_t & fai
 		dlog(LOGSYS, L"! %S (texture failed)\n", filepath.c_str());
 		return false;
 	}
-	cTile *tile = Get(Add(id));
-	tile->tex = tex;
-	tile->group	= group;
-	tile->frames = frames;
-	tile->fx = fpl;
-	tile->fy = frames / fpl;
+	cTile tile(id);
+	tile.tex = tex;
+	tile.group	= group;
+	tile.frames = frames;
+	tile.fx = fpl;
+	tile.fy = frames / fpl;
 	if(frames % fpl)
-		tile->fy += 1;
-	tile->img = std::move(imga);
-	tile->name = sstrdup(filepath.c_str());
+		tile.fy += 1;
+	tile.img = std::move(imga);
+	tile.name = sstrdup(filepath.c_str());
+
+	Add(id, std::move(tile));
 
 	R9_ImgDestroy(&img);
 
@@ -221,28 +223,13 @@ bool Tiles::Load(const std::string & path, int group )
 void Tiles::Unload( int group )
 {
 	for(size_t i=0;i<size();)
-		if((*this)[i].group == group)
-			Del(i);
+		if(get(i).group == group)
+			Erase(i);
 		else
 			++i;
 }
 
-int Tiles::Add( int id )
-{
-	if(id<0) return -1; // negative ids not accepted
-	if(Find(id)!=-1) return -1; // duplicate id
-	push_back(cTile(id));
-	int idx = size() - 1;
 
-	Index.insert(IntIndex::value_type(id, idx));
-	return idx;
-}
-
-void Tiles::Del( int idx )
-{
-	if(!InvalidIdx(idx))
-		erase(begin() + idx);
-}
 
 
 
@@ -781,7 +768,7 @@ bool Fonts::LoadFile(const std::string & filepath, size_t & total, size_t & fail
 		dlog(LOGSYS, L"! %S (failed to load)\n", filepath.c_str());
 		return false;
 	}
-	push_back(std::move(font));
+	Add(id, std::move(font));
 
 	if(g_dizdebug.active()) // log for developers
 		dlog(LOGAPP, L"  %S\n", filepath.c_str() );
@@ -806,8 +793,8 @@ bool Fonts::Load(const std::string & path, int group )
 void Fonts::Unload( int group )
 {
 	for(size_t i=0;i<size();)
-		if((*this)[i].group==group)
-			Del(i);
+		if(get(i).group==group)
+			Erase(i);
 		else
 			++i;
 }

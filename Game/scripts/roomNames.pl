@@ -7,13 +7,10 @@
 reset(false) :-
 	eraseAll.
 reset(true) :-
-	map:getMapW(MapW),
-	map:getMapH(MapH),
-	map:getRoomW(RoomW),
-	map:getRoomH(RoomH),
-	W is (MapW // RoomW) - 1,
-	H is (MapH // RoomH) - 1,
-	eraseRect(W, H).
+	map:size(W, H),
+	W1 is W - 1,
+	H1 is H - 1,
+	eraseRect(W1, H1).
 
 eraseAll :-
 	forall(recorded(roomProps, _, Ref), erase(Ref)).

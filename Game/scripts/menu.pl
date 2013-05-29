@@ -467,7 +467,7 @@ dialogTooltip(Y2) :-
 	dialog:textWH(Dialog, Wt, Ht),
 	W is Wt + 8,   % add some space
 	H is Ht + 8,   % add some space
-	game:roomW(RoomW),
+	map:roomW(RoomW),
 	X is (RoomW - W) // 2,
 	dialog:push(Dialog).
 

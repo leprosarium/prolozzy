@@ -94,24 +94,6 @@ PREDICATE_M(game, setRoomY, 1)
 	return true;
 }
 
-PREDICATE_M(game, roomW, 1)
-{
-	return A1 = g_game.roomW();
-}
-PREDICATE_M(game, roomH, 1)
-{
-	return A1 = g_game.roomH();
-}
-PREDICATE_M(game, mapW, 1)
-{
-	return A1 = g_game.mapW();
-}
-
-PREDICATE_M(game, mapH, 1)
-{
-	return A1 = g_game.mapH();
-}
-
 PREDICATE_M(game, viewX, 1)
 {
 	return A1 = g_game.viewX();
@@ -332,8 +314,6 @@ cDizGame::cDizGame() : 	_void("void"),	soft("soft"), hard("hard"), jump("jump"),
 						_fps(GAME_FPS),
 						_keys(),
 						_keysHit(),
-						_roomW(), _roomH(),
-						_mapW(), _mapH(),
 						_viewX(GAME_VIEWX), _viewY(GAME_VIEWY),
 						_shakeX(), _shakeY(),
 						_mapColor(),
@@ -520,7 +500,7 @@ bool cDizGame::Update()
 	if(!pause()) g_player.Update();
 
 	// map update
-	if( g_map.Width()>0 && g_map.Height()>0 ) // if map size is valid
+	if( g_map.size() > 0) // if map size is valid
 	{
 		// room bound check
 		if(!Room::Rect(roomPos()).IsInside(g_player.pos()))	g_script.roomOut(); // users may change player's pos on this handler
@@ -528,9 +508,10 @@ bool cDizGame::Update()
 		// world bound check
 		iV2 r = Room::Pos2Room( g_player.pos() );
 		if( r.x<0 )				{ r.x=0; g_player.x(0); }
-		if( r.x>g_map.Width()-1 )	{ r.x=g_map.Width()-1; g_player.x(g_map.Width()*Room::Size.x-4); }
-		if( r.y<0 )				{ r.y=0; g_player.y(0); }
-		if( r.y>g_map.Height()-1 )	{ r.y=g_map.Height()-1; g_player.y(g_map.Height()*Room::Size.y-1); }
+		iV2 sz = g_map.size();
+		if( r.x > sz.x - 1 )	{ r.x = sz.x - 1; g_player.x(sz.x * Room::Size.x - 4); }
+		if( r.y<0 )				{ r.y = 0; g_player.y(0); }
+		if( r.y > sz.y - 1 )	{ r.y = sz.y - 1; g_player.y(sz.y * Room::Size.y - 1); }
 
 		// room tranzit
 		if( r != roomPos())
@@ -592,12 +573,12 @@ void cDizGame::Draw()
 	if( viewportFlipX())
 	{
 		flip |= static_cast<dword>(Flip::X);
-		vv.x = R9_GetWidth() - v.x - roomW() * g_paint.scale() - v.x + 1; // magic +1
+		vv.x = R9_GetWidth() - v.x - Room::Size.x * g_paint.scale() - v.x + 1; // magic +1
 	}
 	if( viewportFlipY())
 	{
 		flip |= static_cast<dword>(Flip::Y);
-		vv.y = R9_GetHeight() - v.y - roomH() * g_paint.scale() - v.y + 1; // magic +1
+		vv.y = R9_GetHeight() - v.y - Room::Size.y * g_paint.scale() - v.y + 1; // magic +1
 	}
 
 	if( flip )
@@ -677,12 +658,8 @@ void cDizGame::Draw()
 
 }
 
-void cDizGame::Resize(int w, int h) 
+void cDizGame::Resize() 
 {
-	mapW(w);
-	mapH(h);
-	roomW(Room::Size.x);
-	roomH(Room::Size.y);
 	matMap.Resize(Room::Size);
 	SetRoom(g_game.roomX(), g_game.roomY()); // updates materialmap and re-gather objects
 }

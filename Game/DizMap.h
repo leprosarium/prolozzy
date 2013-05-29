@@ -70,15 +70,14 @@ typedef Reindexed<Object> Objects;
 //////////////////////////////////////////////////////////////////////////////////////////////////
 class cDizMap
 {
-		int				m_mapw;				// map width in rooms
-		int				m_maph;				// map height in rooms
+		iV2 _size; // map size
 
 		std::vector<Room> Rooms;
 
 public:
 						cDizMap				();
-		void			Resize				( int width, int height );	// resize map; return true if no crop occured
-		void			Reset				();								// reset when start game; clears map brushes
+		void			Resize				( const iV2 & sz );	// resize map;
+		void			Reset				();					// reset when start game; clears map brushes
 
 
 		bool			Reload				();								// reload map for debug purposes
@@ -88,13 +87,12 @@ public:
 
 		Room &			GetRoom(int idx) { return Rooms[idx]; }
 		Room &			GetRoom(int rx, int ry) { return GetRoom(RoomIdx(rx, ry)); }
-		int			    RoomIdx(int rx, int ry) const { return rx + ry * Width(); }
-		bool			InvalidRoomCoord(int rx, int ry)	{ return rx < 0 || rx >= Width() || ry < 0 || ry >= Height(); }
+		int			    RoomIdx(int rx, int ry) const { return rx + ry * _size.x; }
+		bool			InvalidRoomCoord(int rx, int ry)	{ return rx < 0 || rx >= _size.x || ry < 0 || ry >= _size.y; }
 
 		iRect			RoomBorderRect( const iV2 & room, const iV2 & border)	{ return Room::Rect(room).Deflate(border); }
 
-		int				Width() const { return m_mapw; }
-		int				Height() const { return m_maph; }
+		iV2				size() const { return _size; }
 
 		Brushes brushes;
 		Objects objects;

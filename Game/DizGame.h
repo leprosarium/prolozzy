@@ -83,7 +83,7 @@ public:
 		iV2				screenSizeBorder;						// game resolution border (320x200)
 		// game
 
-		void Resize(int w, int h);
+		void Resize();
 
 		int				m_gameframe;							// game frame index
 
@@ -127,11 +127,6 @@ inline	void			FFFXStop()								{ m_fffx_magnitude=0; FFmagnitude(0); FFFXUpdate
 		iV2				roomPos() const { return _roomPos; }
 		int				roomX() const { return _roomPos.x; }
 		int				roomY() const { return _roomPos.y; }
-		iV2				roomSize() const { return iV2(roomW(), roomH()); }
-		int				roomW() const { return _roomW; }
-		int				roomH() const { return _roomH; }
-		int				mapW() const { return _mapW; }
-		int				mapH() const { return _mapH; }
 		iV2				viewPos() const { return iV2(viewX(), viewY()); }
 		int				viewX() const { return _viewX; }
 		int				viewY() const { return _viewY; }
@@ -158,10 +153,6 @@ inline	void			FFFXStop()								{ m_fffx_magnitude=0; FFmagnitude(0); FFFXUpdate
 		void			roomPos(const iV2 &p) { _roomPos = p; }
 		void			roomX(int v) { _roomPos.x = v; }
 		void			roomY(int v) { _roomPos.y = v; }
-		void			roomW(int roomW) { _roomW = roomW; }
-		void			roomH(int roomH) { _roomH = roomH; }
-		void			mapW(int mapW) { _mapW = mapW; }
-		void			mapH(int mapH) { _mapH = mapH; }
 		void			viewX(int viewX) { _viewX = viewX; }
 		void			viewY(int viewY) { _viewY = viewY; }
 		void			shakeX(int shakeX) { _shakeX = shakeX; }
@@ -191,12 +182,6 @@ private:
 		int				_keys;									// input keys: bit 0=KEY_LEFT, 1=KEY_RIGHT, 2=KEY_UP, 3=KEY_DOWN, 4=KEY_JUMP, 5=KEY_ACTION, 6=KEY_MENU
 		int				_keysHit;								// input keys: bit 0=KEY_LEFT, 1=KEY_RIGHT, 2=KEY_UP, 3=KEY_DOWN, 4=KEY_JUMP, 5=KEY_ACTION, 6=KEY_MENU; tells if the key was just hitted down this frame !
 		iV2				_roomPos;								// current room pos (x, y)
-//		int				_roomX;									// current room x
-//		int				_roomY;									// current room y
-		int				_roomW;									// room width
-		int				_roomH;									// room height
-		int				_mapW;									// current map width (in rooms)
-		int				_mapH;									// current map height (in rooms)
 		int				_viewX;									// position of room's view on the hud
 		int				_viewY;									// position of room's view on the hud
 		int				_shakeX;								// view x offset used for shaking

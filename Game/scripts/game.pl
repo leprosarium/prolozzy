@@ -91,7 +91,7 @@ restart :- state(restart), game:command(start).
 state(S) :- recVar(state, S).
 roomPos(X, Y) :- roomX(X), roomY(Y).
 setRoomPos(X, Y) :- setRoomX(X), setRoomY(Y).
-roomSize(W, H) :- roomW(W), roomH(H).
+roomSize(W, H) :- map:roomW(W), map:roomH(H).
 
 updateRoom(2, 1) :-
 	map:objFind(id3000, Platform),

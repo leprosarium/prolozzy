@@ -13,6 +13,13 @@
 iV2 Room::Size(GAME_ROOMW, GAME_ROOMH);
 cDizMap	g_map;
 
+PREDICATE_M(map, size, 1)
+{
+	iV2 sz = g_map.size();
+	bool r1 = A1 = sz.x;
+	bool r2 = A2 = sz.y;
+	return r1 && r2;
+}
 
 PREDICATE_M(map, brushCount, 1)
 {
@@ -148,7 +155,7 @@ PREDICATE_M(map, objNew, 1)
 
 PREDICATE_M(map, resize, 2)
 {
-	g_map.Resize(A1, A2); 
+	g_map.Resize(iV2(A1, A2)); 
 	return true; 
 }
 
@@ -160,6 +167,16 @@ PREDICATE_M(map, setCamX, 1)
 PREDICATE_M(map, setCamY, 1)
 {
 	return true;
+}
+
+PREDICATE_M(map, roomW, 1)
+{
+	return A1 = Room::Size.x;
+}
+
+PREDICATE_M(map, roomH, 1)
+{
+	return A1 = Room::Size.y;
 }
 
 PREDICATE_M(map, setRoomW, 1)
@@ -180,11 +197,10 @@ PREDICATE_M(map, reset, 0)
 	return true;
 }
 
-
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // INIT
 //////////////////////////////////////////////////////////////////////////////////////////////////
-cDizMap::cDizMap() : m_mapw(), m_maph()
+cDizMap::cDizMap()
 {
 }
 
@@ -192,8 +208,7 @@ cDizMap::cDizMap() : m_mapw(), m_maph()
 void cDizMap::Reset()
 {
 	Rooms.clear();
-	m_mapw = 0;
-	m_maph = 0;
+	_size = 0;
 	brushes.clear();
 	objects.clear();
 }
@@ -293,8 +308,8 @@ void cDizMap::PartitionAdd( int brushidx )
 	const tBrush & brush = brushes.get(brushidx);
 	iRect rbrush = brush.rect();
 	auto room = Rooms.begin();
-	for(iV2 r; r.y < Height(); ++r.y)
-		for(r.x = 0; r.x < Width(); ++r.x, ++room)
+	for(iV2 r; r.y < size().y; ++r.y)
+		for(r.x = 0; r.x < size().x; ++r.x, ++room)
 			if(rbrush.Intersects(RoomBorderRect(r, Room::Border)) )
 				room->AddBrush(brushidx);
 }
@@ -305,22 +320,18 @@ void cDizMap::PartitionMake()
 		PartitionAdd(i);
 }
 
-void cDizMap::Resize( int width, int height )
+void cDizMap::Resize( const iV2 & sz )
 {
-	if(width<MAP_SIZEMIN)	width = MAP_SIZEMIN;	// too small
-	if(height<MAP_SIZEMIN)	height = MAP_SIZEMIN;	// too small
-	if(width>MAP_SIZEMAX)	width = MAP_SIZEMAX;	// too big
-	if(height>MAP_SIZEMAX)	height = MAP_SIZEMAX;	// too big
-	m_mapw = width / Room::Size.x;
-	m_maph = height / Room::Size.y;
+	_size = iV2(std::min(std::max(sz.x, MAP_SIZEMIN), MAP_SIZEMAX),
+				std::min(std::max(sz.y, MAP_SIZEMIN), MAP_SIZEMAX)) / Room::Size;
 
 	Rooms.clear();
-	Rooms.resize(Width() * Height());
+	Rooms.resize(size().x * size().y);
 	PartitionMake();
 
 	objects.Reindex();
 	brushes.Reindex();
-	g_game.Resize(Width(), Height());
+	g_game.Resize();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

@@ -320,8 +320,6 @@ void cDizDebug::NavigationUpdate()
 	bool ctrl  = I9_GetKeyValue(I9K_LCONTROL) || I9_GetKeyValue(I9K_RCONTROL);
 	bool shift = I9_GetKeyValue(I9K_LSHIFT) || I9_GetKeyValue(I9K_RSHIFT);
 
-	int mw = g_map.Width();
-	int mh = g_map.Height();
 	int px = g_player.x();
 	int py = g_player.y();
 	if(ctrl)
@@ -340,8 +338,9 @@ void cDizDebug::NavigationUpdate()
 		if(I9_GetKeyDown(I9K_DOWN))		py+=4;
 	}
 	
-	if(px>=mw*Room::Size.x) px=mw*Room::Size.x-1;
-	if(py>=mh*Room::Size.y) py=mh*Room::Size.y-1;
+	iV2 sz = g_map.size() * Room::Size;
+	if(px >= sz.x) px = sz.x - 1;
+	if(py >= sz.y) py = sz.y - 1;
 	if(px<0) px=0;
 	if(py<0) py=0;
 	g_player.x(px);

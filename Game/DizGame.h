@@ -202,7 +202,7 @@ inline void cDizGame::ObjAdd( int idx )
 {
  	m_obj.push_back(idx);
 	tBrush & obj = g_map.objects.get(idx);
-	if( obj.Get(BRUSH_COLLIDER) )
+	if( obj.collideHandler || obj.collideHard )
 		m_collider.push_back(idx);
 
 //	obj->Set(BRUSH_COLLISION,0); // reset collision

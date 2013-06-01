@@ -36,68 +36,75 @@ PREDICATE_M(map, brushFind, 2)
 
 PREDICATE_M(map, brushVar, 3)
 {
-	int idx = A1;
-	int var = A2;
-	if(g_map.brushes.InvalidIdx(idx))
-		throw PlException("invalid brush index");
-	if(tBrush::InvalidProp(var)) 
-		throw PlException("invalid brush variable");
-	if(tBrush * brush = g_map.brushes.Get(idx))
-	{
-		PlTerm val = A3;
-		if(val.type() == PL_VARIABLE)
-			return A3 = brush->Get(var);
-		brush->Set(var, val);
-		return true;
-	}
+	assert(1);
 	return false;
+	//int idx = A1;
+	//int var = A2;
+	//if(g_map.brushes.InvalidIdx(idx))
+	//	throw PlException("invalid brush index");
+	//if(tBrush::InvalidProp(var)) 
+	//	throw PlException("invalid brush variable");
+	//if(tBrush * brush = g_map.brushes.Get(idx))
+	//{
+	//	PlTerm val = A3;
+	//	if(val.type() == PL_VARIABLE)
+	//		return A3 = brush->Get(var);
+	//	brush->Set(var, val);
+	//	return true;
+	//}
+	//return false;
 }
 
 PREDICATE_M(map, brushSet , 3) 
 {
-	int idx = A1;
-	if(g_map.brushes.InvalidIdx(idx))
-		throw PlException("invalid brush index");
-	int var = A2;
-	if(tBrush::InvalidProp(var)) 
-		throw PlException("invalid brush variable");
-	if(tBrush * brush = g_map.brushes.Get(idx))
-	{
-
-		if(var == BRUSH_COLOR)
-		{
-			int64 color = A3;
-			brush->Set(var, static_cast<int>(color));
-		} 
-		else 
-		{
-			brush->Set(var, A3);
-		}
-		return true;
-	}
+	assert(1);
 	return false;
+	//int idx = A1;
+	//if(g_map.brushes.InvalidIdx(idx))
+	//	throw PlException("invalid brush index");
+	//int var = A2;
+	//if(tBrush::InvalidProp(var)) 
+	//	throw PlException("invalid brush variable");
+	//if(tBrush * brush = g_map.brushes.Get(idx))
+	//{
+
+	//	if(var == BRUSH_COLOR)
+	//	{
+	//		int64 color = A3;
+	//		brush->Set(var, static_cast<int>(color));
+	//	} 
+	//	else 
+	//	{
+	//		brush->Set(var, A3);
+	//	}
+	//	return true;
+	//}
+	//return false;
 }
 
 PREDICATE_M(map, objSet , 3) 
 {
-	int idx = A1;
-	if(g_map.objects.InvalidIdx(idx)) 
-		throw PlException("invalid object index");
-	int var = A2;
-	if(Object::InvalidProp(var)) 
-		throw PlException("invalid object variable"); 
+	assert(1);
+	return false;
 
-	tBrush & obj = g_map.objects.get(idx);
-	if(var == BRUSH_COLOR)
-	{
-		int64 color = A3;
-		obj.Set(var, static_cast<int>(color));
-	} 
-	else 
-	{
-		obj.Set(var, A3);
-	}
-	return true;
+	//int idx = A1;
+	//if(g_map.objects.InvalidIdx(idx)) 
+	//	throw PlException("invalid object index");
+	//int var = A2;
+	//if(Object::InvalidProp(var)) 
+	//	throw PlException("invalid object variable"); 
+
+	//tBrush & obj = g_map.objects.get(idx);
+	//if(var == BRUSH_COLOR)
+	//{
+	//	int64 color = A3;
+	//	obj.Set(var, static_cast<int>(color));
+	//} 
+	//else 
+	//{
+	//	obj.Set(var, A3);
+	//}
+	//return true;
 }
 
 PREDICATE_M(map, objCount, 1)
@@ -112,20 +119,22 @@ PREDICATE_M(map, objFind, 2)
 
 PREDICATE_M(map, objVar, 3)
 {
-	int idx = A1;
-	if(g_map.objects.InvalidIdx(idx)) 
-		throw PlException("invalid object index");
-	int var = A2;
-	if(Object::InvalidProp(var)) 
-		throw PlException("invalid object variable"); 
+	assert(1);
+	return false;
+	//int idx = A1;
+	//if(g_map.objects.InvalidIdx(idx)) 
+	//	throw PlException("invalid object index");
+	//int var = A2;
+	//if(Object::InvalidProp(var)) 
+	//	throw PlException("invalid object variable"); 
 
-	tBrush & obj = g_map.objects.get(idx);
-	PlTerm val = A3;
-	if(val.type() == PL_VARIABLE)
-		return A3 = obj.Get(var);
-	int64 v = val;
-	obj.Set(var, static_cast<int>(v)); 
-	return true;
+	//tBrush & obj = g_map.objects.get(idx);
+	//PlTerm val = A3;
+	//if(val.type() == PL_VARIABLE)
+	//	return A3 = obj.Get(var);
+	//int64 v = val;
+	//obj.Set(var, static_cast<int>(v)); 
+	//return true;
 }
 
 PREDICATE_M(map, objName, 2)
@@ -225,7 +234,6 @@ bool cDizMap::Reload()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cDizMap::DrawRoom( const iV2 & rp, int layer, int mode, const iV2 & ofs)
 {
-	int color, shader;
 	if(InvalidRoomCoord(rp.x, rp.y)) return;
 
 	// viewport clipping test
@@ -238,58 +246,60 @@ void cDizMap::DrawRoom( const iV2 & rp, int layer, int mode, const iV2 & ofs)
 
 
 	}
-	const std::vector<int> & part = GetRoom(rp.x, rp.y).Brushes();
+	dword color;
+	Blend shader;
+	const std::vector<int> & part = GetRoom(rp).Brushes();
 	for(size_t i=0;i<part.size();i++)
 	{
 		int brushidx = part[i];
 
 		tBrush & brush = * brushes.Get(brushidx);
 
-		if( mode==DRAWMODE_NORMAL	&& (brush.Get(BRUSH_DRAW)&1)==0 ) continue; // don't draw
-		if( mode==DRAWMODE_MATERIAL && (brush.Get(BRUSH_DRAW)&2)==0 ) continue; // don't write material
-		if( mode==DRAWMODE_DENSITY  && (brush.Get(BRUSH_DRAW)&2)==0 ) continue; // don't write material
+		if( mode==DRAWMODE_NORMAL	&& !brush.drawImg) continue; // don't draw
+		if( mode==DRAWMODE_MATERIAL && !brush.drawMat) continue; // don't write material
+		if( mode==DRAWMODE_DENSITY  && !brush.drawMat) continue; // don't write material
 		
-		if( brush.layer() != layer ) continue; // filter layer
+		if( brush.layer != layer ) continue; // filter layer
 
-		iV2 p = brush.pos() - rp * Room::Size + ofs;
-		int frame = brush.Get(BRUSH_FRAME);
+		iV2 p = brush.pos - rp * Room::Size + ofs;
+		int frame = brush.frame;
 
 		if(mode==DRAWMODE_MATERIAL)
 		{
 			// use special color and shader
-			color	= brush.Get(BRUSH_COLOR);
-			shader	= brush.Get(BRUSH_SHADER);
-			brush.Set(BRUSH_COLOR, g_game.materials[brush.Get(BRUSH_MATERIAL)].color | 0xff000000);
-			brush.shader(Blend::AlphaRep);
-			g_paint.drawtilemat(brush.Get(BRUSH_MATERIAL)); // software use this
+			color	= brush.color;
+			shader	= brush.shader;
+			brush.color = g_game.materials[brush.material].color | 0xff000000;
+			brush.shader = Blend::AlphaRep;
+			g_paint.drawtilemat(brush.material); // software use this
 			g_paint.DrawBrush( brush, p, frame );
-			brush.Set(BRUSH_COLOR, color);
-			brush.Set(BRUSH_SHADER, shader);
+			brush.color = color;
+			brush.shader = shader;
 		}
 		else
 		if(mode==DRAWMODE_DENSITY)
 		{
 			// use special color and shader
 //			dword matd_color[MATD_MAX] = {0xff000000,0xff606060,0xffa0a0a0,0xffffffff};
-			color	= brush.Get(BRUSH_COLOR);
-			shader	= brush.Get(BRUSH_SHADER);
-			PlAtom dens = g_game.materials[brush.Get(BRUSH_MATERIAL)].density;
+			color	= brush.color;
+			shader	= brush.shader;
+			PlAtom dens = g_game.materials[brush.material].density;
 			dword matd_color = dens == g_game._void ? 0xff000000 : 
 					dens == g_game.soft ? 0xff606060 :
 					dens == g_game.hard ? 0xffa0a0a0 :
 					0xffffffff;
-			brush.Set(BRUSH_COLOR,matd_color);
-			brush.shader(Blend::AlphaRep);
+			brush.color = matd_color;
+			brush.shader = Blend::AlphaRep;
 			g_paint.DrawBrush( brush, p, frame );
-			brush.Set(BRUSH_COLOR, color);
-			brush.Set(BRUSH_SHADER, shader);
+			brush.color = color;
+			brush.shader = shader;
 		}
 		else
 		{
-			if(brush.Get(BRUSH_ANIM)==2) // only if looping
+			if(brush.anim == Anim::Loop) // only if looping
 			{
 				int gameframe = g_game.m_gameframe;
-				if(brush.Get(BRUSH_DELAY)>0) gameframe /= brush.Get(BRUSH_DELAY);
+				if(brush.delay > 0) gameframe /= brush.delay;
 				frame += gameframe;
 			}
 			g_paint.DrawBrush( brush, p, frame );

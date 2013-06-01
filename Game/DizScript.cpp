@@ -299,8 +299,8 @@ PREDICATE_M(core, colliderSnapDistance, 5)
 	for(int idx: g_game.m_collider)
 	{
 		tBrush & obj = g_map.objects.get(idx);
-		if( obj.Get(BRUSH_DISABLE)!=0 ) continue; // only enabled objects
-		if(!(obj.Get(BRUSH_COLLIDER) & COLLIDER_HARD)) continue; // only those that need it
+		if( obj.disabled ) continue; // only enabled objects
+		if(!obj.collideHard) continue; // only those that need it
 		iRect c = obj.rect();
 		if( x2<=c.p1.x || x1 >= c.p2.x ) continue; // not intersecting
 		if(y1 <= c.p1.y && c.p1.y < y2) dist = std::max(dist,y2-c.p1.y);

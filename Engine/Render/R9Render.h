@@ -65,6 +65,7 @@ const int ChrH = 9;		// system font chr height
 
 enum class Flip
 {
+	None = 0,
 	X = 1,
 	Y = 2,
 	R = 4,

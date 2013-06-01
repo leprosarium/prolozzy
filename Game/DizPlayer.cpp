@@ -343,15 +343,18 @@ PREDICATE_M(player, setPow, 1)
 
 PREDICATE_M(player, anim, 1)
 {
-	return A1 = g_player.anim();
+	return A1 = static_cast<int>(g_player.anim());
 }
 
 PREDICATE_M(player, setAnim, 1)
 {
 	int v;
 	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_player.anim(v); 
+		return false;
+	if (v <  static_cast<int>(Anim::None) || 
+		v >= static_cast<int>(Anim::Loop))
+		return false;
+	g_player.anim(static_cast<Anim>(v)); 
 	return true;
 }
 
@@ -434,7 +437,7 @@ void cDizPlayer::Reset()
 	_h					= DIZ_BOXH;
 
 	tile(TILE_IDLE);
-	anim(2);
+	anim(Anim::Loop);
 	color(0xffffffffu);
 
 	tileIdle(TILE_IDLE);
@@ -739,7 +742,7 @@ void cDizPlayer::UpdateFall()
 void cDizPlayer::UpdateScripted()
 {
 	
-	if(anim()!=0) _frame++;
+	if(anim() != Anim::None) _frame++;
 
 }
 
@@ -864,17 +867,17 @@ void cDizPlayer::CheckColliders()
 	for(int idx: g_game.m_collider)
 	{
 		tBrush & obj = g_map.objects.get(idx);
-		if( obj.Get(BRUSH_DISABLE)!=0 ) continue; // only enabled objects
-		if(!(obj.Get(BRUSH_COLLIDER) & COLLIDER_HANDLE)) continue; // just those that request it
+		if( obj.disabled) continue; // only enabled objects
+		if(!obj.collideHandler) continue; // just those that request it
 		bool collision = pr.Intersects(obj.rect());
-		if(!collision && !obj.Get(BRUSH_COLLISION)) continue; // no collision event
+		if(!collision && !obj.collision) continue; // no collision event
 
 		// call
 
 		enum collMode { exit = 0, enter = 1, keep = 2};
-		g_script.collision(idx, !collision ? exit : obj.Get(BRUSH_COLLISION) ? keep : enter);   // entering collision
+		g_script.collision(idx, !collision ? exit : obj.collision ? keep : enter);   // entering collision
 
-		obj.Set(BRUSH_COLLISION,collision);
+		obj.collision = collision;
 	}
 
 }
@@ -892,8 +895,8 @@ bool cDizPlayer::CheckCollidersSnap()
 	for(int idx: g_game.m_collider)
 	{
 		tBrush & obj = g_map.objects.get(idx);
-		if( obj.Get(BRUSH_DISABLE)!=0 ) continue; // only enabled objects
-		if(!(obj.Get(BRUSH_COLLIDER) & COLLIDER_HARD)) continue; // only those that need it
+		if( obj.disabled ) continue; // only enabled objects
+		if(!obj.collideHard) continue; // only those that need it
 		iRect c = obj.rect();
 		if( x2<=c.p1.x || x1>=c.p2.x ) continue;
 		

@@ -116,7 +116,7 @@ inline	cTile*		FindTile			()											{ return g_paint.tiles.Get(g_paint.tiles.
 		int			tileUp() const { return _tileUp; }
 		int			tileJump() const { return _tileJump; }
 		int			emotion() const { return _emotion; }
-		int			anim() const { return _anim; }
+		Anim		anim() const { return _anim; }
 		bool		disable() const { return _disable; }
 		bool		customMove() const { return _customMove; }
 
@@ -141,7 +141,7 @@ inline	cTile*		FindTile			()											{ return g_paint.tiles.Get(g_paint.tiles.
 		void		tileUp(int tile) { _tileUp = tile; }
 		void		tileJump(int tile) { _tileJump = tile; }
 		void		emotion(int emotion) { _emotion = emotion; }
-		void		anim(int anim) { _anim = anim; }
+		void		anim(Anim anim) { _anim = anim; }
 		void		disable(bool disable) { _disable = disable; }
 		void		customMove(bool customMove) { _customMove = customMove; }
 
@@ -173,7 +173,7 @@ private:
 		int			_tileUp;			// tile for jump up status
 		int			_tileJump;			// tile for jump side status
 		int			_emotion;			// emotion (tile id offset from tileidle); 0=no emmotion, just idle
-		int			_anim;				// animation playing mode (0=stop,1=normal,2=loop)
+		Anim		_anim;				// animation playing mode (0=stop,1=normal,2=loop)
 		bool		_disable;			// if disabled no update and no draw
 		bool		_customMove;		// custom movement for player
 

@@ -51,14 +51,8 @@ void Reindexed<T>::Reindex()
 	Index.clear();
 	for(size_t i = 0, e = size(); i != e; ++i) {
 		T & b = get(i);
-		if(int id = b.Get(BRUSH_ID))
-		{
-			std::stringstream sid;
-			sid << "id" << id;
-			PlAtom aid(sid.str().c_str());
-			b.id(aid);
-			Index.insert(IntIndex::value_type(aid, i));
-		}
+		if(b.id != tBrush::null)
+			Index.insert(IntIndex::value_type(b.id, i));
 	}
 }
 
@@ -70,36 +64,32 @@ typedef Reindexed<Object> Objects;
 //////////////////////////////////////////////////////////////////////////////////////////////////
 class cDizMap
 {
-		iV2 _size; // map size
-
-		std::vector<Room> Rooms;
-
+	iV2 _size; // map size
+	std::vector<Room> Rooms;
 public:
-						cDizMap				();
-		void			Resize				( const iV2 & sz );	// resize map;
-		void			Reset				();					// reset when start game; clears map brushes
+	cDizMap();
+	void Resize(const iV2 & sz);
+	void Reset();					// reset when start game; clears map brushes
+	bool Reload();					// reload map for debug purposes
 
+	// draw
+	void DrawRoom(const iV2 & rp, int layer, int mode, const iV2 & ofs);	// layer=0..8; mode: 0=normal, 1=material, 2=density
 
-		bool			Reload				();								// reload map for debug purposes
+	Room & GetRoom(int idx) { return Rooms[idx]; }
+	Room & GetRoom(const iV2 & r) { return GetRoom(RoomIdx(r)); }
+	int RoomIdx(const iV2 & r) const { return r.x + r.y * _size.x; }
+	bool InvalidRoomCoord(int rx, int ry) const { return rx < 0 || rx >= _size.x || ry < 0 || ry >= _size.y; }
 
-		// draw
-		void			DrawRoom			( const iV2 & rp, int layer, int mode, const iV2 & ofs);	// layer=0..8; mode: 0=normal, 1=material, 2=density
+	iRect RoomBorderRect( const iV2 & room, const iV2 & border)	const { return Room::Rect(room).Deflate(border); }
 
-		Room &			GetRoom(int idx) { return Rooms[idx]; }
-		Room &			GetRoom(int rx, int ry) { return GetRoom(RoomIdx(rx, ry)); }
-		int			    RoomIdx(int rx, int ry) const { return rx + ry * _size.x; }
-		bool			InvalidRoomCoord(int rx, int ry)	{ return rx < 0 || rx >= _size.x || ry < 0 || ry >= _size.y; }
+	iV2 size() const { return _size; }
 
-		iRect			RoomBorderRect( const iV2 & room, const iV2 & border)	{ return Room::Rect(room).Deflate(border); }
-
-		iV2				size() const { return _size; }
-
-		Brushes brushes;
-		Objects objects;
+	Brushes brushes;
+	Objects objects;
 private:
-		// partition
-		void				PartitionAdd	( int brushidx );	// add a brush to partitioning
-		void				PartitionMake	();					// init and partition brushes
+	// partition
+	void PartitionAdd(int brushidx );	// add a brush to partitioning
+	void PartitionMake();				// init and partition brushes
 };
 
 extern cDizMap	g_map;

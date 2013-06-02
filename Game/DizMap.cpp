@@ -34,6 +34,173 @@ PREDICATE_M(map, brushFind, 2)
 	return A2 = idx;
 }
 
+#define DEFINE_GET_BRUSH_PROP(pred, member) \
+PREDICATE_M(brush, pred, 2) \
+{ \
+	if(tBrush * brush = g_map.brushes.Get(A1)) \
+		return A2 = brush->member; \
+	throw PlException("invalid brush index"); \
+}
+
+#define DEFINE_SET_BRUSH_PROP(pred, member) \
+PREDICATE_M(brush, pred, 2) \
+{ \
+	if(tBrush * brush = g_map.brushes.Get(A1)) \
+	{ \
+		brush->member = A2; \
+		return true; \
+	} \
+	throw PlException("invalid brush index"); \
+}
+
+#define DEFINE_BRUSH_PROP(getPred, setPred, member) \
+DEFINE_GET_BRUSH_PROP(getPred, member) \
+DEFINE_GET_BRUSH_PROP(setPred, member)
+
+DEFINE_BRUSH_PROP(layer, setLayer, layer)
+DEFINE_BRUSH_PROP(x, setX, pos.x)
+DEFINE_BRUSH_PROP(y, setY, pos.y)
+DEFINE_BRUSH_PROP(w, setW, size.x)
+DEFINE_BRUSH_PROP(h, setH, size.y)
+DEFINE_BRUSH_PROP(tile, setTile, tile)
+DEFINE_BRUSH_PROP(frame, setFrame, frame)
+DEFINE_BRUSH_PROP(x1, setX1, map.p1.x)
+DEFINE_BRUSH_PROP(y1, setY1, map.p1.y)
+DEFINE_BRUSH_PROP(x2, setX2, map.p2.x)
+DEFINE_BRUSH_PROP(y2, setY2, map.p2.y)
+DEFINE_BRUSH_PROP(flip, setFlip, flip)
+DEFINE_BRUSH_PROP(scale, setScale, scale)
+DEFINE_BRUSH_PROP(id, setId, id)
+DEFINE_BRUSH_PROP(material, setMaterial, material)
+DEFINE_BRUSH_PROP(delay, setDelay, delay)
+DEFINE_BRUSH_PROP(collision, setCollision, collision)
+
+PREDICATE_M(brush, color, 2)
+{
+	if(tBrush * brush = g_map.brushes.Get(A1))
+		return A2 = static_cast<int>(brush->color);
+	throw PlException("invalid brush index");
+}
+PREDICATE_M(brush, shader, 2)
+{
+	if(tBrush * brush = g_map.brushes.Get(A1))
+		return A2 = static_cast<int>(brush->shader);
+	throw PlException("invalid brush index");
+}
+
+PREDICATE_M(brush, draw, 2)
+{
+
+	if(tBrush * brush = g_map.brushes.Get(A1))
+	{
+		int dr = 0; 
+		if(brush->drawImg) dr = 1;
+		if(brush->drawMat) dr &= 2;
+		return A2 = dr;
+	}
+	throw PlException("invalid brush index");
+}
+PREDICATE_M(brush, disabled, 1)
+{
+	if(tBrush * brush = g_map.brushes.Get(A1))
+		return A2 = brush->disabled;
+	throw PlException("invalid brush index");
+}
+
+PREDICATE_M(brush, anim, 2)
+{
+	if(tBrush * brush = g_map.brushes.Get(A1))
+		return A2 = static_cast<int>(brush->anim);
+	throw PlException("invalid brush index");
+}
+
+PREDICATE_M(brush, collider, 2)
+{
+	if(tBrush * brush = g_map.brushes.Get(A1))
+	{
+		int cl = 0; 
+		if(brush->collideHandler) cl = 1;
+		if(brush->collideHard) cl &= 2;
+		return A2 = cl;
+	}
+	throw PlException("invalid brush index");
+}
+
+
+PREDICATE_M(brush, setColor, 2)
+{
+	if(tBrush * brush = g_map.brushes.Get(A1))
+	{
+		int64 c = A2;
+		brush->color = static_cast<dword>(c);
+		return true;
+	}
+	throw PlException("invalid brush index");
+}
+
+PREDICATE_M(brush, setShader, 2)
+{
+	if(tBrush * brush = g_map.brushes.Get(A1))
+	{
+		int v = A2;
+		if (v <  static_cast<int>(Blend::Min) || v >= static_cast<int>(Blend::Max))
+			return false;
+		brush->shader = static_cast<Blend>(v);
+	}
+	throw PlException("invalid brush index");
+}
+
+PREDICATE_M(brush, setDraw, 2)
+{
+
+	if(tBrush * brush = g_map.brushes.Get(A1))
+	{
+		int dr = A2; 
+		brush->drawImg = (dr & 1) != 0;
+		brush->drawMat = (dr & 2) != 0;
+		return true;
+	}
+	throw PlException("invalid brush index");
+}
+PREDICATE_M(brush, setDisabled, 1)
+{
+	if(tBrush * brush = g_map.brushes.Get(A1))
+	{
+		brush->disabled = static_cast<int>(A2) != 0;
+		return true;
+	}
+	throw PlException("invalid brush index");
+}
+
+PREDICATE_M(brush, setAnim, 2)
+{
+	if(tBrush * brush = g_map.brushes.Get(A1))
+	{
+		int a = A2;
+		if(a == static_cast<int>(Anim::None)) brush->anim = Anim::None;
+		else if (a == static_cast<int>(Anim::Once)) brush->anim = Anim::Once;
+		else if (a == static_cast<int>(Anim::Loop)) brush->anim = Anim::Loop;
+		else return false;
+		return true;
+	}
+	throw PlException("invalid brush index");
+}
+
+PREDICATE_M(brush, setCollider, 2)
+{
+	if(tBrush * brush = g_map.brushes.Get(A1))
+	{
+		int cl = A2; 
+		brush->collideHandler = (cl & 1) != 0;
+		brush->collideHard = (cl & 2) != 0;
+		return true;
+	}
+	throw PlException("invalid brush index");
+}
+
+
+
+
 PREDICATE_M(map, brushVar, 3)
 {
 	assert(1);

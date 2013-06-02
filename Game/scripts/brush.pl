@@ -1,62 +1,50 @@
-:- module(brush, [var/3,
-		  varDef/3,
-		  new/1]).
+:- module(brush, [new/1]).
 
+sysProp(layer, setLayer).
+sysProp(x, setX).
+sysProp(y, setY).
+sysProp(w, setW).
+sysProp(h, setH).
+sysProp(tile, setTile).
+sysProp(frame, setFrame).
+sysProp(x1, setX1).
+sysProp(y1, setY1).
+sysProp(x2, setX2).
+sysProp(y2, setY2).
+sysProp(flip, setFlip).
+sysProp(color, setColor).
+sysProp(shader, setShader).
+sysProp(scale, setScale).
+sysProp(id, setId).
+sysProp(material, setMaterial).
+sysProp(draw, setDraw).
+sysProp(disable, setDisabled).
+sysProp(delay, setDelay).
+sysProp(anim, setAnim).
+sysProp(collider, setCollider).
+sysProp(collision, setCollision).
 
-var(BrushIdx, Var, Val) :-
-	varDef(Var, VarIdx, _),
-	map:brushVar(BrushIdx, VarIdx, Val).
+get(Idx, Prop, Val) :-
+	sysProp(Prop, _), !,
+	Cl =.. [Prop, Idx, Val],
+	call(map:Cl).
 
-varDef(type,	16, 0).
-varDef(layer,	0, 0).
-varDef(x,	1, 0).
-varDef(y,	2, 0).
-varDef(w,	3, 0).
-varDef(h,	4, 0).
-varDef(tile,	5, -1).
-varDef(frame,	6, 0).
-varDef(x1,	7, 0).
-varDef(y1,	8, 0).
-varDef(x2,	9, 0).
-varDef(y2,	10, 0).
-varDef(flip,	11, 0).
-varDef(color,	12, 0xffffffff).
-varDef(shader,	13, 0).
-varDef(scale,	14, 0).
-varDef(id,	17, 0).
-varDef(material, 18, 0).
-varDef(draw,	19, 0).
-varDef(disable, 20, 0).
-varDef(delay,	21, 0).
-varDef(anim,	22, 0).
-varDef(collider, 23, 0).
-varDef(class,	24, 0).
-varDef(status, 25, 0).
-varDef(target,  26, 0).
-varDef(death,	27, 0).
-varDef(collision,	31, 0).
-varDef(user(0),	32, 0).
-varDef(user(1),	33, 0).
-varDef(user(2),	34, 0).
-varDef(user(3),	35, 0).
-varDef(user(4),	36, 0).
-varDef(user(5),	37, 0).
-varDef(user(6),	38, 0).
-varDef(user(7),	39, 0).
-varDef(user(8),	40, 0).
-varDef(user(9),	41, 0).
-varDef(user(10),42, 0).
-varDef(user(11),43, 0).
-varDef(user(12),44, 0).
-varDef(user(13),45, 0).
-varDef(user(14),46, 0).
-varDef(user(15),47, 0).
-%varDef('O_MAX',	48).
+get(Idx, Prop, Val) :- !,
+	recorded(brushProps, brush(Idx, Props)),
+	gen_assoc(Prop, Props, Val).
 
+setBrush(Idx, Prop, Val) :-
+	sysProp(Prop, SetProp), !,
+	Cl =.. [SetProp, Idx, Val],
+	call(map:Cl).
 
-setBrush(ObjIdx, Var, Val) :-
-	varDef(Var, VarIdx, _),
-	map:brushSet(ObjIdx, VarIdx, Val).
+setBrush(Idx, Prop, Val) :- !,
+	(   recorded(brushProps, brush(Idx, Props), Ref)
+	->  erase(Ref)
+	;   empty_assoc(Props)),
+	put_assoc(Prop, Props, Val, NewProps),
+	recordz(brushProps, brush(Idx, NewProps)).
+
 
 setObj(ObjIdx, Var, Val) :-
 	varDef(Var, VarIdx, _),

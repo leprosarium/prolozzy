@@ -129,7 +129,6 @@ struct tBrush
 	dword color;
 	Blend shader;
 	int scale;
-//	bool object;
 	PlAtom id;
 	int material;
 	bool drawImg;
@@ -139,10 +138,6 @@ struct tBrush
 	Anim anim;
 	bool collideHandler;
 	bool collideHard;
-//	PlAtom cls;
-//	int status;
-//	int target;
-//	int death;
 	bool collision;
 public:
 	tBrush() : 
@@ -153,7 +148,6 @@ public:
 		color(0xffffffff),
 		shader(Blend::Opaque),
 		scale(),
-//		object(),
 		id(null),
 		material(),
 		drawImg(),
@@ -163,10 +157,6 @@ public:
 		anim(Anim::None),
 		collideHandler(),
 		collideHard(),
-//		cls("none"),
-//		status(),
-//		target(),
-//		death(),
 		collision() {}
 	//	if (idx == BRUSH_SHADER) return static_cast<int>(shader()); return m_data[idx]; }
 	//	m_data[idx] = val; if(idx == BRUSH_SHADER) shader(static_cast<Blend>(val)); 

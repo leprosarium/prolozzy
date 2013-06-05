@@ -809,7 +809,7 @@ void cEdiMap::BrushDrawExtra( iRect& view )
 		if(!g_gui->ScriptPrologDo("mod:brushDraw")) continue;
 
 		if( m_hideselected && brush.m_data[BRUSH_SELECT] ) continue;
-		iV2 p = m_camz  * EdiApp()->m_brush.pos() - view.p1;
+		iV2 p = m_camz  * (EdiApp()->m_brush.pos() - view.p1);
 		g_paint.DrawBrushAt( &EdiApp()->m_brush, p.x, p.y, (float)m_camz );
 
 		m_count_brushdraw++;

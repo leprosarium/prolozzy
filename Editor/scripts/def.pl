@@ -173,6 +173,7 @@ dlg(color, 1021).
 dlg(options, 1022).
 dlg(info, 1023).
 dlg(roomProps, 1024).
+dlg(brushProps, 1025).
 
 %mb(first, 1100).
 

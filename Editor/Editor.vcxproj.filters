@@ -96,6 +96,9 @@
     <None Include="scripts\dlgRoomProps.pl">
       <Filter>scripts</Filter>
     </None>
+    <None Include="scripts\dlgBrushProps.pl">
+      <Filter>scripts</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="scripts">

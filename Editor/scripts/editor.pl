@@ -15,6 +15,7 @@
 :- use_module(dlgTileMap, []).
 :- use_module(dlgProps, []).
 :- use_module(dlgRoomProps, []).
+:- use_module(dlgBrushProps, []).
 :- use_module(keys, []).
 :- use_module(actions, []).
 :- use_module(dlgInfo, []).

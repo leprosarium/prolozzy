@@ -1,4 +1,9 @@
-:-module(brush, [varDef/3, set/2, set/3, get/3, getProps/2]).
+:-module(brush, [varDef/3, set/2, set/3, get/3, getProps/2, delete/1,
+		 eraseAll/0,
+		 getEx/2,
+		 getEx/3,
+		 setEx/2,
+		 setEx/3]).
 
 varDef(type,	16, 0).
 varDef(layer,	0, 0).
@@ -68,6 +73,36 @@ new(Props):-
 	map:brushNew(Idx),
 	set(Idx, Props).
 
+delete(Idx) :-
+	def:toolCmd(delete, C),
+	edi:toolCommand(C),
+	recorded(brushProps, brush(Idx, _), Ref) -> erase(Ref) ; true.
+
+eraseAll :-
+	forall(recorded(brushProps, _, Ref), erase(Ref)).
+
+getEx(Idx, Prop, Val) :-
+	recorded(brushProps, brush(Idx, Props)),
+	gen_assoc(Prop, Props, Val).
+
+getEx(Idx, List) :-
+	(   recorded(brushProps, brush(Idx, Props))
+	->  assoc_to_list(Props, List)
+	;   List = []).
+
+setEx(Idx, Prop, Val) :-
+	(   recorded(brushProps, brush(Idx, Props), Ref)
+	->  erase(Ref)
+	;   empty_assoc(Props)),
+	put_assoc(Prop, Props, Val, NewProps),
+	recordz(brushProps, brush(Idx, NewProps)).
+
+setEx(Idx, List) :-
+	(   recorded(brushProps, brush(Idx, _), Ref)
+	->  erase(Ref)
+	;   true),
+	list_to_assoc(List, Props),
+	recordz(brushProps, brush(Idx, Props)).
 
 
 

@@ -47,7 +47,6 @@ props :-
 	edi:getTool(1);
 	dlgProps:create.
 
-
 menu :-
 	Data = [
 	item(file-"File", "", []),
@@ -369,13 +368,14 @@ script2:-
 
 toolPickMenu(BrushIdx) :-
 	Data = [
+		item(bprop-bprop,	(gui:dlgClose, dlgBrushProps:create(BrushIdx)), [tooltip("B properties")]),
 		item(prop-prop,	(gui:dlgClose, dlgProps:create(normal, BrushIdx)), [key(p), tooltip("properties [P]")]),
 		item(pb-'pick brush',	(gui:dlgClose, def:toolCmd(pickBrush, C), edi:toolCommand(C)), [tooltip("pick brush")]),
 		item(pt-'pick tile',	(gui:dlgClose, actions:toolCommandPickBrush(BrushIdx)), [key(t), tooltip("pick tile [T]")]),
 		item(pc-'pick color',	(gui:dlgClose, def:toolCmd(pickColor, C), edi:toolCommand(C)), [key(c), tooltip("pick color [C]")]),
 		item(tf-'to front',	(gui:dlgClose, def:toolCmd(toFront, C), edi:toolCommand(C)), [key(f), tooltip("bring to front [F]")]),
 		item(tb-'to back',	(gui:dlgClose, def:toolCmd(toBack, C), edi:toolCommand(C)), [key(b), tooltip("send to back [B]")]),
-		item(d-delete,	(gui:dlgClose, def:toolCmd(delete, C), edi:toolCommand(C)), [key(delete), tooltip("delete [DEL]")])
+		item(d-delete,	(gui:dlgClose, brush:delete(BrushIdx)), [key(delete), tooltip("delete [DEL]")])
 	       ],
 	gui:mouseX(MX),
 	gui:mouseY(MY),

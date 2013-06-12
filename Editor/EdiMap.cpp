@@ -111,6 +111,128 @@ PREDICATE_M(map, brushCount, 1)
 	return A1 = g_map.m_brushcount;
 }
 
+inline tBrush * brushPtrNoEx(PlTerm t) 
+{
+	return reinterpret_cast<tBrush *>(static_cast<void *>(t));
+}
+
+inline tBrush * brushPtr(PlTerm t) 
+{
+	if(!(t = g_map.brush))
+		throw PlTypeError("brush", t);
+	return brushPtrNoEx(t[1]);
+}
+
+PREDICATE_NONDET_M(map, brush, 1)
+{ 
+	auto call = PL_foreign_control(handle);
+	if(call == PL_PRUNED)
+		return true;
+	PlTerm t = A1;
+	if(!(t = g_map.brush))
+		return false;
+	PlTerm br = t[1];
+	if (br.type() != PL_VARIABLE) {
+		tBrush * b = brushPtrNoEx(br);
+		return b >= g_map.m_brush && b < g_map.m_brush + g_map.m_brushcount;
+	}
+	size_t idx = call == PL_FIRST_CALL ? 0 : PL_foreign_context(handle);
+	if(idx < g_map.m_brushcount && (br = g_map.m_brush + idx))
+		if(++idx == g_map.m_brushcount)
+			return true;
+		else
+			PL_retry(idx);
+	return false;
+}
+	
+#define BRUSH_PROP(Prop, PROP)\
+GET_BRUSH_PROP(Prop, PROP)\
+SET_BRUSH_PROP(Prop, PROP)
+
+#define GET_BRUSH_PROP(Prop, PROP) PREDICATE_M(brush, get##Prop, 2)\
+{\
+	return brushPtr(A1)->m_data[BRUSH_##PROP];\
+}
+
+#define SET_BRUSH_PROP(Prop, PROP) PREDICATE_M(brush, set##Prop, 2)\
+{\
+	brushPtr(A1)->m_data[BRUSH_##PROP] = A2; \
+	return true;\
+}
+
+BRUSH_PROP(Layer, LAYER)
+BRUSH_PROP(X, X)
+BRUSH_PROP(Y, Y)
+BRUSH_PROP(W, W)
+BRUSH_PROP(H, H)
+BRUSH_PROP(Tile, TILE)
+BRUSH_PROP(Frame, FRAME)
+BRUSH_PROP(MapX1, MAP)
+BRUSH_PROP(MapY1, MAP+1)
+BRUSH_PROP(MapX2, MAP+2)
+BRUSH_PROP(MapY2, MAP+3)
+BRUSH_PROP(Flip, FLIP)
+BRUSH_PROP(Shader, SHADER)
+BRUSH_PROP(Scale, SCALE)
+BRUSH_PROP(Select, SELECT)
+
+BRUSH_PROP(Type, TYPE)
+BRUSH_PROP(ID, ID)
+BRUSH_PROP(Material, MATERIAL)
+BRUSH_PROP(Draw, DRAW)
+BRUSH_PROP(Disable, DISABLE)
+BRUSH_PROP(Delay, DELAY)
+BRUSH_PROP(Anim, ANIM)
+BRUSH_PROP(Collider, COLLIDER)
+BRUSH_PROP(Class, CLASS)
+BRUSH_PROP(Status, STATUS)
+BRUSH_PROP(Target, TARGET)
+BRUSH_PROP(Death, DEATH)
+
+PREDICATE_M(brush, getColor, 2) 
+{
+	int64 color = static_cast<unsigned>(brushPtr(A1)->m_data[BRUSH_COLOR]);
+	return A2 = color;
+}
+
+PREDICATE_M(brush, getProp, 3) 
+{
+	tBrush * brush = brushPtr(A1);
+	int idx = A2;
+	if(idx < 0 || idx >= BRUSH_MAX) 
+		throw PlDomainError("invalid brush variable", A2);
+	if(idx == BRUSH_COLOR) {
+		int64 color = static_cast<unsigned>(brush->m_data[idx]);
+		return A3 = color;
+	}
+	return A3 = brush->m_data[idx];
+}
+
+PREDICATE_M(brush, setColor , 2) 
+{
+	int64 color = A2;
+	brushPtr(A1)->m_data[BRUSH_COLOR] = static_cast<int>(color);
+	return true;
+}
+
+PREDICATE_M(brush, setProp , 3) 
+{
+	tBrush * brush = brushPtr(A1);
+	int idx = A2;
+	if(idx < 0 || idx >= BRUSH_MAX) 
+		throw PlDomainError("invalid brush variable", A2);
+	if(idx == BRUSH_COLOR)
+	{
+		int64 color = A3;
+		brush->m_data[idx] = static_cast<int>(color);
+	} 
+	else 
+	{
+		brush->m_data[idx] = A3;
+	}
+	return true;
+}
+
 // map brush ................................................................................
 #define MAP_BRUSH_PROP(Prop, PROP)\
 GET_MAP_BRUSH_PROP(Prop, PROP)\
@@ -212,7 +334,10 @@ PREDICATE_M(map, brushNew, 1)
 {
 	int idx = g_map.BrushNew();
 	EdiApp()->UndoReset();
-	return A1 = idx;
+	PlTerm t = A1;
+	if(!(t = g_map.brush))
+		return false;
+	return t[1] = g_map.m_brush + idx;
 }
 
 PREDICATE_M(map, brushDel, 1)
@@ -321,7 +446,7 @@ int cPartitionCel::Find( int val )
 // INIT
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-cEdiMap::cEdiMap()
+cEdiMap::cEdiMap() : brush("brush", 1)
 {
 	
 	// map

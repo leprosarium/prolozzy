@@ -218,20 +218,10 @@ countRoomsMarkAdd(X, Y, params(C, RW, RH)) :-
 	YY is Y * RH + C,
 	W is RW - C - C,
 	H is RH - C - C,
-	map:brushNew(B),
-	map:brushSetLayer(B, 7),
-	map:brushSetX(B, XX),
-	map:brushSetY(B, YY),
-	map:brushSetW(B, W),
-	map:brushSetH(B, H),
-	map:brushSetTile(B, 0),
-	map:brushSetMapX2(B, 8),
-	map:brushSetMapY2(B, 8),
-	map:brushSetColor(B, 0x8000ff00),
 	def:shader(blend, Shader),
-	map:brushSetShader(B, Shader),
-	map:brushSetID(B, 1234567),
-	map:brushSetSelect(B, 1).
+	map:brushNew(B),
+	brush:set(B, [layer=7, x=XX, y=YY, w=W, h=H, tile=0, x2=8, y2=8, color=0x8000ff00, shader=Shader, id=1234567]),
+	brush:setSelect(B, 1).
 
 
 

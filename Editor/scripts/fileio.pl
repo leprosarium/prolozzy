@@ -36,10 +36,13 @@ mapSave(File) :-
 			   saveMapToStream(S),
 			   close(S)).
 saveMapToStream(S) :-
-	map:brushCount(Count),
-	once(saveBrsh(0, Count, S)),
+	saveBrushes(S),
 	saveRooms(S),
 	saveMapCtl(S).
+
+saveBrushes(S) :-
+	forall(map:brush(B), (brush:getProps(B, Props), writet(S, brush:new(Props)))).
+
 
 saveMapCtl(S):-
 	map:getMapW(MapW),
@@ -54,12 +57,6 @@ saveMapCtl(S):-
 	writet(S, map:setRoomH(RoomH)),
 	writet(S, map:resize(MapW,MapH)).
 
-saveBrsh(Count, Count, _).
-saveBrsh(I, Count, S) :-
-	brush:getProps(I, Props),
-	writet(S, brush:new(Props)),
-	II is I + 1,
-	saveBrsh(II, Count, S).
 
 
 saveRooms(S) :-

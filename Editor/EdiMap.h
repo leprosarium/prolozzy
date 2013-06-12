@@ -7,6 +7,8 @@
 #include "EdiDef.h"
 #include "EdiPaint.h"
 
+#include "SWI-cpp-m.h"
+
 #define	MAP_SIZEDEFAULT	2000
 #define MAP_SIZEMIN		128
 #define MAP_SIZEMAX		100000
@@ -90,6 +92,7 @@ virtual	void		Refresh				();							// refresh draw
 		BOOL		Resize				( int width, int height );	// resize map; return true if no crop occured
 
 public:
+	PlFunctor brush;
 		// map
 		int			m_mapw;											// map width
 		int			m_maph;											// map height

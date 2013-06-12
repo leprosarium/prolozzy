@@ -1207,6 +1207,25 @@ public:
                                                     PL_FA_NONDETERMINISTIC | PL_FA_VARARGS); \
 	static foreign_t pl_ ## name ## __ ## arity(PlTermv _av, foreign_t handle)
 
+#define PREDICATE_NONDET_M(module, name, arity)          \
+	static foreign_t \
+	pl_ ## module ## _ ## name ## __ ## arity(PlTermv _av, control_t handle);       \
+	static foreign_t \
+	_pl_ ## module ## _ ## name ## __ ## arity(term_t t0, int a, control_t c) \
+	{ try \
+	  { \
+	    return pl_ ## module ## _ ## name ## __ ## arity(PlTermv(arity, t0), c); \
+	  } catch ( PlException &ex ) \
+	  { return ex.plThrow(); \
+	  } \
+	} \
+	static PlRegister _x ## module ## _ ## name ## __ ## arity(#module, #name, arity, \
+                                                    _pl_ ## module ## _ ## name ## __ ## arity, \
+                                                    PL_FA_NONDETERMINISTIC | PL_FA_VARARGS); \
+	static foreign_t pl_ ## module ## _ ## name ## __ ## arity(PlTermv _av, control_t handle)
+
+
+
 #define A1  _av[0]
 #define A2  _av[1]
 #define A3  _av[2]

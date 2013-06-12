@@ -52,26 +52,24 @@ varDef(user(15),47, 0).
 %varDef('O_MAX',	48).
 
 
-set(ObjIdx, Var, Val) :-
+set(Br, Var, Val) :-
 	varDef(Var, VarIdx, _),
-	map:brushSet(ObjIdx, VarIdx, Val).
+	brush:setProp(Br, VarIdx, Val).
 
-get(ObjIdx, Var, Val) :-
+get(B, Var, Val) :-
 	varDef(Var, VarIdx, _),
-	map:brushGet(ObjIdx, VarIdx, Val).
+	brush:getProp(B, VarIdx, Val).
 
 
-set(_, []).
-set(ObjIdx, [Var=Val|Props]) :-
-	set(ObjIdx, Var, Val),
-	set(ObjIdx, Props).
+set(Br, Props) :-
+	forall(member(Var=Val, Props), set(Br, Var, Val)).
 
-getProps(ObjIdx, Props) :-
-	findall(Var=Val, (get(ObjIdx, Var, Val), varDef(Var, _, Def), Val =\= Def), Props).
+getProps(Br, Props) :-
+	findall(Var=Val, (get(Br, Var, Val), varDef(Var, _, Def), Val =\= Def), Props).
 
 new(Props):-
-	map:brushNew(Idx),
-	set(Idx, Props).
+	map:brushNew(Br),
+	set(Br, Props).
 
 delete(Idx) :-
 	def:toolCmd(delete, C),
@@ -103,6 +101,11 @@ setEx(Idx, List) :-
 	;   true),
 	list_to_assoc(List, Props),
 	recordz(brushProps, brush(Idx, Props)).
+
+
+
+
+
 
 
 

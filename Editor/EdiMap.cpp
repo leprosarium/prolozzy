@@ -123,6 +123,14 @@ inline tBrush * brushPtr(PlTerm t)
 	return brushPtrNoEx(t[1]);
 }
 
+PREDICATE_M(map, brushIdx, 2)
+{
+	PlTerm t = A2;
+	if(!(t = g_map.brush))
+		return false;
+	return t[1] = & g_map.m_brush[A1];
+}
+
 PREDICATE_NONDET_M(map, brush, 1)
 { 
 	auto call = PL_foreign_control(handle);
@@ -384,7 +392,7 @@ PREDICATE_M(selection, goto, 1)
 PREDICATE_M(selection, refresh, 0)
 {
 	g_map.SelectionRefresh();
-	return 0;
+	return true;
 }
 
 PREDICATE_M(map, saveImage, 1)

@@ -12,23 +12,21 @@ readOnly(select).
 
 
 create :- create(noraml).
-create(Mode) :-	create(Mode, -1).
+create(Mode) :-	edi:toolBrush(B), create(Mode, B).
 
 
-create(Mode, BrushIdx ) :-
+create(Mode, Brush ) :-
 	gui:dlgTitleH(TitleH),
 	propsCount(PC),
 	DlgH is TitleH + 8 + 24 + 22 * PC + 8,
-	(   BrushIdx >= 0
-	->  format(string(Title), '#~d brush props', [BrushIdx])
-	;   Title = "Tool brush props"),
+	format(string(Title), '#~p props', [Brush]),
 	gui:createDlgTitleModal(0, 0, 200, DlgH, Title),
 	def:dlg(props, ID),
 	dlg:setID(ID),
 	gui:addKey(escape > gui:dlgClose),
 	dlg:setCloseOut,
 	dlg:setCloseCmd(dlgProps:close),
-	createProps(100, WMax, Mode, BrushIdx),
+	createProps(100, WMax, Mode, Brush),
 	editor:param(props_page, 0, Page),
 	gui:dlgTitleH(TitleH),
 	X1 = 8,
@@ -49,37 +47,26 @@ create(Mode, BrushIdx ) :-
 	gui:dlgDockUp.
 
 
-createProps(WMax, CurMax, Mode, BrushIdx) :-
+createProps(WMax, CurMax, Mode, Brush) :-
 	gui:dlgTitleH(TitleH),
 	Y is TitleH + 8 + 24,
-	findall(bp(Id, Idx, Value, Name, ToolTip, Type), (mod:brushProp(Id, Idx, Name, ToolTip, Type), value(Idx, BrushIdx, Value)), Props),
-	createProps(Props, 0, Y, W, Mode, BrushIdx),
+	findall(bp(Id, Idx, Value, Name, ToolTip, Type), (mod:brushProp(Id, Idx, Name, ToolTip, Type), brush:getProp(Brush, Idx, Value)), Props),
+	createProps(Props, 0, Y, W, Mode, Brush),
 	CurMax is max(WMax, W).
 
 createProps([], _, _, 0, _, _).
-createProps([P|Ps], X, Y, CurW, Mode, BrushIdx) :-
-	createProp(P, X, Y, PW, Mode, BrushIdx),
+createProps([P|Ps], X, Y, CurW, Mode, Brush) :-
+	createProp(P, X, Y, PW, Mode, Brush),
 	Y2 is Y + 22,
-	createProps(Ps, X, Y2, OW, Mode, BrushIdx),
+	createProps(Ps, X, Y2, OW, Mode, Brush),
 	CurW is max(OW, PW).
 
-value(Idx, BrushIdx, Value) :-
-	(   BrushIdx >= 0
-	->  map:brushGet(BrushIdx, Idx, Value)
-	;   edi:toolBrushGet(Idx, Value)).
-
-
-setValue(Idx, BrushIdx, Value) :-
-	(   BrushIdx >= 0
-	->  map:brushSet(BrushIdx, Idx, Value)
-	;   edi:toolBrushSet(Idx, Value)).
-
-createProp(Prop, X0, Y, TotalW, Mode, BrushIdx) :-
+createProp(Prop, X0, Y, TotalW, Mode, Brush) :-
 	X is X0 + 8,
 	createIndex(Prop, X, Y, X1),
 	createMultiChecks(Prop, X1, Y, Mode, X2),
-	createValueEdit(Prop, X2, Y, X3, BrushIdx),
-	createName(Prop, X3, Y, X4, BrushIdx),
+	createValueEdit(Prop, X2, Y, X3, Brush),
+	createName(Prop, X3, Y, X4, Brush),
 	TotalW is X4 - X0.
 
 setID(Idx, N) :-
@@ -111,18 +98,18 @@ createMultiChecks(bp(Prop, Idx,_,_,_,_), X, Y, Mode, XX) :-
 	XX is X + 20 + 8.
 
 
-createValueEdit(bp(Prop, Idx,Value,_,_,Type), X, Y, XX, BrushIdx) :-
+createValueEdit(bp(Prop, Idx,Value,_,_,Type), X, Y, XX, Brush) :-
 	(   Type == color
 	->  Format = '~`0t~16r~8|'
 	;   Format = '~d'),
 	format(string(SZValue), Format, [Value]),
 	gui:createEdit(X, Y, 80, SZValue),
 	setID(Idx, 2),
-	gui:itemSetCmdAction(dlgProps:inputSet(Idx, BrushIdx)),
+	gui:itemSetCmdAction(dlgProps:inputSet(Idx, Brush)),
 	(readOnly(Prop)->gui:itemSetDisable(1);true),
 	XX is X + 80 + 8.
 
-createName(bp(Id, Idx, Value, Name, ToolTip, Type), X, Y, XX, BrushIdx) :-
+createName(bp(Id, Idx, Value, Name, ToolTip, Type), X, Y, XX, Brush) :-
 	getPropBtName(Name, Value, Type, BtName),
 	gui:createButton(X, Y, 140, BtName),
 	setID(Idx, 3),
@@ -132,7 +119,7 @@ createName(bp(Id, Idx, Value, Name, ToolTip, Type), X, Y, XX, BrushIdx) :-
 	gui:styleCode([backgr, border3d], Style),
 	gui:itemSetStyle(Style),
 	(   Type \= common
-	->  gui:itemSetCmdAction(dlgProps:browse(Idx, BrushIdx))
+	->  gui:itemSetCmdAction(dlgProps:browse(Idx, Brush))
 	;   true),
 	(readOnly(Id)->gui:itemSetDisable(1);true),
 	XX is X + 140 + 8.
@@ -178,8 +165,8 @@ select(Idx, N) :-
 	gui:select(IIDX).
 
 
-update(BrushIdx) :-
-	forall(mod:brushProp(_, Idx,Name,_,Type), (value(Idx, BrushIdx, Value), updateItem(Name, Value, Type, Idx))).
+update(Brush) :-
+	forall(mod:brushProp(_, Idx,Name,_,Type), (brush:getProp(Brush, Idx, Value), updateItem(Name, Value, Type, Idx))).
 
 updateItem(Name, Value, Type, Idx) :-
 	select(Idx, 3),
@@ -197,44 +184,42 @@ browsePos(XX, YY) :-
 	XX is X + IX,
 	YY is Y + IY + 20.
 
-browse(Idx, BrushIdx) :-
+browse(Idx, Brush) :-
     mod:brushProp(_, Idx, _, _, Type),
-    value(Idx, BrushIdx, Value),
-    browse(Idx, Value, BrushIdx, Type).
+    brush:getProp(Brush, Idx, Value),
+    browse(Idx, Value, Brush, Type).
 
-browse(Idx, Value, BrushIdx, select(Variants)) :-
+browse(Idx, Value, Brush, select(Variants)) :-
 	browsePos(X, Y),
-	gui:createPullDownSelect(X, Y, act(V, dlgProps:browseSet(V, Idx, BrushIdx)), Variants, Value),
+	gui:createPullDownSelect(X, Y, act(V, dlgProps:browseSet(V, Idx, Brush)), Variants, Value),
 	gui:dlgMoveInBound.
 
 
-browse(Idx, Color, BrushIdx, color) :-
+browse(Idx, Color, Brush, color) :-
 	browsePos(X, Y),
-	dlgColor:create(X, Y, dlgProps:browseSet(_V, Idx, BrushIdx), Color),
+	dlgColor:create(X, Y, dlgProps:browseSet(_V, Idx, Brush), Color),
 	gui:dlgMoveInBound.
 
 
-browseSet(V, Idx, BrushIdx) :-
+browseSet(V, Idx, Brush) :-
 	gui:dlgSelect(props),
-	setValue(Idx, BrushIdx, V),
+	brush:set(Brush, Idx, V),
 	select(Idx, 2),
 	(   mod:brushProp(_, Idx, _, _, color)
 	->  Format = '~`0t~16r~8|'
 	;   Format = '~d'),
 	format(string(SZValue), Format, [V]),
 	gui:itemSetTxt(SZValue),
-	update(BrushIdx).
+	update(Brush).
 
-
-
-
-inputSet(Idx, BrushIdx) :-
+inputSet(Idx, Brush) :-
 	gui:itemGetTxt(SZValue),
 	(   mod:brushProp(color, Idx, _, _, color)
 	->  (format(string(SS), '0x~a', [SZValue]),atom_number(SS, Value))
 	;   atom_number(SZValue, Value)),
-	setValue(Idx, BrushIdx, Value),
-	update(BrushIdx).
+
+	brush:setProp(Brush, Idx, Value),
+	update(Brush).
 
 multiCheck(search, 0, 0, check1).
 multiCheck(search, 1, 1, check3).

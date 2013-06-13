@@ -66,7 +66,6 @@ brushSearchDo(Props, Mode) :-
 	selection:refresh,
 	map:refresh.
 
-
 brushSearch(Br, C, Props, Mode) :-
 	brushSearchMatch(Props, Br, Mch),
 	brushSearchDoSelect(Mch, Mode, Br, C).
@@ -185,7 +184,7 @@ forallBrush(Action, C) :-
 	map:brushCount(BC),
 	waitCall(forallBrush(0, BC, Action, 0, C)).
 
-forallBrush(N, N, _, C, C).
+forallBrush(N, N, _, C, C) :- !.
 forallBrush(Br, BC, Action, C, Count) :-
 	copy_term(Action, Cmd),
 	term_variables(Cmd, [Br, Cn|_]),

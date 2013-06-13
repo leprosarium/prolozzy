@@ -93,7 +93,8 @@ tool :-
 
 flip :-
 	edi:getTool(1);
-	edi:toolBrushGetFlip(Code),
+	edi:toolBrush(B),
+	brush:getFlip(B, Code),
 	def:flip(_Sel, Code, _),
 	mod:brushProp(flip, _, _, _, select(Select)),
 	gui:createPullDownSelect(0, 0, act(Val, actions:flipSet(Val)), Select, Code),
@@ -103,11 +104,13 @@ flip :-
 flipSet(Code) :-
 	edi:getTool(1);
 	def:flip(_Flip, Code, _),
-	edi:toolBrushSetFlip(Code).
+	edi:toolBrush(B),
+	brush:setFlip(B, Code).
 
 justFlip :-
 	edi:getTool(1);
-	edi:toolBrushGetFlip(CurFlip),
+	edi:toolBrush(B),
+	brush:getFlip(B, CurFlip),
 	def:flip(xy, FLIP_XY, _),
 	def:flip(r, FLIP_R, _),
 	Flip1 is CurFlip /\ FLIP_XY,
@@ -116,18 +119,20 @@ justFlip :-
 	->  Flip3 = 0
 	;   Flip3 = Flip2),
 	Flip is (CurFlip /\ FLIP_R) \/ Flip3,
-	edi:toolBrushSetFlip(Flip).
+	brush:setFlip(B, Flip).
 
 justRotate :-
 	edi:getTool(1);
-	edi:toolBrushGetFlip(Flip),
+	edi:toolBrush(B),
+	brush:getFlip(B, Flip),
 	def:flip(r, FLIP_R, _),
 	NewFlip is Flip xor FLIP_R,
-	edi:toolBrushSetFlip(NewFlip).
+	brush:setFlip(B, NewFlip).
 
 shader :-
 	edi:getTool(1);
-	edi:toolBrushGetShader(Code),
+	edi:toolBrush(B),
+	brush:getShader(B, Code),
 	def:shader(_Shader, Code),
 	mod:brushProp(shader, _, _, _, select(Select)),
 	gui:createPullDownSelect(0, 0, act(Val, actions:shaderSet(Val)), Select, Code),
@@ -137,12 +142,14 @@ shader :-
 shaderSet(Code) :-
 	edi:getTool(1);
 	def:shader(_Shader, Code),
-	edi:toolBrushSetShader(Code).
+	edi:toolBrush(B),
+	brush:setShader(B, Code).
 
 
 type :-
 	edi:getTool(1);
-	edi:toolBrushGetType(Code),
+	edi:toolBrush(B),
+	brush:getType(B, Code),
 	def:brushType(_Type, Code),
 	mod:brushProp(type, _, _, _, select(Select)),
 	gui:createPullDownSelect(0, 0, act(Val, actions:typeSet(Val)), Select, Code),
@@ -153,12 +160,14 @@ type :-
 typeSet(Code):-
 	edi:getTool(1);
 	def:brushType(Type, Code),
-	edi:toolBrushSetType(Code),
+	edi:toolBrush(B),
+	brush:setType(B, Code),
 	mod:brushNew(Type).
 
 draw :-
 	edi:getTool(1);
-	edi:toolBrushGetDraw(Code),
+	edi:toolBrush(B),
+	brush:getDraw(B, Code),
 	def:drawMode(_Draw, Code, _),
 	mod:brushProp(draw, _, _, _, select(Select)),
 	gui:createPullDownSelect(0, 0, act(Val, actions:drawSet(Val)), Select, Code),
@@ -169,11 +178,13 @@ draw :-
 drawSet(Code) :-
 	edi:getTool(1);
 	def:drawMode(_Draw, Code, _),
-	edi:toolBrushSetDraw(Code).
+	edi:toolBrush(B),
+	brush:setDraw(B, Code).
 
 material :-
 	edi:getTool(1);
-	edi:toolBrushGetMaterial(Code),
+	edi:toolBrush(B),
+	brush:getMaterial(B, Code),
 	def:material(_Mat, Code, _, _),
 	mod:brushProp(material, _, _, _, select(Select)),
 	gui:createPullDownSelect(0, 0, act(Val, actions:materialSet(Val)), Select, Code),
@@ -184,12 +195,14 @@ material :-
 materialSet(Code) :-
 	edi:getTool(1);
 	def:material(_Mat, Code, _, _),
-	edi:toolBrushSetMaterial(Code).
+	edi:toolBrush(B),
+	brush:setMaterial(B, Code).
 
 
 class :-
 	edi:getTool(1);
-	edi:toolBrushGetClass(Code),
+	edi:toolBrush(B),
+	brush:getClass(B, Code),
 	def:class(_Class, Code),
 	mod:brushProp(class, _, _, _, select(Select)),
 	gui:createPullDownSelect(0, 0, act(Val, actions:classSet(Val)), Select, Code),
@@ -199,7 +212,8 @@ class :-
 classSet(Code) :-
 	edi:getTool(1);
 	def:class(_Class, Code),
-	edi:toolBrushSetClass(Code).
+	edi:toolBrush(B),
+	brush:setClass(B, Code).
 
 layer(Layer) :-
 	gui:itemGetCmdActionParam(Param),
@@ -290,12 +304,8 @@ tileBrowseSet(TileID) :-
 	;   Frames = Fr),
 	edi:tileGetW(Idx, W),
 	edi:tileGetH(Idx, H),
-	edi:toolBrushSetTile(TileID),
-	edi:toolBrushSetFrame(Frames),
-	edi:toolBrushSetMapX1(0),
-	edi:toolBrushSetMapY1(0),
-	edi:toolBrushSetMapX2(W),
-	edi:toolBrushSetMapY2(H),
+	edi:toolBrush(B),
+	brush:set(B, [tile=TileID, frame=Frames, x1=0, y1=0, x2=W, y2=H]),
 	mapping.
 
 mapping :-
@@ -304,18 +314,21 @@ mapping :-
 
 color :-
 	edi:getTool(1);
-	edi:toolBrushGetColor(Color),
+	edi:toolBrush(B),
+	brush:getColor(B, Color),
 	dlgColor:create(0, 0, actions:colorSet(_), Color),
 	gui:dlgMoveToMouse,
 	gui:dlgDockUp.
 
 
 colorSet(C) :-
-	edi:toolBrushSetColor(C),
+	edi:toolBrush(B),
+	brush:setColor(B, C),
 	dlgColor:push(C).
 
 colorWin :-
-	edi:toolBrushGetColor(C),
+	edi:toolBrush(B),
+	brush:getColor(B, C),
 	gui:winDlgOpenColor(C, CN),
 	colorSet(CN).
 
@@ -369,7 +382,7 @@ script2:-
 toolPickMenu(BrushIdx) :-
 	Data = [
 		item(bprop-bprop,	(gui:dlgClose, dlgBrushProps:create(BrushIdx)), [tooltip("B properties")]),
-		item(prop-prop,	(gui:dlgClose, dlgProps:create(normal, BrushIdx)), [key(p), tooltip("properties [P]")]),
+		item(prop-prop,	(gui:dlgClose, map:brushIdx(BrushIdx, Brush), dlgProps:create(normal, Brush)), [key(p), tooltip("properties [P]")]),
 		item(pb-'pick brush',	(gui:dlgClose, def:toolCmd(pickBrush, C), edi:toolCommand(C)), [tooltip("pick brush")]),
 		item(pt-'pick tile',	(gui:dlgClose, actions:toolCommandPickBrush(BrushIdx)), [key(t), tooltip("pick tile [T]")]),
 		item(pc-'pick color',	(gui:dlgClose, def:toolCmd(pickColor, C), edi:toolCommand(C)), [key(c), tooltip("pick color [C]")]),
@@ -395,17 +408,14 @@ toolCommandPickBrush( BrushIdx ) :-
 	map:brushGetMapY2(BrushIdx, Y2),
 	map:brushGetFlip(BrushIdx, Flip),
 
-	edi:toolBrushSetTile(Tile),
-	edi:toolBrushSetMapX1(X1),
-	edi:toolBrushSetMapY1(Y1),
-	edi:toolBrushSetMapX2(X2),
-	edi:toolBrushSetMapY2(Y2),
-	edi:toolBrushSetFlip(Flip).
+	edi:toolBrush(B),
+	brush:set(B, [tile=Tile, x1=X1, y1=Y1, x2=X2, y2=Y2, flip=Flip]).
 
 roomProps :-
 	edi:getTool(1);
-	edi:toolBrushGetX(X),
-	edi:toolBrushGetY(Y),
+	edi:toolBrush(B),
+	brush:getX(B, X),
+	brush:getY(B, Y),
 	map:getRoomW(W),
 	map:getRoomH(H),
 	RX is X // W,

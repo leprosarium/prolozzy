@@ -94,14 +94,15 @@ roomInfo(I):- propGet(roomInfo, I).
 setRoomInfo(I) :- propSet(roomInfo, I).
 
 brushToolDraw :-
-	edi:toolBrushGetAnim(0);
-	edi:toolBrushGetDelay(Delay),
+	edi:toolBrush(B),
+	(   brush:getAnim(B, 0);
+	brush:getDelay(B, Delay),
 	core:tickCount(Time),
 	Fr  is Time // 25,
 	(   Delay > 0
 	->  Frame is Fr // Delay
 	;   Frame = Fr),
-	edi:toolBrushSetFrame(Frame).
+	brush:setFrame(B, Frame)).
 
 
 
@@ -110,26 +111,16 @@ brushToolDraw :-
 
 brushNew(Type) :-
 	def:shader(blend, SHADER_BLEND),
-	edi:toolBrushSetShader(SHADER_BLEND),
-	edi:toolBrushSetScale(100),
-	edi:toolBrushSetID(0),
-	edi:toolBrushSetMaterial(0),
-	edi:toolBrushSetDisable(0),
-	edi:toolBrushSetDelay(3),
-	edi:toolBrushSetAnim(2),
-	edi:toolBrushSetCollider(0),
-	edi:toolBrushSetClass(0),
-	edi:toolBrushSetStatus(0),
-	edi:toolBrushSetTarget(0),
-	edi:toolBrushSetDeath(0),
+	edi:toolBrush(B),
+	brush:set(B, [shader=SHADER_BLEND, scale=100, id=0, material=0, disable=0, delay=3, anim=2, collider=0, class=0, status=0, target=0, death=0]),
 	(   Type = static
 	->  def:drawMode(imgmat, Draw, _)   % draw in img+mat
 	;   def:drawMode(img, Draw, _)), % visible
-	edi:toolBrushSetDraw(Draw),
+	brush:setDraw(B, Draw),
 	brushProp(user, USER),
 	brushProp(max, MX),
 	UserMax is MX - USER - 1,
-	forall(between(0, UserMax, Idx), edi:toolBrushSetUser(Idx,0)).
+	forall(between(0, UserMax, Idx), brush:set(B, user(Idx))).
 
 
 brushDraw :-
@@ -138,36 +129,41 @@ brushDraw :-
 
 brushDraw(default).
 brushDraw(select) :-
-	edi:toolBrushGetSelect(Select),
+	edi:toolBrush(B),
+	brush:getSelect(B, Select),
 	Select \= 0.
 brushDraw(game) :-
-	edi:toolBrushGetDraw(DrawCode),
+	edi:toolBrush(B),
+	brush:getDraw(B, DrawCode),
 	(def:drawMode(img, DrawCode, _); def:drawMode(imgmat, DrawCode, _)),
-	edi:toolBrushGetType(TypeCode),
+	brush:getType(B, TypeCode),
 	(def:brushType(static, TypeCode);
 	def:brushType(dynamic, TypeCode),
-	edi:toolBrushGetDisable(0)).
+	brush:getDisable(B, 0)).
 
 
 brushDraw(matrial) :-
 	brushDrawStaticAlpha(MatCode),
 	def:material(_, MatCode, _, Color),
-	edi:toolBrushSetColor(Color).
+	edi:toolBrush(B),
+	brush:setColor(B, Color).
 
 brushDraw(density) :-
 	brushDrawStaticAlpha(MatCode),
 	def:material(_, MatCode, Density, _),
 	def:density(Density, Color),
-	edi:toolBrushSetColor(Color).
+	edi:toolBrush(B),
+	brush:setColor(B, Color).
 
 brushDrawStaticAlpha(MatCode) :-
-	edi:toolBrushGetType(TypeCode),
+	edi:toolBrush(B),
+	brush:getType(B, TypeCode),
 	def:brushType(static, TypeCode),
-	edi:toolBrushGetDraw(DrawCode),
+	brush:getDraw(B, DrawCode),
 	(def:drawMode(mat, DrawCode, _); def:drawMode(imgmat, DrawCode, _)),
-	edi:toolBrushGetMaterial(MatCode),
+	brush:getMaterial(B, MatCode),
 	def:internalShader(alpharep, Shader),
-	edi:toolBrushSetShader(Shader).
+	brush:setShader(B, Shader).
 
 userUpdate :-
 	edi:getTool(Tool),
@@ -178,32 +174,33 @@ userUpdate :-
 	dlgStatusBar:set(2, Bar2).
 
 userUpdate(0) :-
-	edi:toolBrushGetID(ID),
+	edi:toolBrush(B),
+	brush:getID(B, ID),
 	formatID(ID, IDt),
-	edi:toolBrushGetType(TypeCode),
-	edi:toolBrushGetDraw(DrawCode),
+	brush:getType(B, TypeCode),
+	brush:getDraw(B, DrawCode),
 	def:drawMode(Dr, DrawCode, Draw),
 	def:brushType(Type, TypeCode),
 	(   Type == static
-	->  edi:toolBrushGetMaterial(MatCode),
+	->  brush:getMaterial(B, MatCode),
 	    def:material(Mat, MatCode, _, _),
 	    format(string(Bar1), 'brush~s  ~s  ~a', [IDt, Draw, Mat])
 	;   (   (Dr == img; Dr == imgmat)
 	    ->	Vis = visible
 	    ;	Vis = hidden),
-	    edi:toolBrushGetClass(ClassCode),
+	    brush:getClass(B, ClassCode),
 	    def:class(Class, ClassCode),
 	    format(string(Bar1), 'object~s  ~a  ~s', [IDt, Vis, Class])
 	),
 	dlgStatusBar:set(1, Bar1),
 
-	edi:toolBrushGetFlip(FlipCode),
-	edi:toolBrushGetColor(Color),
+	brush:getFlip(B, FlipCode),
+	brush:getColor(B, Color),
 	def:flip(_, FlipCode, Flip),
-	edi:toolBrushGetX(X),
-	edi:toolBrushGetY(Y),
-	edi:toolBrushGetW(W),
-	edi:toolBrushGetH(H),
+	brush:getX(B, X),
+	brush:getY(B, Y),
+	brush:getW(B, W),
+	brush:getH(B, H),
 	format(string(Bar3), '~16r  ~s  ~d, ~d  ~dx~d  ', [Color, Flip, X, Y, W, H]),
 	dlgStatusBar:set(3, Bar3),
 	updateRoomInfo(X, Y).

@@ -151,7 +151,7 @@ SET_BRUSH_PROP(Prop, PROP)
 
 #define GET_BRUSH_PROP(Prop, PROP) PREDICATE_M(brush, get##Prop, 2)\
 {\
-	return brushPtr(A1)->m_data[BRUSH_##PROP];\
+	return A2 = brushPtr(A1)->m_data[BRUSH_##PROP];\
 }
 
 #define SET_BRUSH_PROP(Prop, PROP) PREDICATE_M(brush, set##Prop, 2)\

@@ -5,7 +5,8 @@
 create :-
 	edi:tileCount(0), !.
 create :-
-	edi:toolBrushGetTile(TileID),
+	edi:toolBrush(B),
+	brush:getTile(B, TileID),
 	edi:tileFind(TileID, _TileIdx),
 	editor:param(tilemap_scale, 2, Scale),
 	editor:param(tilemap_snap, 1, Snap),
@@ -53,16 +54,16 @@ create :-
 	gui:itemSetGuiTileMapSnap(Snap),
 	gui:itemSetGuiTileMapGrid(Grid),
 	gui:itemSetGuiTileMapAxes(Axes),
-	edi:toolBrushGetMapX1(MapX1),
-	edi:toolBrushGetMapY1(MapY1),
-	edi:toolBrushGetMapX2(MapX2),
-	edi:toolBrushGetMapY2(MapY2),
+	brush:getMapX1(B, MapX1),
+	brush:getMapY1(B, MapY1),
+	brush:getMapX2(B, MapX2),
+	brush:getMapY2(B, MapY2),
 	gui:itemSetGuiTileMapMap(MapX1, MapY1, MapX2, MapY2),
 
 	createColors(Cur),
 	createCur(Cur),
 
-	edi:toolBrushGetTile(TileID),
+	brush:getTile(B, TileID),
 	setTile(TileID),
 	update,
 	gui:dlgMoveToMouse,
@@ -75,7 +76,8 @@ createColors(Cur) :-
 	Y is TitleH + 6,
 	W = 12,
 	dlgColor:colors(Colors),
-	edi:toolBrushGetColor(BrColor),
+	edi:toolBrush(B),
+	brush:getColor(B, BrColor),
 	createColors(Colors, X, Y, 0, W, BrColor, Cur).
 
 createColors([], _, _, _, _, _, _).
@@ -114,11 +116,12 @@ setColor(I, C) :-
 	Y2 is Y + 4,
 	gui:itemSetRect(X, Y, X2, Y2),
 	gui:itemSetHidden(0),
-	edi:toolBrushSetColor(C).
+	edi:toolBrush(B),
+	brush:setColor(B, C).
 
 setTile(TileID) :-
-
-	edi:toolBrushSetTile(TileID),
+	edi:toolBrush(B),
+	brush:setTile(B, TileID),
 	gui:select(0),
 	gui:itemSetValue(TileID),
 	gui:select(1),
@@ -168,10 +171,8 @@ close :-
 	gui:itemGetGuiTileMapMap(M0, M1, M2, M3),
 	(   M2 - M0 > 0,
 	    M3 - M1 > 0
-	->  edi:toolBrushSetMapX1(M0),
-	    edi:toolBrushSetMapY1(M1),
-	    edi:toolBrushSetMapX2(M2),
-	    edi:toolBrushSetMapY2(M3)
+	->  edi:toolBrush(B),
+	    brush:set(B, [x1=M0, y1=M1, x2=M2, y2=M3])
 	;   true),
 	gui:itemGetGuiTileMapScale(Scale),
 	gui:itemGetGuiTileMapSnap(Snap),
@@ -205,7 +206,8 @@ key(minus) :-
 
 
  key(pgup) :-
-	edi:toolBrushGetTile(ID),
+	edi:toolBrush(B),
+	brush:getTile(B, ID),
 	edi:tileFind(ID, IDX),
 	IDX2 is IDX - 1,
 	(   IDX2 == -1
@@ -217,7 +219,8 @@ key(minus) :-
 	update.
 
 key(pgdn) :-
-	edi:toolBrushGetTile(ID),
+	edi:toolBrush(B),
+	brush:getTile(B, ID),
 	edi:tileFind(ID, IDX),
 	edi:tileCount(TC),
 	IDX2 is IDX + 1,

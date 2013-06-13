@@ -773,6 +773,16 @@ PREDICATE_M(edi, layerActive, 1)
 
 // tool brush ..............................................................................
 
+
+PREDICATE_M(edi, toolBrush, 1)
+{
+	PlTerm t = A1;
+	if(!(t = g_map.brush))
+		return false;
+	return t[1] = & EdiApp()->m_brush;
+}
+
+
 #define TOOL_BRUSH_PROP(Prop, PROP)\
 GET_TOOL_BRUSH_PROP(Prop, PROP)\
 SET_TOOL_BRUSH_PROP(Prop, PROP)

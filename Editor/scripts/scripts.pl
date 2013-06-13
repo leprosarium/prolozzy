@@ -38,11 +38,12 @@ brushSearchMode(del) :- gui:select(1002), gui:itemGetValue(1).
 
 
 getCheckProp(p(Idx, C, V)) :-
-	mod:brushProp(_,Idx,_,_,_),
+	brush:varDef(Prop,Idx,_),
 	dlgProps:select(Idx, 1),
 	gui:itemGetValue(C),
 	C =\= 0,
-	edi:toolBrushGet(Idx, V).
+	edi:toolBrush(B),
+	brush:get(B, Prop, V).
 
 getCheckProps(Props) :-
 	findall(P, getCheckProp(P), Props).

@@ -93,6 +93,7 @@ virtual	void		Refresh				();							// refresh draw
 
 public:
 	PlFunctor brush;
+	bool UnifyBrush(PlTerm t, tBrush * b);
 		// map
 		int			m_mapw;											// map width
 		int			m_maph;											// map height

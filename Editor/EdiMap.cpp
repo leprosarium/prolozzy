@@ -111,6 +111,14 @@ PREDICATE_M(map, brushCount, 1)
 	return A1 = g_map.m_brushcount;
 }
 
+bool cEdiMap::UnifyBrush(PlTerm t, tBrush * b)
+{
+	if(!(t = g_map.brush))
+		return false;
+	return t[1] = b;
+}
+
+
 inline tBrush * brushPtrNoEx(PlTerm t) 
 {
 	return reinterpret_cast<tBrush *>(static_cast<void *>(t));
@@ -125,10 +133,7 @@ inline tBrush * brushPtr(PlTerm t)
 
 PREDICATE_M(map, brushIdx, 2)
 {
-	PlTerm t = A2;
-	if(!(t = g_map.brush))
-		return false;
-	return t[1] = & g_map.m_brush[A1];
+	return g_map.UnifyBrush(A2, & g_map.m_brush[A1]);
 }
 
 PREDICATE_NONDET_M(map, brush, 1)
@@ -342,10 +347,7 @@ PREDICATE_M(map, brushNew, 1)
 {
 	int idx = g_map.BrushNew();
 	EdiApp()->UndoReset();
-	PlTerm t = A1;
-	if(!(t = g_map.brush))
-		return false;
-	return t[1] = g_map.m_brush + idx;
+	return g_map.UnifyBrush(A1, g_map.m_brush + idx);
 }
 
 PREDICATE_M(map, brushDel, 1)

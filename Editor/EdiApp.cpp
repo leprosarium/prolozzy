@@ -776,10 +776,7 @@ PREDICATE_M(edi, layerActive, 1)
 
 PREDICATE_M(edi, toolBrush, 1)
 {
-	PlTerm t = A1;
-	if(!(t = g_map.brush))
-		return false;
-	return t[1] = & EdiApp()->m_brush;
+	return g_map.UnifyBrush(A1, & EdiApp()->m_brush);
 }
 
 PREDICATE_M(edi, toolReset, 0)

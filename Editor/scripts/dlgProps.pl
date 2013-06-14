@@ -203,7 +203,7 @@ browse(Idx, Color, Brush, color) :-
 
 browseSet(V, Idx, Brush) :-
 	gui:dlgSelect(props),
-	brush:set(Brush, Idx, V),
+	brush:setProp(Brush, Idx, V),
 	select(Idx, 2),
 	(   mod:brushProp(_, Idx, _, _, color)
 	->  Format = '~`0t~16r~8|'

@@ -4,7 +4,8 @@
 		    brushMove/0,
 		    selectByIdx/0,
 		    brushKeepTopmost/0,
-		    brushGroupIds/0]).
+		    brushGroupIds/0,
+		    forallBrush/2]).
 
 :-use_module(gui, [waitCall/1]).
 
@@ -71,22 +72,22 @@ brushSearch(Br, C, Props, Mode) :-
 	brushSearchDoSelect(Mch, Mode, Br, C).
 
 brushSearchDoSelect(yes, set, Br, 1) :-
-	map:brushSetSelect(Br, 1).
+	brush:setSelect(Br, 1).
 brushSearchDoSelect(yes, add, Br, C) :-
-	(map:brushGetSelect(Br, 0)->C=1;C=0),
-	map:brushSetSelect(Br, 1).
+	(brush:getSelect(Br, 0)->C=1;C=0),
+	brush:setSelect(Br, 1).
 brushSearchDoSelect(yes, del, Br, C) :-
-	(map:brushGetSelect(Br, 1)->C=1;C=0),
-	map:brushSetSelect(Br, 0).
+	(brush:getSelect(Br, 1)->C=1;C=0),
+	brush:setSelect(Br, 0).
 brushSearchDoSelect(no, Mode, Br, 0) :-
-	Mode == set ->  map:brushSetSelect(Br,0); true.
+	Mode == set ->  brush:setSelect(Br, 0); true.
 
-brushSearchMatch(Props, BrushIdx, yes) :-
-	forall(member(Prop, Props), brushSearchMatch(Prop, BrushIdx)), !.
+brushSearchMatch(Props, Brush, yes) :-
+	forall(member(Prop, Props), brushSearchMatch(Prop, Brush)), !.
 brushSearchMatch(_, _, no).
 
 brushSearchMatch(p(Idx, C, V), Br) :-
-	map:brushGet(Br, Idx, Val),
+	brush:getProp(Br, Idx, Val),
 	(C=\=1,V=\=Val; C==1,V==Val).
 
 brushChange :-
@@ -116,10 +117,10 @@ brushChangeDo(Props) :-
 
 
 brushChange(Br, C, Props) :-
-	(   map:brushGetSelect(Br, 0)
+	(   brush:getSelect(Br, 0)
 	->  C = 0
 	;   C = 1,
-	    forall(member(p(Idx, 1, V), Props), map:brushSet(Br, Idx, V))).
+	    forall(member(p(Idx, 1, V), Props), brush:setProp(Br, Idx, V))).
 
 brushInvert :-
 	forallBrush(brushInvert(_, _), C),
@@ -130,10 +131,10 @@ brushInvert :-
 
 
 brushInvert(Br, Sel):-
-	(   map:brushGetSelect(Br,1)
+	(   brush:getSelect(Br, 1)
 	->  Sel = 0
 	;   Sel = 1),
-	map:brushSetSelect(Br, Sel).
+	brush:setSelect(Br, Sel).
 
 
 brushMove :-
@@ -170,29 +171,22 @@ brushMoveApply :-
 
 
 brushMove(Br, 0, _, _):-
-	map:brushGetSelect(Br, 0), !.
+	brush:getSelect(Br, 0), !.
 brushMove(Br, 1, DX, DY):- !,
-	map:brushGetX(Br, X),
-	map:brushGetY(Br, Y),
+	brush:getX(Br, X),
+	brush:getY(Br, Y),
 	XX is X + DX,
 	YY is Y + DY,
-	map:brushSetX(Br, XX),
-	map:brushSetY(Br, YY).
+	brush:setX(Br, XX),
+	brush:setY(Br, YY).
 
 
-forallBrush(Action, C) :-
-	map:brushCount(BC),
-	waitCall(forallBrush(0, BC, Action, 0, C)).
+forallBrush(Action, Sum) :-
+	waitCall(forallBrush2(Action, Sum)).
 
-forallBrush(N, N, _, C, C) :- !.
-forallBrush(Br, BC, Action, C, Count) :-
-	copy_term(Action, Cmd),
-	term_variables(Cmd, [Br, Cn|_]),
-	call(Cmd),
-	C2 is C + Cn,
-	Br2 is Br + 1,
-	forallBrush(Br2, BC, Action, C2, Count).
-
+forallBrush2(Action, Sum) :-
+	findall(Cnt, (map:brush(Br), term_variables(Action, [Br, Cnt|_]), call(Action)), Cnts),
+	sum_list(Cnts, Sum).
 
 selectByIdx :-
 	gui:dlgTitleH(TitleH),
@@ -259,9 +253,7 @@ selectByIdxApplyMode(static) :- gui:select(2), gui:itemGetValue(1).
 selectByIdxApplyMode(dynamic) :- gui:select(3), gui:itemGetValue(1).
 
 deselectAll :-
-       map:brushCount(BC),
-       BCN is BC - 1,
-       forall(between(0, BCN, Idx), map:brushSetSelect(Idx, 0)).
+       forall(map:brush(Br), brush:setSelect(Br, 0)).
 
 selectByIdxApply(all, Idx, Idx) :-
 	map:brushCount(BC),

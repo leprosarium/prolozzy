@@ -10,8 +10,7 @@
 
 checkTile :-
 	core:dl('Check Brush Tile:'),
-	map:brushCount(BC),
-	waitCall(checkTile(0, BC, 0, Select)),
+	scripts:forallBrush(scripts2:checkTile(_, _), Select),
 	map:setSelect(Select),
 	(   Select == 0
 	->  Msg = 'All brush tiles are valid.'
@@ -19,18 +18,14 @@ checkTile :-
 	),
 	gui:msgBoxOk('Message', Msg, icon_info).
 
-checkTile(BC, BC, S, S).
-checkTile(Br, BC, C, S) :-
-	map:brushGetTile(Br, Tile),
+checkTile(Br, Sel) :-
+	brush:getTile(Br, Tile),
 	(   edi:tileFind(Tile, _IDX)
 	->  Sel = 0
 	;   Sel = 1,
-	    format(string(Msg), 'missing tile ~d on brush #~d', [Tile, Br]),
+	    format(string(Msg), 'missing tile ~d on ~p', [Tile, Br]),
 	    core:dl(Msg)),
-	map:brushSetSelect(Br, Sel),
-	CN is C + Sel,
-	Br2 is Br + 1,
-	checkTile(Br2, BC, CN, S).
+	brush:setSelect(Br, Sel).
 
 checkId :-
 

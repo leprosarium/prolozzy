@@ -225,22 +225,17 @@ selectByIdx :-
 
 
 selectByIdxApply :-
-	map:brushCount(0)
-	->  gui:dlgClose,
-	    gui:msgBoxOk('Message', 'nothing to select.', icon_info)
-	;   selectByIdxApplyParams(Mode, Idx),
-	    waitCall(
-		(selectByIdxApply(Mode, Idx, IdxO),
-		 deselectAll)),
-	    (	IdxO == -1
-	    ->	Msg = 'nothing to select.'
-	    ;	format(string(Msg), 'brush #~d selected.', [IdxO]),
-		map:brushSetSelect(IdxO, 1),
-		selection:goto(1),
-		map:setSelect(1)),
-	    map:refresh,
-	    gui:dlgClose,
-	    gui:msgBoxOk('Message', Msg, icon_info).
+	selectByIdxApplyParams(Mode, Idx),
+	(   waitCall(selectByIdxApply(Mode, Idx, Br))
+	->  format(string(Msg), '~p selected.', [Br]),
+	    deselectAll,
+	    brush:setSelect(Br, 1),
+	    selection:goto(1),
+	    map:setSelect(1)
+	;   Msg = 'nothing to select.'),
+	map:refresh,
+	gui:dlgClose,
+	gui:msgBoxOk('Message', Msg, icon_info).
 
 selectByIdxApplyParams(Mode, Idx) :-
 	selectByIdxApplyMode(Mode),
@@ -255,29 +250,23 @@ selectByIdxApplyMode(dynamic) :- gui:select(3), gui:itemGetValue(1).
 deselectAll :-
        forall(map:brush(Br), brush:setSelect(Br, 0)).
 
-selectByIdxApply(all, Idx, Idx) :-
-	map:brushCount(BC),
-	Idx >= 0,
-	Idx < BC.
-selectByIdxApply(all, _, -1).
+selectByIdxApply(all, Idx, Br) :-
+	C = count(0),
+	map:brush(Br),
+	arg(1, C, N),
+	N1 is N + 1,
+	nb_setarg(1, C, N1),
+	N = Idx.
 
-
-selectByIdxApply(Mode, IdxI, IdxO) :-
-	map:brushCount(BC),
+selectByIdxApply(Mode, Idx, Br) :- !,
 	def:brushType(Mode, Type),
-	selectByIdxApply(0, BC, Type, 0, IdxI, IdxO).
-
-selectByIdxApply(BC, BC, _, _, _, -1).
-selectByIdxApply(Br, BC, Type, C, IdxI, IdxO) :-
-	map:brushGetType(Br, Type)
-	->  (   C == IdxI
-	    ->	IdxO = Br
-	    ;	C1 is C + 1,
-		Br2 is Br + 1,
-		selectByIdxApply(Br2, BC, Type, C1, IdxI, IdxO))
-	;   Br2 is Br + 1,
-	selectByIdxApply(Br2, BC, Type, C, IdxI, IdxO).
-
+	C = count(0),
+	map:brush(Br),
+	brush:getType(Br, Type),
+	arg(1, C, N),
+	N1 is N + 1,
+	nb_setarg(1, C, N1),
+	N = Idx.
 
 brushKeepTopmost :-
 	map:brushCount(BC),

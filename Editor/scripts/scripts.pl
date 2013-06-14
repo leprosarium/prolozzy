@@ -269,23 +269,13 @@ selectByIdxApply(Mode, Idx, Br) :- !,
 	N = Idx.
 
 brushKeepTopmost :-
-	map:brushCount(BC),
-	BC1 is BC - 1,
-	waitCall((
-	(   brushKeepTopmost(BC1, Topmost)
-	->  Mx is Topmost - 1,
-	    forall(between(0, Mx, Br), map:brushSetSelect(Br, 0)),
-	    gui:msgBoxOk('Message', 'Topmost brush selected.', icon_info)
-	;   true))),
+	waitCall(
+	    (findall(Br, (map:brush(Br), brush:getSelect(Br, 1), brush:setSelect(Br, 0)), Selected),
+	     last(Selected, Topmost))),
+	brush:setSelect(Topmost, 1),
+	gui:msgBoxOk('Message', 'Topmost brush selected.', icon_info),
 	selection:refresh,
 	map:refresh.
-
-brushKeepTopmost(-1, _) :- !, fail.
-brushKeepTopmost(Br, Br) :- map:brushGetSelect(Br, 1).
-brushKeepTopmost(Br, T) :-
-	Br2 is Br - 1,
-	brushKeepTopmost(Br2, T).
-
 
 brushGroupIds :-
 	map:getSelect(0)

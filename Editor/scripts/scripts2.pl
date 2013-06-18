@@ -27,62 +27,38 @@ checkTile(Br, Sel) :-
 	    core:dl(Msg)),
 	brush:setSelect(Br, Sel).
 
-checkId :-
-	core:dl('Check Brush Id:'),
-	waitCall((checkIdCollect(Ids),
-		  checkIdProcess(Ids, Count))),
-	map:setSelect(Count),
-	(   Count == 0
-	->  gui:msgBoxOk('Message', 'No dulicate ids', icon_info)
-	;   format(string(Msg), '~d duplicate ids', [Count]),
-	    gui:msgBoxOk('Warning', Msg, icon_warning )).
-
-
-checkIdCollect(Ids) :-
-	findall(B, map:brush(B), Brs),
-	empty_assoc(Emp),
-	checkIdCollect(Brs, Emp, Ids).
-
-checkIdCollect([], Ids, Ids).
-checkIdCollect([Br|Brs], CurIds, Ids) :-
-	brush:getID(Br, Id),
-	(   Id == 0
-	->  NewIds = CurIds
-	;   brush:setSelect(Br, 0),
-	    (get_assoc(Id, CurIds, Idxs); Idxs = []),
-	    put_assoc(Id, CurIds, [Br|Idxs], NewIds)
-	),
-	checkIdCollect(Brs, NewIds, Ids).
-
-checkIdProcess(Ids, Count) :-
-	findall(C, (gen_assoc(Id, Ids, [Idx1, Idx2|Idxs]), checkIdProcess(Id, [Idx1, Idx2|Idxs], C)), CC),
+checkGroups(BrushToKey, Count) :-
+	findall(Key-B, (map:brush(B), brush:setSelect(B, 0), term_variables(BrushToKey, [B, Key]), call(BrushToKey)), Brs),
+	keysort(Brs, Sorted),
+	group_pairs_by_key(Sorted, Groups),
+	findall(C, (member(Id-[B1, B2|BB], Groups), checkGroup(Id, [B1, B2|BB], C)), CC),
 	sum_list(CC, Count).
 
-checkIdProcess(Id, Brs, C) :-
+checkGroup(Id, Brs, C) :-
 	length(Brs, C),
-	core:dl( duplicate(Id, Brs)),
-	forall(member(Br, Brs), brush:setSelect(Br, 1)).
+	core:dl(Id),
+	forall(member(Br, Brs), (brush:setSelect(Br, 1), format(string(Msg), '  ~p', [Br]), core:dl(Msg))).
 
+checkId :-
+	check('Check Brush Id:', brID(_, _), '~d duplicate ids', 'No duplicate ids').
 
 checkOverlapping :-
-	core:dl('Check Brush Overlapping:'),
-	waitCall(
-		(checkOverCollect(Ids),
-		 checkOverProcess(Ids, Count))),
+	check('Check Brush Overlapping:', brKey(_, _), '~d overlapping brushes found.', 'No overlapping brushes found.').
+
+check(Title, Pred, OkMsg, NoMsg) :-
+	core:dl(Title),
+	waitCall(checkGroups(Pred, Count)),
 	map:setSelect(Count),
 	(   Count == 0
-	->  gui:msgBoxOk('Message', 'No overlapping brushes found.', icon_info)
-	;   format(string(Msg), '~d overlapping brushes found.', [Count]),
+	->  gui:msgBoxOk('Message', NoMsg, icon_info)
+	;   format(string(Msg), OkMsg, [Count]),
 	    gui:msgBoxOk('Warning', Msg, icon_warning )).
 
+brID(B, ID) :-
+	brush:getID(B, ID),
+	ID =\= 0.
 
-checkOverCollect(Ids) :-
-	findall(B, map:brush(B), Brs),
-	empty_assoc(Emp),
-	checkOverCollect(Brs, Emp, Ids).
-
-checkOverCollect([], Ids, Ids).
-checkOverCollect([Br|Brs], CurIds, Ids) :-
+brKey(Br, b(pos(X, Y), size(W, H), tile(Tile), map(MX1, MY1, MX2, MY2))) :-
 	brush:getX(Br, X),
 	brush:getY(Br, Y),
 	brush:getW(Br, W),
@@ -91,21 +67,7 @@ checkOverCollect([Br|Brs], CurIds, Ids) :-
 	brush:getMapX1(Br, MX1),
 	brush:getMapY1(Br, MY1),
 	brush:getMapX2(Br, MX2),
-	brush:getMapY2(Br, MY2),
-	Key = b(pos(X, Y), size(W, H), tile(Tile), map(MX1, MY1, MX2, MY2)),
-	brush:setSelect(Br, 0),
-	(get_assoc(Key, CurIds, Idxs); Idxs = []),
-	put_assoc(Key, CurIds, [Br|Idxs], NewIds),
-	checkOverCollect(Brs, NewIds, Ids).
-
-checkOverProcess(Ids, Count) :-
-	findall(C, (gen_assoc(Key, Ids, [Idx1, Idx2|Idxs]), checkOverProcess(Key, [Idx1, Idx2|Idxs], C)), CC),
-	sum_list(CC, Count).
-
-checkOverProcess(Key, Brs, C) :-
-	length(Brs, C),
-	core:dl( overlap(Key, Brs)),
-	forall(member(Br, Brs), brush:setSelect(Br, 1)).
+	brush:getMapY2(Br, MY2).
 
 checkDynamicBrushId :-
 	core:dl('Check Dynamic Brush Id:'),

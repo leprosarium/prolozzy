@@ -384,7 +384,7 @@ toolPickMenu(BrushIdx) :-
 		item(bprop-bprop,	(gui:dlgClose, dlgBrushProps:create(BrushIdx)), [tooltip("B properties")]),
 		item(prop-prop,	(gui:dlgClose, map:brushIdx(BrushIdx, Brush), dlgProps:create(normal, Brush)), [key(p), tooltip("properties [P]")]),
 		item(pb-'pick brush',	(gui:dlgClose, def:toolCmd(pickBrush, C), edi:toolCommand(C)), [tooltip("pick brush")]),
-		item(pt-'pick tile',	(gui:dlgClose, actions:toolCommandPickBrush(BrushIdx)), [key(t), tooltip("pick tile [T]")]),
+		item(pt-'pick tile',	(gui:dlgClose, map:brushIdx(BrushIdx, Brush), actions:toolCommandPickBrush(Brush)), [key(t), tooltip("pick tile [T]")]),
 		item(pc-'pick color',	(gui:dlgClose, def:toolCmd(pickColor, C), edi:toolCommand(C)), [key(c), tooltip("pick color [C]")]),
 		item(tf-'to front',	(gui:dlgClose, def:toolCmd(toFront, C), edi:toolCommand(C)), [key(f), tooltip("bring to front [F]")]),
 		item(tb-'to back',	(gui:dlgClose, def:toolCmd(toBack, C), edi:toolCommand(C)), [key(b), tooltip("send to back [B]")]),
@@ -400,13 +400,13 @@ toolPickMenu(BrushIdx) :-
 	Y3 is ScrH - (Y2 - Y),
 	(Y > Y3->gui:dlgMove(X, Y3);true).
 
-toolCommandPickBrush( BrushIdx ) :-
-	map:brushGetTile(BrushIdx, Tile),
-	map:brushGetMapX1(BrushIdx, X1),
-	map:brushGetMapY1(BrushIdx, Y1),
-	map:brushGetMapX2(BrushIdx, X2),
-	map:brushGetMapY2(BrushIdx, Y2),
-	map:brushGetFlip(BrushIdx, Flip),
+toolCommandPickBrush( Brush) :-
+	brush:getTile(Brush, Tile),
+	brush:getMapX1(Brush, X1),
+	brush:getMapY1(Brush, Y1),
+	brush:getMapX2(Brush, X2),
+	brush:getMapY2(Brush, Y2),
+	brush:getFlip(Brush, Flip),
 
 	edi:toolBrush(B),
 	brush:set(B, [tile=Tile, x1=X1, y1=Y1, x2=X2, y2=Y2, flip=Flip]).

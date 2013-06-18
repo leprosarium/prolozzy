@@ -317,24 +317,26 @@ brushGroupIdsCreateText([T|Ts], X, Y, W, YO) :-
 brushGroupIdsApply :-
 	gui:select(0),
 	gui:itemGetTxt(V),
-	atom_number(V, ID0),
-	(   ID0 == 0
-	->  gui:msgBoxOk('Message', 'Choose a valid starting id (non zero).', icon_info)
-	;   map:brushCount(BC),
-	    waitCall(brushGroupIdsApply(ID0, 0, BC, ID)),
+	(   atom_number(V, ID0), ID0 > 0
+	->  waitCall(brushGroupIdsApply(ID0, ID)),
 	    map:refresh,
 	    gui:dlgClose,
-	    format(string(Msg), 'Done.\nIds set from ~d to ~d.', [ID0, ID]),
-	    gui:msgBoxOk('Message', Msg, icon_info)).
+	    format(string(Msg), 'Done.\nIds set from ~d to ~d.', [ID0, ID])
+	;   Msg = 'Choose a valid starting id (non zero).'),
+	gui:msgBoxOk('Message', Msg, icon_info).
 
-brushGroupIdsApply(ID, BC, BC, IDO) :- IDO is ID - 1.
-brushGroupIdsApply(ID, Br, BC, IDO) :-
-	(   map:brushGetSelect(Br, 1)
-	->  map:brushSetID(Br, ID),
-	    IDN is ID + 1
-	;   IDN = ID),
-	Br2 is Br + 1,
-	brushGroupIdsApply(IDN, Br2, BC, IDO).
+brushGroupIdsApply(FirstId, LastId) :-
+	ID = id(FirstId),
+	(   map:brush(Br),
+	    brush:getSelect(Br, 1),
+	    arg(1, ID, Id),
+	    brush:setID(Br, Id),
+	    Id1 is Id + 1,
+	    nb_setarg(1, ID, Id1),
+	    fail
+	;   arg(1, ID, IDL),
+	    LastId is IDL - 1).
+
 
 
 

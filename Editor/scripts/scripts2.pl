@@ -28,7 +28,6 @@ checkTile(Br, Sel) :-
 	brush:setSelect(Br, Sel).
 
 checkId :-
-
 	core:dl('Check Brush Id:'),
 	waitCall((checkIdCollect(Ids),
 		  checkIdProcess(Ids, Count))),
@@ -40,30 +39,29 @@ checkId :-
 
 
 checkIdCollect(Ids) :-
-	map:brushCount(BC),
+	findall(B, map:brush(B), Brs),
 	empty_assoc(Emp),
-	checkIdCollect(0, BC, Emp, Ids).
+	checkIdCollect(Brs, Emp, Ids).
 
-checkIdCollect(BC, BC, Ids, Ids).
-checkIdCollect(Br, BC, CurIds, Ids) :-
-	map:brushGetID(Br, Id),
+checkIdCollect([], Ids, Ids).
+checkIdCollect([Br|Brs], CurIds, Ids) :-
+	brush:getID(Br, Id),
 	(   Id == 0
 	->  NewIds = CurIds
-	;   map:brushSetSelect(Br, 0),
+	;   brush:setSelect(Br, 0),
 	    (get_assoc(Id, CurIds, Idxs); Idxs = []),
 	    put_assoc(Id, CurIds, [Br|Idxs], NewIds)
 	),
-	Br2 is Br + 1,
-	checkIdCollect(Br2, BC, NewIds, Ids).
+	checkIdCollect(Brs, NewIds, Ids).
 
 checkIdProcess(Ids, Count) :-
 	findall(C, (gen_assoc(Id, Ids, [Idx1, Idx2|Idxs]), checkIdProcess(Id, [Idx1, Idx2|Idxs], C)), CC),
 	sum_list(CC, Count).
 
-checkIdProcess(Id, Idxs, C) :-
-	length(Idxs, C),
-	core:dl( duplicate(Id, Idxs)),
-	forall(member(Idx, Idxs), map:brushSetSelect(Idx, 1)).
+checkIdProcess(Id, Brs, C) :-
+	length(Brs, C),
+	core:dl( duplicate(Id, Brs)),
+	forall(member(Br, Brs), brush:setSelect(Br, 1)).
 
 
 checkOverlapping :-
@@ -79,82 +77,69 @@ checkOverlapping :-
 
 
 checkOverCollect(Ids) :-
-	map:brushCount(BC),
+	findall(B, map:brush(B), Brs),
 	empty_assoc(Emp),
-	checkOverCollect(0, BC, Emp, Ids).
+	checkOverCollect(Brs, Emp, Ids).
 
-checkOverCollect(BC, BC, Ids, Ids).
-checkOverCollect(Br, BC, CurIds, Ids) :-
-	map:brushGetX(Br, X),
-	map:brushGetY(Br, Y),
-	map:brushGetW(Br, W),
-	map:brushGetH(Br, H),
-	map:brushGetTile(Br, Tile),
-	map:brushGetMapX1(Br, MX1),
-	map:brushGetMapY1(Br, MY1),
-	map:brushGetMapX2(Br, MX2),
-	map:brushGetMapY2(Br, MY2),
-	Key = b(X, Y, W, H, Tile, MX1, MY1, MX2, MY2),
-	map:brushSetSelect(Br, 0),
+checkOverCollect([], Ids, Ids).
+checkOverCollect([Br|Brs], CurIds, Ids) :-
+	brush:getX(Br, X),
+	brush:getY(Br, Y),
+	brush:getW(Br, W),
+	brush:getH(Br, H),
+	brush:getTile(Br, Tile),
+	brush:getMapX1(Br, MX1),
+	brush:getMapY1(Br, MY1),
+	brush:getMapX2(Br, MX2),
+	brush:getMapY2(Br, MY2),
+	Key = b(pos(X, Y), size(W, H), tile(Tile), map(MX1, MY1, MX2, MY2)),
+	brush:setSelect(Br, 0),
 	(get_assoc(Key, CurIds, Idxs); Idxs = []),
 	put_assoc(Key, CurIds, [Br|Idxs], NewIds),
-	Br2 is Br + 1,
-	checkOverCollect(Br2, BC, NewIds, Ids).
+	checkOverCollect(Brs, NewIds, Ids).
 
 checkOverProcess(Ids, Count) :-
 	findall(C, (gen_assoc(Key, Ids, [Idx1, Idx2|Idxs]), checkOverProcess(Key, [Idx1, Idx2|Idxs], C)), CC),
 	sum_list(CC, Count).
 
-checkOverProcess(Key, Idxs, C) :-
-	length(Idxs, C),
-	core:dl( overlap(Key, Idxs)),
-	forall(member(Idx, Idxs), map:brushSetSelect(Idx, 1)).
+checkOverProcess(Key, Brs, C) :-
+	length(Brs, C),
+	core:dl( overlap(Key, Brs)),
+	forall(member(Br, Brs), brush:setSelect(Br, 1)).
 
 checkDynamicBrushId :-
 	core:dl('Check Dynamic Brush Id:'),
-	map:brushCount(BC),
-	waitCall(checkDynamicBrushId(0, BC, 0, Count)),
+	scripts:forallBrush(scripts2:checkDynamicBrushId(_, _), Count),
 	map:setSelect(Count),
 	(   Count =\= 0
 	->  format(string(Msg), 'There are ~d dynamic brushes without ids.\nThey will not be accessible in script.\nSet them ids or make them static brushes.', [Count]),
 	    gui:msgBoxOk('Warning', Msg, icon_warning)
 	;   gui:msgBoxOk('Info', 'There are no dynamic brushes without ids.\nThats good.', icon_info)).
 
-checkDynamicBrushId(BC, BC, Count, Count).
-checkDynamicBrushId(Br, BC, Cnt, Total) :-
-	map:brushSetSelect(Br, 0),
+checkDynamicBrushId(Br, C) :-
 	def:brushType(dynamic, Type),
-	(   map:brushGetType(Br, Type),	map:brushGetID(Br, 0)
-	->  map:brushSetSelect(Br, 1),
-	    C = 1
+	(   brush:getType(Br, Type),
+	    brush:getID(Br, 0)
+	->  C = 1
 	;   C = 0),
-	Br2 is Br + 1,
-	Cnt2 is Cnt + C,
-	checkDynamicBrushId(Br2, BC, Cnt2, Total).
-
+	brush:setSelect(Br, C).
 
 
 checkStaticBrushId :-
 	core:dl('Check Static Brush Id:'),
-	map:brushCount(BC),
-	waitCall(checkStaticBrushId(0, BC, 0, Count)),
+	scripts:forallBrush(scripts2:checkStaticBrushId(_, _), Count),
 	map:setSelect(Count),
 	(   Count =\= 0
 	->  format(string(Msg), 'There are ~d static brushes with ids.\nMake sure they need ids indeed.', [Count]),
 	    gui:msgBoxOk('Warning', Msg, icon_warning)
 	;   gui:msgBoxOk('Info', 'There are no static brushes with ids.', icon_info)).
 
-checkStaticBrushId(BC, BC, Count, Count).
-checkStaticBrushId(Br, BC, Cnt, Total) :-
-	map:brushSetSelect(Br, 0),
+checkStaticBrushId(Br, C) :-
 	def:brushType(static, Type),
-	(   map:brushGetType(Br, Type), map:brushGetID(Br, Id), Id =\= 0
-	->  map:brushSetSelect(Br, 1),
-	    C = 1
+	(   brush:getType(Br, Type), brush:getID(Br, Id), Id =\= 0
+	->  C = 1
 	;   C = 0),
-	Br2 is Br + 1,
-	Cnt2 is Cnt + C,
-	checkStaticBrushId(Br2, BC, Cnt2, Total).
+	brush:setSelect(Br, C).
 
 countRooms :-
 	gui:msgBox('Question', 'Count rooms with brush content.\n\nWARNING\nSave your map BEFORE this operation!\nGuide green brushes are going to be inserted\nto help you verify the counting.\nProceed?\n', icon_question, [btn('YES', scripts2:countRoomsApply), btn('NO', true)]).
@@ -173,21 +158,13 @@ countRoomsApply :-
 
 
 countRoomsCollect(Params, Rooms) :-
-	map:brushCount(BC),
 	empty_nb_set(Rooms),
-	countRoomsCollect(0, BC, Params, Rooms).
-
-countRoomsCollect(BC, BC, _, _).
-countRoomsCollect(Br, BC, Params, Rooms) :-
-	countRoomsCollect(Br, Params, Rooms),
-	Br2 is Br + 1,
-	countRoomsCollect(Br2, BC, Params, Rooms).
-
+	forall(map:brush(B), countRoomsCollect(B, Params, Rooms)).
 countRoomsCollect(B, Params, Rooms) :-
-	map:brushGetX(B, X),
-	map:brushGetY(B, Y),
-	map:brushGetW(B, W),
-	map:brushGetH(B, H),
+	brush:getX(B, X),
+	brush:getY(B, Y),
+	brush:getW(B, W),
+	brush:getH(B, H),
 	X2 is X + W,
 	Y2 is Y + H,
 	countRoomsCollectAdd(X, Y, Params, Rooms),
@@ -202,8 +179,7 @@ countRoomsCollectAdd(X, Y, params(C, RW, RH), Rooms) :-
 	DY < RH - C,
 	XX is X // RW,
 	YY is Y // RH,
-	add_nb_set(p(XX, YY), Rooms).
-countRoomsCollectAdd(_, _, _, _).
+	add_nb_set(p(XX, YY), Rooms);true.
 
 countRoomsMark(Rooms, Count, Params) :-
 	size_nb_set(Rooms, Count),

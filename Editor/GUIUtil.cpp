@@ -117,14 +117,14 @@ void GUIDrawRectDot( int x1, int y1, int x2, int y2, dword color )
 	GUIDrawLineDot( x1,y2-1, x2,y2-1, color, d, 0.0f );
 }
 
-void GUIDrawText( int x1, int y1, int x2, int y2, char* text, dword color, int align, int offset )
+void GUIDrawText( int x1, int y1, int x2, int y2, const char * text, dword color, int align, int offset )
 {
-	if(text==NULL) return;
+	if(!text) return;
 	if(color==0) return;
 	dword oldcolor = g_gui->m_font->GetColor(); 
 	g_gui->m_font->SetColor(color);
 	float w,h;
-	g_gui->m_font->GetTextBox(text,w,h);
+	g_gui->m_font->GetTextBox(text, w, h);
 //	int w = g_gui->m_font->GetTextWidth(text);
 //	int h = g_gui->m_font->GetSize(); 
 	int x = x1;

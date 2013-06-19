@@ -174,15 +174,11 @@ void cEdiToolPaint::Update( float dtime )
 		{
 			// tooltip
 			tBrush& brushpick = g_map.m_brush[m_brushidx];
-			char sz[128];
-			strcpy(sz, (m_mode==2)?"menu":"pick");
+			std::ostringstream o;
+			o << (m_mode==2 ? "menu" : "pick");
 			if(m_brushidx!=-1)
-			{
-				char sz2[32];
-				sprintf(sz2," #%i",m_brushidx);
-				strcat(sz,sz2);
-			}
-			g_gui->SetTooltip(sz);
+				o << "#" << m_brushidx;
+			g_gui->ToolTip = o.str();
 		}
 	}
 
@@ -426,21 +422,20 @@ void cEdiToolEdit::Update( float dtime )
 	m_ay = my;
 
 	// tooltip
-	char sz[64];
-	sz[0]=0;
+	std::ostringstream o;
 	if(m_mode!=2)
 	{
-		if( m_selop==-1 ) strcat(sz,"sub\n");
-		if( m_selop==1 ) strcat(sz,"add\n");
-		strcat(sz, sprint("%i,%i", mx, my) );
-		if( m_mode==1 ) strcat(sz, sprint("\n%i x %i", m_rect.Width(), m_rect.Height()) );
+		if( m_selop==-1 ) o << "sub";
+		if( m_selop==1 ) o << "add";
+		o << std::endl <<  mx << " " << my;
+		if( m_mode==1 ) o << std::endl << m_rect.Width() << " x " << m_rect.Height();
 	}
 	else
-	{
-		strcat(sz, sprint("mov %i,%i\n", m_movedx, m_movedy) );
-		strcat(sz, sprint("%i,%i", mx, my) );
-	}
-	g_gui->SetTooltip(inview?sz:"");
+		o << "mov " << m_movedx << "," << m_movedy << std::endl << mx << "," << my;
+	if(inview)
+		g_gui->ToolTip = o.str();
+	else 
+		g_gui->ToolTip.clear();
 
 	m_isbusy = (m_mode!=0);
 }

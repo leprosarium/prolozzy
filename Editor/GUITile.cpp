@@ -289,16 +289,16 @@ void cGUITileMap::Draw()
 	}
 
 	// tooltip bar info
-	static char sz[64]; sz[0]=0;
 	mx=Snap(mx); 
 	my=Snap(my);
 
 	if(m_mousein)
 	{
-		if(m_mode==0)	sprintf( sz,"%i %i", mx, my ); else
-		if(m_mode==1)	sprintf( sz,"%i %i\n%i x %i", mx, my, selw, selh ); else
-		if(m_mode==2)	sprintf( sz,"%i %i", mx, my );
-		g_gui->SetTooltip(sz);
+		std::stringstream o;
+		if(m_mode==0)	o << mx << " " << my;
+		else if(m_mode==1)	o << mx << " " << my << std::endl << selw << " x " << selh;
+		else if(m_mode==2)	o << mx << " " << my;
+		g_gui->ToolTip = o.str();
 	}
 
 }

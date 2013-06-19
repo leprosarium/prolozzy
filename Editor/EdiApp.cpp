@@ -258,7 +258,7 @@ void cEdiApp::Activate(bool active)
 		if(I9_IsReady()) I9_Unacquire();
 	}
 	m_tool[m_toolcrt]->Reset();
-	if(g_gui) g_gui->SetTooltip("");
+	if(g_gui) g_gui->ToolTip.clear();
 	if(g_map.m_scrolling)
 	{
 		g_map.m_scrolling = 0;
@@ -326,8 +326,7 @@ BOOL cEdiApp::Update()
 		g_map.Update(dtime);
 	BOOL map_isbusy = g_map.m_scrolling;
 	
-	// reset tooltip
-	g_gui->SetTooltip("");
+	g_gui->ToolTip.clear();
 
 	static BOOL gui_wasbusy=FALSE;
 	BOOL tool_isbusy = FALSE;

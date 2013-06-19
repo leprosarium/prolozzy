@@ -34,9 +34,7 @@ virtual					~cGUI();
 		void			Draw();							// draw 
 		
 		// status bar
-inline	char*			GetTooltip()					{ return m_tooltip; }
-inline	void			SetTooltip( char* text )		{ if(text) strncpy(m_tooltip,text,255); else m_tooltip[0]=0; m_tooltip[255]=0; }
-		char			m_tooltip[256];					// tooltip text
+		std::string		ToolTip;
 
 		// input
 		int				m_mousex;						// mouse x pos

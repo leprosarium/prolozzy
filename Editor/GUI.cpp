@@ -29,7 +29,6 @@ cGUI::cGUI()
 	m_lastitem		= NULL;
 	m_capture		= NULL;	
 	m_isbusy		= FALSE;
-	m_tooltip[0]	=0;
 }
 
 cGUI::~cGUI()
@@ -118,14 +117,14 @@ void cGUI::Draw()
 	std::for_each(m_dlg.begin(), m_dlg.end(), [](cGUIDlg * d){ d->Draw(); });
 	
 	// tooltip
-	if(m_tooltip[0])
+	if(!ToolTip.empty())
 	{
 		float w,h;
-		m_font->GetTextBox(m_tooltip,w,h);
+		m_font->GetTextBox(ToolTip.c_str() ,w, h);
 		w+=8; h+=4;
 		GUIDrawBar(  m_mousex+16, m_mousey+16, m_mousex+16+(int)w, m_mousey+16+(int)h, 0xffffa000 );
 		GUIDrawRect( m_mousex+16, m_mousey+16, m_mousex+16+(int)w, m_mousey+16+(int)h, 0xff000000 );
-		GUIDrawText( m_mousex+16+4, m_mousey+16+2, m_mousex+16+(int)w-4, m_mousey+16+(int)h-2, m_tooltip, 0xff000000, GUIALIGN_LEFT|GUIALIGN_TOP );
+		GUIDrawText( m_mousex+16+4, m_mousey+16+2, m_mousex+16+(int)w-4, m_mousey+16+(int)h-2, ToolTip.c_str(), 0xff000000, GUIALIGN_LEFT|GUIALIGN_TOP );
 	}
 
 	// mouse cursor (for full screen tests)

@@ -42,7 +42,7 @@ void cGUIDlg::Update()
 				i->GetInt(IV_HIDDEN)==0 &&
 				i->GetInt(IV_DISABLE)==0 &&
 				i->GetTxt(IV_TOOLTIP) )
-				g_gui->SetTooltip(i->GetTxt(IV_TOOLTIP));
+				g_gui->ToolTip = i->GetTxt(IV_TOOLTIP);
 		}
 	});
 

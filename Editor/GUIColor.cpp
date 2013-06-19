@@ -47,9 +47,9 @@ void cGUIColorPick::Update()
 		}
 		else
 		{
-			char sz[32];
-			sprintf(sz,"%06X",color & 0x00ffffff);
-			g_gui->SetTooltip(sz);
+			std::ostringstream o;
+			o << std::hex << std::uppercase << std::setfill('0') << std::setw(6) << (color & 0x00ffffff);
+			g_gui->ToolTip = o.str();
 		}
 	}
 	

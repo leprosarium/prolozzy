@@ -30,7 +30,6 @@ cGUI::cGUI()
 	m_capture		= NULL;	
 	m_isbusy		= FALSE;
 	m_tooltip[0]	=0;
-	memset(&m_var,0,sizeof(m_var));
 }
 
 cGUI::~cGUI()
@@ -133,35 +132,6 @@ void cGUI::Draw()
 	if(!App.Windowed())
 		R9_DrawLine( fV2(m_mousex, m_mousey), fV2(m_mousex+10, m_mousey+10), 0xffffffff );
 
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
-// Access
-//////////////////////////////////////////////////////////////////////////////////////////////////
-void cGUI::SetInt( int idx, int val )
-{
-	assert(0<=idx && idx<GV_MAX);
-	m_var[idx].m_int=val;
-}
-
-int cGUI::GetInt( int idx )
-{
-	assert(0<=idx && idx<GV_MAX);
-	return m_var[idx].m_int;	
-}
-
-void cGUI::SetTxt( int idx, char* text )
-{
-	assert(0<=idx && idx<GV_MAX);
-	char* sz = m_var[idx].m_str;
-	delete [] sz;
-	m_var[idx].m_str = sstrdup(text);
-}
-
-char* cGUI::GetTxt( int idx )
-{
-	assert(0<=idx && idx<GV_MAX);
-	return m_var[idx].m_str;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

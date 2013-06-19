@@ -19,9 +19,6 @@
 #define	GUIKEY_ALT			5
 #define	GUIKEY_MAX			16
 
-#define	GV_USER				16
-#define	GV_MAX				128
-
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cGUI
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -36,13 +33,6 @@ virtual					~cGUI();
 		void			Update();						// update 
 		void			Draw();							// draw 
 		
-		// access
-		void			SetInt( int idx, int val );
-		int				GetInt( int idx );
-		void			SetTxt( int idx, char* text );
-		char*			GetTxt( int idx );
-		tGuiVar			m_var[GV_MAX];					// variable zone
-
 		// status bar
 inline	char*			GetTooltip()					{ return m_tooltip; }
 inline	void			SetTooltip( char* text )		{ if(text) strncpy(m_tooltip,text,255); else m_tooltip[0]=0; m_tooltip[255]=0; }

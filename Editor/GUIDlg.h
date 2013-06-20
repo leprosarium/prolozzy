@@ -7,29 +7,6 @@
 #include "GUIItem.h"
 #include "GUI.h"
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// Defines
-//////////////////////////////////////////////////////////////////////////////////////////////////
-#define DV_ID					0
-#define DV_HIDDEN				1
-#define DV_DISABLE				2
-#define DV_RECT					3		// 4
-#define DV_POS					3		// 2
-#define DV_X					3
-#define DV_Y					4
-#define DV_POS2					5		// 2
-#define DV_X2					5
-#define	DV_Y2					6
-#define DV_MODAL				7
-#define DV_TESTKEY				8		// values: 0=none, 1=always, 2=mousein	
-#define DV_CLOSEOUT				9		// close when click outside dlg (ret=-1)
-#define DV_CLOSERET				10		// close returned value
-#define DV_CLOSECMD				11		// close command str
-
-#define DV_USER					16
-
-#define DV_MAX					24
-
 struct  tDlgKey
 {
 	tDlgKey()	{};
@@ -46,41 +23,37 @@ struct  tDlgKey
 class cGUIDlg
 {
 public:
+	int id;
+	bool hidden;
+	bool disable;
+	iRect rect;
+	bool modal;
+	enum class TestKeyMode { none, always, mousein } testKey;
+	bool closeOut;
+	int closeRet;
+	std::string closeCmd;
 
-						cGUIDlg				();
-virtual					~cGUIDlg			();
+	cGUIDlg();
+	virtual ~cGUIDlg();
 
-virtual	void			Update				();					// update 
-virtual	void			Draw				();					// draw 
-virtual	void			Close				( int ret );
+	virtual	void Update();
+	virtual	void Draw();
+	virtual	void Close(int ret);
 
-		// access
-virtual	void			SetInt				( int idx, int val );
-virtual	int				GetInt				( int idx );
-virtual	void			SetTxt				( int idx, char* text );
-virtual	char*			GetTxt				( int idx );
-virtual	void			SetPoint			( int idx, POINT point );
-virtual	POINT			GetPoint			( int idx );
-virtual	void			SetRect				( int idx, RECT rect );
-virtual	RECT			GetRect				( int idx );
+	int ItemCount() const { return m_item.size(); }
+	cGUIItem * ItemGet(int idx) { if(0<=idx && idx<ItemCount()) return m_item[idx]; return 0; }
+	int ItemAdd(cGUIItem * item){ if(item) { item->m_dlg=this; int idx = m_item.size(); m_item.push_back(item); return idx; } return -1; }
+	void ItemDel(int idx) { if(0<=idx && idx<ItemCount()) { delete m_item[idx]; m_item.erase(m_item.begin() + idx); } }
+	int ItemFind(int id);		
+	int ItemFind(cGUIItem * item);
 
-		// inheritance
-inline	int				ItemCount			()					{ return m_item.size(); }
-inline	cGUIItem*		ItemGet				(int idx)			{ if(0<=idx && idx<ItemCount()) return m_item[idx]; return 0; }
-inline	int				ItemAdd				( cGUIItem* item )	{ if(item) { item->m_dlg=this; int idx = m_item.size(); m_item.push_back(item); return idx; } return -1; }
-inline	void			ItemDel				( int idx )			{ if(0<=idx && idx<ItemCount()) { delete m_item[idx]; m_item.erase(m_item.begin() + idx); } }
-virtual	int				ItemFind			( int id );		
-virtual	int				ItemFind			( cGUIItem* item );
+	std::vector<cGUIItem *> m_item;
+	bool m_mustclose;
+	bool m_mousein;
 
-		// data
-		tGuiVar				m_var[DV_MAX];						// variable zone
-		std::vector<cGUIItem *> m_item;							// cGUIItem list
-		BOOL				m_mustclose;						// closing marker
-		BOOL				m_mousein;
-
-		std::vector<tDlgKey> m_keys;							// key list
-		void				AddKey(int key, int flags, const std::string & cmd);
-		void				TestKey				();
+	std::vector<tDlgKey> m_keys;
+	void AddKey(int key, int flags, const std::string & cmd);
+	void TestKey();
 					
 };
 

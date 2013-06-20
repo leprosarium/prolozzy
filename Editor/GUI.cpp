@@ -85,7 +85,7 @@ void cGUI::Update()
 	{
 		// serach top most modal
 		bool modal = false;
-		auto i = std::find_if(m_dlg.rbegin(), m_dlg.rend(), [](cGUIDlg * d) {return d->GetInt(DV_MODAL)!=0;});
+		auto i = std::find_if(m_dlg.rbegin(), m_dlg.rend(), [](cGUIDlg * d) { return d->modal;});
 		if ( i != m_dlg.rend())
 		{
 			(*i)->Update();
@@ -162,7 +162,7 @@ void cGUI::ReadInput()
 
 int cGUI::DlgFind( int id )
 {
-	auto i = std::find_if(m_dlg.begin(), m_dlg.end(), [&id](cGUIDlg * d) { return d->GetInt(DV_ID) == id;});
+	auto i = std::find_if(m_dlg.begin(), m_dlg.end(), [&id](cGUIDlg * d) { return d->id == id;});
 	return i == m_dlg.end() ? -1 : i - m_dlg.begin();
 }
 
@@ -382,79 +382,69 @@ PREDICATE_M(gui, dlgClose, 1)
 PREDICATE_M(dlg, getRect, 4)
 {
 	cGUIDlg * dlg = g_gui->GetLastDlg();
-	bool a1 = A1 = dlg->GetInt(DV_X);
-	bool a2 = A2 = dlg->GetInt(DV_Y);
-	bool a3 = A3 = dlg->GetInt(DV_X2);
-	bool a4 = A4 = dlg->GetInt(DV_Y2);
+	bool a1 = A1 = dlg->rect.p1.x;
+	bool a2 = A2 = dlg->rect.p1.y;
+	bool a3 = A3 = dlg->rect.p2.x;
+	bool a4 = A4 = dlg->rect.p2.y;
 	return a1 && a2 && a3 && a4;
 }
 
 PREDICATE_M(dlg, getPos, 2)
 {
 	cGUIDlg * dlg = g_gui->GetLastDlg();
-	bool a1 = A1 = dlg->GetInt(DV_X);
-	bool a2 = A2 = dlg->GetInt(DV_Y);
+	bool a1 = A1 = dlg->rect.p1.x;
+	bool a2 = A2 = dlg->rect.p1.y;
 	return a1 && a2;
 }
 
 PREDICATE_M(dlg, getPos2, 2)
 {
 	cGUIDlg * dlg = g_gui->GetLastDlg();
-	bool a1 = A1 = dlg->GetInt(DV_X2);
-	bool a2 = A2 = dlg->GetInt(DV_Y2);
+	bool a1 = A1 = dlg->rect.p2.x;
+	bool a2 = A2 = dlg->rect.p2.y;
 	return a1 && a2;
 }
 
 PREDICATE_M(dlg, setID, 1)
 {
-	g_gui->GetLastDlg()->SetInt(DV_ID, A1);
+	g_gui->GetLastDlg()->id = A1;
 	return true;
 }
 
 PREDICATE_M(dlg, setTestKey, 0)
 {
-	g_gui->GetLastDlg()->SetInt(DV_TESTKEY, 1);
+	g_gui->GetLastDlg()->testKey = cGUIDlg::TestKeyMode::always;
 	return true;
 }
 
 PREDICATE_M(dlg, resetTestKey, 0)
 {
-	g_gui->GetLastDlg()->SetInt(DV_TESTKEY, 0);
+	g_gui->GetLastDlg()->testKey = cGUIDlg::TestKeyMode::none;
 	return true;
 }
 
 PREDICATE_M(dlg, setModal, 0)
 {
-	g_gui->GetLastDlg()->SetInt(DV_MODAL,  1);
+	g_gui->GetLastDlg()->modal = true;
 	return true;
 }
 
 PREDICATE_M(dlg, setCloseOut, 0)
 {
-	g_gui->GetLastDlg()->SetInt(DV_CLOSEOUT,  1);
+	g_gui->GetLastDlg()->closeOut=true;
 	return true;
 }
 
 PREDICATE_M(dlg, setCloseCmd, 1)
 {
-	g_gui->GetLastDlg()->SetTxt(DV_CLOSECMD,  A1);
-	return true;
-}
-
-PREDICATE_M(dlg, setUser, 2)
-{
-	int idx = A1;
-	g_gui->GetLastDlg()->SetInt(DV_USER+idx,  A2);
+	g_gui->GetLastDlg()->closeCmd = static_cast<const char *>(A1);
 	return true;
 }
 
 PREDICATE_M(dlg, setRect, 4)
 {
 	cGUIDlg * dlg = g_gui->GetLastDlg();
-	dlg->SetInt(DV_X,  A1);
-	dlg->SetInt(DV_Y,  A2);
-	dlg->SetInt(DV_X2, A3);
-	dlg->SetInt(DV_Y2, A4);
+	dlg->rect = iRect(A1, A2, A3, A4);
 	return true;
 }
 

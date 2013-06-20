@@ -155,10 +155,10 @@ void cGUIItem::GetScrRect( RECT &rc )
 	cGUIDlg *p = m_dlg;
 	if(p!=NULL)
 	{
-		rc.left	  += p->GetInt(DV_X);
-		rc.top	  += p->GetInt(DV_Y);
-		rc.right  += p->GetInt(DV_X);
-		rc.bottom += p->GetInt(DV_Y);
+		rc.left	  += p->rect.p1.x;
+		rc.top	  += p->rect.p1.y;
+		rc.right  += p->rect.p1.x;
+		rc.bottom += p->rect.p1.y;
 	}
 }
 
@@ -247,22 +247,14 @@ void cGUITitle::Update()
 
 	if(IsCaptured() && m_dlg) // move parent dialog
 	{
-		int x = g_gui->m_mousex;
-		int y = g_gui->m_mousey;
-		if(x<0) x=0;
-		if(x>R9_GetWidth()-1) x=R9_GetWidth()-1;
-		if(y<0) y=0;
-		if(y>R9_GetHeight()-1) y=R9_GetHeight()-1;
-		x -= m_movex;
-		y -= m_movey;
-		x -= GetInt(IV_X);
-		y -= GetInt(IV_Y);
-		int w = m_dlg->GetInt(DV_X2)-m_dlg->GetInt(DV_X);
-		int h = m_dlg->GetInt(DV_Y2)-m_dlg->GetInt(DV_Y);
-		m_dlg->SetInt(DV_X, x);
-		m_dlg->SetInt(DV_Y, y);
-		m_dlg->SetInt(DV_X2, x+w);
-		m_dlg->SetInt(DV_Y2, y+h);
+		iV2 p(g_gui->m_mousex, g_gui->m_mousey);
+		if(p.x < 0) p.x = 0;
+		if(p.x > R9_GetWidth()-1) p.x = R9_GetWidth()-1;
+		if(p.y < 0) p.y = 0;
+		if(p.y > R9_GetHeight()-1) p.y = R9_GetHeight()-1;
+		p -= iV2(m_movex, m_movey);
+		p -= iV2(GetInt(IV_X), GetInt(IV_Y));
+		m_dlg->rect = iRect(p, p + m_dlg->rect.Size());
 	}
 	
 }

@@ -9,26 +9,24 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cGUIItem
 //////////////////////////////////////////////////////////////////////////////////////////////////
-cGUIItem::cGUIItem()
+cGUIItem::cGUIItem() : id(), style(), hidden(), disable(), txtAlign(), 
+	txtColor(GUICOLOR_TEXT), 
+	txtOffset(6), 
+	img0(-1), img1(-1), 
+	imgColor(0xffffffff), 
+	imgAlign(GUIALIGN_CENTERXY),
+	mode(),
+	cmdActionParam(),
+	value(),
+	group(),
+	m_dlg()
 {
-	memset(&m_var,0,sizeof(m_var));
-	// defaults
-	m_var[IV_IMG].m_int = -1;
-	m_var[IV_IMG+1].m_int = -1;
-	SetInt(IV_COLOR,		GUICOLOR_GUI);
-	SetInt(IV_TXTCOLOR,	GUICOLOR_TEXT);
-	SetInt(IV_TXTOFFSET, 6 );
-	SetInt(IV_IMGCOLOR,	0xffffffff);
-	SetInt(IV_IMGALIGN,	GUIALIGN_CENTERXY);
-	m_dlg = NULL;
+	color[0] = GUICOLOR_GUI;
+	color[1] = color[2] = color[3] = 0;
 }
 
 cGUIItem::~cGUIItem()
 {
-	assert(m_dlg==NULL);
-	SetTxt(IV_TXT,NULL);		
-	SetTxt(IV_CMDACTION,NULL);	
-	SetTxt(IV_TOOLTIP,NULL);
 }
 
 
@@ -43,10 +41,10 @@ void cGUIItem::Update()
 	m_mousein = INRECT( g_gui->m_mousex, g_gui->m_mousey, rc);
 	if(m_mousein)
 	{
-		SetInt(IV_CMDACTIONPARAM,0);
-		if(I9_GetKeyDown(I9_MOUSE_B1))	SetInt(IV_CMDACTIONPARAM,1);
-		if(I9_GetKeyDown(I9_MOUSE_B2))	SetInt(IV_CMDACTIONPARAM,2);
-		if(GetInt(IV_CMDACTIONPARAM))		Action();
+		cmdActionParam = 0;
+		if(I9_GetKeyDown(I9_MOUSE_B1))	cmdActionParam = 1;
+		if(I9_GetKeyDown(I9_MOUSE_B2))	cmdActionParam = 2;
+		if(cmdActionParam != 0)		Action();
 	}
 }
 
@@ -55,94 +53,26 @@ void cGUIItem::Draw()
 	RECT rc; 
 	GetScrRect(rc);
 
-	int style = GetInt(IV_STYLE);
-
 	// background
 	if( style & GUISTYLE_BACKGR )
-		GUIDrawBar( rc.left, rc.top, rc.right, rc.bottom, GetInt(IV_COLOR) );
+		GUIDrawBar( rc.left, rc.top, rc.right, rc.bottom, color[0]);
 	else
 	if( style & GUISTYLE_GRADIENT )
-		GUIDrawGradient( rc.left, rc.top, rc.right, rc.bottom, GetInt(IV_COLOR), GetInt(IV_COLOR+1) );
+		GUIDrawGradient( rc.left, rc.top, rc.right, rc.bottom, color[0], color[1]);
 	
 	// image
-	GUIDrawImg( rc.left, rc.top, rc.right, rc.bottom, GetInt(IV_IMG), GetInt(IV_IMGCOLOR), GetInt(IV_IMGALIGN));
+	GUIDrawImg( rc.left, rc.top, rc.right, rc.bottom, img0, imgColor, imgAlign);
 
 	// text
-	GUIDrawText( rc.left, rc.top, rc.right, rc.bottom, GetTxt(IV_TXT), GetInt(IV_TXTCOLOR), GetInt(IV_TXTALIGN), GetInt(IV_TXTOFFSET) );
+	GUIDrawText( rc.left, rc.top, rc.right, rc.bottom, txt.c_str(), txtColor, txtAlign, txtOffset);
 	
 	// border
 	if( style & GUISTYLE_BORDER )
-		GUIDrawRect( rc.left, rc.top, rc.right, rc.bottom, GetInt(IV_COLOR+2) );
+		GUIDrawRect( rc.left, rc.top, rc.right, rc.bottom, color[2]);
 	else
 	if( style & GUISTYLE_BORDER3D )
-		GUIDrawRect3D( rc.left, rc.top, rc.right, rc.bottom, GetInt(IV_COLOR+2), style & GUISTYLE_PRESSED );
+		GUIDrawRect3D( rc.left, rc.top, rc.right, rc.bottom, color[2], style & GUISTYLE_PRESSED );
 
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
-// Access
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-void cGUIItem::SetInt( int idx, int val )
-{
-	assert(0<=idx && idx<IV_MAX);
-	m_var[idx].m_int=val;
-}
-
-int cGUIItem::GetInt( int idx )
-{
-	assert(0<=idx && idx<IV_MAX);
-	return m_var[idx].m_int;	
-}
-
-void cGUIItem::SetTxt( int idx, char* text )
-{
-	assert(0<=idx && idx<IV_MAX);
-	char* sz = m_var[idx].m_str;
-	delete [] sz;
-	m_var[idx].m_str = sstrdup(text);
-}
-
-char* cGUIItem::GetTxt( int idx )
-{
-	assert(0<=idx && idx<IV_MAX);
-	return m_var[idx].m_str;
-}
-
-void cGUIItem::SetPoint( int idx, POINT point )
-{
-	assert(0<=idx && idx<IV_MAX-1);
-	m_var[idx+0].m_int = point.x;
-	m_var[idx+1].m_int = point.y;
-}
-
-POINT cGUIItem::GetPoint( int idx )
-{
-	assert(0<=idx && idx<IV_MAX-1);
-	POINT point;
-	point.x = m_var[idx+0].m_int;
-	point.y = m_var[idx+1].m_int;
-	return point;
-}
-
-void cGUIItem::SetRect( int idx, RECT rect )
-{
-	assert(0<=idx && idx<IV_MAX-3);
-	m_var[idx+0].m_int = rect.left;
-	m_var[idx+1].m_int = rect.top;
-	m_var[idx+2].m_int = rect.right;
-	m_var[idx+3].m_int = rect.bottom;
-}
-
-RECT cGUIItem::GetRect( int idx )
-{
-	assert(0<=idx && idx<IV_MAX-3);
-	RECT rect;
-	rect.left = m_var[idx+0].m_int;
-	rect.top = m_var[idx+1].m_int;
-	rect.right = m_var[idx+2].m_int;
-	rect.bottom = m_var[idx+3].m_int;
-	return rect;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -151,14 +81,13 @@ RECT cGUIItem::GetRect( int idx )
 
 void cGUIItem::GetScrRect( RECT &rc )
 {
-	rc = GetRect(IV_RECT);
-	cGUIDlg *p = m_dlg;
-	if(p!=NULL)
+	rc = rect;
+	if(m_dlg)
 	{
-		rc.left	  += p->rect.p1.x;
-		rc.top	  += p->rect.p1.y;
-		rc.right  += p->rect.p1.x;
-		rc.bottom += p->rect.p1.y;
+		rc.left	  += m_dlg->rect.p1.x;
+		rc.top	  += m_dlg->rect.p1.y;
+		rc.right  += m_dlg->rect.p1.x;
+		rc.bottom += m_dlg->rect.p1.y;
 	}
 }
 
@@ -170,7 +99,7 @@ int cGUIItem::SetParent( cGUIDlg* dlg)
 	return -1;
 }
 
-void cGUIItem::Capture( BOOL on )
+void cGUIItem::Capture( bool on )
 {
 	if(on)
 	{
@@ -199,10 +128,9 @@ void cGUIItem::Select()
 
 void cGUIItem::Action()
 {
-	char* cmd = GetTxt(IV_CMDACTION);
-	if(cmd==NULL || cmd[0]==0) return;
+	if(cmdAction.empty()) return;
 	Select();	
-	g_gui->ScriptPrologDo(cmd);
+	g_gui->ScriptPrologDo(cmdAction);
 }
 
 
@@ -213,7 +141,7 @@ void cGUIItem::Action()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 cGUITitle::cGUITitle()
 {
-	SetInt(IV_VALUE,1);
+	value = 1;
 	m_movex = m_movey = 0;
 }
 
@@ -233,7 +161,7 @@ void cGUITitle::Update()
 		{
 			m_movex = g_gui->m_mousex-rc.left;
 			m_movey = g_gui->m_mousey-rc.top;
-			Capture(TRUE);
+			Capture(true);
 		}
 	}
 	else
@@ -241,7 +169,7 @@ void cGUITitle::Update()
 	{
 		if(IsCaptured()) 
 		{ 
-			Capture(FALSE);
+			Capture(false);
 		}
 	}
 
@@ -253,7 +181,7 @@ void cGUITitle::Update()
 		if(p.y < 0) p.y = 0;
 		if(p.y > R9_GetHeight()-1) p.y = R9_GetHeight()-1;
 		p -= iV2(m_movex, m_movey);
-		p -= iV2(GetInt(IV_X), GetInt(IV_Y));
+		p -= rect.p1;
 		m_dlg->rect = iRect(p, p + m_dlg->rect.Size());
 	}
 	

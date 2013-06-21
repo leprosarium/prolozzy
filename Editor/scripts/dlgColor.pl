@@ -72,7 +72,7 @@ setPalette(PPal) :-
 	gui:select(0),
 	gui:itemSetImg0(Img),
 	gui:select(1),
-	gui:itemSetTxt(ImgName),
+	gui:itemColorPickLoadImg(ImgName),
 	gui:select(title),
 	P is Pal + 1,
 	format(string(Title), 'Color palette #~d', [P]),

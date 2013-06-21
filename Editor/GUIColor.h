@@ -19,18 +19,16 @@
 
 class cGUIColorPick : public cGUIItem
 {
+	r9Img m_img;
 public:
 
-						cGUIColorPick		();
-virtual					~cGUIColorPick		();
+	cGUIColorPick();
+	~cGUIColorPick();
 
-virtual	void			Update				();						// update 
-virtual	void			Draw				();						// draw 
+	void Update();
+	void Draw();
 	
-		// Access
-virtual	void			SetTxt				( int idx, char* text );
-
-		r9Img			m_img;										// image
+	void LoadImg(const std::string &);
 };
 
 #endif

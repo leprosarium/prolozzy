@@ -15,12 +15,12 @@
 // cGUITile
 // IV_VALUE = brush id
 //////////////////////////////////////////////////////////////////////////////////////////////////
-#define IV_GUITILE_SCALE	(IV_USER+0)
-#define IV_GUITILE_SHRINK	(IV_USER+1)
 
 class cGUITile : public cGUIItem
 {
 public:
+	int scale;
+	int shrink;
 						cGUITile			();
 virtual					~cGUITile			();
 virtual	void			Draw				();
@@ -31,17 +31,16 @@ virtual	void			Draw				();
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cGUITileMap
 //////////////////////////////////////////////////////////////////////////////////////////////////
-#define IV_GUITILEMAP_SCALE			(IV_USER+0)
-#define IV_GUITILEMAP_SNAP			(IV_USER+1)
-#define IV_GUITILEMAP_GRID			(IV_USER+2)
-#define IV_GUITILEMAP_AXES			(IV_USER+3)
-#define IV_GUITILEMAP_MAP			(IV_USER+4)		// 4
-
 
 class cGUITileMap : public cGUIItem
 {
 public:
-						cGUITileMap			();
+	int scale;
+	bool snap;
+	bool grid;
+	bool axes;
+	iRect map;
+	cGUITileMap			();
 virtual					~cGUITileMap			();
 
 virtual	void			Update				();						// update 
@@ -53,8 +52,7 @@ virtual	void			Draw				();						// draw
 		int				m_selh;										// map h
 
 		int				m_mode;										// 0=none, 1=selecting, 2=move selection
-		int				m_movex;									// grab point in selection 
-		int				m_movey;									// grab point in selection
+		iV2				m_move;										// grab point in selection 
 
 		int				Snap				( int x );				// snap value to grid
 

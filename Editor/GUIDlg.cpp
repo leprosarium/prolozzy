@@ -28,14 +28,11 @@ void cGUIDlg::Update()
 	// update children
 	std::for_each(m_item.begin(), m_item.end(), [](cGUIItem*i)
 	{
-		if(!i->GetInt(IV_DISABLE))
+		if(!i->disable)
 		{
 			i->Update();
-			if( i->m_mousein && 
-				i->GetInt(IV_HIDDEN)==0 &&
-				i->GetInt(IV_DISABLE)==0 &&
-				i->GetTxt(IV_TOOLTIP) )
-				g_gui->ToolTip = i->GetTxt(IV_TOOLTIP);
+			if( i->m_mousein && !i->hidden && !i->disable && !i->tooltip.empty())
+				g_gui->ToolTip = i->tooltip;
 		}
 	});
 
@@ -52,7 +49,7 @@ void cGUIDlg::Update()
 
 void cGUIDlg::Draw()
 {
-	std::for_each(m_item.begin(), m_item.end(), [](cGUIItem *i){ if(!i->GetInt(IV_HIDDEN)) i->Draw(); } );
+	std::for_each(m_item.begin(), m_item.end(), [](cGUIItem *i){ if(!i->hidden) i->Draw(); } );
 }
 
 void cGUIDlg::Close(int ret)
@@ -73,7 +70,7 @@ void cGUIDlg::Close(int ret)
 
 int cGUIDlg::ItemFind( int id )
 {
-	auto i = std::find_if(m_item.begin(), m_item.end(), [id](cGUIItem *i){ return i->GetInt(IV_ID) == id; });
+	auto i = std::find_if(m_item.begin(), m_item.end(), [id](cGUIItem *i){ return i->id == id; });
 	return i == m_item.end() ? -1 : i - m_item.begin();
 }
 

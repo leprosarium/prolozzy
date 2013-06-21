@@ -508,101 +508,93 @@ PREDICATE_M(gui, itemBuild, 0)
 
 PREDICATE_M(gui, itemGetX, 1)
 {
-	return A1 = g_gui->GetLastItem()->GetInt(IV_X);
+	return A1 = g_gui->GetLastItem()->rect.p1.x;
 }
 PREDICATE_M(gui, itemGetY, 1)
 {
-	return A1 = g_gui->GetLastItem()->GetInt(IV_Y);
+	return A1 = g_gui->GetLastItem()->rect.p1.y;
 }
 PREDICATE_M(gui, itemGetX2, 1)
 {
-	return A1 = g_gui->GetLastItem()->GetInt(IV_X2);
+	return A1 = g_gui->GetLastItem()->rect.p2.x;
 }
 PREDICATE_M(gui, itemGetY2, 1)
 {
-	return A1 = g_gui->GetLastItem()->GetInt(IV_Y2);
+	return A1 = g_gui->GetLastItem()->rect.p2.y;
 }
 
 PREDICATE_M(gui, itemGetTxt, 1)
 {
-	return A1 = g_gui->GetLastItem()->GetTxt(IV_TXT);
+	return A1 = g_gui->GetLastItem()->txt;
 }
 
 PREDICATE_M(gui, itemGetHidden, 0)
 {
-	return g_gui->GetLastItem()->GetInt(IV_HIDDEN) == 1;
+	return g_gui->GetLastItem()->hidden;
 }
 
 PREDICATE_M(gui, itemGetCmdActionParam, 1)
 {
-	return A1 = g_gui->GetLastItem()->GetInt(IV_CMDACTIONPARAM);
+	return A1 = g_gui->GetLastItem()->cmdActionParam;
 }
 
 PREDICATE_M(gui, itemGetValue, 1)
 {
-	return A1 = g_gui->GetLastItem()->GetInt(IV_VALUE);
+	return A1 = g_gui->GetLastItem()->value;
 }
 
 PREDICATE_M(gui, itemGetDisable, 1)
 {
-	return A1 = g_gui->GetLastItem()->GetInt(IV_DISABLE);
+	return A1 = g_gui->GetLastItem()->disable;
 }
 
 
 PREDICATE_M(gui, itemGetColor, 1)
 {
-	return A1 = static_cast<int64>(g_gui->GetLastItem()->GetInt(IV_COLOR));
+	return A1 = static_cast<int64>(g_gui->GetLastItem()->color[0]);
 }
 
 
 PREDICATE_M(gui, itemSetID, 1)
 {
-	g_gui->GetLastItem()->SetInt(IV_ID,  A1);
+	g_gui->GetLastItem()->id = A1;
 	return true;
 }
 
 PREDICATE_M(gui, itemSetRect, 4)
 {
-	cGUIItem* item = g_gui->GetLastItem();
-	item->SetInt(IV_X,  A1);
-	item->SetInt(IV_Y,  A2);
-	item->SetInt(IV_X2, A3);
-	item->SetInt(IV_Y2, A4);
+	g_gui->GetLastItem()->rect = iRect(A1, A2, A3, A4);
 	return true;
 }
 
 PREDICATE_M(gui, itemSetX, 1)
 {
-	cGUIItem* item = g_gui->GetLastItem();
-	item->SetInt(IV_X,  A1);
+	g_gui->GetLastItem()->rect.p1.x = A1;
 	return true;
 }
 
 PREDICATE_M(gui, itemSetY, 1)
 {
-	cGUIItem* item = g_gui->GetLastItem();
-	item->SetInt(IV_Y,  A1);
+	g_gui->GetLastItem()->rect.p1.y = A1;
 	return true;
 }
 
 PREDICATE_M(gui, itemSetX2, 1)
 {
-	cGUIItem* item = g_gui->GetLastItem();
-	item->SetInt(IV_X2,  A1);
+	g_gui->GetLastItem()->rect.p2.x = A1;
 	return true;
 }
 
 PREDICATE_M(gui, itemSetY2, 1)
 {
-	cGUIItem* item = g_gui->GetLastItem();
-	item->SetInt(IV_Y2,  A1);
+	g_gui->GetLastItem()->rect.p2.y = A1;
 	return true;
 }
 
 
 PREDICATE_M(gui, itemSetTxt, 1)
 {
-	g_gui->GetLastItem()->SetTxt(IV_TXT,  A1);
+	g_gui->GetLastItem()->txt = static_cast<const char *>(A1);
 	return true;
 }
 
@@ -612,147 +604,238 @@ PREDICATE_M(gui, itemSetColor, 2)
 	int ColorIdx = A1;
 	if(ColorIdx < 0 || ColorIdx > 3)
 		throw PlDomainError("Color index", A1);
-	
-	int64 Color = A2;
-	item->SetInt(IV_COLOR + ColorIdx,  static_cast<int>(Color));
+	item->color[ColorIdx] = static_cast<dword>(static_cast<int64>(A2));
 	return true;
 }
 
 PREDICATE_M(gui, itemSetStyle, 1)
 {
-	g_gui->GetLastItem()->SetInt(IV_STYLE,  A1);
+	g_gui->GetLastItem()->style = A1;
 	return true;
 }
 
 PREDICATE_M(gui, itemSetTxtAlign, 1)
 {
-	g_gui->GetLastItem()->SetInt(IV_TXTALIGN,  A1);
+	g_gui->GetLastItem()->txtAlign = A1;
 	return true;
 }
 
 PREDICATE_M(gui, itemSetToolTip, 1)
 {
-	g_gui->GetLastItem()->SetTxt(IV_TOOLTIP,  A1);
+	g_gui->GetLastItem()->tooltip = static_cast<const char *>(A1);
 	return true;
 }
 
 PREDICATE_M(gui, itemSetImg0, 1)
 {
-	g_gui->GetLastItem()->SetInt(IV_IMG,  A1);
+	g_gui->GetLastItem()->img0 = A1;
 	return true;
 }
 
 PREDICATE_M(gui, itemSetImg1, 1)
 {
-	g_gui->GetLastItem()->SetInt(IV_IMG + 1,  A1);
+	g_gui->GetLastItem()->img1 = A1;
 	return true;
 }
 
 PREDICATE_M(gui, itemSetCmdAction, 1)
 {
-	g_gui->GetLastItem()->SetTxt(IV_CMDACTION,  A1);
+	g_gui->GetLastItem()->cmdAction = static_cast<const char *>(A1);
 	return true;
 }
 
 PREDICATE_M(gui, itemSetCmdActionParam, 1)
 {
-	g_gui->GetLastItem()->SetInt(IV_CMDACTIONPARAM,  A1);
+	g_gui->GetLastItem()->cmdActionParam = A1;
 	return true;
 }
 
 PREDICATE_M(gui, itemSetHidden, 1)
 {
-	g_gui->GetLastItem()->SetInt(IV_HIDDEN,  A1);
+	g_gui->GetLastItem()->hidden = static_cast<int>(A1) != 0;
 	return true;
 }
 
 PREDICATE_M(gui, itemSetDisable, 1)
 {
-	g_gui->GetLastItem()->SetInt(IV_DISABLE,  A1);
+	g_gui->GetLastItem()->disable = static_cast<int>(A1) != 0;
 	return true;
 }
 
 PREDICATE_M(gui, itemSetValue, 1)
 {
-	g_gui->GetLastItem()->SetInt(IV_VALUE,  A1);
+	g_gui->GetLastItem()->value = A1;
 	return true;
 }
 
 PREDICATE_M(gui, itemSetGroup, 1)
 {
-	g_gui->GetLastItem()->SetInt(IV_GROUP,  A1);
+	g_gui->GetLastItem()->group = A1;
 	return true;
 }
 
 PREDICATE_M(gui, itemSetTxtColor, 1)
 {
-	int64 Color = A1;
-	g_gui->GetLastItem()->SetInt(IV_TXTCOLOR,  static_cast<int>(Color));
+	g_gui->GetLastItem()->txtColor = static_cast<dword>(static_cast<int64>(A1));
 	return true;
 }
 
 
 PREDICATE_M(gui, itemSetImgAlign, 1)
 {
-	g_gui->GetLastItem()->SetInt(IV_IMGALIGN,  A1);
+	g_gui->GetLastItem()->imgAlign = A1;
 	return true;
 }
 
 PREDICATE_M(gui, itemSetImgColor, 1)
 {
-	int64 Color = A1;
-	g_gui->GetLastItem()->SetInt(IV_IMGCOLOR,  static_cast<int>(Color));
+	g_gui->GetLastItem()->imgColor = static_cast<dword>(static_cast<int64>(A1));
 	return true;
 }
 
 PREDICATE_M(gui, itemSetUser, 2)
 {
-	int idx = A1;
-	g_gui->GetLastItem()->SetInt(IV_USER + idx,  A2);
+	g_gui->GetLastItem()->vars[A1] = A2;
 	return true;
 }
 
-#define SET_ITEM_PROP(Prop, PROP) PREDICATE_M(gui, itemSet##Prop, 1)\
-{\
-	g_gui->GetLastItem()->SetInt(IV_##PROP, A1);\
-	return true;\
+PREDICATE_M(gui, itemSetGuiTileScale, 1)
+{
+	if(cGUITile * t = dynamic_cast<cGUITile *>(g_gui->GetLastItem()))
+	{
+		t->scale = A1;
+		return true;
+	}
+	throw PlResourceError("cGUITile");
 }
 
-#define GET_ITEM_PROP(Prop, PROP) PREDICATE_M(gui, itemGet##Prop, 1)\
-{\
-	return A1 = g_gui->GetLastItem()->GetInt(IV_##PROP);\
+PREDICATE_M(gui, itemSetGuiTileShrink, 1)
+{
+	if(cGUITile * t = dynamic_cast<cGUITile *>(g_gui->GetLastItem()))
+	{
+		t->shrink = A1;
+		return true;
+	}
+	throw PlResourceError("cGUITile");
 }
 
-#define ITEM_PROP(Prop, PROP) SET_ITEM_PROP(Prop, PROP) \
-GET_ITEM_PROP(Prop, PROP)
 
-ITEM_PROP(GuiTileScale, GUITILE_SCALE)
-ITEM_PROP(GuiTileShrink, GUITILE_SHRINK)
-ITEM_PROP(GuiTileMapScale, GUITILEMAP_SCALE)
-ITEM_PROP(GuiTileMapSnap, GUITILEMAP_SNAP)
-ITEM_PROP(GuiTileMapGrid, GUITILEMAP_GRID)
-ITEM_PROP(GuiTileMapAxes, GUITILEMAP_AXES)
+PREDICATE_M(gui, itemGetGuiTileScale, 1)
+{
+	if(cGUITile * t = dynamic_cast<cGUITile *>(g_gui->GetLastItem()))
+		return A1 = t->scale;
+	throw PlResourceError("cGUITile");
+}
+
+PREDICATE_M(gui, itemGetGuiTileShrink, 1)
+{
+	if(cGUITile * t = dynamic_cast<cGUITile *>(g_gui->GetLastItem()))
+		return A1 = t->shrink;
+	throw PlResourceError("cGUITile");
+}
+
+PREDICATE_M(gui, itemSetGuiTileMapScale, 1)
+{
+	if(cGUITileMap * t = dynamic_cast<cGUITileMap *>(g_gui->GetLastItem()))
+	{
+		t->scale = A1;
+		return true;
+	}
+	throw PlResourceError("cGUITileMap");
+}
+
+PREDICATE_M(gui, itemGetGuiTileMapScale, 1)
+{
+	if(cGUITileMap * t = dynamic_cast<cGUITileMap *>(g_gui->GetLastItem()))
+		return A1 = t->scale;
+	throw PlResourceError("cGUITileMap");
+}
+
+PREDICATE_M(gui, itemSetGuiTileMapSnap, 1)
+{
+	if(cGUITileMap * t = dynamic_cast<cGUITileMap *>(g_gui->GetLastItem()))
+	{
+		t->snap = static_cast<int>(A1) != 0;
+		return true;
+	}
+	throw PlResourceError("cGUITileMap");
+}
+
+PREDICATE_M(gui, itemGetGuiTileMapSnap, 1)
+{
+	if(cGUITileMap * t = dynamic_cast<cGUITileMap *>(g_gui->GetLastItem()))
+		return A1 = t->snap ? 1 : 0;
+	throw PlResourceError("cGUITileMap");
+}
+
+PREDICATE_M(gui, itemSetGuiTileMapGrid, 1)
+{
+	if(cGUITileMap * t = dynamic_cast<cGUITileMap *>(g_gui->GetLastItem()))
+	{
+		t->grid = static_cast<int>(A1) != 0;
+		return true;
+	}
+	throw PlResourceError("cGUITileMap");
+}
+
+PREDICATE_M(gui, itemGetGuiTileMapGrid, 1)
+{
+	if(cGUITileMap * t = dynamic_cast<cGUITileMap *>(g_gui->GetLastItem()))
+		return A1 = t->grid ? 1 : 0;
+	throw PlResourceError("cGUITileMap");
+}
+
+PREDICATE_M(gui, itemSetGuiTileMapAxes, 1)
+{
+	if(cGUITileMap * t = dynamic_cast<cGUITileMap *>(g_gui->GetLastItem()))
+	{
+		t->axes = static_cast<int>(A1) != 0;
+		return true;
+	}
+	throw PlResourceError("cGUITileMap");
+}
+
+PREDICATE_M(gui, itemGetGuiTileMapAxes, 1)
+{
+	if(cGUITileMap * t = dynamic_cast<cGUITileMap *>(g_gui->GetLastItem()))
+		return A1 = t->axes ? 1 : 0;
+	throw PlResourceError("cGUITileMap");
+}
 
 PREDICATE_M(gui, itemSetGuiTileMapMap, 4)
 {
-	cGUIItem * i = g_gui->GetLastItem();
-	i->SetInt(IV_GUITILEMAP_MAP, A1);
-	i->SetInt(IV_GUITILEMAP_MAP+1, A2);
-	i->SetInt(IV_GUITILEMAP_MAP+2, A3);
-	i->SetInt(IV_GUITILEMAP_MAP+3, A4);
-	return true;
+	if(cGUITileMap * i = dynamic_cast<cGUITileMap *>(g_gui->GetLastItem()))
+	{
+		i->map = iRect(A1, A2, A3, A4);
+		return true;
+	}
+	throw PlResourceError("cGUITileMap");
+
 }
 
 PREDICATE_M(gui, itemGetGuiTileMapMap, 4)
 {
-	cGUIItem * i = g_gui->GetLastItem();
-	bool r1 = A1 = i->GetInt(IV_GUITILEMAP_MAP);
-	bool r2 = A2 = i->GetInt(IV_GUITILEMAP_MAP+1);
-	bool r3 = A3 = i->GetInt(IV_GUITILEMAP_MAP+2);
-	bool r4 = A4 = i->GetInt(IV_GUITILEMAP_MAP+3);
-	return r1 & r2 & r3 && r4;
+	if(cGUITileMap * i = dynamic_cast<cGUITileMap *>(g_gui->GetLastItem()))
+	{
+		bool r1 = A1 = i->map.p1.x;
+		bool r2 = A2 = i->map.p1.y;
+		bool r3 = A3 = i->map.p2.x;
+		bool r4 = A4 = i->map.p2.y;
+		return r1 & r2 & r3 && r4;
+	}
+	throw PlResourceError("cGUITileMap");
 }
 
+PREDICATE_M(gui, itemColorPickLoadImg, 1)
+{
+	if(cGUIColorPick * i = dynamic_cast<cGUIColorPick *>(g_gui->GetLastItem()))
+	{
+		i->LoadImg(A1);
+		return true;
+	}
+	throw PlResourceError("cGUIColorPick");
+
+}
 
 PREDICATE_M(gui, itemCount, 1)
 {

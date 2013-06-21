@@ -16,15 +16,10 @@
 class cGUIButton : public cGUIItem
 {
 public:
-
-						cGUIButton			();
-virtual					~cGUIButton			();
-
-virtual	void			Update				();					// update 
-virtual	void			Draw				();					// draw 
+	virtual	void Update();
+	virtual	void Draw();
 
 };
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cGUICheck
@@ -35,12 +30,8 @@ virtual	void			Draw				();					// draw
 class cGUICheck : public cGUIButton
 {
 public:
-
-						cGUICheck			();
-virtual					~cGUICheck			();
-
-virtual	void			Update				();					// update 
-virtual	void			Action				();					// action
+	virtual	void Update();
+	virtual	void Action();
 };
 
 
@@ -53,12 +44,8 @@ virtual	void			Action				();					// action
 class cGUIRadio: public cGUIButton
 {
 public:
-
-						cGUIRadio			();
-virtual					~cGUIRadio			();
-
-virtual	void			Update				();					// update 
-virtual	void			Action				();					// action
+	virtual	void Update();
+	virtual	void Action();
 };
 
 #endif

@@ -9,13 +9,6 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cGUIButton
 //////////////////////////////////////////////////////////////////////////////////////////////////
-cGUIButton::cGUIButton()
-{
-}
-
-cGUIButton::~cGUIButton()
-{
-}
 
 void cGUIButton::Update()
 {
@@ -26,17 +19,17 @@ void cGUIButton::Update()
 	if(I9_GetKeyDown(I9_MOUSE_B1))
 	{
 		if(m_mousein)
-			Capture(TRUE);
+			Capture(true);
 	}
 	else
 	if(!I9_GetKeyValue(I9_MOUSE_B1))
 	{
 		if(IsCaptured()) 
 		{ 
-			Capture(FALSE);
+			Capture(false);
 			if(m_mousein)
 			{
-				SetInt(IV_CMDACTIONPARAM,1);
+				cmdActionParam = 1;
 				Action();
 			}
 		}
@@ -44,17 +37,14 @@ void cGUIButton::Update()
 
 	if(!IsCaptured() && m_mousein && I9_GetKeyDown(I9_MOUSE_B2))
 	{
-		SetInt(IV_CMDACTIONPARAM,2);
+		cmdActionParam = 2;
 		Action();
 	}
 
-	int style = GetInt(IV_STYLE);
 	if( g_gui->m_capture == this ) 
 		style |= GUISTYLE_PRESSED;
 	else
 		style &= ~GUISTYLE_PRESSED;
-	SetInt(IV_STYLE,style);
-
 }
 
 void cGUIButton::Draw()
@@ -62,94 +52,69 @@ void cGUIButton::Draw()
 	RECT rc; 
 	GetScrRect(rc);
 
-	int style = GetInt(IV_STYLE);
-	
 	// background
 	if( style & GUISTYLE_BACKGR )
-		GUIDrawBar( rc.left, rc.top, rc.right, rc.bottom, GetInt(IV_COLOR) );
+		GUIDrawBar( rc.left, rc.top, rc.right, rc.bottom, color[0] );
 	else
 	if( style & GUISTYLE_GRADIENT )
-		GUIDrawGradient( rc.left, rc.top, rc.right, rc.bottom, GetInt(IV_COLOR), GetInt(IV_COLOR+1) );
+		GUIDrawGradient( rc.left, rc.top, rc.right, rc.bottom, color[0], color[1] );
 	
 	// image
-	int img = (style&GUISTYLE_PRESSED) ? GetInt(IV_IMG+1) : GetInt(IV_IMG);
-	GUIDrawImg( rc.left, rc.top, rc.right, rc.bottom, img, GetInt(IV_IMGCOLOR), GetInt(IV_IMGALIGN));
+	int img = (style & GUISTYLE_PRESSED) ? img1 : img0;
+	GUIDrawImg( rc.left, rc.top, rc.right, rc.bottom, img, imgColor, imgAlign);
 
 	// text
-	GUIDrawText( rc.left, rc.top, rc.right, rc.bottom, GetTxt(IV_TXT), GetInt(IV_TXTCOLOR), GetInt(IV_TXTALIGN), GetInt(IV_TXTOFFSET) );
+	GUIDrawText( rc.left, rc.top, rc.right, rc.bottom, txt.c_str(), txtColor, txtAlign, txtOffset);
 	
 	// border
 	if( style & GUISTYLE_BORDER )
-		GUIDrawRect( rc.left, rc.top, rc.right, rc.bottom, GetInt(IV_COLOR+2) );
+		GUIDrawRect( rc.left, rc.top, rc.right, rc.bottom, color[2]);
 	else
 	if( style & GUISTYLE_BORDER3D )
-		GUIDrawRect3D( rc.left, rc.top, rc.right, rc.bottom, GetInt(IV_COLOR+2), style & GUISTYLE_PRESSED );
+		GUIDrawRect3D( rc.left, rc.top, rc.right, rc.bottom, color[2], style & GUISTYLE_PRESSED );
 
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cGUICheck
 //////////////////////////////////////////////////////////////////////////////////////////////////
-cGUICheck::cGUICheck()
-{
-}
-
-cGUICheck::~cGUICheck()
-{
-}
 
 void cGUICheck::Update()
 {
 	cGUIButton::Update();
-	int style = GetInt(IV_STYLE);
-	if(GetInt(IV_VALUE))
+	if(value)
 		style |= GUISTYLE_PRESSED;
 	else
 		style &= ~GUISTYLE_PRESSED;
-	SetInt(IV_STYLE,style);
 }
 
 void cGUICheck::Action()
 {
-	SetInt( IV_VALUE, (GetInt(IV_VALUE)?0:1) );
+	value = value != 0 ? 0 : 1;
 	cGUIItem::Action();		
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cGUIRadio
 //////////////////////////////////////////////////////////////////////////////////////////////////
-cGUIRadio::cGUIRadio()
-{
-}
-
-cGUIRadio::~cGUIRadio()
-{
-}
 
 void cGUIRadio::Update()
 {
 	cGUIButton::Update();
-	int style = GetInt(IV_STYLE);
-	if(GetInt(IV_VALUE))
+	if(value)
 		style |= GUISTYLE_PRESSED;
 	else
 		style &= ~GUISTYLE_PRESSED;
-	SetInt(IV_STYLE,style);
 }
 
 void cGUIRadio::Action()
 {
 	assert(m_dlg!=NULL);
-	int group = GetInt(IV_GROUP);
 	if(group!=0)
-	{
 		for(int i=0;i<m_dlg->ItemCount();i++)
-		{
-			if(m_dlg->ItemGet(i)->GetInt(IV_GROUP) == group)
-				m_dlg->ItemGet(i)->SetInt(IV_VALUE, 0);
-		}
-	}
-	SetInt( IV_VALUE, 1 );
+			if(m_dlg->ItemGet(i)->group == group)
+				m_dlg->ItemGet(i)->value = 0;
+	value = 1;
 	cGUIItem::Action();		
 }
 

@@ -11,9 +11,9 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cGUITile
 //////////////////////////////////////////////////////////////////////////////////////////////////
-cGUITile::cGUITile()
+cGUITile::cGUITile(): scale(), shrink()
 {
-	SetInt(IV_IMGALIGN,0);
+	imgAlign = 0;
 }
 
 
@@ -27,7 +27,7 @@ void cGUITile::Draw()
 	GetScrRect(rc);
 
 	// tile
-	int idx = g_paint.TileFind(GetInt(IV_VALUE));
+	int idx = g_paint.TileFind(value);
 	cTile* tile = g_paint.TileGet(idx); 
 	if(tile==NULL) return;
 	int x = rc.left;
@@ -39,8 +39,7 @@ void cGUITile::Draw()
 	fRect src(0,0,w,h);
 
 	// shrink or clip
-	float scale = (float)GetInt(IV_GUITILE_SCALE);
-	int shrink = GetInt(IV_GUITILE_SHRINK);
+	float scale = static_cast<float>(this->scale);
 	if( w*scale > rc.right-rc.left )
 	{
 		if(shrink)
@@ -66,7 +65,7 @@ void cGUITile::Draw()
 	src.p2 += ss;
 
 	// align
-	int align = GetInt(IV_IMGALIGN);
+	int align = imgAlign;
 	if((align & GUIALIGN_CENTERX) == GUIALIGN_CENTERX)	x = (rc.left+rc.right-w)/2;	else	
 	if(align & GUIALIGN_LEFT)		x = rc.left;				else
 	if(align & GUIALIGN_RIGHT)		x = rc.right-w;
@@ -82,7 +81,7 @@ void cGUITile::Draw()
 	iRect rect(x, y, 
 		std::min(x+static_cast<int>(w*scale), static_cast<int>(rc.right)), 
 		std::min(y+static_cast<int>(h*scale), static_cast<int>(rc.bottom)));
-	GUIDrawBar(rect.p1.x, rect.p1.y, rect.p2.x, rect.p2.y, GetInt(IV_COLOR+1)); 
+	GUIDrawBar(rect.p1.x, rect.p1.y, rect.p2.x, rect.p2.y, color[1]); 
 		
 	// sprite
 	R9_DrawSprite( fV2(x,y), src, tile->m_tex, 0xffffffff, 0, scale );
@@ -96,11 +95,8 @@ void cGUITile::Draw()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cGUITileMap
 //////////////////////////////////////////////////////////////////////////////////////////////////
-cGUITileMap::cGUITileMap()
+cGUITileMap::cGUITileMap() : scale(), snap(), grid(), axes(), m_mode()
 {
-	m_mode = 0;
-	m_movex = 0;
-	m_movey = 0;
 }
 
 cGUITileMap::~cGUITileMap()
@@ -109,16 +105,15 @@ cGUITileMap::~cGUITileMap()
 
 void cGUITileMap::Update()
 {
-
-	int selx = GetInt(IV_GUITILEMAP_MAP+0);
-	int sely = GetInt(IV_GUITILEMAP_MAP+1);
-	int selw = GetInt(IV_GUITILEMAP_MAP+2)-selx;
-	int selh = GetInt(IV_GUITILEMAP_MAP+3)-sely;
+	int selx = map.p1.x;
+	int sely = map.p1.y;
+	int selw = map.Width();
+	int selh = map.Height();
 	if(selw<0) selw=0;
 	if(selh<0) selh=0;
 
 	// tile info
-	int tileid = GetInt(IV_VALUE);
+	int tileid = value;
 	int idx = g_paint.TileFind(tileid);
 	cTile* tile = g_paint.TileGet(idx); 
 	if(tile==NULL) return;
@@ -130,8 +125,8 @@ void cGUITileMap::Update()
 	m_mousein = INRECT( g_gui->m_mousex, g_gui->m_mousey, rc);
 	int mx = g_gui->m_mousex - rc.left;	// mousex relative to client
 	int my = g_gui->m_mousey - rc.top;	// mousey relative to client
-	mx = (int)((float)mx / GetInt(IV_GUITILEMAP_SCALE)); // to tile space
-	my = (int)((float)my / GetInt(IV_GUITILEMAP_SCALE)); // to tile space
+	mx = static_cast<int>(static_cast<float>(mx) / scale); // to tile space
+	my = static_cast<int>(static_cast<float>(my) / scale); // to tile space
 
 	iRect rctile(0, 0, tilew, tileh);
 	BOOL mouseintile = rctile.IsInside(iV2(mx, my));
@@ -141,9 +136,9 @@ void cGUITileMap::Update()
 
 	// additional keys for snap and grid
 	BOOL shift	= (I9_GetKeyValue(I9K_LSHIFT)) || (I9_GetKeyValue(I9K_RSHIFT));
-	if(I9_GetKeyDown(I9K_S))	SetInt( IV_GUITILEMAP_SNAP, !GetInt(IV_GUITILEMAP_SNAP) );
-	if(I9_GetKeyDown(I9K_G))	SetInt( IV_GUITILEMAP_GRID, !GetInt(IV_GUITILEMAP_GRID) );
-	if(I9_GetKeyDown(I9K_A))	SetInt( IV_GUITILEMAP_AXES, !GetInt(IV_GUITILEMAP_AXES) );
+	if(I9_GetKeyDown(I9K_S))	snap = !snap;
+	if(I9_GetKeyDown(I9K_G))	grid = !grid;
+	if(I9_GetKeyDown(I9K_A))	axes = !axes;
 	if(I9_GetKeyDown(I9K_LEFT))	if(shift) selw--; else selx--;
 	if(I9_GetKeyDown(I9K_RIGHT))	if(shift) selw++; else selx++;
 	if(I9_GetKeyDown(I9K_UP))		if(shift) selh--; else sely--;
@@ -160,15 +155,14 @@ void cGUITileMap::Update()
 			sely = Snap(my);
 			selw = 0;
 			selh = 0;
-			Capture(TRUE);
+			Capture(true);
 		}
 		if(mouseinsel && I9_GetKeyDown(I9_MOUSE_B2))
 		{ 
 			// start moving selection
 			m_mode = 2;
-			m_movex = mx-selx;
-			m_movey = my-sely;
-			Capture(TRUE);
+			m_move = iV2(mx-selx, my-sely);
+			Capture(true);
 		}
 	}
 	else
@@ -185,8 +179,8 @@ void cGUITileMap::Update()
 	else
 	if(m_mode==2)  // move selection
 	{
-		selx =  mx - m_movex;
-		sely =  my - m_movey;
+		selx =  mx - m_move.x;
+		sely =  my - m_move.y;
 		selx = Snap(selx);
 		sely = Snap(sely);
 
@@ -200,12 +194,12 @@ void cGUITileMap::Update()
 	if(m_mode==1 && !I9_GetKeyValue(I9_MOUSE_B1))
 	{
 		m_mode = 0;
-		Capture(FALSE);
+		Capture(false);
 	}
 	if(m_mode==2 && !I9_GetKeyValue(I9_MOUSE_B2))
 	{
 		m_mode = 0;
-		Capture(FALSE);
+		Capture(false);
 	}
 
 	
@@ -218,11 +212,7 @@ void cGUITileMap::Update()
 	if(sely+selh>tileh) selh=tileh-sely;
 
 	// set back
-	SetInt(IV_GUITILEMAP_MAP+0, selx);
-	SetInt(IV_GUITILEMAP_MAP+1, sely);
-	SetInt(IV_GUITILEMAP_MAP+2, selx+selw);
-	SetInt(IV_GUITILEMAP_MAP+3, sely+selh);
-
+	map = iRect(selx, sely, selx+selw, sely+selh);
 }
 
 void cGUITileMap::Draw()
@@ -231,21 +221,19 @@ void cGUITileMap::Draw()
 	RECT rect;
 	GetScrRect(rect);
 
-	int selx = GetInt(IV_GUITILEMAP_MAP+0);
-	int sely = GetInt(IV_GUITILEMAP_MAP+1);
-	int selw = GetInt(IV_GUITILEMAP_MAP+2)-selx;
-	int selh = GetInt(IV_GUITILEMAP_MAP+3)-sely;
+	int selx = map.p1.x;
+	int sely = map.p1.y;
+	int selw = map.Width();
+	int selh = map.Height();
 	if(selw<0) selw=0;
 	if(selh<0) selh=0;
-	int scale = GetInt(IV_GUITILEMAP_SCALE);
-
 	int mx = g_gui->m_mousex - rect.left; // mousex relative to client
 	int my = g_gui->m_mousey - rect.top; // mousey relative to client
-	mx = (int)((float)mx / scale); // to tile space
-	my = (int)((float)my / scale); // to tile space
+	mx = static_cast<int>(static_cast<float>(mx) / scale); // to tile space
+	my = static_cast<int>(static_cast<float>(my) / scale); // to tile space
 
 	// draw grid
-	if(GetInt(IV_GUITILEMAP_GRID))
+	if(grid)
 	{
 		int i;
 		RECT rc; 
@@ -273,7 +261,7 @@ void cGUITileMap::Draw()
 	}
 
 	// draw axes
-	if(GetInt(IV_GUITILEMAP_AXES))
+	if(axes)
 	{
 		RECT rc; 
 		GetScrRect(rc);
@@ -305,7 +293,7 @@ void cGUITileMap::Draw()
 
 int cGUITileMap::Snap( int x )
 { 
-	if(!GetInt(IV_GUITILEMAP_SNAP)) return x;
+	if(!snap) return x;
 	return (x/8)*8 + (x%8>=4)*8; // snap closer
 	// return x = (x/8)*8; // snap under
 }

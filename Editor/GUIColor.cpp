@@ -16,7 +16,6 @@ cGUIColorPick::cGUIColorPick()
 
 cGUIColorPick::~cGUIColorPick()
 {
-	SetTxt(IV_TXT,NULL);
 }
 
 void cGUIColorPick::Update()
@@ -31,24 +30,23 @@ void cGUIColorPick::Update()
 	{
 		float x = ((float)mx / (rc.right-rc.left))*m_img.m_width;
 		float y = ((float)my / (rc.bottom-rc.top))*m_img.m_height;
-		dword color	= m_img.getColor((int)x,(int)y);
-		SetInt(IV_COLOR,color);
+		color[0] = m_img.getColor((int)x,(int)y);
 
 		if(I9_GetKeyUp(I9_MOUSE_B1))
 		{
-			SetInt(IV_CMDACTIONPARAM,1);
+			cmdActionParam = 1;
 			Action();
 		}
 		else
 		if(I9_GetKeyUp(I9_MOUSE_B2))
 		{
-			SetInt(IV_CMDACTIONPARAM,2);
+			cmdActionParam = 2;
 			Action();
 		}
 		else
 		{
 			std::ostringstream o;
-			o << std::hex << std::uppercase << std::setfill('0') << std::setw(6) << (color & 0x00ffffff);
+			o << std::hex << std::uppercase << std::setfill('0') << std::setw(6) << (color[0] & 0x00ffffff);
 			g_gui->ToolTip = o.str();
 		}
 	}
@@ -64,18 +62,11 @@ void cGUIColorPick::Draw()
 // Access
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void cGUIColorPick::SetTxt( int idx, char* text )
+void cGUIColorPick::LoadImg(const std::string & nm )
 {
-	if(idx==IV_TXT)
-	{
-		char* txt = m_var[idx].m_str;
-		if(txt!=NULL)	R9_ImgDestroy(&m_img);
-		cGUIItem::SetTxt(idx,text);
-		txt = m_var[idx].m_str;
-		if(txt!=NULL)	R9_ImgLoadFile(txt,&m_img);
-		return;
-	}
-	cGUIItem::SetTxt(idx,text);
+	txt = nm;
+	R9_ImgDestroy(&m_img);
+	R9_ImgLoadFile(nm, &m_img);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

@@ -37,8 +37,7 @@ virtual					~cGUI();
 		std::string		ToolTip;
 
 		// input
-		int				m_mousex;						// mouse x pos
-		int				m_mousey;						// mouse y pos
+		iV2				m_mouse;						// mouse pos
 		int				m_key[GUIKEY_MAX];		
 		void			ReadInput();					// read input ( CALL IT BEFORE UPDATE ! )
 

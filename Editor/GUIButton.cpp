@@ -12,9 +12,7 @@
 
 void cGUIButton::Update()
 {
-	RECT rc;
-	GetScrRect(rc);
-	m_mousein = INRECT( g_gui->m_mousex, g_gui->m_mousey, rc);
+	m_mousein = scrRect().IsInside(g_gui->m_mouse);
 
 	if(I9_GetKeyDown(I9_MOUSE_B1))
 	{
@@ -49,29 +47,28 @@ void cGUIButton::Update()
 
 void cGUIButton::Draw()
 {
-	RECT rc; 
-	GetScrRect(rc);
+	iRect rc = scrRect();
 
 	// background
 	if( style & GUISTYLE_BACKGR )
-		GUIDrawBar( rc.left, rc.top, rc.right, rc.bottom, color[0] );
+		GUIDrawBar( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, color[0] );
 	else
 	if( style & GUISTYLE_GRADIENT )
-		GUIDrawGradient( rc.left, rc.top, rc.right, rc.bottom, color[0], color[1] );
+		GUIDrawGradient( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, color[0], color[1] );
 	
 	// image
 	int img = (style & GUISTYLE_PRESSED) ? img1 : img0;
-	GUIDrawImg( rc.left, rc.top, rc.right, rc.bottom, img, imgColor, imgAlign);
+	GUIDrawImg( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, img, imgColor, imgAlign);
 
 	// text
-	GUIDrawText( rc.left, rc.top, rc.right, rc.bottom, txt.c_str(), txtColor, txtAlign, txtOffset);
+	GUIDrawText( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, txt.c_str(), txtColor, txtAlign, txtOffset);
 	
 	// border
 	if( style & GUISTYLE_BORDER )
-		GUIDrawRect( rc.left, rc.top, rc.right, rc.bottom, color[2]);
+		GUIDrawRect( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, color[2]);
 	else
 	if( style & GUISTYLE_BORDER3D )
-		GUIDrawRect3D( rc.left, rc.top, rc.right, rc.bottom, color[2], style & GUISTYLE_PRESSED );
+		GUIDrawRect3D( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, color[2], style & GUISTYLE_PRESSED );
 
 }
 

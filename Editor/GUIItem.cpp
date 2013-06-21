@@ -36,9 +36,7 @@ void cGUIItem::Build()
 
 void cGUIItem::Update()
 {
-	RECT rc;
-	GetScrRect(rc);
-	m_mousein = INRECT( g_gui->m_mousex, g_gui->m_mousey, rc);
+	m_mousein = scrRect().IsInside(g_gui->m_mouse);
 	if(m_mousein)
 	{
 		cmdActionParam = 0;
@@ -50,28 +48,27 @@ void cGUIItem::Update()
 
 void cGUIItem::Draw()
 {
-	RECT rc; 
-	GetScrRect(rc);
+	iRect rc = scrRect();
 
 	// background
 	if( style & GUISTYLE_BACKGR )
-		GUIDrawBar( rc.left, rc.top, rc.right, rc.bottom, color[0]);
+		GUIDrawBar( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, color[0]);
 	else
 	if( style & GUISTYLE_GRADIENT )
-		GUIDrawGradient( rc.left, rc.top, rc.right, rc.bottom, color[0], color[1]);
+		GUIDrawGradient( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, color[0], color[1]);
 	
 	// image
-	GUIDrawImg( rc.left, rc.top, rc.right, rc.bottom, img0, imgColor, imgAlign);
+	GUIDrawImg( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, img0, imgColor, imgAlign);
 
 	// text
-	GUIDrawText( rc.left, rc.top, rc.right, rc.bottom, txt.c_str(), txtColor, txtAlign, txtOffset);
+	GUIDrawText( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, txt.c_str(), txtColor, txtAlign, txtOffset);
 	
 	// border
 	if( style & GUISTYLE_BORDER )
-		GUIDrawRect( rc.left, rc.top, rc.right, rc.bottom, color[2]);
+		GUIDrawRect( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, color[2]);
 	else
 	if( style & GUISTYLE_BORDER3D )
-		GUIDrawRect3D( rc.left, rc.top, rc.right, rc.bottom, color[2], style & GUISTYLE_PRESSED );
+		GUIDrawRect3D( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, color[2], style & GUISTYLE_PRESSED );
 
 }
 
@@ -79,17 +76,11 @@ void cGUIItem::Draw()
 // Utils
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void cGUIItem::GetScrRect( RECT &rc )
+iRect cGUIItem::scrRect() const
 {
-	rc = rect;
-	if(m_dlg)
-	{
-		rc.left	  += m_dlg->rect.p1.x;
-		rc.top	  += m_dlg->rect.p1.y;
-		rc.right  += m_dlg->rect.p1.x;
-		rc.bottom += m_dlg->rect.p1.y;
-	}
+	return m_dlg ? iRect(rect).Offset(m_dlg->rect.p1) : rect;
 }
+
 
 
 int cGUIItem::SetParent( cGUIDlg* dlg)
@@ -151,16 +142,15 @@ cGUITitle::~cGUITitle()
 
 void cGUITitle::Update()
 {
-	RECT rc;
-	GetScrRect(rc);
-	m_mousein = INRECT( g_gui->m_mousex, g_gui->m_mousey, rc);
+	iRect rc = scrRect();
+	m_mousein = rc.IsInside(g_gui->m_mouse);
 
 	if(I9_GetKeyDown(I9_MOUSE_B1))
 	{
 		if(m_mousein)
 		{
-			m_movex = g_gui->m_mousex-rc.left;
-			m_movey = g_gui->m_mousey-rc.top;
+			m_movex = g_gui->m_mouse.x-rc.p1.x;
+			m_movey = g_gui->m_mouse.y-rc.p1.y;
 			Capture(true);
 		}
 	}
@@ -175,7 +165,7 @@ void cGUITitle::Update()
 
 	if(IsCaptured() && m_dlg) // move parent dialog
 	{
-		iV2 p(g_gui->m_mousex, g_gui->m_mousey);
+		iV2 p(g_gui->m_mouse);
 		if(p.x < 0) p.x = 0;
 		if(p.x > R9_GetWidth()-1) p.x = R9_GetWidth()-1;
 		if(p.y < 0) p.y = 0;

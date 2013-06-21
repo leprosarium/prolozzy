@@ -23,15 +23,14 @@ cGUITile::~cGUITile()
 
 void cGUITile::Draw()
 {
-	RECT rc;
-	GetScrRect(rc);
+	iRect rc = scrRect();
 
 	// tile
 	int idx = g_paint.TileFind(value);
 	cTile* tile = g_paint.TileGet(idx); 
 	if(tile==NULL) return;
-	int x = rc.left;
-	int y = rc.top;
+	int x = rc.p1.x;
+	int y = rc.p1.y;
 	int w = tile->GetWidth();
 	int h = tile->GetHeight();
 
@@ -40,19 +39,19 @@ void cGUITile::Draw()
 
 	// shrink or clip
 	float scale = static_cast<float>(this->scale);
-	if( w*scale > rc.right-rc.left )
+	if( w*scale > rc.Width())
 	{
 		if(shrink)
-			scale = (float)(rc.right-rc.left) / w;
+			scale = (float)(rc.Width()) / w;
 		else
-			src.p2.x = (rc.right-rc.left) / scale;
+			src.p2.x = (rc.Width()) / scale;
 	}
-	if( h*scale > rc.bottom-rc.top )
+	if( h*scale > rc.Height())
 	{
 		if(shrink)
-			scale = (float)(rc.bottom-rc.top) / h;
+			scale = (float)(rc.Height()) / h;
 		else
-			src.p2.y = (rc.bottom-rc.top) / scale;
+			src.p2.y = (rc.Height()) / scale;
 	}
 
 	// frame anim (1 game frame = 25ms); don't know brush delay !
@@ -66,21 +65,21 @@ void cGUITile::Draw()
 
 	// align
 	int align = imgAlign;
-	if((align & GUIALIGN_CENTERX) == GUIALIGN_CENTERX)	x = (rc.left+rc.right-w)/2;	else	
-	if(align & GUIALIGN_LEFT)		x = rc.left;				else
-	if(align & GUIALIGN_RIGHT)		x = rc.right-w;
-	if((align & GUIALIGN_CENTERY) == GUIALIGN_CENTERY)	y = (rc.top+rc.bottom-h)/2;	else	
-	if(align & GUIALIGN_TOP)		y = rc.top;				else
-	if(align & GUIALIGN_BOTTOM)		y = rc.bottom-h;
+	if((align & GUIALIGN_CENTERX) == GUIALIGN_CENTERX)	x = (rc.p1.x + rc.p2.x - w)/2;	else	
+	if(align & GUIALIGN_LEFT)		x = rc.p1.x;				else
+	if(align & GUIALIGN_RIGHT)		x = rc.p2.x-w;
+	if((align & GUIALIGN_CENTERY) == GUIALIGN_CENTERY)	y = (rc.p1.y + rc.p2.y-h)/2;	else	
+	if(align & GUIALIGN_TOP)		y = rc.p1.y;				else
+	if(align & GUIALIGN_BOTTOM)		y = rc.p2.y-h;
 
 	// clipping on
 	fRect oldclip = R9_GetClipping();
-	R9_SetClipping( fRect(rc.left,rc.top,rc.right,rc.bottom) );
+	R9_SetClipping(fRect(rc));
 
 	// background
 	iRect rect(x, y, 
-		std::min(x+static_cast<int>(w*scale), static_cast<int>(rc.right)), 
-		std::min(y+static_cast<int>(h*scale), static_cast<int>(rc.bottom)));
+		std::min(x+static_cast<int>(w*scale), static_cast<int>(rc.p2.x)), 
+		std::min(y+static_cast<int>(h*scale), static_cast<int>(rc.p2.y)));
 	GUIDrawBar(rect.p1.x, rect.p1.y, rect.p2.x, rect.p2.y, color[1]); 
 		
 	// sprite
@@ -105,12 +104,10 @@ cGUITileMap::~cGUITileMap()
 
 void cGUITileMap::Update()
 {
-	int selx = map.p1.x;
-	int sely = map.p1.y;
-	int selw = map.Width();
-	int selh = map.Height();
-	if(selw<0) selw=0;
-	if(selh<0) selh=0;
+	iV2 sel = map.p1;
+	iV2 sels = map.Size();
+	if(sels.x < 0) sels.x = 0;
+	if(sels.y < 0) sels.y = 0;
 
 	// tile info
 	int tileid = value;
@@ -120,29 +117,26 @@ void cGUITileMap::Update()
 	int tilew = tile->GetWidth();
 	int tileh = tile->GetHeight();
 
-	RECT rc;
-	GetScrRect(rc); // control rect in screen
-	m_mousein = INRECT( g_gui->m_mousex, g_gui->m_mousey, rc);
-	int mx = g_gui->m_mousex - rc.left;	// mousex relative to client
-	int my = g_gui->m_mousey - rc.top;	// mousey relative to client
-	mx = static_cast<int>(static_cast<float>(mx) / scale); // to tile space
-	my = static_cast<int>(static_cast<float>(my) / scale); // to tile space
+	iRect rc = scrRect(); // control rect in screen
+	m_mousein = rc.IsInside(g_gui->m_mouse);
+	iV2 m = g_gui->m_mouse - rc.p1;	// mouse relative to client
+	m = fV2(m) / scale; // to tile space
 
 	iRect rctile(0, 0, tilew, tileh);
-	BOOL mouseintile = rctile.IsInside(iV2(mx, my));
+	BOOL mouseintile = rctile.IsInside(m);
 
-	iRect rcsel(selx, sely, selx+selw, sely+selh);
-	BOOL mouseinsel = rcsel.IsInside(iV2(mx, my));
+	iRect rcsel(sel, sel + sels);
+	BOOL mouseinsel = rcsel.IsInside(m);
 
 	// additional keys for snap and grid
 	BOOL shift	= (I9_GetKeyValue(I9K_LSHIFT)) || (I9_GetKeyValue(I9K_RSHIFT));
 	if(I9_GetKeyDown(I9K_S))	snap = !snap;
 	if(I9_GetKeyDown(I9K_G))	grid = !grid;
 	if(I9_GetKeyDown(I9K_A))	axes = !axes;
-	if(I9_GetKeyDown(I9K_LEFT))	if(shift) selw--; else selx--;
-	if(I9_GetKeyDown(I9K_RIGHT))	if(shift) selw++; else selx++;
-	if(I9_GetKeyDown(I9K_UP))		if(shift) selh--; else sely--;
-	if(I9_GetKeyDown(I9K_DOWN))	if(shift) selh++; else sely++;
+	if(I9_GetKeyDown(I9K_LEFT))	if(shift) sels.x--; else sel.x--;
+	if(I9_GetKeyDown(I9K_RIGHT))	if(shift) sels.x++; else sel.x++;
+	if(I9_GetKeyDown(I9K_UP))		if(shift) sels.y--; else sel.y--;
+	if(I9_GetKeyDown(I9K_DOWN))	if(shift) sels.y++; else sel.y++;
 
 	// mouse down
 	if(m_mode==0)
@@ -151,43 +145,40 @@ void cGUITileMap::Update()
 		{ 
 			// start new selection
 			m_mode = 1;
-			selx = Snap(mx);
-			sely = Snap(my);
-			selw = 0;
-			selh = 0;
+			sel.x = Snap(m.x);
+			sel.y = Snap(m.y);
+			sels = 0;
 			Capture(true);
 		}
 		if(mouseinsel && I9_GetKeyDown(I9_MOUSE_B2))
 		{ 
 			// start moving selection
 			m_mode = 2;
-			m_move = iV2(mx-selx, my-sely);
+			m_move = m - sel;
 			Capture(true);
 		}
 	}
 	else
 	if(m_mode==1)	// selecting
 	{
-		selw = Snap(mx) - selx;
-		selh = Snap(my) - sely;
+		sels = iV2(Snap(m.x), Snap(m.y)) - sel;
 
-		if(selw<0) selw=0;
-		if(selw>tilew-selx)	selw=tilew-selx;
-		if(selh<0) selh=0;
-		if(selh>tileh-sely)	selh=tileh-sely;
+		if(sels.x<0) sels.x=0;
+		if(sels.x>tilew-sel.x)	sels.x=tilew-sel.x;
+		if(sels.y<0) sels.y=0;
+		if(sels.y>tileh-sel.y)	sels.y=tileh-sel.y;
 	}
 	else
 	if(m_mode==2)  // move selection
 	{
-		selx =  mx - m_move.x;
-		sely =  my - m_move.y;
-		selx = Snap(selx);
-		sely = Snap(sely);
+		sel =  m - m_move;
+		sel.x = Snap(sel.x);
+		sel.y = Snap(sel.y);
 
-		if(selx<0) selx=0;
-		if(sely<0) sely=0;
-		if(selx+selw>tilew) selx=tilew-selw;
-		if(sely+selh>tileh) sely=tileh-selh;
+		if(sel.x<0) sel.x=0;
+		if(sel.y<0) sel.y=0;
+		if(sel.x+sels.x>tilew) sel.x=tilew-sels.x;
+		if(sel.y+sels.y>tileh) sel.y=tileh-sels.y;
 	}
 
 	// loosing captures
@@ -204,88 +195,75 @@ void cGUITileMap::Update()
 
 	
 	// bound
-	if(selx<0) selx=0;
-	if(sely<0) sely=0;
-	if(selx>tilew-1) selx=tilew-1;
-	if(sely>tileh-1) sely=tileh-1;
-	if(selx+selw>tilew) selw=tilew-selx;
-	if(sely+selh>tileh) selh=tileh-sely;
+	if(sel.x<0) sel.x=0;
+	if(sel.y<0) sel.y=0;
+	if(sel.x>tilew-1) sel.x=tilew-1;
+	if(sel.y>tileh-1) sel.y=tileh-1;
+	if(sel.x+sels.x>tilew) sels.x=tilew-sel.x;
+	if(sel.y+sels.y>tileh) sels.y=tileh-sel.y;
 
 	// set back
-	map = iRect(selx, sely, selx+selw, sely+selh);
+	map = iRect(sel, sel+sels);
 }
 
 void cGUITileMap::Draw()
 {
+	iRect rect = scrRect();
 
-	RECT rect;
-	GetScrRect(rect);
-
-	int selx = map.p1.x;
-	int sely = map.p1.y;
-	int selw = map.Width();
-	int selh = map.Height();
-	if(selw<0) selw=0;
-	if(selh<0) selh=0;
-	int mx = g_gui->m_mousex - rect.left; // mousex relative to client
-	int my = g_gui->m_mousey - rect.top; // mousey relative to client
-	mx = static_cast<int>(static_cast<float>(mx) / scale); // to tile space
-	my = static_cast<int>(static_cast<float>(my) / scale); // to tile space
+	iV2 sel = map.p1;
+	iV2 sels = map.Size();
+	if(sels.x<0) sels.x=0;
+	if(sels.y<0) sels.y=0;
+	iV2 m = g_gui->m_mouse - rect.p1; // mouse relative to client
+	m = fV2(m) / scale; // to tile space
 
 	// draw grid
 	if(grid)
 	{
-		int i;
-		RECT rc; 
-		GetScrRect(rc);
-		int step=8;
+		iRect rc = scrRect();
 		dword color = 0xA0ffffff;
+		int st = 8 * scale;
+		for(int i=rc.p1.y; i<rc.p2.y; i+=st)
+			R9_DrawLine( fV2(rc.p1.x,i), fV2(rc.p2.x,i), color );
 
-		for(i=rc.top; i<rc.bottom; i+=step*scale)
-			R9_DrawLine( fV2(rc.left,i), fV2(rc.right,i), color );
-
-		for(i=rc.left; i<rc.right; i+=step*scale)
-			R9_DrawLine( fV2(i,rc.top), fV2(i,rc.bottom), color );
+		for(int i=rc.p1.x; i<rc.p2.x; i+=st)
+			R9_DrawLine( fV2(i,rc.p1.y), fV2(i,rc.p2.y), color );
 	}
 
 	// draw selection
-	if( selw!=0 && selh!=0 )
+	if( sels.x!=0 && sels.y!=0 )
 	{
-		int x1,x2,y1,y2;
-		x1 = rect.left + selx * scale;
-		y1 = rect.top + sely * scale;
-		x2 = rect.left + (selx+selw) * scale;
-		y2 = rect.top + (sely+selh) * scale;
-		if( x1!=x2 && y1!=y2 ) 
-			GUIDrawRectDot(x1,y1,x2,y2,0xffffffff);
+		iRect r(sel * scale,  (sel + sels) * scale);
+		r.Offset(rect.p1);
+		if( r.p1.x != r.p2.x && r.p1.y != r.p2.y ) 
+			GUIDrawRectDot(r.p1.x,r.p1.y,r.p2.x,r.p2.y,0xffffffff);
 	}
 
 	// draw axes
 	if(axes)
 	{
-		RECT rc; 
-		GetScrRect(rc);
+		iRect rc = scrRect();
 		dword color = 0xff00ff00;
 		
-		int x = rect.left+Snap(mx)*scale;
-		int y = rect.top+Snap(my)*scale;
+		int x = rect.p1.x + Snap(m.x)*scale;
+		int y = rect.p1.y + Snap(m.y)*scale;
 		if(m_mousein)
 		{
-			R9_DrawLine( fV2(rc.left,y), fV2(rc.right,y), color );
-			R9_DrawLine( fV2(x,rc.top), fV2(x,rc.bottom), color );
+			R9_DrawLine( fV2(rc.p1.x,y), fV2(rc.p2.x,y), color );
+			R9_DrawLine( fV2(x,rc.p1.y), fV2(x,rc.p2.y), color );
 		}
 	}
 
 	// tooltip bar info
-	mx=Snap(mx); 
-	my=Snap(my);
+	m.x=Snap(m.x); 
+	m.y=Snap(m.y);
 
 	if(m_mousein)
 	{
 		std::stringstream o;
-		if(m_mode==0)	o << mx << " " << my;
-		else if(m_mode==1)	o << mx << " " << my << std::endl << selw << " x " << selh;
-		else if(m_mode==2)	o << mx << " " << my;
+		if(m_mode==0)	o << m.x << " " << m.y;
+		else if(m_mode==1)	o << m.x << " " << m.y << std::endl << sels.x << " x " << sels.y;
+		else if(m_mode==2)	o << m.x << " " << m.y;
 		g_gui->ToolTip = o.str();
 	}
 

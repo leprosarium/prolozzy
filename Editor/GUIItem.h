@@ -100,7 +100,8 @@ virtual	void			Draw				();					// draw
 
 
 		// util
-		void			GetScrRect			( RECT &rc );
+	iRect scrRect() const;
+
 inline	void			GetCliRect			( RECT &rc )		{ rc.left = 0; rc.top = 0; rc.right = rect.Width(); rc.bottom = rect.Height(); }
 		int				SetParent			( cGUIDlg* dlg );	// calls dlg->ItemAdd
 

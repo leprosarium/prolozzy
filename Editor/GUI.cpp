@@ -22,8 +22,6 @@ cGUI* g_gui = NULL;
 
 cGUI::cGUI()
 {
-	m_mousex		= 0;
-	m_mousey		= 0;
 	m_font			= NULL;
 	m_lastdlg		= -1;
 	m_lastitem		= NULL;
@@ -52,8 +50,8 @@ BOOL cGUI::Init()
 	POINT pt;
 	GetCursorPos(&pt);
 	ScreenToClient(E9_GetHWND(), &pt); 
-	m_mousex = pt.x;//Input()->GetMouseX();
-	m_mousey = pt.y;//Input()->GetMouseY();
+	m_mouse.x = pt.x;
+	m_mouse.y = pt.y;
 
 	return ok;
 }
@@ -122,14 +120,14 @@ void cGUI::Draw()
 		float w,h;
 		m_font->GetTextBox(ToolTip.c_str() ,w, h);
 		w+=8; h+=4;
-		GUIDrawBar(  m_mousex+16, m_mousey+16, m_mousex+16+(int)w, m_mousey+16+(int)h, 0xffffa000 );
-		GUIDrawRect( m_mousex+16, m_mousey+16, m_mousex+16+(int)w, m_mousey+16+(int)h, 0xff000000 );
-		GUIDrawText( m_mousex+16+4, m_mousey+16+2, m_mousex+16+(int)w-4, m_mousey+16+(int)h-2, ToolTip.c_str(), 0xff000000, GUIALIGN_LEFT|GUIALIGN_TOP );
+		GUIDrawBar(  m_mouse.x+16, m_mouse.y+16, m_mouse.x+16+(int)w, m_mouse.y+16+(int)h, 0xffffa000 );
+		GUIDrawRect( m_mouse.x+16, m_mouse.y+16, m_mouse.x+16+(int)w, m_mouse.y+16+(int)h, 0xff000000 );
+		GUIDrawText( m_mouse.x+16+4, m_mouse.y+16+2, m_mouse.x+16+(int)w-4, m_mouse.y+16+(int)h-2, ToolTip.c_str(), 0xff000000, GUIALIGN_LEFT|GUIALIGN_TOP );
 	}
 
 	// mouse cursor (for full screen tests)
 	if(!App.Windowed())
-		R9_DrawLine( fV2(m_mousex, m_mousey), fV2(m_mousex+10, m_mousey+10), 0xffffffff );
+		R9_DrawLine( fV2(m_mouse), fV2(m_mouse)+10, 0xffffffff );
 
 }
 
@@ -143,8 +141,8 @@ void cGUI::ReadInput()
 	GetCursorPos(&pt);
 	ScreenToClient(E9_GetHWND(), &pt); 
 
-	m_mousex = pt.x;//Input()->GetMouseX();
-	m_mousey = pt.y;//Input()->GetMouseY();
+	m_mouse.x = pt.x;
+	m_mouse.y = pt.y;
 
 	m_key[GUIKEY_MB1]	= I9_GetKeyValue(I9_MOUSE_B1); 
 	m_key[GUIKEY_MB2]	= I9_GetKeyValue(I9_MOUSE_B2);
@@ -254,12 +252,12 @@ PREDICATE_M(gui, imgFind, 2)
 
 PREDICATE_M(gui, mouseX, 1)
 {
-	return A1 = g_gui->m_mousex;
+	return A1 = g_gui->m_mouse.x;
 }
 
 PREDICATE_M(gui, mouseY, 1)
 {
-	return A1 = g_gui->m_mousey;
+	return A1 = g_gui->m_mouse.y;
 }
 
 

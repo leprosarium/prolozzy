@@ -178,7 +178,7 @@ struct iRect
 	iV2 Size() const { return p2 - p1; }
 	int Width()	const { return p2.x-p1.x; }
 	int Height() const { return p2.y-p1.y; }
-	iV2 Center() const								{ return (p1 + p2) / 2; }
+	iV2 Center() const { return (p1 + p2) / 2; }
 	iRect &	Inflate( const iV2 & v ) { p1 += v; p2 -= v; return *this; }
 	iRect & Deflate( const iV2 & v ) { p1 -= v; p2 += v; return *this; }
 	iRect & Offset( const iV2 & v ) { p1+= v; p2 +=v; return *this; }
@@ -193,9 +193,6 @@ struct iRect
 	bool IsInside( const iV2 & v ) const { return p1 <= v && v < p2; }
 	bool Intersects(const iRect & r) const { return p2.x > r.p1.x && p1.x < r.p2.x && p2.y > r.p1.y && p1.y < r.p2.y; }
 	bool Ordered() const { return p1.x<p2.x && p1.y<p2.y; }
-
-	operator RECT() const { RECT r = {p1.x, p1.y, p2.x, p2.y}; return r;}
-
 };
 
 inline	bool	operator==	( const iRect& r1, const iRect& r2 )	{ return r1.p1 == r2.p1 && r1.p2 == r2.p2;; }

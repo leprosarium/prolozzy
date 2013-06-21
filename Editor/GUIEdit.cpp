@@ -31,11 +31,10 @@ cGUIEdit::~cGUIEdit()
 
 void cGUIEdit::Update()
 {
-	RECT rc;
-	GetScrRect(rc);
-	m_mousein = INRECT( g_gui->m_mousex, g_gui->m_mousey, rc);
-	int mx = g_gui->m_mousex - rc.left;
-	int my = g_gui->m_mousey - rc.top;
+	iRect rc = scrRect();
+	m_mousein = rc.IsInside(g_gui->m_mouse);
+	int mx = g_gui->m_mouse.x - rc.p1.x;
+	int my = g_gui->m_mouse.y - rc.p1.y;
 	BOOL shift = I9_GetKeyValue(I9K_LSHIFT) || I9_GetKeyValue(I9K_RSHIFT);
 	BOOL ctrl = I9_GetKeyValue(I9K_LCONTROL) || I9_GetKeyValue(I9K_RCONTROL);
 	BOOL enter = I9_GetKeyDown(I9K_RETURN) || I9_GetKeyDown(I9K_NUMPADENTER);
@@ -244,9 +243,8 @@ void cGUIEdit::Update()
 
 void cGUIEdit::Draw()
 {
-	RECT rc; 
-	fRect rc1;
-	GetScrRect(rc);
+	iRect rc = scrRect();
+
 	dword col = color[0];
 	if(m_edit)	col = GUIColorShift(col,GUICOLORSHIFT/2); 
 
@@ -258,33 +256,34 @@ void cGUIEdit::Draw()
 
 	// background
 	if( style & GUISTYLE_BACKGR )
-		GUIDrawBar( rc.left, rc.top, rc.right, rc.bottom, col );
+		GUIDrawBar( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, col );
 	else
 	if( style & GUISTYLE_GRADIENT )
-		GUIDrawGradient( rc.left, rc.top, rc.right, rc.bottom, color[0], color[1]);
+		GUIDrawGradient( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, color[0], color[1]);
 	
 	// image
-	GUIDrawImg( rc.left, rc.top, rc.right, rc.bottom, img0, imgColor, imgAlign);
+	GUIDrawImg( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, img0, imgColor, imgAlign);
 
 	// clip content
 	fRect oldclip = R9_GetClipping();
-	fRect newclip = fRect( rc.left,rc.top,rc.right,rc.bottom );
+	fRect newclip = fRect(rc);
 	R9_AddClipping(newclip);
 	if( R9_IsClipping() )
 	{
 		// selection
+		fRect rc1;
 		if(m_sel1!=m_sel2)
 		{
-			rc1.p1.x = (float)rc.left + Chr2Pos(m_sel1) + deltax;
-			rc1.p1.y = (float)rc.top;
-			rc1.p2.x =  (float)rc.left + Chr2Pos(m_sel2) + deltax;
-			rc1.p2.y = (float)rc.bottom; 
+			rc1.p1.x = (float)rc.p1.x + Chr2Pos(m_sel1) + deltax;
+			rc1.p1.y = (float)rc.p1.y;
+			rc1.p2.x =  (float)rc.p1.x + Chr2Pos(m_sel2) + deltax;
+			rc1.p2.y = (float)rc.p2.y; 
 			R9_ClipBar(rc1);
 			GUIDrawBar( (int)rc1.p1.x, (int)rc1.p1.y, (int)rc1.p2.x, (int)rc1.p2.y, color[3]);
 		}
 
 		// text
-		GUIDrawText( rc.left+deltax, rc.top, rc.right+deltax, rc.bottom, txt.c_str(), txtColor, GUIALIGN_LEFT|GUIALIGN_CENTERY, txtOffset);
+		GUIDrawText( rc.p1.x+deltax, rc.p1.y, rc.p2.x+deltax, rc.p2.y, txt.c_str(), txtColor, GUIALIGN_LEFT|GUIALIGN_CENTERY, txtOffset);
 
 		// cursor
 		if(m_edit)
@@ -293,10 +292,10 @@ void cGUIEdit::Draw()
 			s_time += App.DeltaTime();
 			if(s_time<=400)
 			{
-				rc1.p1.x = (float)rc.left + Chr2Pos(m_sel2) + deltax;
-				rc1.p1.y = (float)rc.top+2;
+				rc1.p1.x = (float)rc.p1.x + Chr2Pos(m_sel2) + deltax;
+				rc1.p1.y = (float)rc.p1.y+2;
 				rc1.p2.x =  rc1.p1.x+1;
-				rc1.p2.y = (float)rc.bottom-2;
+				rc1.p2.y = (float)rc.p2.y-2;
 				R9_ClipBar(rc1);
 				GUIDrawBar( (int)rc1.p1.x, (int)rc1.p1.y, (int)rc1.p2.x, (int)rc1.p2.y, txtColor);			
 			}
@@ -308,10 +307,10 @@ void cGUIEdit::Draw()
 
 	// border
 	if( style & GUISTYLE_BORDER )
-		GUIDrawRect( rc.left, rc.top, rc.right, rc.bottom, color[2]);
+		GUIDrawRect( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, color[2]);
 	else
 	if( style & GUISTYLE_BORDER3D )
-		GUIDrawRect3D( rc.left, rc.top, rc.right, rc.bottom, color[2], style & GUISTYLE_PRESSED );
+		GUIDrawRect3D( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, color[2], style & GUISTYLE_PRESSED );
 
 }
 

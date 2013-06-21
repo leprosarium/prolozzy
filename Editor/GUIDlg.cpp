@@ -23,7 +23,7 @@ cGUIDlg::~cGUIDlg()
 void cGUIDlg::Update()
 {
 	// mouse in	
-	m_mousein = rect.IsInside(iV2(g_gui->m_mousex, g_gui->m_mousey));
+	m_mousein = rect.IsInside(g_gui->m_mouse);
 
 	// update children
 	std::for_each(m_item.begin(), m_item.end(), [](cGUIItem*i)

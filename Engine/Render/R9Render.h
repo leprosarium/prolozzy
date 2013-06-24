@@ -414,19 +414,19 @@ inline	void		R9_Push( r9Vertex* vx, int vxs, Primitive primitive )	{ assert(r9_r
 inline	void		R9_Flush()												{ assert(r9_render); r9_render->Flush(); }
 inline	BOOL		R9_NeedFlush()											{ assert(r9_render); return r9_render->NeedFlush(); }
 
-inline	void		R9_DrawLine( fV2& a, fV2& b, dword color=0xffffffff )	{ assert(r9_render); r9_render->DrawLine(a,b,color); }
-inline	void		R9_DrawTriangle( fV2& a, fV2& b,fV2& c, fV2& ta, fV2& tb, fV2& tc, R9TEXTURE tex, dword color=0xffffffff ) {  assert(r9_render); r9_render->DrawTriangle(a,b,c,ta,tb,tc,tex,color); }
-inline	void		R9_DrawBar( fRect& dst, dword color=0xffffffff ) {  assert(r9_render); r9_render->DrawBar(dst,color); }
-inline	void		R9_DrawQuad( fRect& dst, fRect& src, R9TEXTURE tex, dword color=0xffffffff ) {  assert(r9_render); r9_render->DrawQuad(dst,src,tex,color); }
-inline	void		R9_DrawQuadRot( fV2& pos, fV2& size, fV2& center, float angle, fRect& src, R9TEXTURE tex, dword color=0xffffffff ) {  assert(r9_render); r9_render->DrawQuadRot(pos,size,center,angle,src,tex,color); }
+inline	void		R9_DrawLine( const fV2 & a, const fV2 & b, dword color=0xffffffff )	{ assert(r9_render); r9_render->DrawLine(a,b,color); }
+inline	void		R9_DrawTriangle( const fV2 & a, const fV2 & b, const fV2 & c, const fV2 & ta, const fV2 & tb, const fV2 & tc, R9TEXTURE tex, dword color=0xffffffff ) {  assert(r9_render); r9_render->DrawTriangle(a,b,c,ta,tb,tc,tex,color); }
+inline	void		R9_DrawBar( const fRect & dst, dword color=0xffffffff ) {  assert(r9_render); r9_render->DrawBar(dst,color); }
+inline	void		R9_DrawQuad( const fRect & dst, const fRect & src, R9TEXTURE tex, dword color=0xffffffff ) {  assert(r9_render); r9_render->DrawQuad(dst,src,tex,color); }
+inline	void		R9_DrawQuadRot( const fV2 & pos, const fV2 & size, const fV2 & center, float angle, const fRect & src, R9TEXTURE tex, dword color=0xffffffff ) {  assert(r9_render); r9_render->DrawQuadRot(pos,size,center,angle,src,tex,color); }
 inline	void		R9_DrawSprite( const fV2 & pos, const fRect & src, R9TEXTURE tex, dword color=0xffffffff, dword flip=0, float scale=1.0f ) {  assert(r9_render); r9_render->DrawSprite(pos,src,tex,color,flip,scale); }
-		void		R9_DrawText( fV2& pos, const char* text, dword color=0xffffffff, float scale=1.0f );
+		void		R9_DrawText( const fV2 & pos, const char* text, dword color=0xffffffff, float scale=1.0f );
 
 inline	BOOL		R9_IsClipping()											{ assert(r9_render); return r9_render->IsClipping(); }
-inline	void		R9_SetClipping( fRect& rect )							{ assert(r9_render); r9_render->SetClipping(rect); }
+inline	void		R9_SetClipping(const fRect & rect )							{ assert(r9_render); r9_render->SetClipping(rect); }
 inline	const fRect & R9_GetClipping()										{ assert(r9_render); return r9_render->GetClipping(); }
 inline	void		R9_ResetClipping()										{ assert(r9_render); r9_render->SetClipping(fRect()); }
-inline	void		R9_AddClipping( fRect& rect )							{ assert(r9_render); if(!r9_render->IsClipping()) r9_render->SetClipping(rect); else r9_render->SetClipping(r9_render->GetClipping() * rect); }
+inline	void		R9_AddClipping(const fRect & rect )							{ assert(r9_render); if(!r9_render->IsClipping()) r9_render->SetClipping(rect); else r9_render->SetClipping(r9_render->GetClipping() * rect); }
 inline 	void		R9_ClipBar( fRect& dst )								{ assert(r9_render); r9_render->ClipBar(dst); }
 inline 	void		R9_ClipQuad( fRect& dst, fRect& src )					{ assert(r9_render); r9_render->ClipQuad(dst,src); }
 inline 	void		R9_ClipSprite( fRect& dst, fRect& src, int flip=0 )		{ assert(r9_render); r9_render->ClipSprite(dst,src,flip); }

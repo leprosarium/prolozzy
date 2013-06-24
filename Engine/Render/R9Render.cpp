@@ -460,7 +460,7 @@ void R9_Done()
 	dlog(LOGRND, L"Render done.\n");
 }
 
-void R9_DrawText( fV2& pos, const char* text, dword color, float scale )
+void R9_DrawText(const fV2 & pos, const char* text, dword color, float scale )
 { 
 	assert(r9_render); 
 	if(!r9_render->m_font) return; 

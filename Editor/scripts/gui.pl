@@ -260,7 +260,7 @@ createImage(X, Y, W, H) :-
 
 
 createEdit(X, Y, W, Text) :-
-	createItem("cGUIEdit", X, Y, W, 20, [backgr, border], [color(0, edit), color(1, gui1), color(2, editsel)]),
+	createItem("cGUIEdit", X, Y, W, 20, [backgr, border], [color(0, edit), color(1, gui1), color(2, black), color(3, editsel)]),
 	gui:itemSetTxt(Text).
 
 createEdit(X, Y, W, Text, Cmd) :-

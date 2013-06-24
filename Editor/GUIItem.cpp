@@ -81,34 +81,29 @@ iRect cGUIItem::scrRect() const
 	return m_dlg ? iRect(rect).Offset(m_dlg->rect.p1) : rect;
 }
 
-
-
 int cGUIItem::SetParent( cGUIDlg* dlg)
 {
-	assert(m_dlg==NULL); 
-	if(dlg!=NULL) return dlg->ItemAdd(this);
-	return -1;
+	return dlg ? dlg->ItemAdd(this) : -1;
 }
 
 void cGUIItem::Capture( bool on )
 {
 	if(on)
 	{
-		if(g_gui->m_capture==NULL) 
+		if(!g_gui->m_capture) 
 			g_gui->m_capture = this;	
 	}
 	else
 	{
-		if(g_gui->m_capture==this) 
-			g_gui->m_capture = NULL;
+		if(g_gui->m_capture == this) 
+			g_gui->m_capture = nullptr;
 	}
 }
 
-BOOL cGUIItem::IsCaptured()
+bool cGUIItem::IsCaptured() const 
 {
-	return (g_gui->m_capture==this);
+	return g_gui->m_capture == this; 
 }
-
 
 void cGUIItem::Select()	
 {
@@ -133,11 +128,6 @@ void cGUIItem::Action()
 cGUITitle::cGUITitle()
 {
 	value = 1;
-	m_movex = m_movey = 0;
-}
-
-cGUITitle::~cGUITitle()
-{
 }
 
 void cGUITitle::Update()
@@ -149,29 +139,19 @@ void cGUITitle::Update()
 	{
 		if(m_mousein)
 		{
-			m_movex = g_gui->m_mouse.x-rc.p1.x;
-			m_movey = g_gui->m_mouse.y-rc.p1.y;
+			move = g_gui->m_mouse - rc.p1;
 			Capture(true);
 		}
 	}
 	else
 	if(!I9_GetKeyValue(I9_MOUSE_B1))
-	{
 		if(IsCaptured()) 
-		{ 
 			Capture(false);
-		}
-	}
 
 	if(IsCaptured() && m_dlg) // move parent dialog
 	{
-		iV2 p(g_gui->m_mouse);
-		if(p.x < 0) p.x = 0;
-		if(p.x > R9_GetWidth()-1) p.x = R9_GetWidth()-1;
-		if(p.y < 0) p.y = 0;
-		if(p.y > R9_GetHeight()-1) p.y = R9_GetHeight()-1;
-		p -= iV2(m_movex, m_movey);
-		p -= rect.p1;
+		iV2 p = g_gui->m_mouse;
+		p = iV2(std::min(std::max(p.x, 0), R9_GetWidth()-1), std::min(std::max(p.y, 0), R9_GetHeight()-1)) - move - rect.p1;
 		m_dlg->rect = iRect(p, p + m_dlg->rect.Size());
 	}
 	

@@ -25,12 +25,12 @@ inline void GUIDrawLine (const iV2 & p1, const iV2 & p2, dword color)
 
 inline void GUIDrawHLine (const iV2 & p, int x2, dword color)
 {
-	R9_DrawBar(fRect(p.x, p.y, x2, p.y + 1),color); // R9_DrawLine( fV2(x1,y1), fV2(x2,y2), color); // line primitive is slower
+	R9_DrawBar(fRect(p.x, p.y, x2, p.y + 1), color);
 } 
 
 inline void GUIDrawVLine (const iV2 & p, int y2, dword color)
 {
-	R9_DrawBar(fRect(p.x, p.y, p.x + 1, y2),color); // R9_DrawLine( fV2(x1,y1), fV2(x2,y2), color); // line primitive is slower
+	R9_DrawBar(fRect(p.x, p.y, p.x + 1, y2), color);
 } 
 
 inline void GUIDrawRect(const iRect & r, dword color)

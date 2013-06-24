@@ -80,7 +80,7 @@ void cGUITile::Draw()
 	iRect rect(x, y, 
 		std::min(x+static_cast<int>(w*scale), static_cast<int>(rc.p2.x)), 
 		std::min(y+static_cast<int>(h*scale), static_cast<int>(rc.p2.y)));
-	GUIDrawBar(rect.p1.x, rect.p1.y, rect.p2.x, rect.p2.y, color[1]); 
+	GUIDrawBar(rect, color[1]); 
 		
 	// sprite
 	R9_DrawSprite( fV2(x,y), src, tile->m_tex, 0xffffffff, 0, scale );
@@ -236,7 +236,7 @@ void cGUITileMap::Draw()
 		iRect r(sel * scale,  (sel + sels) * scale);
 		r.Offset(rect.p1);
 		if( r.p1.x != r.p2.x && r.p1.y != r.p2.y ) 
-			GUIDrawRectDot(r.p1.x,r.p1.y,r.p2.x,r.p2.y,0xffffffff);
+			GUIDrawRectDot(r, 0xffffffff);
 	}
 
 	// draw axes

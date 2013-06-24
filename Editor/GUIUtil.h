@@ -14,23 +14,57 @@
 #define BEEP_OK		MessageBeep(MB_OK);
 #define BEEP_ERROR	MessageBeep(MB_ICONHAND);
 
-		void		GUIInitResources	();	// init static gui resources (like the dot texture)
-		void		GUIDoneResources	();	// done static gui resources
+void GUIInitResources();	// init static gui resources (like the dot texture)
+void GUIDoneResources();	// done static gui resources
 
-		dword		GUIColorShift		( dword color, int delta );
-inline	void		GUIDrawLine			( int x1, int y1, int x2, int y2, dword color )					{ R9_DrawBar(fRect(x1,y1,x2+(x1==x2),y2+(y1==y2)),color); } // R9_DrawLine( fV2(x1,y1), fV2(x2,y2), color); // line primitive is slower
-inline  void		GUIDrawRect			( int x1, int y1, int x2, int y2, dword color )					{ if(x1==x2 || y1==y2) return; GUIDrawLine(x1,y1,x2,y1,color); GUIDrawLine(x1,y2-1,x2,y2-1,color); GUIDrawLine(x1,y1+1,x1,y2-1,color); GUIDrawLine(x2-1,y1+1,x2-1,y2-1,color); }
-inline	void		GUIDrawRect3D		( int x1, int y1, int x2, int y2, dword color, BOOL pressed )	{ dword c1 = GUIColorShift(color,pressed?-GUICOLORSHIFT:GUICOLORSHIFT); dword c2 = GUIColorShift(color,pressed?GUICOLORSHIFT:-GUICOLORSHIFT); GUIDrawLine(x1,y1,x2,y1,c1); GUIDrawLine(x1,y2-1,x2,y2-1,c2); GUIDrawLine(x1,y1+1,x1,y2-1,c1); GUIDrawLine(x2-1,y1+1,x2-1,y2-1,c2); }
-inline	void		GUIDrawBar			( int x1, int y1, int x2, int y2, dword color )					{ R9_DrawBar( fRect(x1,y1,x2,y2), color); }
-		void		GUIDrawGradient		( int x1, int y1, int x2, int y2, dword color1, dword color2 );
-		void		GUIDrawBarDot		( int x1, int y1, int x2, int y2, dword color );
-		void		GUIDrawRectDot		( int x1, int y1, int x2, int y2, dword color );
-		void		GUIDrawText			( int x1, int y1, int x2, int y2, const char* text, dword color, int align = GUIALIGN_CENTERX | GUIALIGN_CENTERY, int offset = 0 );
-		void		GUIDrawImg			( int x1, int y1, int x2, int y2, int img, dword color = 0xffffffff, int align = GUIALIGN_CENTERX | GUIALIGN_CENTERY );
+dword GUIColorShift(dword color, int delta);
+inline void GUIDrawLine (const iV2 & p1, const iV2 & p2, dword color)
+{
+	R9_DrawLine(p1, p2, color);
+}
 
-		BOOL		WinDlgOpenFile		( LPWSTR filename, LPWSTR ext, int mode ); // filenname must have at least 256 chars; mode 0=open 1=save
-		BOOL		WinDlgOpenFolder	( LPWSTR foldername ); // foldername muse have at least 256 chars
-		BOOL		WinDlgOpenColor		( dword* color, BOOL extended=FALSE );
+inline void GUIDrawHLine (const iV2 & p, int x2, dword color)
+{
+	R9_DrawBar(fRect(p.x, p.y, x2, p.y + 1),color); // R9_DrawLine( fV2(x1,y1), fV2(x2,y2), color); // line primitive is slower
+} 
+
+inline void GUIDrawVLine (const iV2 & p, int y2, dword color)
+{
+	R9_DrawBar(fRect(p.x, p.y, p.x + 1, y2),color); // R9_DrawLine( fV2(x1,y1), fV2(x2,y2), color); // line primitive is slower
+} 
+
+inline void GUIDrawRect(const iRect & r, dword color)
+{
+	if(r.p1.x == r.p2.x || r.p1.y==r.p2.y) return;
+	GUIDrawHLine(r.p1, r.p2.x, color);
+	GUIDrawHLine(iV2(r.p1.x, r.p2.y - 1), r.p2.x, color);
+	GUIDrawVLine(iV2(r.p1.x, r.p1.y + 1), r.p2.y - 1, color);
+	GUIDrawVLine(iV2(r.p2.x - 1, r.p1.y + 1), r.p2.y - 1, color);
+}
+
+inline void GUIDrawRect3D(const iRect & r, dword color, BOOL pressed)
+{
+	dword c1 = GUIColorShift(color,pressed?-GUICOLORSHIFT:GUICOLORSHIFT);
+	dword c2 = GUIColorShift(color,pressed?GUICOLORSHIFT:-GUICOLORSHIFT);
+	GUIDrawHLine(r.p1, r.p2.x, c1);
+	GUIDrawHLine(iV2(r.p1.x, r.p2.y - 1), r.p2.x, c2);
+	GUIDrawVLine(iV2(r.p1.x, r.p1.y + 1), r.p2.y - 1, c1);
+	GUIDrawVLine(iV2(r.p2.x - 1, r.p1.y + 1), r.p2.y-1, c2);
+}
+inline void GUIDrawBar(const iRect & r, dword color )
+{
+	R9_DrawBar( fRect(r), color);
+}
+
+void GUIDrawGradient(const iRect & r, dword color1, dword color2);
+void GUIDrawRectDot(const iRect & r, dword color);
+void GUIDrawText(const iRect & r, const char* text, dword color, int align = GUIALIGN_CENTERXY, int offset = 0);
+void GUIDrawImg(const iRect & r, int img, dword color = 0xffffffff, int align = GUIALIGN_CENTERXY);
+iV2 Align(const iRect & r, const iV2 & sz, int align, int offset);
+
+BOOL WinDlgOpenFile(LPWSTR filename, LPWSTR ext, int mode); // filenname must have at least 256 chars; mode 0=open 1=save
+BOOL WinDlgOpenFolder(LPWSTR foldername); // foldername muse have at least 256 chars
+BOOL WinDlgOpenColor(dword* color, BOOL extended=FALSE);
 
 #endif
 //////////////////////////////////////////////////////////////////////////////////////////////////

@@ -53,35 +53,35 @@ dword GUIColorShift( dword color, int delta )
 	return ( (color & 0xff000000) | (r<<16) | (g<<8) | b );
 }
 
-void GUIDrawGradient( int x1, int y1, int x2, int y2, dword color1, dword color2 )
+void GUIDrawGradient( const iRect & r, dword color1, dword color2 )
 {
 	if(R9_GetTexture()!=NULL) R9_SetTexture(NULL);
 
 	r9Vertex vx[6];
 	memset(vx,0,sizeof(vx));
 
-	vx[0].x = (float)x1;
-	vx[0].y = (float)y1;
+	vx[0].x = (float)r.p1.x;
+	vx[0].y = (float)r.p1.y;
 	vx[0].color = color1;
 
-	vx[1].x = (float)x2;
-	vx[1].y = (float)y1;
+	vx[1].x = (float)r.p2.x;
+	vx[1].y = (float)r.p1.y;
 	vx[1].color = color2;
 
-	vx[2].x = (float)x2;
-	vx[2].y = (float)y2;
+	vx[2].x = (float)r.p2.x;
+	vx[2].y = (float)r.p2.y;
 	vx[2].color = color2;
 
-	vx[3].x = (float)x1;
-	vx[3].y = (float)y1;
+	vx[3].x = (float)r.p1.x;
+	vx[3].y = (float)r.p1.y;
 	vx[3].color = color1;
 
-	vx[4].x = (float)x2;
-	vx[4].y = (float)y2;
+	vx[4].x = (float)r.p2.x;
+	vx[4].y = (float)r.p2.y;
 	vx[4].color = color2;
 
-	vx[5].x = (float)x1;
-	vx[5].y = (float)y2;
+	vx[5].x = (float)r.p1.x;
+	vx[5].y = (float)r.p2.y;
 	vx[5].color = color1;
 
 	R9_Push(vx, 6, Primitive::Triangle);
@@ -108,16 +108,35 @@ void GUIDrawLineDot( int x1, int y1, int x2, int y2, dword color, float dx, floa
 	R9_Push(vx, 2, Primitive::Line);
 }
 
-void GUIDrawRectDot( int x1, int y1, int x2, int y2, dword color )
+void GUIDrawRectDot( const iRect & r, dword color )
 {
 	float d = (float)(sys_gettickcount()%1024); // offsets not too big
-	GUIDrawLineDot( x1,y1,	 x2,y1,	  color, d, 0.0f );
-	GUIDrawLineDot( x1,y1,	 x1,y2,	  color, 0.0f, d );
-	GUIDrawLineDot( x2-1,y1, x2-1,y2, color, 0.0f, d );
-	GUIDrawLineDot( x1,y2-1, x2,y2-1, color, d, 0.0f );
+	GUIDrawLineDot( r.p1.x, r.p1.y,	 r.p2.x, r.p1.y,	  color, d, 0.0f );
+	GUIDrawLineDot( r.p1.x, r.p1.y,	 r.p1.x, r.p2.y,	  color, 0.0f, d );
+	GUIDrawLineDot( r.p2.x-1, r.p1.y, r.p2.x-1, r.p2.y, color, 0.0f, d );
+	GUIDrawLineDot( r.p1.x,r.p2.y-1, r.p2.x,r.p2.y-1, color, d, 0.0f );
 }
 
-void GUIDrawText( int x1, int y1, int x2, int y2, const char * text, dword color, int align, int offset )
+iV2 Align(const iRect & r, const iV2 & sz, int align, int offset)
+{
+	iV2 p = r.p1;
+	if((align & GUIALIGN_CENTERX) == GUIALIGN_CENTERX)	
+		p.x = (r.p1.x + r.p2.x - sz.x) / 2;
+	else if(align & GUIALIGN_LEFT)		
+		p.x = r.p1.x + offset;
+	else if(align & GUIALIGN_RIGHT)
+		p.x = r.p2.x - sz.x - offset;
+	if((align & GUIALIGN_CENTERY) == GUIALIGN_CENTERY)	
+		p.y = (r.p1.y + r.p2.y - sz.y) / 2;
+	else if(align & GUIALIGN_TOP)
+		p.y = r.p1.y;
+	else if(align & GUIALIGN_BOTTOM)
+		p.y = r.p2.y - sz.y;
+	return p;
+}
+
+
+void GUIDrawText( const iRect & r, const char * text, dword color, int align, int offset )
 {
 	if(!text) return;
 	if(color==0) return;
@@ -125,43 +144,25 @@ void GUIDrawText( int x1, int y1, int x2, int y2, const char * text, dword color
 	g_gui->m_font->SetColor(color);
 	float w,h;
 	g_gui->m_font->GetTextBox(text, w, h);
-//	int w = g_gui->m_font->GetTextWidth(text);
-//	int h = g_gui->m_font->GetSize(); 
-	int x = x1;
-	int y = y1;
-	if((align & GUIALIGN_CENTERX) == GUIALIGN_CENTERX)	x = (x1+x2-(int)w)/2;	else	
-	if(align & GUIALIGN_LEFT)		x = x1+offset;				else
-	if(align & GUIALIGN_RIGHT)		x = x2-(int)w-offset;
-	if((align & GUIALIGN_CENTERY) == GUIALIGN_CENTERY)	y = (y1+y2-(int)h)/2;	else	
-	if(align & GUIALIGN_TOP)		y = y1;				else
-	if(align & GUIALIGN_BOTTOM)		y = y2-(int)h;
+	iV2 p = Align(r, iV2(w, h), align, offset);
 	
 	// clip not needed
-	g_gui->m_font->Print((float)x,(float)y,text);  
+	g_gui->m_font->Print((float)p.x,(float)p.y, text);  
 
 	g_gui->m_font->SetColor(oldcolor);
 }
 
-void GUIDrawImg( int x1, int y1, int x2, int y2, int img, dword color, int align )
+void GUIDrawImg(const iRect & r, int img, dword color, int align )
 {
 	if(img==-1) return;
 	if(color==0) return;
 	R9TEXTURE tex = g_gui->m_texturepool.Get(img);
 	if(!tex) return;
+	iV2 sz(tex->width, tex->height);
+	iV2 p = Align(r, sz, align, 0);
 
-	int w = tex->width;
-	int h = tex->height;
-	int x = x1;
-	int y = y1;
-	if((align & GUIALIGN_CENTERX) == GUIALIGN_CENTERX)	x = (x1+x2-w)/2;	else	
-	if(align & GUIALIGN_LEFT)		x = x1;				else
-	if(align & GUIALIGN_RIGHT)		x = x2-w;
-	if((align & GUIALIGN_CENTERY) == GUIALIGN_CENTERY)	y = (y1+y2-h)/2;	else	
-	if(align & GUIALIGN_TOP)		y = y1;				else
-	if(align & GUIALIGN_BOTTOM)		y = y2-h;
-	
 	R9_SetBlend(Blend::Alpha);
-	R9_DrawSprite(fV2(x,y),fRect(0,0,w,h),tex,color);
+	R9_DrawSprite(p, fRect(0, sz),tex,color);
 }
 
 

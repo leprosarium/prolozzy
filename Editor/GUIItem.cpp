@@ -52,23 +52,23 @@ void cGUIItem::Draw()
 
 	// background
 	if( style & GUISTYLE_BACKGR )
-		GUIDrawBar( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, color[0]);
+		GUIDrawBar( rc, color[0]);
 	else
 	if( style & GUISTYLE_GRADIENT )
-		GUIDrawGradient( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, color[0], color[1]);
+		GUIDrawGradient( rc, color[0], color[1]);
 	
 	// image
-	GUIDrawImg( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, img0, imgColor, imgAlign);
+	GUIDrawImg( rc, img0, imgColor, imgAlign);
 
 	// text
-	GUIDrawText( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, txt.c_str(), txtColor, txtAlign, txtOffset);
+	GUIDrawText( rc, txt.c_str(), txtColor, txtAlign, txtOffset);
 	
 	// border
 	if( style & GUISTYLE_BORDER )
-		GUIDrawRect( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, color[2]);
+		GUIDrawRect(rc, color[2]);
 	else
 	if( style & GUISTYLE_BORDER3D )
-		GUIDrawRect3D( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, color[2], style & GUISTYLE_PRESSED );
+		GUIDrawRect3D(rc, color[2], style & GUISTYLE_PRESSED );
 
 }
 

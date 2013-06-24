@@ -483,12 +483,9 @@ void cEdiToolEdit::Draw()
 		iRect rect = m_rect;
 		CAM2VIEW(rect.p1.x,rect.p1.y);
 		CAM2VIEW(rect.p2.x,rect.p2.y);
-		rect.p1.x += VIEWX;
-		rect.p1.y += VIEWY;
-		rect.p2.x += VIEWX;
-		rect.p2.y += VIEWY;
+		rect.Offset(iV2(VIEWX, VIEWY));
 		
-		GUIDrawRectDot( rect.p1.x,rect.p1.y,rect.p2.x,rect.p2.y,color);
+		GUIDrawRectDot( rect,color);
 	}
 
 }

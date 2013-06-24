@@ -256,13 +256,13 @@ void cGUIEdit::Draw()
 
 	// background
 	if( style & GUISTYLE_BACKGR )
-		GUIDrawBar( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, col );
+		GUIDrawBar(rc, col );
 	else
 	if( style & GUISTYLE_GRADIENT )
-		GUIDrawGradient( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, color[0], color[1]);
+		GUIDrawGradient( rc, color[0], color[1]);
 	
 	// image
-	GUIDrawImg( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, img0, imgColor, imgAlign);
+	GUIDrawImg( rc, img0, imgColor, imgAlign);
 
 	// clip content
 	fRect oldclip = R9_GetClipping();
@@ -274,16 +274,17 @@ void cGUIEdit::Draw()
 		fRect rc1;
 		if(m_sel1!=m_sel2)
 		{
-			rc1.p1.x = (float)rc.p1.x + Chr2Pos(m_sel1) + deltax;
-			rc1.p1.y = (float)rc.p1.y;
-			rc1.p2.x =  (float)rc.p1.x + Chr2Pos(m_sel2) + deltax;
-			rc1.p2.y = (float)rc.p2.y; 
+			rc1 = rc;
+			rc1.p1.x += Chr2Pos(m_sel1) + deltax;
+			rc1.p2.x += Chr2Pos(m_sel2) + deltax;
 			R9_ClipBar(rc1);
-			GUIDrawBar( (int)rc1.p1.x, (int)rc1.p1.y, (int)rc1.p2.x, (int)rc1.p2.y, color[3]);
+			GUIDrawBar( rc1, color[3]);
 		}
 
 		// text
-		GUIDrawText( rc.p1.x+deltax, rc.p1.y, rc.p2.x+deltax, rc.p2.y, txt.c_str(), txtColor, GUIALIGN_LEFT|GUIALIGN_CENTERY, txtOffset);
+		iRect rr = rc;
+		rr.Offset(iV2(deltax, 0));
+		GUIDrawText( rr, txt.c_str(), txtColor, GUIALIGN_LEFT|GUIALIGN_CENTERY, txtOffset);
 
 		// cursor
 		if(m_edit)
@@ -297,7 +298,7 @@ void cGUIEdit::Draw()
 				rc1.p2.x =  rc1.p1.x+1;
 				rc1.p2.y = (float)rc.p2.y-2;
 				R9_ClipBar(rc1);
-				GUIDrawBar( (int)rc1.p1.x, (int)rc1.p1.y, (int)rc1.p2.x, (int)rc1.p2.y, txtColor);			
+				GUIDrawBar( rc1, txtColor);			
 			}
 			if(s_time>700) s_time = 0;
 		}
@@ -307,10 +308,10 @@ void cGUIEdit::Draw()
 
 	// border
 	if( style & GUISTYLE_BORDER )
-		GUIDrawRect( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, color[2]);
+		GUIDrawRect(rc, color[2]);
 	else
 	if( style & GUISTYLE_BORDER3D )
-		GUIDrawRect3D( rc.p1.x, rc.p1.y, rc.p2.x, rc.p2.y, color[2], style & GUISTYLE_PRESSED );
+		GUIDrawRect3D(rc, color[2], style & GUISTYLE_PRESSED );
 
 }
 

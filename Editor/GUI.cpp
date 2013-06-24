@@ -120,9 +120,12 @@ void cGUI::Draw()
 		float w,h;
 		m_font->GetTextBox(ToolTip.c_str() ,w, h);
 		w+=8; h+=4;
-		GUIDrawBar(  m_mouse.x+16, m_mouse.y+16, m_mouse.x+16+(int)w, m_mouse.y+16+(int)h, 0xffffa000 );
-		GUIDrawRect( m_mouse.x+16, m_mouse.y+16, m_mouse.x+16+(int)w, m_mouse.y+16+(int)h, 0xff000000 );
-		GUIDrawText( m_mouse.x+16+4, m_mouse.y+16+2, m_mouse.x+16+(int)w-4, m_mouse.y+16+(int)h-2, ToolTip.c_str(), 0xff000000, GUIALIGN_LEFT|GUIALIGN_TOP );
+		iV2 tt = m_mouse + 16;
+		iRect rr(tt, tt + iV2(w, h)); 
+		GUIDrawBar(rr, 0xffffa000);
+		GUIDrawRect(rr, 0xff000000);
+		iRect rt = rr;
+		GUIDrawText(rt.Inflate(iV2(4, 2)), ToolTip.c_str(), 0xff000000, GUIALIGN_LEFT|GUIALIGN_TOP );
 	}
 
 	// mouse cursor (for full screen tests)

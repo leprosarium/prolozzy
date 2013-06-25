@@ -20,28 +20,17 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 cGUI* g_gui = NULL;
 
-cGUI::cGUI()
-{
-	m_font			= NULL;
-	m_lastdlg		= -1;
-	m_lastitem		= NULL;
-	m_capture		= NULL;	
-	m_isbusy		= FALSE;
-}
-
-cGUI::~cGUI()
+cGUI::cGUI() : m_font(), m_lastdlg(-1), m_lastitem(), m_capture(), m_isbusy()
 {
 }
 
-BOOL cGUI::Init()
+bool cGUI::Init()
 {
-	
 	GUIInitResources();
 
 	// fonts
-	BOOL ok;
 	m_font = new r9Font(); 
-	ok = m_font->Create("editor\\font\\font.fnt");
+	bool ok = m_font->Create("editor\\font\\font.fnt");
 	R9TEXTURE tex = R9_TextureLoad("editor\\font\\font.tga");
 	m_font->SetTexture(tex);
 	m_font->SetSpace(4); // !
@@ -60,7 +49,7 @@ void cGUI::Done()
 {
 	std::for_each(m_dlg.begin(), m_dlg.end(), [](cGUIDlg *d){delete d;});
 	m_dlg.clear();
-	m_capture = NULL;
+	m_capture = nullptr;
 	if(m_font) 
 	{
 		R9_TextureDestroy(m_font->GetTexture());
@@ -72,12 +61,12 @@ void cGUI::Done()
 
 void cGUI::Update()
 {
-	m_isbusy = FALSE;
+	m_isbusy = false;
 	
 	if(m_capture)
 	{
 		m_capture->Update();
-		m_isbusy = TRUE;
+		m_isbusy = true;
 	}
 	else
 	{
@@ -87,7 +76,7 @@ void cGUI::Update()
 		if ( i != m_dlg.rend())
 		{
 			(*i)->Update();
-			m_isbusy = TRUE;
+			m_isbusy = true;
 		}
 		else // no modal -> update all
 		{
@@ -140,7 +129,6 @@ void cGUI::Draw()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cGUI::ReadInput()
 {
-
 	POINT pt;
 	GetCursorPos(&pt);
 	ScreenToClient(E9_GetHWND(), &pt); 
@@ -154,13 +142,7 @@ void cGUI::ReadInput()
 	m_key[GUIKEY_CTRL]	= I9_GetKeyValue(I9K_LCONTROL) || I9_GetKeyValue(I9K_RCONTROL);
 	m_key[GUIKEY_SHIFT]	= I9_GetKeyValue(I9K_LSHIFT) || I9_GetKeyValue(I9K_RSHIFT);
 	m_key[GUIKEY_ALT]	= I9_GetKeyValue(I9K_LALT) || I9_GetKeyValue(I9K_RALT);
-
 }
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// Inheritance
-//////////////////////////////////////////////////////////////////////////////////////////////////
 
 int cGUI::DlgFind( int id )
 {
@@ -837,7 +819,7 @@ void* GUICreateClass( char* classname )
 	GUI_REPLICATE(cGUITileMap);
 	GUI_REPLICATE(cGUIColorPick);
 	GUI_REPLICATE(cGUIDlg);
-	return NULL;
+	return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

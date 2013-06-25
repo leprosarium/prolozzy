@@ -111,7 +111,7 @@ void cGUITileMap::OnUpdate()
 	iRect rc = scrRect(); // control rect in screen
 	m_mousein = rc.IsInside(g_gui->m_mouse);
 	iV2 m = g_gui->m_mouse - rc.p1;	// mouse relative to client
-	m = fV2(m) / scale; // to tile space
+	m = fV2(m) / static_cast<float>(scale); // to tile space
 
 	iRect rctile(0, 0, tilew, tileh);
 	BOOL mouseintile = rctile.IsInside(m);
@@ -206,7 +206,7 @@ void cGUITileMap::OnDraw()
 	if(sels.x<0) sels.x=0;
 	if(sels.y<0) sels.y=0;
 	iV2 m = g_gui->m_mouse - rect.p1; // mouse relative to client
-	m = fV2(m) / scale; // to tile space
+	m = fV2(m) / static_cast<float>(scale); // to tile space
 
 	// draw grid
 	if(grid)

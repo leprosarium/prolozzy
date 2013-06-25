@@ -25,60 +25,58 @@
 class cGUI
 {
 public:
-						cGUI();
-virtual					~cGUI();
+	cGUI();
 
-		BOOL			Init();							// init
-		void			Done();							// done
-		void			Update();						// update 
-		void			Draw();							// draw 
+	bool Init();
+	void Done();
+	void Update();
+	void Draw();
 		
-		// status bar
-		std::string		ToolTip;
+	// status bar
+	std::string		ToolTip;
 
-		// input
-		iV2				m_mouse;						// mouse pos
-		int				m_key[GUIKEY_MAX];		
-		void			ReadInput();					// read input ( CALL IT BEFORE UPDATE ! )
+	// input
+	iV2 m_mouse;						// mouse pos
+	int m_key[GUIKEY_MAX];		
+	void ReadInput();					// read input ( CALL IT BEFORE UPDATE ! )
 
-		// images
-		int				ImgLoad( const std::string & image ) { return m_texturepool.Load(image); }
-		int				ImgFind( const std::string & image ) { return m_texturepool.Find(image); }
-		r9TexturePool	m_texturepool;					// textures
+	// images
+	int ImgLoad( const std::string & image ) { return m_texturepool.Load(image); }
+	int ImgFind( const std::string & image ) { return m_texturepool.Find(image); }
+	r9TexturePool m_texturepool;
 				
-		// inheritance
-inline	int				DlgCount()						{ return m_dlg.size(); }
-inline	cGUIDlg*		DlgGet( int idx )				{ if(0<=idx && idx<DlgCount()) return m_dlg[idx]; return 0; }
-inline	int				DlgAdd( cGUIDlg* dlg )			{ if(dlg) { int idx = m_dlg.size(); m_dlg.push_back(dlg); return idx; } return -1; }
-		void			DlgDel( int idx );
-virtual	int				DlgFind( int id );				// return idx
-virtual	int				DlgFind( cGUIDlg* dlg );		// return idx
+	// inheritance
+	int DlgCount() const { return m_dlg.size(); }
+	cGUIDlg * DlgGet(int idx) { if(0<=idx && idx<DlgCount()) return m_dlg[idx]; return 0; }
+	int DlgAdd(cGUIDlg * dlg) { if(dlg) { int idx = m_dlg.size(); m_dlg.push_back(dlg); return idx; } return -1; }
+	void DlgDel(int idx);
+	int DlgFind(int id);			// return idx
+	int DlgFind(cGUIDlg * dlg);		// return idx
 
 	int makeDlg(char * className);
 	int makeItem(char * className);
 	cGUIDlg * GetLastDlg();
 	cGUIItem * GetLastItem(); 	
 
-		// data
-	std::vector<cGUIDlg *> m_dlg;						// cGUIDlg list
-		r9Font*			m_font;
+	std::vector<cGUIDlg *> m_dlg;
+	r9Font * m_font;
 
-		cGUIItem*		m_capture;						// pointer to capturing item
-		BOOL			m_isbusy;						// if gi is busy (there is at least one modal dialog or is in a capture)
+	cGUIItem * m_capture;				// pointer to capturing item
+	bool m_isbusy;						// if gi is busy (there is at least one modal dialog or is in a capture)
 				
-		// script
-		int				m_lastdlg;						// last (selected) dlg index
-		int				m_lastitem;						// last (selected) item index
+	// script
+	int m_lastdlg;						// last (selected) dlg index
+	int m_lastitem;						// last (selected) item index
 	
-		bool			ScriptPrologDo(const std::string & pred);
+	bool ScriptPrologDo(const std::string & pred);
 };
 
 // gui replicators (cGUIItem, cGUIDlg)
-void* GUICreateClass( char* classname );
+void* GUICreateClass(char* classname);
 
-extern	cGUI*			g_gui;
-inline	BOOL			GUIInit			()						{ g_gui = new cGUI(); return g_gui->Init(); }
-inline	void			GUIDone			()						{ if(g_gui)	{ g_gui->Done(); delete g_gui; }}	
+extern cGUI *g_gui;
+inline bool GUIInit() { g_gui = new cGUI(); return g_gui->Init(); }
+inline void GUIDone() { if(g_gui) { g_gui->Done(); delete g_gui; } }	
 
 #endif
 //////////////////////////////////////////////////////////////////////////////////////////////////

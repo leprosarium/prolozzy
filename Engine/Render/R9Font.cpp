@@ -34,7 +34,7 @@ r9Font::~r9Font()
 {
 }
 
-BOOL r9Font::Create( int chrw, int chrh, int cols, int start, int count )
+bool r9Font::Create( int chrw, int chrh, int cols, int start, int count )
 {
 	m_chrw		= chrw;
 	m_chrh		= chrh;
@@ -56,16 +56,16 @@ BOOL r9Font::Create( int chrw, int chrh, int cols, int start, int count )
 		col++;
 		if(col>=cols) { col=0; row++; }
 	}
-	return TRUE;
+	return true;
 }
 
-BOOL r9Font::Create( const std::string & filename )
+bool r9Font::Create( const std::string & filename )
 {
 	
 	F9FILE file = files->OpenFile(filename);
-	if(!file) return FALSE;
+	if(!file) return false;
 	int size = static_cast<int>(file->Size());
-	if(size==0) { files->FileClose(file); return FALSE; }
+	if(size==0) { files->FileClose(file); return false; }
 	byte * buffer = new byte[size];
 	file->Read( buffer, size);
 	files->FileClose(file);
@@ -74,7 +74,7 @@ BOOL r9Font::Create( const std::string & filename )
 
 	// HEADER (24 bytes)
 
-	if( !(buffer[0]=='F' && buffer[1]=='N' && buffer[2]=='T' && buffer[3]=='0') ) { delete [] buffer; return FALSE; }
+	if( !(buffer[0]=='F' && buffer[1]=='N' && buffer[2]=='T' && buffer[3]=='0') ) { delete [] buffer; return false; }
 	buffer += 4;
 
 	m_chrw		= *((word*)buffer);			buffer += sizeof(word);
@@ -101,7 +101,7 @@ BOOL r9Font::Create( const std::string & filename )
 	}
 	
 	delete [] buffer0;
-	return TRUE;
+	return true;
 }
 
 void r9Font::Destroy()

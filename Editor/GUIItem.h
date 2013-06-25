@@ -34,40 +34,28 @@ public:
 	int imgAlign;
 	int mode;
 	std::string cmdAction;
-	int cmdActionParam;
-
 	int value;
 	int group;
 	std::string tooltip;
+	cGUIDlg * m_dlg;
+	bool m_mousein;
 
+	cGUIItem();
+	virtual ~cGUIItem();
 
+	virtual	void OnUpdate();
+	virtual	void OnDraw();
+	virtual void OnAction() {};
 
-
-
-
-						cGUIItem			();
-virtual					~cGUIItem			();
-
-virtual	void			Build				();					// build
-virtual	void			Update				();					// update 
-virtual	void			Draw				();					// draw 
-
-
-		// util
 	iRect scrRect() const;
-
-inline	void			GetCliRect			( RECT &rc )		{ rc.left = 0; rc.top = 0; rc.right = rect.Width(); rc.bottom = rect.Height(); }
-		int				SetParent			( cGUIDlg* dlg );	// calls dlg->ItemAdd
-
+	int SetParent(cGUIDlg* dlg);	// calls dlg->ItemAdd
 	void Capture(bool on);
 	bool IsCaptured() const;
-virtual	void			Action				();					// action
-		void			Select				();					// select item & dlg as last
+	void Action(int param);
+	void Update();
+	void Draw() { OnDraw(); }
+	void Select();					// select item & dlg as last
 
-		// data
-		std::map<int, int> vars;								// variable zone
-		cGUIDlg*		m_dlg;									// parent
-		BOOL			m_mousein;
 };
 
 
@@ -80,7 +68,7 @@ class cGUITitle : public cGUIItem
 	iV2 move;
 public:
 	cGUITitle();
-	virtual void Update();
+	virtual void OnUpdate();
 };
 
 

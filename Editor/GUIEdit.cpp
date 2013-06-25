@@ -10,29 +10,13 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cGUIEdit
 //////////////////////////////////////////////////////////////////////////////////////////////////
-cGUIEdit::cGUIEdit()
-{
-	m_sel1 = 0;
-	m_sel2 = 0;
-	m_edit = FALSE;
-//	Build();
-}
-
-cGUIEdit::~cGUIEdit()
+cGUIEdit::cGUIEdit() : m_sel1(),  m_sel2(), m_edit()
 {
 }
 
-//void cGUIEdit::Build()
-//{
-//	char* txt = m_var[IV_TXT].m_str;
-//	txt = (char*)realloc(txt, GetInt(IV_TXTSIZE)+1);
-//	m_var[IV_TXT].m_str = txt;
-//}
-
-void cGUIEdit::Update()
+void cGUIEdit::OnUpdate()
 {
 	iRect rc = scrRect();
-	m_mousein = rc.IsInside(g_gui->m_mouse);
 	int mx = g_gui->m_mouse.x - rc.p1.x;
 	int my = g_gui->m_mouse.y - rc.p1.y;
 	BOOL shift = I9_GetKeyValue(I9K_LSHIFT) || I9_GetKeyValue(I9K_RSHIFT);
@@ -55,7 +39,7 @@ void cGUIEdit::Update()
 		{
 			if(!m_edit) m_bktxt = txt;
 			Capture(true);
-			m_edit = TRUE;
+			m_edit = true;
 			m_sel1 = m_sel2 = Pos2Chr(mx-deltax);
 		
 			// double click
@@ -72,9 +56,8 @@ void cGUIEdit::Update()
 		{
 			if(m_edit)
 			{
-				cmdActionParam = 0;
-				Action();
-				m_edit = FALSE;
+				Action(0);
+				m_edit = false;
 				m_sel1 = m_sel2 = 0;
 			}
 		}
@@ -107,16 +90,15 @@ void cGUIEdit::Update()
 		if(I9_GetKeyDown(I9K_ESCAPE))
 		{
 			if(!m_bktxt.empty()) txt = m_bktxt; // restore
-			m_edit = FALSE;
+			m_edit = false;
 			m_sel1 = m_sel2 = 0;
 			return;
 		}
 
 		if(enter || I9_GetKeyDown(I9K_TAB))
 		{
-			cmdActionParam = enter ? 1 : 3;
-			Action();
-			m_edit = FALSE;
+			Action(enter ? 1 : 3);
+			m_edit = false;
 			m_sel1 = m_sel2 = 0;
 			return;
 		}
@@ -234,14 +216,10 @@ void cGUIEdit::Update()
 
 	// right click action
 	if(!IsCaptured() && m_mousein && I9_GetKeyDown(I9_MOUSE_B2))
-	{
-		cmdActionParam = 2;
-		Action();
-	}
-	
+		Action(2);
 }
 
-void cGUIEdit::Draw()
+void cGUIEdit::OnDraw()
 {
 	iRect rc = scrRect();
 

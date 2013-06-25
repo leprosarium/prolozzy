@@ -10,18 +10,10 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cGUIColorPick
 //////////////////////////////////////////////////////////////////////////////////////////////////
-cGUIColorPick::cGUIColorPick()
-{
-}
 
-cGUIColorPick::~cGUIColorPick()
-{
-}
-
-void cGUIColorPick::Update()
+void cGUIColorPick::OnUpdate()
 {
 	iRect rc = scrRect();
-	m_mousein = rc.IsInside(g_gui->m_mouse);
 	
 	if(!m_mousein || !m_img.isValid())
 		return;
@@ -32,27 +24,16 @@ void cGUIColorPick::Update()
 	color[0] = m_img.getColor((int)x,(int)y);
 
 	if(I9_GetKeyUp(I9_MOUSE_B1))
-	{
-		cmdActionParam = 1;
-		Action();
-	}
+		Action(1);
 	else
 	if(I9_GetKeyUp(I9_MOUSE_B2))
-	{
-		cmdActionParam = 2;
-		Action();
-	}
+		Action(2);
 	else
 	{
 		std::ostringstream o;
 		o << std::hex << std::uppercase << std::setfill('0') << std::setw(6) << (color[0] & 0x00ffffff);
 		g_gui->ToolTip = o.str();
 	}
-}
-
-void cGUIColorPick::Draw()
-{
-	return; // don't draw anything
 }
 
 void cGUIColorPick::LoadImg(const std::string & nm )

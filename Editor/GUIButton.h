@@ -16,8 +16,8 @@
 class cGUIButton : public cGUIItem
 {
 public:
-	virtual	void Update();
-	virtual	void Draw();
+	virtual	void OnUpdate();
+	virtual	void OnDraw();
 
 };
 
@@ -30,8 +30,8 @@ public:
 class cGUICheck : public cGUIButton
 {
 public:
-	virtual	void Update();
-	virtual	void Action();
+	virtual	void OnUpdate();
+	virtual	void OnAction();
 };
 
 
@@ -44,8 +44,8 @@ public:
 class cGUIRadio: public cGUIButton
 {
 public:
-	virtual	void Update();
-	virtual	void Action();
+	virtual	void OnUpdate();
+	virtual	void OnAction();
 };
 
 #endif

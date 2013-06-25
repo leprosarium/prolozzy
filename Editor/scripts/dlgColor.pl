@@ -49,7 +49,7 @@ create(X, Y, Act, Color) :-
 	gui:itemSetID(IID1),
 	HH is YY + 128,
 	gui:itemSetRect(8, YY, 136, HH),
-	gui:itemSetCmdAction(dlgColor:pick(Act, Color)),
+	gui:itemSetCmdAction(dlgColor:pick(_Param, Act, Color)),
 
 	( core:ini('editor.ini', 'editor', 'color_pal', Pal); Pal = 0),
 	(   setPalette(Pal);
@@ -95,11 +95,10 @@ dlgClose(Act, Color) :-
 	term_variables(Act, [Color|_]),
 	call(Act).
 
-pick(Act, C) :-
+pick(Param, Act, C) :-
 	gui:itemGetColor(ARGB),
 	RGB is ARGB /\ 0x00ffffff,
 	A is (ARGB /\ 0x000000ff) << 24,
-	gui:itemGetCmdActionParam(Param),
 	(   Param =:= 1
 	->  C1 is (C /\ 0xff000000) \/ RGB
 	;   C1 = C),

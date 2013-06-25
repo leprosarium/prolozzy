@@ -7,13 +7,7 @@
 #include "GUIItem.h"
 #include "E9String.h"
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// Defines
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-#define IV_TXTSIZE				(IV_USER+1)
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////
 // cGUIEdit
 // Obs:
 // 1. uses COLOR1=backgr, COLOR2=gradient, COLOR3=border, COLOR4=selection
@@ -22,20 +16,9 @@
 
 class cGUIEdit : public cGUIItem
 {
-public:
-
-						cGUIEdit			();
-virtual					~cGUIEdit			();
-
-//virtual	void			Build				();						// build
-virtual	void			Update				();						// update 
-virtual	void			Draw				();						// draw 
-	
-		// Util
 		int				Pos2Chr				(int pos);				// get char pos from pixel pos
 		int				Chr2Pos				(int chr);				// get pixel pos from char pos
 inline  void			ShiftLeft			(int chr, int count);	// shifts count chars starting with chr 
-inline  void			ShiftRight			(int chr, int count);	// shifts count chars starting with chr 
 		void			ClipboardCopy		();						// copy to windows clipboard
 		void			ClipboardPaste		();						// paste from windows clipboard
 		void			SelectionCut		();						// cut current selection, if any
@@ -43,8 +26,12 @@ inline  void			ShiftRight			(int chr, int count);	// shifts count chars starting
 
 		int				m_sel1;										// selected char start pos
 		int				m_sel2;										// selected char end pos (after last selected)
-		BOOL			m_edit;										// if TRUE it is in edit mode
+		bool			m_edit;										// if TRUE it is in edit mode
 		std::string 	m_bktxt;			
+public:
+	cGUIEdit ();
+	virtual void OnUpdate();
+	virtual void OnDraw();
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

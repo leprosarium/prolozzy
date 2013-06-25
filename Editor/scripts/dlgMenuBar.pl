@@ -131,7 +131,7 @@ layerCreateButton(Layer, X, Y) :-
 	ID is ID_MB_LAYER + Layer,
 	gui:itemSetID(ID),
 	gui:itemSetValue(1),
-	gui:itemSetCmdAction(actions:layer(Layer)).
+	gui:itemSetCmdAction(actions:layer(_Params, Layer)).
 
 
 layerSetButton(Layer, Status) :-

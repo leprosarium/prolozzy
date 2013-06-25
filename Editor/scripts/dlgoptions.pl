@@ -169,8 +169,6 @@ createBox4(X, Y, DDY) :-
 	gui:createEdit(X, Y1, 282, TileFolder, dlgOptions:setTileFolder),
 	def:dlg(item(20), ID20),
 	gui:itemSetID(ID20),
-	gui:itemSetUser(1, 255),
-	gui:itemBuild, % resize editbox
 	XB2 is X + 288,
 	gui:createButton(XB2, Y1, 20, "...", dlgOptions:browseTileFolder),
 	gui:itemSetToolTip("browse tiles folder").

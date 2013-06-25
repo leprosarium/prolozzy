@@ -16,7 +16,6 @@ cGUIItem::cGUIItem() : id(), style(), hidden(), disable(), txtAlign(),
 	imgColor(0xffffffff), 
 	imgAlign(GUIALIGN_CENTERXY),
 	mode(),
-	cmdActionParam(),
 	value(),
 	group(),
 	m_dlg()
@@ -29,24 +28,23 @@ cGUIItem::~cGUIItem()
 {
 }
 
-
-void cGUIItem::Build()
-{
-}
-
 void cGUIItem::Update()
 {
 	m_mousein = scrRect().IsInside(g_gui->m_mouse);
+	OnUpdate();
+}
+
+
+void cGUIItem::OnUpdate()
+{
 	if(m_mousein)
 	{
-		cmdActionParam = 0;
-		if(I9_GetKeyDown(I9_MOUSE_B1))	cmdActionParam = 1;
-		if(I9_GetKeyDown(I9_MOUSE_B2))	cmdActionParam = 2;
-		if(cmdActionParam != 0)		Action();
+		if(I9_GetKeyDown(I9_MOUSE_B1))	Action(1);
+		if(I9_GetKeyDown(I9_MOUSE_B2))	Action(2);
 	}
 }
 
-void cGUIItem::Draw()
+void cGUIItem::OnDraw()
 {
 	iRect rc = scrRect();
 
@@ -112,15 +110,16 @@ void cGUIItem::Select()
 }
 
 
-void cGUIItem::Action()
+void cGUIItem::Action(int param)
 {
+	OnAction();
 	if(cmdAction.empty()) return;
-	Select();	
-	g_gui->ScriptPrologDo(cmdAction);
+	Select();
+
+	std::ostringstream o;	
+	o << "gui:itemAction(" << param << ", (" << cmdAction << "))";
+	g_gui->ScriptPrologDo(o.str());
 }
-
-
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cGUITitle
@@ -130,10 +129,9 @@ cGUITitle::cGUITitle()
 	value = 1;
 }
 
-void cGUITitle::Update()
+void cGUITitle::OnUpdate()
 {
 	iRect rc = scrRect();
-	m_mousein = rc.IsInside(g_gui->m_mouse);
 
 	if(I9_GetKeyDown(I9_MOUSE_B1))
 	{

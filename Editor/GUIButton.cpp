@@ -10,10 +10,8 @@
 // cGUIButton
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void cGUIButton::Update()
+void cGUIButton::OnUpdate()
 {
-	m_mousein = scrRect().IsInside(g_gui->m_mouse);
-
 	if(I9_GetKeyDown(I9_MOUSE_B1))
 	{
 		if(m_mousein)
@@ -26,18 +24,12 @@ void cGUIButton::Update()
 		{ 
 			Capture(false);
 			if(m_mousein)
-			{
-				cmdActionParam = 1;
-				Action();
-			}
+				Action(1);
 		}
 	}
 
 	if(!IsCaptured() && m_mousein && I9_GetKeyDown(I9_MOUSE_B2))
-	{
-		cmdActionParam = 2;
-		Action();
-	}
+		Action(2);
 
 	if( g_gui->m_capture == this ) 
 		style |= GUISTYLE_PRESSED;
@@ -45,7 +37,7 @@ void cGUIButton::Update()
 		style &= ~GUISTYLE_PRESSED;
 }
 
-void cGUIButton::Draw()
+void cGUIButton::OnDraw()
 {
 	iRect rc = scrRect();
 
@@ -76,35 +68,34 @@ void cGUIButton::Draw()
 // cGUICheck
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void cGUICheck::Update()
+void cGUICheck::OnUpdate()
 {
-	cGUIButton::Update();
+	cGUIButton::OnUpdate();
 	if(value)
 		style |= GUISTYLE_PRESSED;
 	else
 		style &= ~GUISTYLE_PRESSED;
 }
 
-void cGUICheck::Action()
+void cGUICheck::OnAction()
 {
 	value = value != 0 ? 0 : 1;
-	cGUIItem::Action();		
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cGUIRadio
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void cGUIRadio::Update()
+void cGUIRadio::OnUpdate()
 {
-	cGUIButton::Update();
+	cGUIButton::OnUpdate();
 	if(value)
 		style |= GUISTYLE_PRESSED;
 	else
 		style &= ~GUISTYLE_PRESSED;
 }
 
-void cGUIRadio::Action()
+void cGUIRadio::OnAction()
 {
 	assert(m_dlg!=NULL);
 	if(group!=0)
@@ -112,7 +103,6 @@ void cGUIRadio::Action()
 			if(m_dlg->ItemGet(i)->group == group)
 				m_dlg->ItemGet(i)->value = 0;
 	value = 1;
-	cGUIItem::Action();		
 }
 
 

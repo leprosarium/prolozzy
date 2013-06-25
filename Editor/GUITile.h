@@ -21,10 +21,9 @@ class cGUITile : public cGUIItem
 public:
 	int scale;
 	int shrink;
-						cGUITile			();
-virtual					~cGUITile			();
-virtual	void			Draw				();
 
+	cGUITile();
+	virtual	void OnDraw();
 };
 
 
@@ -34,30 +33,21 @@ virtual	void			Draw				();
 
 class cGUITileMap : public cGUIItem
 {
+	int m_mode;										// 0=none, 1=selecting, 2=move selection
+	iV2 m_move;										// grab point in selection 
+	int	Snap(int x) { return snap ? (x/8)*8 + (x%8>=4)*8 : x; }				// snap value to grid
 public:
 	int scale;
 	bool snap;
 	bool grid;
 	bool axes;
 	iRect map;
-	cGUITileMap			();
-virtual					~cGUITileMap			();
 
-virtual	void			Update				();						// update 
-virtual	void			Draw				();						// draw 
+	cGUITileMap();
 
-		int				m_selx;										// map x
-		int				m_sely;										// map y
-		int				m_selw;										// map w
-		int				m_selh;										// map h
-
-		int				m_mode;										// 0=none, 1=selecting, 2=move selection
-		iV2				m_move;										// grab point in selection 
-
-		int				Snap				( int x );				// snap value to grid
-
+	virtual	void OnUpdate();
+	virtual	void OnDraw();
 };
-
 
 #endif
 //////////////////////////////////////////////////////////////////////////////////////////////////

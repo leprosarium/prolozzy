@@ -91,7 +91,8 @@ void cGUI::Update()
 		}
 		else // no modal -> update all
 		{
-			std::for_each(m_dlg.begin(), m_dlg.end(), [](cGUIDlg * d) {d->Update();});
+			auto tmp(m_dlg);
+			std::for_each(tmp.begin(), tmp.end(), [](cGUIDlg * d) {d->Update();});
 		}
 	}
 	// delete mustclose dialogs
@@ -501,12 +502,6 @@ PREDICATE_M(gui, itemGetSelect, 1)
 	return A1 = g_gui->m_lastitem; 
 }
 
-PREDICATE_M(gui, itemBuild, 0)
-{
-	g_gui->GetLastItem()->Build();
-	return true;
-}
-
 PREDICATE_M(gui, itemGetX, 1)
 {
 	return A1 = g_gui->GetLastItem()->rect.p1.x;
@@ -532,11 +527,6 @@ PREDICATE_M(gui, itemGetTxt, 1)
 PREDICATE_M(gui, itemGetHidden, 0)
 {
 	return g_gui->GetLastItem()->hidden;
-}
-
-PREDICATE_M(gui, itemGetCmdActionParam, 1)
-{
-	return A1 = g_gui->GetLastItem()->cmdActionParam;
 }
 
 PREDICATE_M(gui, itemGetValue, 1)
@@ -645,12 +635,6 @@ PREDICATE_M(gui, itemSetCmdAction, 1)
 	return true;
 }
 
-PREDICATE_M(gui, itemSetCmdActionParam, 1)
-{
-	g_gui->GetLastItem()->cmdActionParam = A1;
-	return true;
-}
-
 PREDICATE_M(gui, itemSetHidden, 1)
 {
 	g_gui->GetLastItem()->hidden = static_cast<int>(A1) != 0;
@@ -694,12 +678,6 @@ PREDICATE_M(gui, itemSetImgColor, 1)
 	return true;
 }
 
-PREDICATE_M(gui, itemSetUser, 2)
-{
-	g_gui->GetLastItem()->vars[A1] = A2;
-	return true;
-}
-
 PREDICATE_M(gui, itemSetGuiTileScale, 1)
 {
 	if(cGUITile * t = dynamic_cast<cGUITile *>(g_gui->GetLastItem()))
@@ -719,7 +697,6 @@ PREDICATE_M(gui, itemSetGuiTileShrink, 1)
 	}
 	throw PlResourceError("cGUITile");
 }
-
 
 PREDICATE_M(gui, itemGetGuiTileScale, 1)
 {

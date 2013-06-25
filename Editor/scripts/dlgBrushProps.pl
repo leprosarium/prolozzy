@@ -58,17 +58,12 @@ createProp(Prop-Val, I, X, Y) :-
 	II is I * 2,
 	def:dlg(item(II), ID0),
 	gui:itemSetID(ID0),
-	gui:itemSetUser(1, 128),
-	gui:itemBuild,
 	X2 is X + 68,
 	term_to_atom(Val, VV),
 	gui:createEdit(X2, Y, 136, VV),
 	II1 is II + 1,
 	def:dlg(item(II1), ID1),
-	gui:itemSetID(ID1),
-	gui:itemSetUser(1, 128),
-	gui:itemBuild.
-
+	gui:itemSetID(ID1).
 
 dlgClose(IDX):-
 	collectProps(0, Props),

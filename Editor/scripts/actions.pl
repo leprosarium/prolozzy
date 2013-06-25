@@ -215,9 +215,7 @@ classSet(Code) :-
 	edi:toolBrush(B),
 	brush:setClass(B, Code).
 
-layer(Layer) :-
-	gui:itemGetCmdActionParam(Param),
-	gui:itemSetCmdActionParam(0),
+layer(Param, Layer) :-
 	Layer >= 0,
 	def:layerMax(LayerMax),
 	Layer < LayerMax,

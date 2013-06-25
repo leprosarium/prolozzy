@@ -16,12 +16,7 @@ cGUITile::cGUITile(): scale(), shrink()
 	imgAlign = 0;
 }
 
-
-cGUITile::~cGUITile()
-{
-}
-
-void cGUITile::Draw()
+void cGUITile::OnDraw()
 {
 	iRect rc = scrRect();
 
@@ -98,11 +93,7 @@ cGUITileMap::cGUITileMap() : scale(), snap(), grid(), axes(), m_mode()
 {
 }
 
-cGUITileMap::~cGUITileMap()
-{
-}
-
-void cGUITileMap::Update()
+void cGUITileMap::OnUpdate()
 {
 	iV2 sel = map.p1;
 	iV2 sels = map.Size();
@@ -206,7 +197,7 @@ void cGUITileMap::Update()
 	map = iRect(sel, sel+sels);
 }
 
-void cGUITileMap::Draw()
+void cGUITileMap::OnDraw()
 {
 	iRect rect = scrRect();
 
@@ -268,14 +259,6 @@ void cGUITileMap::Draw()
 	}
 
 }
-
-int cGUITileMap::Snap( int x )
-{ 
-	if(!snap) return x;
-	return (x/8)*8 + (x%8>=4)*8; // snap closer
-	// return x = (x/8)*8; // snap under
-}
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////

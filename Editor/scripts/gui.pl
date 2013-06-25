@@ -1,4 +1,5 @@
 :- module(gui, [loadResources/0,
+		itemAction/2,
 		select/1,
 		styleCode/2,
 		alignCode/2,
@@ -78,8 +79,9 @@ alignCode([Align|Aligns], A) :-
 	alignCode(Align, Code),
 	A is Aa \/ Code.
 
-
-
+itemAction(Param, Cmd) :-
+	(  term_variables(Cmd, [Param|_]);true),
+	call(Cmd).
 
 loadResources :-
 	forall(member(Img,

@@ -7,6 +7,9 @@
 #include "EdiMap.h"
 #include "GUI.h"
 
+#include <algorithm>
+
+
 #define SNAP(x,grid)	( ((x)/(grid))*(grid) + ((x)%(grid)>=(grid)/2)*(grid) )
 
 #define SNAP2GRID(x,y)						\
@@ -173,7 +176,6 @@ void cEdiToolPaint::Update( float dtime )
 		else
 		{
 			// tooltip
-			tBrush& brushpick = g_map.m_brush[m_brushidx];
 			std::ostringstream o;
 			o << (m_mode==2 ? "menu" : "pick");
 			if(m_brushidx!=-1)
@@ -222,7 +224,7 @@ void cEdiToolPaint::Draw()
 
 void cEdiToolPaint::Command( int cmd )
 {
-	if(m_brushidx<0 || m_brushidx>g_map.m_brushcount) return;
+	if(!g_map.validBrushIdx(m_brushidx)) return;
 	
 	if(cmd==TOOLCMD_PICKBRUSH)
 	{
@@ -252,7 +254,7 @@ void cEdiToolPaint::Command( int cmd )
 	{
 		EdiApp()->UndoSet(UNDOOP_ADD, m_brushidx, &g_map.m_brush[m_brushidx]);
 		g_map.PartitionDel(m_brushidx);
-		g_map.PartitionFix(m_brushidx+1, g_map.m_brushcount-1, -1); // fix indices before shifting
+		g_map.PartitionFix(m_brushidx+1, g_map.m_brush.size()-1, -1); // fix indices before shifting
 		g_map.BrushDel(m_brushidx);
 		m_brushidx=-1;
 		g_map.m_refresh = TRUE;
@@ -290,9 +292,6 @@ cEdiToolEdit::cEdiToolEdit()
 	m_dragcount = 0;
 	m_dragsize = 0;
 	m_drag = NULL;
-	m_clipcount = 0;
-	m_clipsize = 0;		
-	m_clip = NULL;
 	strcpy(m_name,"EDIT");
 }
 
@@ -311,11 +310,6 @@ void cEdiToolEdit::Done()
 	m_dragcount = 0;
 	m_dragsize = 0;
 	m_drag=NULL;
-	// clipboard
-	delete [] m_clip;
-	m_clipcount = 0;
-	m_clipsize = 0;
-	m_clip=NULL;
 }
 
 void cEdiToolEdit::Switch( BOOL on )
@@ -524,10 +518,8 @@ void cEdiToolEdit::BrushSelect()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiToolEdit::BrushDeselect()
 {
-	for(int idx=0;idx<g_map.m_brushcount;idx++)
-	{
-		g_map.m_brush[idx].m_data[BRUSH_SELECT] = 0;
-	}
+	for(tBrush & b: g_map.m_brush) 
+		b.m_data[BRUSH_SELECT] = 0;
 	g_map.m_selectcount=0;
 	g_map.m_refresh=TRUE;
 }
@@ -556,7 +548,7 @@ void cEdiToolEdit::BrushMoveStart()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiToolEdit::BrushMove()
 {
-	for(int idx=0;idx<g_map.m_brushcount;idx++)
+	for(int idx=0;idx<g_map.m_brush.size();idx++)
 	{
 		if(!g_map.m_brush[idx].m_data[BRUSH_SELECT]) continue;
 		g_map.PartitionDel(idx); // delete before changing
@@ -575,13 +567,13 @@ void cEdiToolEdit::BrushDelete()
 {
 	BEEP_OK;
 	EdiApp()->UndoReset();
-	for(int idx=0;idx<g_map.m_brushcount;idx++)
+	for(int idx=0;idx<g_map.m_brush.size();idx++)
 	{
 		if(!g_map.m_brush[idx].m_data[BRUSH_SELECT]) continue;
 		g_map.PartitionDel(idx);
-		g_map.PartitionFix(idx+1, g_map.m_brushcount-1, -1); // fix indices before shifting
-		g_map.BrushDel(idx); // this also shift and reduce m_brushcount
-		idx--; // redo this new one
+		g_map.PartitionFix(idx+1, g_map.m_brush.size()-1, -1); // fix indices before shifting
+		g_map.BrushDel(idx); 
+		idx--;
 	}
 	g_map.m_selectcount=0;
 	g_map.m_refresh=TRUE;
@@ -590,30 +582,22 @@ void cEdiToolEdit::BrushDelete()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiToolEdit::BrushCopy()
 {
-	m_clipcount=0;
-	for(int idx=0;idx<g_map.m_brushcount;idx++)
-	{
-		if(!g_map.m_brush[idx].m_data[BRUSH_SELECT]) continue;
-		if(m_clipcount==m_clipsize) // resize buffer
-		{
-			m_clipsize += 512;
-			m_clip = (tBrush*)realloc(m_clip,m_clipsize*sizeof(tBrush));
-		}
-		m_clip[m_clipcount] = g_map.m_brush[idx];
-		m_clipcount++;
-	}
-	if(m_clipcount==0) return;
+	std::vector<tBrush> m_clip;
+	for(tBrush & b: g_map.m_brush)
+		if(b.m_data[BRUSH_SELECT]) m_clip.push_back(b);
 
-	int size = m_clipcount * sizeof(tBrush);
+	if(m_clip.empty()) return;
+
+	int size = m_clip.size() * sizeof(tBrush);
 	UINT reg = RegisterClipboardFormat("DizzyAGE_Brushes");
-	if(reg==NULL) return;
+	if(reg == NULL) return;
 	if(!OpenClipboard(NULL)) return;
 	if(EmptyClipboard())
 	{
 		HGLOBAL handler = GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE,size+4); assert(handler!=NULL);
 		byte* data = (byte*)GlobalLock(handler); assert(data!=NULL);
 		*(int*)data = size;
-		memcpy(data+4,m_clip,size);
+		memcpy(data+4, &m_clip.front(),size);
 		GlobalUnlock(handler);
 		SetClipboardData(reg,handler);
 	}

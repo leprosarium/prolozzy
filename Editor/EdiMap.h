@@ -129,10 +129,8 @@ public:
 		void		BrushClear			();							// free brush buffers and counts; selectcount friendly
 
 		tBrush &	GetBrush			(int idx);
-
-		int			m_brushcount;									// brushes count
-		int			m_brushsize;									// brush buffer size (how many it can hold)
-		tBrush*		m_brush;										// brush buffer list (brushes in map)
+		bool validBrushIdx(int idx) const { return static_cast<size_t>(idx) < m_brush.size(); }
+		std::vector<tBrush> m_brush;							// brush buffer list (brushes in map)
 		std::vector<int> brushvis;									// visible brushes list (brushes to draw; updated on refresh)
 
 		// partitioning

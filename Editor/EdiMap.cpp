@@ -108,7 +108,7 @@ PREDICATE_M(map, load, 1)
 
 PREDICATE_M(map, brushCount, 1)
 {
-	return A1 = g_map.m_brushcount;
+	return A1 = static_cast<int>(g_map.m_brush.size());
 }
 
 bool cEdiMap::UnifyBrush(PlTerm t, tBrush * b)
@@ -147,11 +147,13 @@ PREDICATE_NONDET_M(map, brush, 1)
 	PlTerm br = t[1];
 	if (br.type() != PL_VARIABLE) {
 		tBrush * b = brushPtrNoEx(br);
-		return b >= g_map.m_brush && b < g_map.m_brush + g_map.m_brushcount;
+		if(g_map.m_brush.empty())
+			return 0;
+		return b >= & g_map.m_brush.front() && b < & g_map.m_brush.front() + g_map.m_brush.size();
 	}
 	size_t idx = call == PL_FIRST_CALL ? 0 : PL_foreign_context(handle);
-	if(idx < g_map.m_brushcount && (br = g_map.m_brush + idx))
-		if(++idx == g_map.m_brushcount)
+	if(idx < g_map.m_brush.size() && (br = & g_map.m_brush[idx]))
+		if(++idx == g_map.m_brush.size())
 			return true;
 		else
 			PL_retry(idx);
@@ -257,7 +259,7 @@ PREDICATE_M(map, brushNew, 1)
 {
 	int idx = g_map.BrushNew();
 	EdiApp()->UndoReset();
-	return g_map.UnifyBrush(A1, g_map.m_brush + idx);
+	return g_map.UnifyBrush(A1, &g_map.m_brush[idx]);
 }
 
 PREDICATE_M(map, brushDel, 1)
@@ -391,11 +393,6 @@ cEdiMap::cEdiMap() : brush("brush", 1)
 	m_refresh		= TRUE;
 	m_target		= NULL;
 
-	// brushes
-	m_brushcount	= 0;
-	m_brushsize		= 0;
-	m_brush			= NULL;
-
 	// selection
 	m_selectcount	= 0;
 	m_selectgoto	= 0;
@@ -448,11 +445,7 @@ void cEdiMap::Done()
 	// refresh
 	if(m_target) { R9_TextureDestroy(m_target); m_target=NULL; }
 	
-	// brushes
-	delete [] m_brush;
-	m_brush=NULL;
-	m_brushcount = 0;
-	m_brushsize	= 0;
+	m_brush.clear();
 }
 
 
@@ -708,46 +701,31 @@ int cEdiMap::Resize( int width, int height )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 int	cEdiMap::BrushNew()
 {
-	if(m_brushcount==m_brushsize)
-	{
-		m_brushsize += 1024; // grow
-		m_brush = (tBrush*)realloc(m_brush, m_brushsize*sizeof(tBrush));
-		assert(m_brush!=NULL);
-	}
-	
-	// init
-	tBrush& brush = m_brush[m_brushcount];
-	memset(&brush,0,sizeof(brush));
-	brush.m_data[BRUSH_TILE] = -1;
-	brush.m_data[BRUSH_COLOR] = 0xffffffff;
-
-	m_brushcount++;
-	return m_brushcount-1;
+	m_brush.push_back(tBrush());
+	return m_brush.size()-1;
 }
 
 void cEdiMap::BrushIns( int idx, tBrush& brush )
 {
-	assert(0<=idx && idx<=m_brushcount);
+	assert(validBrushIdx(idx));
 	BrushNew();
-	for(int i=m_brushcount-1;i>idx;i--) m_brush[i] = m_brush[i-1];
+	for(int i=m_brush.size()-1;i>idx;i--) m_brush[i] = m_brush[i-1];
 	m_brush[idx]=brush;
 	if(m_brush[idx].m_data[BRUSH_SELECT]) m_selectcount++;
 }
 
 void cEdiMap::BrushDel( int idx )
 {
-	assert(0<=idx && idx<m_brushcount);
+	assert(validBrushIdx(idx));
 	if(m_brush[idx].m_data[BRUSH_SELECT]) m_selectcount--;
-	if( idx<m_brushcount-1 )
-		memcpy( &m_brush[idx], &m_brush[idx+1], sizeof(tBrush)*(m_brushcount-1-idx) );
-	m_brushcount--;
+	m_brush.erase(m_brush.begin() + idx);
 }
 
 tBrush & cEdiMap::GetBrush(int idx)
 {
-	if(idx < 0 || idx >= g_map.m_brushcount) 
+	if(!validBrushIdx(idx)) 
 		throw PlDomainError("invalid map brush index");
-	return g_map.m_brush[idx];
+	return m_brush[idx];
 }
 
 /*
@@ -818,7 +796,7 @@ void cEdiMap::BrushDrawExtra( iRect& view )
 		for( int i=0; i<brushcount; i++ )
 		{
 			int idx = m_partition[pidx]->m_data[i];
-			assert(0<=idx && idx<m_brushcount);
+			assert(validBrushIdx(idx));
 			m_count_brushcheck++;
 
 			tBrush& brush = m_brush[idx];
@@ -865,7 +843,7 @@ void cEdiMap::BrushDrawExtra( iRect& view )
 
 int	cEdiMap::BrushPick( int x, int y )
 {
-	for( int idx=m_brushcount-1; idx>=0; idx-- ) // top to bottom
+	for( int idx=m_brush.size()-1; idx>=0; idx-- ) // top to bottom
 	{
 		tBrush& brush = m_brush[idx];
 		int layer = brush.m_data[BRUSH_LAYER];
@@ -878,12 +856,12 @@ int	cEdiMap::BrushPick( int x, int y )
 
 void cEdiMap::BrushToFront( int idx )
 {
-	assert(0<=idx && idx<m_brushcount);
+	assert(validBrushIdx(idx));
 	// search	
 	int i;
 	int idx0=idx;
 	int layer = m_brush[idx].m_data[BRUSH_LAYER];
-	for(i=idx;i<m_brushcount;i++)
+	for(i=idx;i<m_brush.size();i++)
 	{
 		if(m_brush[i].m_data[BRUSH_LAYER]==layer) idx0=i;
 	}
@@ -906,7 +884,7 @@ void cEdiMap::BrushToFront( int idx )
 
 void cEdiMap::BrushToBack( int idx )
 {
-	assert(0<=idx && idx<m_brushcount);
+	assert(validBrushIdx(idx));
 	// search	
 	int i;
 	int idx0=idx;
@@ -935,10 +913,7 @@ void cEdiMap::BrushToBack( int idx )
 
 void cEdiMap::BrushClear()
 {
-	delete [] m_brush;
-	m_brush=NULL;
-	m_brushcount = 0;
-	m_brushsize	= 0;
+	m_brush.clear();
 	brushvis.clear();
 	m_selectcount=0;
 }
@@ -1016,7 +991,7 @@ BOOL cEdiMap::PartitionRepartition()
 	for(cPartitionCel *c: m_partition) c->m_count = 0;
 	// repartition all brushes
 	BOOL ok = TRUE;
-	for(int i=0; i<m_brushcount; i++)
+	for(int i=0; i<m_brush.size(); i++)
 		ok &= PartitionAdd(i);
 	return ok;
 }
@@ -1114,25 +1089,23 @@ BOOL cEdiMap::MarkerTest( int idx )
 void cEdiMap::SelectionRefresh()
 {
 	m_selectcount=0;
-	for(int i=0;i<m_brushcount;i++)
-	{
-		if(m_brush[i].m_data[BRUSH_SELECT]) 
+	for(tBrush & b: m_brush)
+		if(b.m_data[BRUSH_SELECT]) 
 			m_selectcount++;
-	}
 }
 
 void cEdiMap::SelectionGoto( int dir )
 {
-	if(m_brushcount==0) return;
+	if(m_brush.empty()) return;
 	assert(dir==-1 || dir==1);
-	if(m_selectgoto<=-1) m_selectgoto = m_brushcount-1;
-	if(m_selectgoto>=m_brushcount) m_selectgoto = 0;
+	if(m_selectgoto<=-1) m_selectgoto = m_brush.size()-1;
+	if(m_selectgoto>=m_brush.size()) m_selectgoto = 0;
 	int i = m_selectgoto;
 	while(TRUE)
 	{
 		i+=dir;
-		if(i<=-1) i=m_brushcount-1;
-		if(i>=m_brushcount) i=0;
+		if(i<=-1) i=m_brush.size()-1;
+		if(i>=m_brush.size()) i=0;
 		if(m_brush[i].m_data[BRUSH_SELECT]) 
 		{
 			m_camx = m_brush[i].m_data[BRUSH_X];

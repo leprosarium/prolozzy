@@ -81,7 +81,7 @@ public:
 struct tBrush
 {
 	int	m_data[BRUSH_MAX];
-				tBrush()											{}
+				tBrush() { memset(m_data, 0, sizeof(m_data)); m_data[BRUSH_TILE] = -1; m_data[BRUSH_COLOR] = 0xffffffff; }
 inline	int		Get( int idx ) const								{ return m_data[idx]; }
 inline	void	Set( int idx, int val )								{ m_data[idx] = val; }
 inline	void	MakeBBW	( int &x1, int &y1, int &x2, int &y2 )		{ x1 = m_data[BRUSH_X]; x2 = m_data[BRUSH_X]+m_data[BRUSH_W]; y1 = m_data[BRUSH_Y]; y2 = m_data[BRUSH_Y]+m_data[BRUSH_H]; }

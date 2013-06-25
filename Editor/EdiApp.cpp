@@ -465,8 +465,8 @@ BOOL cEdiApp::Undo()
 	{
 		case UNDOOP_ADD:
 		{
-			if(m_undoidx<0 || m_undoidx>g_map.m_brushcount) goto error;
-			g_map.PartitionFix(m_undoidx, g_map.m_brushcount-1, 1); // fix indices before shifting
+			if(!g_map.validBrushIdx(m_undoidx)) goto error;
+			g_map.PartitionFix(m_undoidx, g_map.m_brush.size()-1, 1); // fix indices before shifting
 			g_map.BrushIns(m_undoidx, m_undobrush);
 			g_map.PartitionAdd(m_undoidx);
 			m_undoop = UNDOOP_DEL;
@@ -476,10 +476,10 @@ BOOL cEdiApp::Undo()
 		}
 		case UNDOOP_DEL:
 		{
-			if(m_undoidx<0 || m_undoidx>g_map.m_brushcount) goto error;
+			if(!g_map.validBrushIdx(m_undoidx)) goto error;
 			m_undobrush = g_map.m_brush[m_undoidx];
 			g_map.PartitionDel(m_undoidx);
-			g_map.PartitionFix(m_undoidx+1, g_map.m_brushcount-1, -1); // fix indices before shifting
+			g_map.PartitionFix(m_undoidx+1, g_map.m_brush.size()-1, -1); // fix indices before shifting
 			g_map.BrushDel(m_undoidx);
 			m_undoop = UNDOOP_ADD;
 			g_map.m_refresh = TRUE;

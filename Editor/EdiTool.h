@@ -106,10 +106,6 @@ virtual void		Draw				();
 		int			m_dragsize;								// dragged brushes buffer size
 		int*		m_drag;									// dragged brushes buffer
 
-		// clipboard list
-		int			m_clipcount;							// clipboard count
-		int			m_clipsize;								// clipboard buffer size
-		tBrush*		m_clip;									// clipboard count buffer
 
 };
 

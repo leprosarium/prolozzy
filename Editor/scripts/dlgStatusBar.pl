@@ -9,7 +9,7 @@
 create :-
 	edi:getScrH(ScrH),
 	edi:getScrW(BarW),
-	dlg:new(_),
+	dlg:new,
 	dlg:setRect(0, 30, BarW, 46),
 	def:dlg(statusBar1, ID),
 	dlg:setID(ID),
@@ -24,7 +24,7 @@ create :-
 	gui:itemSetID(IID2),
 
 	% dialog bottom
-	dlg:new(_),
+	dlg:new,
 	Y is ScrH - 17,
 	dlg:setRect(0, Y, BarW, BarW),
 	def:dlg(statusBar2, ID2),

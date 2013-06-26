@@ -51,7 +51,7 @@ menu :-
 	Data = [
 	item(file-"File", "", []),
 	item(new-" new",       (gui:dlgClose, actions:fileNew), [key(n), tooltip("new map [N]")]),
-	item(imap-" open map",     (gui:dlgClose, actions:fileOpenMap), [key(o), tooltip("open map [O]")]),
+	item(imap-" open map", (gui:dlgClose, actions:fileOpenMap), [key(o), tooltip("open map [O]")]),
 	item(open-" open",   (gui:dlgClose, actions:fileOpen), [key(shift+o), tooltip("open map 2 [Shift+O]")]),
 	item(save-" save as",  (gui:dlgClose, actions:fileSave(false)), [key(s), tooltip("save map [S]")]),
 	item(export-" export", (gui:dlgClose, actions:fileExport), [key(e), tooltip("export map as image [E]")]),
@@ -378,15 +378,21 @@ script2:-
 
 
 toolPickMenu(BrushIdx) :-
+	map:brushIdx(BrushIdx, Brush),
+	def:toolCmd(pickBrush, PickBrush),
+	def:toolCmd(pickColor, PickColor),
+	def:toolCmd(toFront, ToFront),
+	def:toolCmd(toFront, ToBack),
+	def:toolCmd(delete, Delete),
 	Data = [
 		item(bprop-bprop,	(gui:dlgClose, dlgBrushProps:create(BrushIdx)), [tooltip("B properties")]),
-		item(prop-prop,	(gui:dlgClose, map:brushIdx(BrushIdx, Brush), dlgProps:create(normal, Brush)), [key(p), tooltip("properties [P]")]),
-		item(pb-'pick brush',	(gui:dlgClose, def:toolCmd(pickBrush, C), edi:toolCommand(C)), [tooltip("pick brush")]),
-		item(pt-'pick tile',	(gui:dlgClose, map:brushIdx(BrushIdx, Brush), actions:toolCommandPickBrush(Brush)), [key(t), tooltip("pick tile [T]")]),
-		item(pc-'pick color',	(gui:dlgClose, def:toolCmd(pickColor, C), edi:toolCommand(C)), [key(c), tooltip("pick color [C]")]),
-		item(tf-'to front',	(gui:dlgClose, def:toolCmd(toFront, C), edi:toolCommand(C)), [key(f), tooltip("bring to front [F]")]),
-		item(tb-'to back',	(gui:dlgClose, def:toolCmd(toBack, C), edi:toolCommand(C)), [key(b), tooltip("send to back [B]")]),
-		item(d-delete,	(gui:dlgClose, brush:delete(BrushIdx)), [key(delete), tooltip("delete [DEL]")])
+		item(prop-prop,	(gui:dlgClose, dlgProps:create(normal, Brush)), [key(p), tooltip("properties [P]")]),
+		item(pb-'pick brush',	(gui:dlgClose, edi:toolCommand(PickBrush)), [tooltip("pick brush")]),
+		item(pt-'pick tile',	(gui:dlgClose, actions:toolCommandPickBrush(Brush)), [key(t), tooltip("pick tile [T]")]),
+		item(pc-'pick color',	(gui:dlgClose, edi:toolCommand(PickColor)), [key(c), tooltip("pick color [C]")]),
+		item(tf-'to front',	(gui:dlgClose, edi:toolCommand(ToFront)), [key(f), tooltip("bring to front [F]")]),
+		item(tb-'to back',	(gui:dlgClose, edi:toolCommand(ToBack)), [key(b), tooltip("send to back [B]")]),
+		item(d-delete,	(gui:dlgClose, edi:toolCommand(Delete)), [key(delete), tooltip("delete [DEL]")])
 	       ],
 	gui:mouseX(MX),
 	gui:mouseY(MY),

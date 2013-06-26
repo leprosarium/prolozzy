@@ -286,12 +286,6 @@ void cEdiToolPaint::EndUserUpdate()
 cEdiToolEdit::cEdiToolEdit()
 {
 	m_selop = 0;
-	m_rect = iRect(0,0,0,0);
-	m_movex = m_movey = 0;
-	m_movedx = m_movedy = 0;
-	m_dragcount = 0;
-	m_dragsize = 0;
-	m_drag = NULL;
 	strcpy(m_name,"EDIT");
 }
 
@@ -305,11 +299,7 @@ void cEdiToolEdit::Init()
 
 void cEdiToolEdit::Done()
 {
-	// draglist
-	delete [] m_drag;
-	m_dragcount = 0;
-	m_dragsize = 0;
-	m_drag=NULL;
+	m_drag.clear();
 }
 
 void cEdiToolEdit::Switch( BOOL on )
@@ -321,7 +311,7 @@ void cEdiToolEdit::Reset()
 {
 	if(m_mode==2)
 	{
-		m_dragcount = 0;
+		m_drag.clear();
 		g_map.m_hideselected = FALSE;
 		g_map.m_refresh = TRUE;
 		App.SetCursor(Cursor::Arrow);
@@ -367,10 +357,8 @@ void cEdiToolEdit::Update( float dtime )
 		else
 		if(I9_GetKeyDown(I9_MOUSE_B2))
 		{
-			m_movex = mx;
-			m_movey = my;
-			m_movedx = 0;
-			m_movedy = 0;
+			m_move = iV2(mx, my);
+			m_moved = 0;
 			BrushMoveStart();
 			m_mode=2;
 			App.SetCursor(Cursor::Hand);
@@ -400,8 +388,7 @@ void cEdiToolEdit::Update( float dtime )
 	else
 	if( m_mode==2 )
 	{
-		m_movedx = mx - m_movex;
-		m_movedy = my - m_movey;
+		m_moved = iV2(mx, my) - m_move;
 
 		if(!I9_GetKeyValue(I9_MOUSE_B2))
 		{
@@ -425,7 +412,7 @@ void cEdiToolEdit::Update( float dtime )
 		if( m_mode==1 ) o << std::endl << m_rect.Width() << " x " << m_rect.Height();
 	}
 	else
-		o << "mov " << m_movedx << "," << m_movedy << std::endl << mx << "," << my;
+		o << "mov " << m_moved.x << "," << m_moved.y << std::endl << mx << "," << my;
 	if(inview)
 		g_gui->ToolTip = o.str();
 	else 
@@ -443,24 +430,20 @@ void cEdiToolEdit::Draw()
 	g_map.DrawAxes(m_ax,m_ay);
 
 	// offsets
-	int dx = 0;
-	int dy = 0;
+	iV2 d;
 	if(m_mode==2)
-	{
-		dx = m_movedx;
-		dy = m_movedy;
-	}
+		d = m_moved;
 
 	// draw selected brushes ( from visible or from dragging )
-	int count = (m_mode!=2) ? g_map.brushvis.size() : m_dragcount;
+	int count = (m_mode!=2) ? g_map.brushvis.size() : m_drag.size();
 	for(int i=0;i<count;i++)
 	{
 		int idx = (m_mode!=2) ? g_map.brushvis[i] : m_drag[i];
 		
 		tBrush& brush = g_map.m_brush[ idx ];
 		if(!brush.m_data[BRUSH_SELECT]) continue;
-		int x = VIEWX + CAMZ * (brush.m_data[BRUSH_X]-CAMX1+dx);
-		int y = VIEWY + CAMZ * (brush.m_data[BRUSH_Y]-CAMY1+dy);
+		int x = VIEWX + CAMZ * (brush.m_data[BRUSH_X]-CAMX1+d.x);
+		int y = VIEWY + CAMZ * (brush.m_data[BRUSH_Y]-CAMY1+d.y);
 
 		int shd = brush.m_data[BRUSH_SHADER];
 		int col = brush.m_data[BRUSH_COLOR];
@@ -528,19 +511,10 @@ void cEdiToolEdit::BrushDeselect()
 void cEdiToolEdit::BrushMoveStart()
 {
 	// create drag list with those visible and selected
-	m_dragcount = 0;
-	for(size_t i = 0; i < g_map.brushvis.size();i++)
-	{
-		int idx = g_map.brushvis[i];
-		if(!g_map.m_brush[idx].m_data[BRUSH_SELECT]) continue;
-		if(m_dragcount==m_dragsize) // resize buffer
-		{
-			m_dragsize += 256;
-			m_drag = (int*)realloc(m_drag,m_dragsize*sizeof(int));
-		}
-		m_drag[m_dragcount]=idx;
-		m_dragcount++;
-	}
+	m_drag.clear();
+	for(int idx: g_map.brushvis)
+		if(g_map.m_brush[idx].m_data[BRUSH_SELECT]) 
+			m_drag.push_back(idx);
 	g_map.m_hideselected = TRUE;
 	g_map.m_refresh=TRUE;
 }
@@ -552,12 +526,12 @@ void cEdiToolEdit::BrushMove()
 	{
 		if(!g_map.m_brush[idx].m_data[BRUSH_SELECT]) continue;
 		g_map.PartitionDel(idx); // delete before changing
-		g_map.m_brush[idx].m_data[BRUSH_X] += m_movedx;
-		g_map.m_brush[idx].m_data[BRUSH_Y] += m_movedy;
+		g_map.m_brush[idx].m_data[BRUSH_X] += m_moved.x;
+		g_map.m_brush[idx].m_data[BRUSH_Y] += m_moved.y;
 		g_map.PartitionAdd(idx); // readd after changed
 
 	}
-	m_dragcount = 0;
+	m_drag.clear();
 	g_map.m_hideselected = FALSE;
 	g_map.m_refresh=TRUE;
 }

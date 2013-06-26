@@ -96,15 +96,10 @@ virtual void		Draw				();
 
 		iRect		m_rect;
 		int			m_selop;								// select operation -1=sub, 0=new, 1=add
-		int			m_movex;								// movement start
-		int			m_movey;								// movement start
-		int			m_movedx;								// movement offset
-		int			m_movedy;								// movement offset
+		iV2			m_move;			// movement start
+		iV2			m_moved;		// movement offset
 
-		// drag list
-		int			m_dragcount;							// dragged brushes count
-		int			m_dragsize;								// dragged brushes buffer size
-		int*		m_drag;									// dragged brushes buffer
+		std::vector<int> m_drag;	 // drag list
 
 
 };

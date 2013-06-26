@@ -219,8 +219,7 @@ roomInfo :-
 roomInfoSet(Info):-
 	mod:setRoomInfo(Info),
 	def:dlg(options, MB),
-	dlg:find(MB, IDX),
-	dlg:select(IDX),
+	dlg:select(MB),
 	gui:select(5),
 	gui:itemSetTxt(Info).
 
@@ -266,8 +265,7 @@ browseColorTheme :-
 	core:ini('editor.ini', 'editor', 'options_colortheme', NCC),
 
 	def:dlg(options, ID),
-	dlg:find(ID, IDX),
-	dlg:select(IDX),
+	dlg:select(ID),
 	gui:select(31),
 	gui:itemSetColor(0, Color).
 
@@ -275,8 +273,7 @@ browseColorTheme :-
 colorSet(Color) :-
 	C is Color \/ 0xff000000,
 	def:dlg(options, ID),
-	dlg:find(ID, IDX),
-	dlg:select(IDX),
+	dlg:select(ID),
 	gui:select(30),
 	gui:itemSetColor(0, C),
 	edi:setColorMap(C),

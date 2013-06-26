@@ -76,8 +76,7 @@ layerCreateButtons(I, LAYER_MAX, X, Size) :-
 
 addButton(btn(ID, Tooltip, Cmd)) :-
 	def:dlg(menuBar, MB),
-	dlg:find(MB, IDX),
-	dlg:select(IDX),
+	dlg:select(MB),
 	BarH = 32,
 	format(string(ImgPath1), 'editor\\graphics\\mb1_~a.tga', [ID]),
 	format(string(ImgPath2), 'editor\\graphics\\mb2_~a.tga', [ID]),
@@ -99,8 +98,7 @@ refresh :-
 
 showButton(Id, Show) :-
 	def:dlg(menuBar, MB),
-	dlg:find(MB, IDX),
-	dlg:select(IDX),
+	dlg:select(MB),
 	gui:itemFind(Id, Idx),
 	gui:itemSelect(Idx),
 	gui:itemSetHidden(Show),
@@ -136,8 +134,7 @@ layerCreateButton(Layer, X, Y) :-
 
 layerSetButton(Layer, Status) :-
 	def:dlg(menuBar, MB),
-	dlg:find(MB, IDX),
-	dlg:select(IDX),
+	dlg:select(MB),
 	Layer >= 0,
 	def:layerMax(LayerMax),
 	Layer < LayerMax,

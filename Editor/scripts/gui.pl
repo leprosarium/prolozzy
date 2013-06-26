@@ -106,8 +106,7 @@ select(Item) :-
 
 dlgSelect(Key) :-
 	def:dlg(Key, ID),
-	dlg:find(ID, IDX),
-	dlg:select(IDX).
+	dlg:select(ID).
 
 
 % Dialogs

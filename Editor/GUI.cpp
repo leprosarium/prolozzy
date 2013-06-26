@@ -144,11 +144,16 @@ void cGUI::ReadInput()
 	m_key[GUIKEY_ALT]	= I9_GetKeyValue(I9K_LALT) || I9_GetKeyValue(I9K_RALT);
 }
 
-int cGUI::DlgFind( int id )
+bool cGUI::DlgSelect(int id)
 {
 	auto i = std::find_if(m_dlg.begin(), m_dlg.end(), [&id](cGUIDlg * d) { return d->id == id;});
-	return i == m_dlg.end() ? -1 : i - m_dlg.begin();
+	if(i == m_dlg.end())
+		return false;
+	g_gui->m_lastdlg = i - m_dlg.begin();
+	g_gui->m_lastitem = -1;
+	return true;
 }
+	
 
 int cGUI::DlgFind( cGUIDlg *dlg )
 {
@@ -203,12 +208,6 @@ cGUIItem * cGUI::GetLastItem()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // GUI EXPORT
 //////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-PREDICATE_M(dlg, find, 2)
-{
-	return A2 = g_gui->DlgFind(A1);
-}
 
 PREDICATE_M(gui, itemFind, 2)
 {
@@ -338,12 +337,7 @@ PREDICATE_M(dlg, new, 2)
 
 PREDICATE_M(dlg, select, 1)
 {
-	int idx = A1;
-	if(idx < 0 || idx >= g_gui->DlgCount()) 
-		throw PlDomainError("invalid dialog index", A1);
-	g_gui->m_lastdlg = idx;
-	g_gui->m_lastitem = -1;
-	return true;
+	return g_gui->DlgSelect(A1);
 }
 
 PREDICATE_M(dlg, getSelect, 1)

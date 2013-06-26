@@ -50,9 +50,8 @@ public:
 	cGUIDlg * DlgGet(int idx) { if(0<=idx && idx<DlgCount()) return m_dlg[idx]; return 0; }
 	int DlgAdd(cGUIDlg * dlg) { if(dlg) { int idx = m_dlg.size(); m_dlg.push_back(dlg); return idx; } return -1; }
 	void DlgDel(int idx);
-	int DlgFind(int id);			// return idx
 	int DlgFind(cGUIDlg * dlg);		// return idx
-
+	bool DlgSelect(int id);
 	int makeDlg(char * className);
 	int makeItem(char * className);
 	cGUIDlg * GetLastDlg();

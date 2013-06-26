@@ -50,8 +50,7 @@ select(4, statusBar2, item(1)).
 set(N, Text) :-
 	select(N, Bar, Item),
 	def:dlg(Bar, ID),
-	dlg:find(ID, IDX),
-	dlg:select(IDX),
+	dlg:select(ID),
 	def:dlg(Item, IID),
 	gui:itemFind(IID, IIDX),
 	gui:itemSelect(IIDX),

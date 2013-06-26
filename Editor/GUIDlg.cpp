@@ -55,14 +55,14 @@ void cGUIDlg::Draw()
 void cGUIDlg::Close(int ret)
 {
 	// select this dialog when we call Close
-	g_gui->m_lastdlg = g_gui->DlgFind(this);
+	g_gui->m_lastdlg = this;
 	g_gui->m_lastitem = -1;
 
 	closeRet = ret ;
 	if(!closeCmd.empty())
 		g_gui->ScriptPrologDo(closeCmd);		
 	
-	g_gui->m_lastdlg = -1;
+	g_gui->m_lastdlg = nullptr;
 	g_gui->m_lastitem = -1;
 	m_mustclose = true;
 	// from here the dialog should not be used anymore (it will be destroyed asp)
@@ -100,7 +100,7 @@ void cGUIDlg::TestKey()
 	if (k != m_keys.end())
 	{
 		// select this dialog when we call OnKey command
-		g_gui->m_lastdlg = g_gui->DlgFind(this);
+		g_gui->m_lastdlg = this;
 		g_gui->m_lastitem = -1;
 		g_gui->ScriptPrologDo(k->cmd);	
 	}

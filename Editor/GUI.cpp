@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 cGUI* g_gui = NULL;
 
-cGUI::cGUI() : m_font(), m_lastdlg(-1), m_lastitem(), m_capture(), m_isbusy()
+cGUI::cGUI() : m_font(), m_lastdlg(), m_lastitem(), m_capture(), m_isbusy()
 {
 }
 
@@ -88,11 +88,10 @@ void cGUI::Update()
 	for(size_t i =0;i<m_dlg.size();)
 		if(m_dlg[i]->m_mustclose)
 		{
+			if(m_lastdlg == m_dlg[i]) { m_lastdlg = nullptr; m_lastitem = -1; }
 			m_capture = 0; // clear captrure (colud be int the dying dialog)
 			delete m_dlg[i];
 			m_dlg.erase(m_dlg.begin() + i);
-			if(m_lastdlg==static_cast<int>(i)) m_lastdlg=-1; else
-			if(m_lastdlg>static_cast<int>(i)) m_lastdlg--; // fix index
 		}
 		else
 			++i;
@@ -149,19 +148,11 @@ bool cGUI::DlgSelect(int id)
 	auto i = std::find_if(m_dlg.begin(), m_dlg.end(), [&id](cGUIDlg * d) { return d->id == id;});
 	if(i == m_dlg.end())
 		return false;
-	g_gui->m_lastdlg = i - m_dlg.begin();
+	g_gui->m_lastdlg = *i;
 	g_gui->m_lastitem = -1;
 	return true;
 }
 	
-
-int cGUI::DlgFind( cGUIDlg *dlg )
-{
-	auto i = std::find(m_dlg.begin(), m_dlg.end(), dlg);
-	return i == m_dlg.end() ? -1 : i - m_dlg.begin();
-}
-
-
 void cGUI::DlgDel( int idx ) 
 {
 	if(0<=idx && idx<DlgCount()) 
@@ -192,8 +183,8 @@ bool cGUI::ScriptPrologDo(const std::string & pred)
 
 cGUIDlg * cGUI::GetLastDlg()
 {
-	if(cGUIDlg * dlg = DlgGet(m_lastdlg))
-		return dlg;
+	if(m_lastdlg)
+		return m_lastdlg;
 	throw PlException("no selected dialog");
 }
 
@@ -317,32 +308,24 @@ PREDICATE_M(gui, winDlgOpenColor, 2)
 // GUIDlg EXPORT
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-int cGUI::makeDlg(char * className)
+cGUIDlg * cGUI::makeDlg()
 {
-	if(cGUIDlg* dlg = (cGUIDlg*)GUICreateClass(className))
-		return m_lastdlg = DlgAdd(dlg); 
-	throw PlException("dialog creation failure");
+	cGUIDlg * dlg = new cGUIDlg;
+	m_dlg.push_back(dlg);
+	m_lastdlg = dlg; 
+	m_lastitem = -1;
+	return dlg;
 }
 
-PREDICATE_M(dlg, new, 1)
+PREDICATE_M(dlg, new, 0)
 {
-	return A1 = g_gui->makeDlg("cGUIDlg");
+	g_gui->makeDlg();
+	return true; 
 }
-
-PREDICATE_M(dlg, new, 2)
-{
-	return A1 = g_gui->makeDlg(A2);
-}
-
 
 PREDICATE_M(dlg, select, 1)
 {
 	return g_gui->DlgSelect(A1);
-}
-
-PREDICATE_M(dlg, getSelect, 1)
-{
-	return A1 = g_gui->m_lastdlg;
 }
 
 PREDICATE_M(gui, dlgClose, 0)

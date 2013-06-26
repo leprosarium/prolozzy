@@ -112,7 +112,7 @@ dlgSelect(Key) :-
 % Dialogs
 
 createDlg(X, Y, W, H, Style) :-
-	dlg:new(_IDX),
+	dlg:new,
 	X2 is X + W,
 	Y2 is Y + H,
 	dlg:setRect(X, Y, X2, Y2),

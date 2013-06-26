@@ -133,7 +133,7 @@ inline tBrush * brushPtr(PlTerm t)
 
 PREDICATE_M(map, brushIdx, 2)
 {
-	return g_map.UnifyBrush(A2, & g_map.m_brush[A1]);
+	return g_map.UnifyBrush(A2, & g_map.m_brush[static_cast<int>(A1)]);
 }
 
 PREDICATE_NONDET_M(map, brush, 1)
@@ -719,6 +719,7 @@ void cEdiMap::BrushDel( int idx )
 	assert(validBrushIdx(idx));
 	if(m_brush[idx].m_data[BRUSH_SELECT]) m_selectcount--;
 	m_brush.erase(m_brush.begin() + idx);
+	brushvis.clear();
 }
 
 tBrush & cEdiMap::GetBrush(int idx)

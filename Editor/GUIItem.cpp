@@ -105,10 +105,9 @@ bool cGUIItem::IsCaptured() const
 
 void cGUIItem::Select()	
 {
-	g_gui->m_lastdlg = g_gui->DlgFind(m_dlg);
+	g_gui->m_lastdlg = m_dlg;
 	g_gui->m_lastitem = m_dlg->ItemFind(this);
 }
-
 
 void cGUIItem::Action(int param)
 {

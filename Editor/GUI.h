@@ -48,11 +48,9 @@ public:
 	// inheritance
 	int DlgCount() const { return m_dlg.size(); }
 	cGUIDlg * DlgGet(int idx) { if(0<=idx && idx<DlgCount()) return m_dlg[idx]; return 0; }
-	int DlgAdd(cGUIDlg * dlg) { if(dlg) { int idx = m_dlg.size(); m_dlg.push_back(dlg); return idx; } return -1; }
 	void DlgDel(int idx);
-	int DlgFind(cGUIDlg * dlg);		// return idx
 	bool DlgSelect(int id);
-	int makeDlg(char * className);
+	cGUIDlg * makeDlg();
 	int makeItem(char * className);
 	cGUIDlg * GetLastDlg();
 	cGUIItem * GetLastItem(); 	
@@ -64,7 +62,7 @@ public:
 	bool m_isbusy;						// if gi is busy (there is at least one modal dialog or is in a capture)
 				
 	// script
-	int m_lastdlg;						// last (selected) dlg index
+	cGUIDlg * m_lastdlg;				// last (selected) dlg index
 	int m_lastitem;						// last (selected) item index
 	
 	bool ScriptPrologDo(const std::string & pred);

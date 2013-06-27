@@ -51,9 +51,7 @@ set(N, Text) :-
 	select(N, Bar, Item),
 	def:dlg(Bar, ID),
 	dlg:select(ID),
-	def:dlg(Item, IID),
-	gui:itemFind(IID, IIDX),
-	gui:itemSelect(IIDX),
+	gui:select(Item),
 	gui:itemSetTxt(Text).
 
 

@@ -99,8 +99,7 @@ refresh :-
 showButton(Id, Show) :-
 	def:dlg(menuBar, MB),
 	dlg:select(MB),
-	gui:itemFind(Id, Idx),
-	gui:itemSelect(Idx),
+	gui:itemSelect(Id),
 	gui:itemSetHidden(Show),
 	gui:itemSetDisable(Show),
 	reposition.
@@ -113,8 +112,7 @@ reposition :-
 
 reposition([], _, _).
 reposition([ID|IDs], X, BarH) :-
-	gui:itemFind(ID, IDX),
-	gui:itemSelect(IDX),
+	gui:itemSelect(ID),
 	(   gui:itemGetHidden
 	->  reposition(IDs, X, BarH)
 	;   (X1 is X + BarH,
@@ -140,8 +138,7 @@ layerSetButton(Layer, Status) :-
 	Layer < LayerMax,
 	def:mb(layer, ID_MB_LAYER),
 	ID is ID_MB_LAYER + Layer,
-	gui:itemFind(ID, IIDX),
-	gui:itemSelect(IIDX),
+	gui:itemSelect(ID),
 	gui:itemSetValue(Status),
 	layerButtonColor(Status, Color),
 	def:color(Color, COLOR),

@@ -22,7 +22,7 @@ public:
 	int scale;
 	int shrink;
 
-	cGUITile();
+	cGUITile(cGUIDlg *d);
 	virtual	void OnDraw();
 };
 
@@ -33,20 +33,24 @@ public:
 
 class cGUITileMap : public cGUIItem
 {
-	int m_mode;										// 0=none, 1=selecting, 2=move selection
-	iV2 m_move;										// grab point in selection 
+	enum class State {none, select, move} state;
+	iV2 m_move;										// grab point in selection
+	iV2 m;											// mouse relative to tile space
+	iRect map;
 	int	Snap(int x) { return snap ? (x/8)*8 + (x%8>=4)*8 : x; }				// snap value to grid
 public:
 	int scale;
 	bool snap;
 	bool grid;
 	bool axes;
-	iRect map;
 
-	cGUITileMap();
+	cGUITileMap(cGUIDlg *d);
 
 	virtual	void OnUpdate();
 	virtual	void OnDraw();
+
+	void SetMap(const iRect & r) { map = iRect(std::min(r.p1.x, r.p2.x), std::min(r.p1.y, r.p2.y), std::max(r.p1.x, r.p2.x), std::max(r.p1.y, r.p2.y)); }
+	iRect GetMap() const { return map; }
 };
 
 #endif

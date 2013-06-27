@@ -9,7 +9,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cGUIItem
 //////////////////////////////////////////////////////////////////////////////////////////////////
-cGUIItem::cGUIItem() : id(), style(), hidden(), disable(), txtAlign(), 
+cGUIItem::cGUIItem(cGUIDlg *d) : id(), style(), hidden(), disable(), txtAlign(), 
 	txtColor(GUICOLOR_TEXT), 
 	txtOffset(6), 
 	img0(-1), img1(-1), 
@@ -18,7 +18,7 @@ cGUIItem::cGUIItem() : id(), style(), hidden(), disable(), txtAlign(),
 	mode(),
 	value(),
 	group(),
-	m_dlg()
+	m_dlg(d)
 {
 	color[0] = GUICOLOR_GUI;
 	color[1] = color[2] = color[3] = 0;
@@ -30,8 +30,12 @@ cGUIItem::~cGUIItem()
 
 void cGUIItem::Update()
 {
+	if(disable) return;
 	m_mousein = scrRect().IsInside(g_gui->m_mouse);
 	OnUpdate();
+
+	if( m_mousein && !hidden && !tooltip.empty())
+		g_gui->ToolTip = tooltip;
 }
 
 
@@ -79,10 +83,6 @@ iRect cGUIItem::scrRect() const
 	return m_dlg ? iRect(rect).Offset(m_dlg->rect.p1) : rect;
 }
 
-int cGUIItem::SetParent( cGUIDlg* dlg)
-{
-	return dlg ? dlg->ItemAdd(this) : -1;
-}
 
 void cGUIItem::Capture( bool on )
 {
@@ -105,8 +105,7 @@ bool cGUIItem::IsCaptured() const
 
 void cGUIItem::Select()	
 {
-	g_gui->m_lastdlg = m_dlg;
-	g_gui->m_lastitem = m_dlg->ItemFind(this);
+	g_gui->SetLast(m_dlg, this);
 }
 
 void cGUIItem::Action(int param)
@@ -123,7 +122,7 @@ void cGUIItem::Action(int param)
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cGUITitle
 //////////////////////////////////////////////////////////////////////////////////////////////////
-cGUITitle::cGUITitle()
+cGUITitle::cGUITitle(cGUIDlg *d) : cGUIItem(d)
 {
 	value = 1;
 }
@@ -153,7 +152,6 @@ void cGUITitle::OnUpdate()
 	}
 	
 }
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////

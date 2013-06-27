@@ -79,18 +79,12 @@ create :-
 	gui:dlgMoveToMouse,
 	gui:dlgDockUp.
 
-
-select(Item) :-
-	def:dlg(Item, IID),
-	gui:itemFind(IID, IIDX),
-	gui:itemSelect(IIDX).
-
 setVal(Item, Text) :-
-	select(Item),
+	gui:select(Item),
 	gui:itemSetTxt(Text).
 
 getVal(Item, Text) :-
-	select(Item),
+	gui:select(Item),
 	gui:itemGetTxt(Text).
 
 

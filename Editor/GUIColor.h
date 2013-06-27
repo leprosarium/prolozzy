@@ -21,6 +21,7 @@ class cGUIColorPick : public cGUIItem
 {
 	r9Img m_img;
 public:
+	cGUIColorPick(cGUIDlg *d) : cGUIItem(d) {}
 	virtual void OnUpdate();
 	virtual void OnDraw() {};
 	

@@ -17,11 +17,8 @@ void cGUIColorPick::OnUpdate()
 	
 	if(!m_mousein || !m_img.isValid())
 		return;
-	int mx = g_gui->m_mouse.x - rc.p1.x;
-	int my = g_gui->m_mouse.y - rc.p1.y;
-	float x = ((float)mx / rc.Width()) * m_img.m_width;
-	float y = ((float)my / rc.Height()) * m_img.m_height;
-	color[0] = m_img.getColor((int)x,(int)y);
+	iV2 p = (g_gui->m_mouse - rc.p1) * iV2(m_img.m_width, m_img.m_height) / rc.Size();
+	color[0] = m_img.getColor(p.x, p.y);
 
 	if(I9_GetKeyUp(I9_MOUSE_B1))
 		Action(1);
@@ -32,7 +29,7 @@ void cGUIColorPick::OnUpdate()
 	{
 		std::ostringstream o;
 		o << std::hex << std::uppercase << std::setfill('0') << std::setw(6) << (color[0] & 0x00ffffff);
-		g_gui->ToolTip = o.str();
+		tooltip = o.str();
 	}
 }
 

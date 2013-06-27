@@ -35,19 +35,13 @@ bool cGUI::Init()
 	m_font->SetTexture(tex);
 	m_font->SetSpace(4); // !
 	
-	// mouse
-	POINT pt;
-	GetCursorPos(&pt);
-	ScreenToClient(E9_GetHWND(), &pt); 
-	m_mouse.x = pt.x;
-	m_mouse.y = pt.y;
-
+	GetMousePos();
 	return ok;
 }
 	
 void cGUI::Done()
 {
-	std::for_each(m_dlg.begin(), m_dlg.end(), [](cGUIDlg *d){delete d;});
+	for(cGUIDlg * d: m_dlg) delete d;
 	m_dlg.clear();
 	m_capture = nullptr;
 	if(m_font) 
@@ -88,7 +82,7 @@ void cGUI::Update()
 	for(size_t i =0;i<m_dlg.size();)
 		if(m_dlg[i]->m_mustclose)
 		{
-			if(m_lastdlg == m_dlg[i]) { m_lastdlg = nullptr; m_lastitem = -1; }
+			if(m_lastdlg == m_dlg[i]) { SetLast(); }
 			m_capture = 0; // clear captrure (colud be int the dying dialog)
 			delete m_dlg[i];
 			m_dlg.erase(m_dlg.begin() + i);
@@ -128,12 +122,7 @@ void cGUI::Draw()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cGUI::ReadInput()
 {
-	POINT pt;
-	GetCursorPos(&pt);
-	ScreenToClient(E9_GetHWND(), &pt); 
-
-	m_mouse.x = pt.x;
-	m_mouse.y = pt.y;
+	GetMousePos();
 
 	m_key[GUIKEY_MB1]	= I9_GetKeyValue(I9_MOUSE_B1); 
 	m_key[GUIKEY_MB2]	= I9_GetKeyValue(I9_MOUSE_B2);
@@ -143,26 +132,23 @@ void cGUI::ReadInput()
 	m_key[GUIKEY_ALT]	= I9_GetKeyValue(I9K_LALT) || I9_GetKeyValue(I9K_RALT);
 }
 
+void cGUI::GetMousePos()
+{
+	POINT pt;
+	GetCursorPos(&pt);
+	ScreenToClient(E9_GetHWND(), &pt); 
+	m_mouse = iV2(pt.x, pt.y);
+}
+
 bool cGUI::DlgSelect(int id)
 {
 	auto i = std::find_if(m_dlg.begin(), m_dlg.end(), [&id](cGUIDlg * d) { return d->id == id;});
 	if(i == m_dlg.end())
 		return false;
-	g_gui->m_lastdlg = *i;
-	g_gui->m_lastitem = -1;
+	g_gui->SetLast(*i);
 	return true;
 }
 	
-void cGUI::DlgDel( int idx ) 
-{
-	if(0<=idx && idx<DlgCount()) 
-	{ 
-		delete m_dlg[idx]; 
-		m_dlg.erase(m_dlg.begin() + idx); 
-	} 
-}
-
-
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // Script
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -190,8 +176,8 @@ cGUIDlg * cGUI::GetLastDlg()
 
 cGUIItem * cGUI::GetLastItem()
 {
-	if(cGUIItem* item = GetLastDlg()->ItemGet(m_lastitem))
-		return item;
+	if(m_lastitem)
+		return m_lastitem;
 	throw PlException("no selected item");
 }
 
@@ -199,15 +185,6 @@ cGUIItem * cGUI::GetLastItem()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // GUI EXPORT
 //////////////////////////////////////////////////////////////////////////////////////////////////
-
-PREDICATE_M(gui, itemFind, 2)
-{
-	int idx = g_gui->GetLastDlg()->ItemFind(A1);
-	if(idx == -1)
-		return false;
-	return A2 = idx;
-}
-
 
 PREDICATE_M(gui, imgLoad, 2)
 {
@@ -312,8 +289,7 @@ cGUIDlg * cGUI::makeDlg()
 {
 	cGUIDlg * dlg = new cGUIDlg;
 	m_dlg.push_back(dlg);
-	m_lastdlg = dlg; 
-	m_lastitem = -1;
+	SetLast(dlg);
 	return dlg;
 }
 
@@ -374,13 +350,13 @@ PREDICATE_M(dlg, setID, 1)
 
 PREDICATE_M(dlg, setTestKey, 0)
 {
-	g_gui->GetLastDlg()->testKey = cGUIDlg::TestKeyMode::always;
+	g_gui->GetLastDlg()->Keys.mode = DlgKeys::Mode::always;
 	return true;
 }
 
 PREDICATE_M(dlg, resetTestKey, 0)
 {
-	g_gui->GetLastDlg()->testKey = cGUIDlg::TestKeyMode::none;
+	g_gui->GetLastDlg()->Keys.mode = DlgKeys::Mode::none;
 	return true;
 }
 
@@ -411,54 +387,39 @@ PREDICATE_M(dlg, setRect, 4)
 
 PREDICATE_M(dlg, addKey, 3)
 {
-	g_gui->GetLastDlg()->AddKey(A1, A2, A3);
+	g_gui->GetLastDlg()->Keys.Add(A1, A2, A3);
 	return true;
-}
-
-PREDICATE_M(dlg, count, 1)
-{
-	return A1 = g_gui->DlgCount();  
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // GUIItem EXPORT
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-int cGUI::makeItem(char * className)
+bool cGUI::makeItem(const char * className)
 {
-	cGUIDlg* dlg = GetLastDlg();
-	if(dlg->ItemCount() >= MAX_GUIITEMS)
-		throw PlException("too many items in a dialog");
-	cGUIItem* item = (cGUIItem*)GUICreateClass(className);
-	if(!item)
-		throw PlException("item creation failure");
-	return m_lastitem = dlg->ItemAdd(item);
+	cGUIDlg * dlg = GetLastDlg();
+	if(cGUIItem * item = dlg->Add(className))
+	{
+		SetLast(dlg, item);
+		return true;
+	}
+	return false;
 }
 
 PREDICATE_M(gui, itemNew, 1)
 {
-	return A1 = g_gui->makeItem("cGUIItem");
-}
-
-PREDICATE_M(gui, itemNew, 2)
-{
-	return A1 = g_gui->makeItem(A2);
+	return g_gui->makeItem(A1);
 }
 
 PREDICATE_M(gui, itemSelect, 1)
 {
-	cGUIDlg * dlg = g_gui->GetLastDlg();
-	int idx = A1;
-	if(idx<0 || idx>=dlg->ItemCount())
-		throw PlDomainError("invalid item index", A1);
-	assert(dlg->ItemGet(idx)); // safety
-	g_gui->m_lastitem = idx;
-	return true;
-}
-
-PREDICATE_M(gui, itemGetSelect, 1)
-{
-	return A1 = g_gui->m_lastitem; 
+	cGUIDlg * d = g_gui->GetLastDlg();
+	if(cGUIItem * i = d->Items.Find(A1))
+	{
+		i->Select();
+		return true;
+	}
+	return false;
 }
 
 PREDICATE_M(gui, itemGetX, 1)
@@ -743,7 +704,7 @@ PREDICATE_M(gui, itemSetGuiTileMapMap, 4)
 {
 	if(cGUITileMap * i = dynamic_cast<cGUITileMap *>(g_gui->GetLastItem()))
 	{
-		i->map = iRect(A1, A2, A3, A4);
+		i->SetMap(iRect(A1, A2, A3, A4));
 		return true;
 	}
 	throw PlResourceError("cGUITileMap");
@@ -754,10 +715,11 @@ PREDICATE_M(gui, itemGetGuiTileMapMap, 4)
 {
 	if(cGUITileMap * i = dynamic_cast<cGUITileMap *>(g_gui->GetLastItem()))
 	{
-		bool r1 = A1 = i->map.p1.x;
-		bool r2 = A2 = i->map.p1.y;
-		bool r3 = A3 = i->map.p2.x;
-		bool r4 = A4 = i->map.p2.y;
+		iRect m = i->GetMap();
+		bool r1 = A1 = m.p1.x;
+		bool r2 = A2 = m.p1.y;
+		bool r3 = A3 = m.p2.x;
+		bool r4 = A4 = m.p2.y;
 		return r1 & r2 & r3 && r4;
 	}
 	throw PlResourceError("cGUITileMap");
@@ -774,17 +736,12 @@ PREDICATE_M(gui, itemColorPickLoadImg, 1)
 
 }
 
-PREDICATE_M(gui, itemCount, 1)
-{
-	return A1 = g_gui->GetLastDlg()->ItemCount();  
-}
-
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // replicators
 //////////////////////////////////////////////////////////////////////////////////////////////////
-#define GUI_REPLICATE(name) if(0==strcmp(classname,#name)) return new name();
+#define GUI_REPLICATE(name) if(0==strcmp(classname,#name)) return new name(d);
 
-void* GUICreateClass( char* classname )
+cGUIItem * GUICreateItem(cGUIDlg *d, const char* classname )
 {
 	GUI_REPLICATE(cGUIItem);
 	GUI_REPLICATE(cGUITitle);
@@ -795,7 +752,6 @@ void* GUICreateClass( char* classname )
 	GUI_REPLICATE(cGUITile);
 	GUI_REPLICATE(cGUITileMap);
 	GUI_REPLICATE(cGUIColorPick);
-	GUI_REPLICATE(cGUIDlg);
 	return nullptr;
 }
 

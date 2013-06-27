@@ -29,7 +29,7 @@ inline  void			ShiftLeft			(int chr, int count);	// shifts count chars starting 
 		bool			m_edit;										// if TRUE it is in edit mode
 		std::string 	m_bktxt;			
 public:
-	cGUIEdit ();
+	cGUIEdit (cGUIDlg *);
 	virtual void OnUpdate();
 	virtual void OnDraw();
 };

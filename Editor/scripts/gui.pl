@@ -101,8 +101,7 @@ getImg(Img, Idx) :-
 
 select(Item) :-
 	(def:dlg(Item, IID); def:dlg(item(Item), IID)),
-	gui:itemFind(IID, IIDX),
-	gui:itemSelect(IIDX).
+	gui:itemSelect(IID).
 
 dlgSelect(Key) :-
 	def:dlg(Key, ID),
@@ -124,7 +123,7 @@ createDlgTitle(X, Y, W, H, Text, Color0, Color1) :-
 	createDlg(X, Y, W, H, [backgr, border3d]),
 	WW is W - 4,
 	dlgTitleH(HH),
-	createItem("cGUITitle", 2, 2, WW, HH, [gradient, border3d, pressed], [text(Text), color(0, Color0), color(1, Color1), color(2, gui)]),
+	createItem(cGUITitle, 2, 2, WW, HH, [gradient, border3d, pressed], [text(Text), color(0, Color0), color(1, Color1), color(2, gui)]),
 	def:dlg(title, DLGID),
 	gui:itemSetID(DLGID).
 
@@ -155,10 +154,10 @@ createBar(X, Y, W, H, Color0, Color1) :-
 % Controls
 
 createItem(X, Y, W, H) :-
-	createItem("cGUIItem", X, Y, W, H).
+	createItem(cGUIItem, X, Y, W, H).
 
 createItem(Class, X, Y, W, H) :-
-	gui:itemNew(_ID, Class),
+	gui:itemNew(Class),
 	X2 is X + W,
 	Y2 is Y + H,
 	gui:itemSetRect(X, Y, X2, Y2).
@@ -173,7 +172,7 @@ createItem(Class, X, Y, W, H, Style, Props) :-
 	gui:itemSetTxtAlign(Align).
 
 createItem(X, Y, W, H, Style, Props) :-
-	createItem("cGUIItem", X, Y, W, H, Style, Props).
+	createItem(cGUIItem, X, Y, W, H, Style, Props).
 
 createRect(X, Y, W, H, Color, Is3d, IsPressed) :-
 	(   Is3d == true
@@ -185,7 +184,7 @@ createRect(X, Y, W, H, Color, Is3d, IsPressed) :-
 	createItem(X, Y, W, H, Style, [color(2, Color)]).
 
 createButton(X, Y, W, Text) :-
-	createItem("cGUIButton", X, Y, W, 20, [gradient, border3d], [text(Text), color(0, gui1), color(1, gui2), color(2, gui)]).
+	createItem(cGUIButton, X, Y, W, 20, [gradient, border3d], [text(Text), color(0, gui1), color(1, gui2), color(2, gui)]).
 
 createButton(X, Y, W, Text, Cmd) :-
 	createButton(X, Y, W, Text),
@@ -193,13 +192,13 @@ createButton(X, Y, W, Text, Cmd) :-
 
 
 createButtonImg(X, Y, W, H, Img0, Img1, Cmd ) :-
-	createItem("cGUIButton", X, Y, W, H, [gradient, border3d], [color(0, gui1), color(1, gui2), color(2, gui)]),
+	createItem(cGUIButton, X, Y, W, H, [gradient, border3d], [color(0, gui1), color(1, gui2), color(2, gui)]),
 	gui:itemSetImg0(Img0),
 	gui:itemSetImg1(Img1),
 	gui:itemSetCmdAction(Cmd).
 
 createCheck(X, Y, Value) :-
-	createItem("cGUICheck", X, Y, 20, 20),
+	createItem(cGUICheck, X, Y, 20, 20),
 	getImg(check1, Img0),
 	getImg(check2, Img1),
 	gui:itemSetImg0(Img0),
@@ -220,7 +219,7 @@ createRadio(X, Y, Value, Group, Cmd) :-
 
 
 createRadio(X, Y, Value, Group) :-
-	createItem("cGUIRadio", X, Y, 20, 20),
+	createItem(cGUIRadio, X, Y, 20, 20),
 	getImg(radio1, Img0),
 	getImg(radio2, Img1),
 	gui:itemSetImg0(Img0),
@@ -231,7 +230,7 @@ createRadio(X, Y, Value, Group) :-
 	gui:itemSetGroup(Group).
 
 createRadioButton(X, Y, W, Text, Value, Group, Cmd) :-
-	createItem("cGUIRadio", X, Y, W, 20, [border3d], [text(Text), color(0, gui1), color(1, gui2), color(2, gui)]),
+	createItem(cGUIRadio, X, Y, W, 20, [border3d], [text(Text), color(0, gui1), color(1, gui2), color(2, gui)]),
 	gui:itemSetValue(Value),
 	gui:itemSetGroup(Group),
 	gui:itemSetCmdAction(Cmd).
@@ -261,7 +260,7 @@ createImage(X, Y, W, H) :-
 
 
 createEdit(X, Y, W, Text) :-
-	createItem("cGUIEdit", X, Y, W, 20, [backgr, border], [color(0, edit), color(1, gui1), color(2, black), color(3, editsel)]),
+	createItem(cGUIEdit, X, Y, W, 20, [backgr, border], [color(0, edit), color(1, gui1), color(2, black), color(3, editsel)]),
 	gui:itemSetTxt(Text).
 
 createEdit(X, Y, W, Text, Cmd) :-

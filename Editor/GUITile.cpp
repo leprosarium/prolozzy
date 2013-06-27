@@ -11,7 +11,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cGUITile
 //////////////////////////////////////////////////////////////////////////////////////////////////
-cGUITile::cGUITile(): scale(), shrink()
+cGUITile::cGUITile(cGUIDlg *d) : cGUIItem(d), scale(), shrink()
 {
 	imgAlign = 0;
 }
@@ -89,38 +89,29 @@ void cGUITile::OnDraw()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cGUITileMap
 //////////////////////////////////////////////////////////////////////////////////////////////////
-cGUITileMap::cGUITileMap() : scale(), snap(), grid(), axes(), m_mode()
+cGUITileMap::cGUITileMap(cGUIDlg *d) : cGUIItem(d), scale(), snap(), grid(), axes(), state()
 {
 }
 
 void cGUITileMap::OnUpdate()
 {
-	iV2 sel = map.p1;
-	iV2 sels = map.Size();
-	if(sels.x < 0) sels.x = 0;
-	if(sels.y < 0) sels.y = 0;
-
 	// tile info
-	int tileid = value;
-	int idx = g_paint.TileFind(tileid);
-	cTile* tile = g_paint.TileGet(idx); 
+	cTile * tile = g_paint.TileGet(g_paint.TileFind(value)); 
 	if(tile==NULL) return;
 	int tilew = tile->GetWidth();
 	int tileh = tile->GetHeight();
 
 	iRect rc = scrRect(); // control rect in screen
 	m_mousein = rc.IsInside(g_gui->m_mouse);
-	iV2 m = g_gui->m_mouse - rc.p1;	// mouse relative to client
+	m = g_gui->m_mouse - rc.p1;	// mouse relative to client
 	m = fV2(m) / static_cast<float>(scale); // to tile space
 
-	iRect rctile(0, 0, tilew, tileh);
-	BOOL mouseintile = rctile.IsInside(m);
-
-	iRect rcsel(sel, sel + sels);
-	BOOL mouseinsel = rcsel.IsInside(m);
+	bool mouseinsel = map.IsInside(m);
+	iV2 sel = map.p1;
+	iV2 sels = map.Size();
 
 	// additional keys for snap and grid
-	BOOL shift	= (I9_GetKeyValue(I9K_LSHIFT)) || (I9_GetKeyValue(I9K_RSHIFT));
+	bool shift	= (I9_GetKeyValue(I9K_LSHIFT)) || (I9_GetKeyValue(I9K_RSHIFT));
 	if(I9_GetKeyDown(I9K_S))	snap = !snap;
 	if(I9_GetKeyDown(I9K_G))	grid = !grid;
 	if(I9_GetKeyDown(I9K_A))	axes = !axes;
@@ -130,12 +121,12 @@ void cGUITileMap::OnUpdate()
 	if(I9_GetKeyDown(I9K_DOWN))	if(shift) sels.y++; else sel.y++;
 
 	// mouse down
-	if(m_mode==0)
+	if(state == State::none)
 	{
 		if(m_mousein && I9_GetKeyDown(I9_MOUSE_B1))
 		{ 
 			// start new selection
-			m_mode = 1;
+			state = State::select;
 			sel.x = Snap(m.x);
 			sel.y = Snap(m.y);
 			sels = 0;
@@ -144,13 +135,13 @@ void cGUITileMap::OnUpdate()
 		if(mouseinsel && I9_GetKeyDown(I9_MOUSE_B2))
 		{ 
 			// start moving selection
-			m_mode = 2;
+			state = State::move;
 			m_move = m - sel;
 			Capture(true);
 		}
 	}
 	else
-	if(m_mode==1)	// selecting
+	if(state == State::select)
 	{
 		sels = iV2(Snap(m.x), Snap(m.y)) - sel;
 
@@ -160,7 +151,7 @@ void cGUITileMap::OnUpdate()
 		if(sels.y>tileh-sel.y)	sels.y=tileh-sel.y;
 	}
 	else
-	if(m_mode==2)  // move selection
+	if(state == State::move)  // move selection
 	{
 		sel =  m - m_move;
 		sel.x = Snap(sel.x);
@@ -173,14 +164,10 @@ void cGUITileMap::OnUpdate()
 	}
 
 	// loosing captures
-	if(m_mode==1 && !I9_GetKeyValue(I9_MOUSE_B1))
+	if( state == State::select && !I9_GetKeyValue(I9_MOUSE_B1) || 
+		state == State::move && !I9_GetKeyValue(I9_MOUSE_B2))
 	{
-		m_mode = 0;
-		Capture(false);
-	}
-	if(m_mode==2 && !I9_GetKeyValue(I9_MOUSE_B2))
-	{
-		m_mode = 0;
+		state = State::none;
 		Capture(false);
 	}
 
@@ -195,23 +182,26 @@ void cGUITileMap::OnUpdate()
 
 	// set back
 	map = iRect(sel, sel+sels);
+
+	m.x=Snap(m.x); 
+	m.y=Snap(m.y);
+
+	if(m_mousein)
+	{
+		std::stringstream o;
+		o << m.x << " " << m.y;
+		if(state == State::select)	o << std::endl << sels.x << " x " << sels.y;
+		tooltip = o.str();
+	}
 }
 
 void cGUITileMap::OnDraw()
 {
-	iRect rect = scrRect();
-
-	iV2 sel = map.p1;
-	iV2 sels = map.Size();
-	if(sels.x<0) sels.x=0;
-	if(sels.y<0) sels.y=0;
-	iV2 m = g_gui->m_mouse - rect.p1; // mouse relative to client
-	m = fV2(m) / static_cast<float>(scale); // to tile space
+	iRect rc = scrRect();
 
 	// draw grid
 	if(grid)
 	{
-		iRect rc = scrRect();
 		dword color = 0xA0ffffff;
 		int st = 8 * scale;
 		for(int i=rc.p1.y; i<rc.p2.y; i+=st)
@@ -222,42 +212,19 @@ void cGUITileMap::OnDraw()
 	}
 
 	// draw selection
-	if( sels.x!=0 && sels.y!=0 )
-	{
-		iRect r(sel * scale,  (sel + sels) * scale);
-		r.Offset(rect.p1);
-		if( r.p1.x != r.p2.x && r.p1.y != r.p2.y ) 
-			GUIDrawRectDot(r, 0xffffffff);
-	}
+	iRect r(map.p1 * scale,  map.p2 * scale);
+	r.Offset(rc.p1);
+	if( r.p1.x != r.p2.x && r.p1.y != r.p2.y ) 
+		GUIDrawRectDot(r, 0xffffffff);
 
 	// draw axes
-	if(axes)
+	if(axes && m_mousein)
 	{
-		iRect rc = scrRect();
 		dword color = 0xff00ff00;
-		
-		int x = rect.p1.x + Snap(m.x)*scale;
-		int y = rect.p1.y + Snap(m.y)*scale;
-		if(m_mousein)
-		{
-			R9_DrawLine( fV2(rc.p1.x,y), fV2(rc.p2.x,y), color );
-			R9_DrawLine( fV2(x,rc.p1.y), fV2(x,rc.p2.y), color );
-		}
+		iV2 p = rc.p1 + m * scale;
+		R9_DrawLine( fV2(rc.p1.x, p.y), fV2(rc.p2.x, p.y), color );
+		R9_DrawLine( fV2(p.x, rc.p1.y), fV2(p.x, rc.p2.y), color );
 	}
-
-	// tooltip bar info
-	m.x=Snap(m.x); 
-	m.y=Snap(m.y);
-
-	if(m_mousein)
-	{
-		std::stringstream o;
-		if(m_mode==0)	o << m.x << " " << m.y;
-		else if(m_mode==1)	o << m.x << " " << m.y << std::endl << sels.x << " x " << sels.y;
-		else if(m_mode==2)	o << m.x << " " << m.y;
-		g_gui->ToolTip = o.str();
-	}
-
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

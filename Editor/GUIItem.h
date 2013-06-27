@@ -40,7 +40,7 @@ public:
 	cGUIDlg * m_dlg;
 	bool m_mousein;
 
-	cGUIItem();
+	cGUIItem(cGUIDlg *d);
 	virtual ~cGUIItem();
 
 	virtual	void OnUpdate();
@@ -48,14 +48,12 @@ public:
 	virtual void OnAction() {};
 
 	iRect scrRect() const;
-	int SetParent(cGUIDlg* dlg);	// calls dlg->ItemAdd
 	void Capture(bool on);
 	bool IsCaptured() const;
 	void Action(int param);
 	void Update();
-	void Draw() { OnDraw(); }
+	void Draw() { if(!hidden) OnDraw(); }
 	void Select();					// select item & dlg as last
-
 };
 
 
@@ -67,7 +65,7 @@ class cGUITitle : public cGUIItem
 {
 	iV2 move;
 public:
-	cGUITitle();
+	cGUITitle(cGUIDlg *d);
 	virtual void OnUpdate();
 };
 

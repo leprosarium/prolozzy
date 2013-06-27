@@ -44,11 +44,9 @@ create(X, Y, Act, Color) :-
 	gui:createImage( 8, YY, 128, 128),
 	def:dlg(item(0), IID),
 	gui:itemSetID(IID),
-	gui:itemNew(_, "cGUIColorPick"),
+	gui:createItem(cGUIColorPick, 8, YY, 128, 128),
 	def:dlg(item(1), IID1),
 	gui:itemSetID(IID1),
-	HH is YY + 128,
-	gui:itemSetRect(8, YY, 136, HH),
 	gui:itemSetCmdAction(dlgColor:pick(_Param, Act, Color)),
 
 	( core:ini('editor.ini', 'editor', 'color_pal', Pal); Pal = 0),

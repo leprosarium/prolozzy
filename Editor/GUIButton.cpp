@@ -98,10 +98,10 @@ void cGUIRadio::OnUpdate()
 void cGUIRadio::OnAction()
 {
 	assert(m_dlg!=NULL);
-	if(group!=0)
-		for(int i=0;i<m_dlg->ItemCount();i++)
-			if(m_dlg->ItemGet(i)->group == group)
-				m_dlg->ItemGet(i)->value = 0;
+	if(group)
+		for(cGUIItem * i: m_dlg->Items)
+			if(i->group == group)
+				i->value = 0;
 	value = 1;
 }
 

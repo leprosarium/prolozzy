@@ -16,6 +16,7 @@
 class cGUIButton : public cGUIItem
 {
 public:
+	cGUIButton(cGUIDlg *d) : cGUIItem(d) {}
 	virtual	void OnUpdate();
 	virtual	void OnDraw();
 
@@ -30,6 +31,7 @@ public:
 class cGUICheck : public cGUIButton
 {
 public:
+	cGUICheck(cGUIDlg *d) : cGUIButton(d) {}
 	virtual	void OnUpdate();
 	virtual	void OnAction();
 };
@@ -44,6 +46,7 @@ public:
 class cGUIRadio: public cGUIButton
 {
 public:
+	cGUIRadio(cGUIDlg * d) : cGUIButton(d) {}
 	virtual	void OnUpdate();
 	virtual	void OnAction();
 };

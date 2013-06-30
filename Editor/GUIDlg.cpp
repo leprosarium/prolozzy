@@ -31,15 +31,6 @@ void cGUIDlg::Update()
 
 }
 
-cGUIItem * cGUIDlg::Add(const char * classname)
-{
-	cGUIItem * i = GUICreateItem(this, classname);
-	if(i)
-		Items.Add(i);
-	return i;
-}
-
-
 void cGUIDlg::Close(int ret)
 {
 	// select this dialog when we call Close

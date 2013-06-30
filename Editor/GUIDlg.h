@@ -70,8 +70,13 @@ public:
 	virtual	void Draw() { Items.Draw(); }
 	virtual	void Close(int ret);
 
-
-	cGUIItem * Add(const char * classname);
+	template<class Item>
+	cGUIItem * Add()
+	{
+		cGUIItem * i = new Item(this);
+		Items.Add(i);
+		return i;
+	}
 	DlgItems Items;
 	DlgKeys Keys;
 };

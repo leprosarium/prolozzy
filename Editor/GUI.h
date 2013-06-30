@@ -55,7 +55,9 @@ public:
 	cGUIDlg * DlgGet(int idx) { if(0<=idx && idx<DlgCount()) return m_dlg[idx]; return 0; }
 	bool DlgSelect(int id);
 	cGUIDlg * makeDlg();
-	bool makeItem(const char * className);
+	template<class T>
+	void makeItem();
+	bool makeItem(const std::string & className);
 	cGUIDlg * GetLastDlg();
 	cGUIItem * GetLastItem(); 	
 
@@ -71,7 +73,12 @@ public:
 	void SetLast(cGUIDlg * d = nullptr, cGUIItem * i = nullptr) { m_lastdlg = d; m_lastitem = i; }
 };
 
-cGUIItem* GUICreateItem(cGUIDlg *d, const char * classname);
+template<class Item>
+void cGUI::makeItem()
+{
+	cGUIDlg * dlg = GetLastDlg();
+	SetLast(dlg, dlg->Add<Item>());
+}
 
 extern cGUI *g_gui;
 inline bool GUIInit() { g_gui = new cGUI(); return g_gui->Init(); }

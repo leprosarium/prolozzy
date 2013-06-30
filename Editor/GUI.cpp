@@ -395,15 +395,23 @@ PREDICATE_M(dlg, addKey, 3)
 // GUIItem EXPORT
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool cGUI::makeItem(const char * className)
+
+bool cGUI::makeItem(const std::string & className)
 {
-	cGUIDlg * dlg = GetLastDlg();
-	if(cGUIItem * item = dlg->Add(className))
-	{
-		SetLast(dlg, item);
-		return true;
-	}
-	return false;
+	#define GUI_ITEM_NEW(Class) if(className == #Class) { makeItem<Class>(); return true; }
+
+	GUI_ITEM_NEW(cGUIItem)
+	GUI_ITEM_NEW(cGUITitle)
+	GUI_ITEM_NEW(cGUIButton)
+	GUI_ITEM_NEW(cGUICheck)
+	GUI_ITEM_NEW(cGUIRadio)
+	GUI_ITEM_NEW(cGUIEdit)
+	GUI_ITEM_NEW(cGUITile)
+	GUI_ITEM_NEW(cGUITileMap)
+	GUI_ITEM_NEW(cGUIColorPick)
+
+#undef GUI_ITEM_NEW
+
 }
 
 PREDICATE_M(gui, itemNew, 1)
@@ -734,25 +742,6 @@ PREDICATE_M(gui, itemColorPickLoadImg, 1)
 	}
 	throw PlResourceError("cGUIColorPick");
 
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// replicators
-//////////////////////////////////////////////////////////////////////////////////////////////////
-#define GUI_REPLICATE(name) if(0==strcmp(classname,#name)) return new name(d);
-
-cGUIItem * GUICreateItem(cGUIDlg *d, const char* classname )
-{
-	GUI_REPLICATE(cGUIItem);
-	GUI_REPLICATE(cGUITitle);
-	GUI_REPLICATE(cGUIButton);
-	GUI_REPLICATE(cGUICheck);
-	GUI_REPLICATE(cGUIRadio);
-	GUI_REPLICATE(cGUIEdit);
-	GUI_REPLICATE(cGUITile);
-	GUI_REPLICATE(cGUITileMap);
-	GUI_REPLICATE(cGUIColorPick);
-	return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

@@ -28,16 +28,6 @@ typedef	UINT_PTR			dwordptr;	// pointer dword
 typedef	LONG_PTR			longptr;	// pointer long
 typedef ULONG_PTR			ulongptr;	// pointer unsigned long
 
-#ifdef	FALSE
-#undef	FALSE
-#endif
-#define FALSE				( 0 )		// false
-
-#ifdef	TRUE
-#undef	TRUE
-#endif
-#define TRUE				( 1 )		// true
-
 #ifndef HIBYTE
 #define HIBYTE(w)			((byte)(((word)(w) >> 8) & 0xFF))
 #endif
@@ -155,18 +145,6 @@ BOOL decompress_data( void* srcdata, dword srcsize, void* dstdata, dword& dstsiz
 #define DWORD_CYAN			0xff00ffff
 #define DWORD_ORANGE		0xffff8000
 #define DWORD_WHITE			0xffffffff
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// Compatibility tricks
-///////////////////////////////////////////////////////////////////////////////////////////////////
-#ifndef IDC_HAND	// missing on VC6
-#define IDC_HAND	MAKEINTRESOURCE(32649)
-#endif
-
-#ifndef WM_MOUSEWHEEL
-#define WM_MOUSEWHEEL 0x020A
-#endif
 
 #endif
 ///////////////////////////////////////////////////////////////////////////////////////////////////

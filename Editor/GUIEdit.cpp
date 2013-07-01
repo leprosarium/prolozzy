@@ -18,7 +18,6 @@ void cGUIEdit::OnUpdate()
 {
 	iRect rc = scrRect();
 	int mx = g_gui->m_mouse.x - rc.p1.x;
-	int my = g_gui->m_mouse.y - rc.p1.y;
 	BOOL shift = I9_GetKeyValue(I9K_LSHIFT) || I9_GetKeyValue(I9K_RSHIFT);
 	BOOL ctrl = I9_GetKeyValue(I9K_LCONTROL) || I9_GetKeyValue(I9K_RCONTROL);
 	BOOL enter = I9_GetKeyDown(I9K_RETURN) || I9_GetKeyDown(I9K_NUMPADENTER);
@@ -72,18 +71,7 @@ void cGUIEdit::OnUpdate()
 		}
 	}
 
-	// ordered selection
-	int s1,s2;
-	if(m_sel1<m_sel2)
-	{
-		s1 = m_sel1;
-		s2 = m_sel2;
-	}
-	else
-	{
-		s1 = m_sel2;
-		s2 = m_sel1;
-	}
+	int s1 = sel1(), s2 = sel2();
 
 	if(m_edit)
 	{
@@ -300,15 +288,13 @@ void cGUIEdit::OnDraw()
 
 int cGUIEdit::Pos2Chr(int pos)
 {
-	int  i,w, size;
-	pos = pos - txtOffset;
-	size = txt.size();
-	w = 0;
-	for(i=0;i<size;i++)
+	pos -= txtOffset;
+	int size = txt.size();
+	for(int i = 0, w = 0; i < size; i++)
 	{
 		w += (int)(g_gui->m_font->GetCharWidth(txt[i]) + g_gui->m_font->GetOfsX()); 
 		if(w>pos)
-			return i ;
+			return i;
 	}
 	return size;
 }
@@ -325,18 +311,7 @@ int cGUIEdit::Chr2Pos(int chr)
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cGUIEdit::ClipboardCopy()
 {
-	// ordered selection
-	int s1,s2;
-	if(m_sel1<m_sel2)
-	{
-		s1 = m_sel1;
-		s2 = m_sel2;
-	}
-	else
-	{
-		s1 = m_sel2;
-		s2 = m_sel1;
-	}
+	int s1 = sel1(), s2 = sel2();
 	int size = s2-s1;
 	if(size==0) return; // no selection
 
@@ -357,35 +332,20 @@ void cGUIEdit::ClipboardPaste()
 {
 	if(!IsClipboardFormatAvailable(CF_TEXT)) return;
 	if(!OpenClipboard(NULL)) return;
-	HGLOBAL handler = GetClipboardData(CF_TEXT);
-	if(handler)
-	{
-		void* data = GlobalLock(handler);
-		if(data)
+	if(HGLOBAL handler = GetClipboardData(CF_TEXT))
+		if(void* data = GlobalLock(handler))
 		{
 			SelectionCut();
 			SelectionPaste((char*)data);
 			GlobalUnlock(handler); 
 		}
-	}
 	CloseClipboard();
 }
 
 void cGUIEdit::SelectionCut()
 {
 	if(m_sel1==m_sel2) return; // no selection
-	// ordered selection
-	int s1,s2;
-	if(m_sel1<m_sel2)
-	{
-		s1 = m_sel1;
-		s2 = m_sel2;
-	}
-	else
-	{
-		s1 = m_sel2;
-		s2 = m_sel1;
-	}
+	int s1 = sel1(), s2 = sel2();
 	ShiftLeft(s2,s2-s1);
 	m_sel1 = m_sel2 = s1;
 }

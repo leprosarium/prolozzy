@@ -28,6 +28,9 @@ inline  void			ShiftLeft			(int chr, int count);	// shifts count chars starting 
 		int				m_sel2;										// selected char end pos (after last selected)
 		bool			m_edit;										// if TRUE it is in edit mode
 		std::string 	m_bktxt;			
+
+		int sel1() const { return std::min(m_sel1, m_sel2); }
+		int sel2() const { return std::max(m_sel1, m_sel2); }
 public:
 	cGUIEdit (cGUIDlg *);
 	virtual void OnUpdate();

@@ -253,6 +253,7 @@ void cGUIEdit::OnDraw()
 		if(m_sel1!=m_sel2)
 		{
 			rc1 = rc;
+			rc1.p2.x = rc1.p1.x;
 			rc1.p1.x += Chr2Pos(m_sel1) + deltax;
 			rc1.p2.x += Chr2Pos(m_sel2) + deltax;
 			R9_ClipBar(rc1);

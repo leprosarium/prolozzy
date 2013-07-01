@@ -411,7 +411,7 @@ bool cGUI::makeItem(const std::string & className)
 	GUI_ITEM_NEW(cGUIColorPick)
 
 #undef GUI_ITEM_NEW
-
+	return false;
 }
 
 PREDICATE_M(gui, itemNew, 1)

@@ -18,9 +18,6 @@
 #include <math.h>
 #include <assert.h>
 
-#include <eh.h>
-#include <crtdbg.h>
-
 #include <algorithm>
 
 // DirectX

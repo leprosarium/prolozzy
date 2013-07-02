@@ -53,8 +53,6 @@ public:
 // Sound manager
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool isSupportedExt(const char * ext);
-
 class Samples : std::vector<tSoundProto>
 {
 	bool LoadFile(const std::string & filepath, size_t & total, size_t & fail, size_t & duplicates, int group);	// load a sample file (proto)

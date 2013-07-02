@@ -17,9 +17,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include <eh.h>
-#include <crtdbg.h>
-
 #include <sstream>
 
 #endif

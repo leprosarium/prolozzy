@@ -21,27 +21,17 @@
 	}										\
 }
 
+cEdiTool::cEdiTool(const std::string & name) : m_name(name), m_mode(), m_ax(), m_ay(), m_isbusy()
+{
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cEdiToolPaint
 // mode: 0=none, 1=paint, 2=alt pick/del
 //////////////////////////////////////////////////////////////////////////////////////////////////
-cEdiToolPaint::cEdiToolPaint()
+cEdiToolPaint::cEdiToolPaint() : cEdiTool("PAINT"), m_brushidx(-1)
 {
-	m_brushidx=-1;
-	m_isbusy=FALSE;
-	strcpy(m_name,"PAINT");
-}
 
-cEdiToolPaint::~cEdiToolPaint()
-{
-}
-
-void cEdiToolPaint::Init()
-{
-}
-
-void cEdiToolPaint::Done()
-{
 }
 
 void cEdiToolPaint::Switch( BOOL on )
@@ -283,17 +273,7 @@ void cEdiToolPaint::EndUserUpdate()
 // cEdiToolEdit
 // mode: 0=none, 1=select, 2=move
 //////////////////////////////////////////////////////////////////////////////////////////////////
-cEdiToolEdit::cEdiToolEdit()
-{
-	m_selop = 0;
-	strcpy(m_name,"EDIT");
-}
-
-cEdiToolEdit::~cEdiToolEdit()
-{
-}
-
-void cEdiToolEdit::Init()
+cEdiToolEdit::cEdiToolEdit() : cEdiTool("EDIT"), m_selop()
 {
 }
 
@@ -539,7 +519,7 @@ void cEdiToolEdit::BrushMove()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiToolEdit::BrushDelete()
 {
-	BEEP_OK;
+	BEEP_OK();
 	EdiApp()->UndoReset();
 	for(int idx=0;idx<g_map.m_brush.size();idx++)
 	{
@@ -577,7 +557,7 @@ void cEdiToolEdit::BrushCopy()
 	}
 	CloseClipboard();
 
-	BEEP_OK;
+	BEEP_OK();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -608,7 +588,7 @@ void cEdiToolEdit::BrushPaste()
 				}
 				g_map.m_selectcount=count;
 				g_map.m_refresh=TRUE;
-				BEEP_OK;
+				BEEP_OK();
 			}
 			
 			GlobalUnlock(handler); 

@@ -347,16 +347,17 @@ void cDizApp::Draw()
 
 void cDizApp::DrawStats()
 {
-	char sz[128];
-	sprintf(sz, "obj:%i, brs:%i, fps:%i/%i", g_game.m_obj.size(), g_game.m_visible_brushes, (int)m_gamefps, App.FPS());
+	std::ostringstream o;
+	o << "obj:"<<g_game.m_obj.size() << ", "
+		 "brs:"<< g_game.m_visible_brushes << ", "
+		 "fps:"<< m_gamefps<< "/" << App.FPS();
 
-	float w = (float)ChrW*(int)strlen(sz)+4;
-	float h = (float)ChrH+4;
-	float x=R9_GetWidth()-w-2;
-	float y=2;
-	R9_DrawBar( fRect(x,y,x+w,y+h), 0xa0000000 );
-	R9_DrawText( fV2(x+2,y+2), sz, 0xffffff80 );
-	
+	std::string str = o.str();
+	fV2 sz = fV2(ChrW * str.size(), ChrH) + 4;
+	fV2 p(R9_GetWidth() - sz.x - 2, 2.0f);
+
+	R9_DrawBar( fRect(p, p + sz), 0xa0000000 );
+	R9_DrawText( p + 2, str.c_str(), 0xffffff80 );
 	R9_Flush();
 }
 

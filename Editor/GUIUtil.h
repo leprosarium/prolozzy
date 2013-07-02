@@ -11,8 +11,8 @@
 #include "R9TexturePool.h"
 #include "GUIDef.h"
 
-#define BEEP_OK		MessageBeep(MB_OK);
-#define BEEP_ERROR	MessageBeep(MB_ICONHAND);
+inline void BEEP_OK() { MessageBeep(MB_OK); }
+inline void BEEP_ERROR() { MessageBeep(MB_ICONHAND); }
 
 void GUIInitResources();	// init static gui resources (like the dot texture)
 void GUIDoneResources();	// done static gui resources

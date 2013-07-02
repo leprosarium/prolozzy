@@ -280,8 +280,8 @@ void cEdiApp::Close()
 
 void cEdiApp::DropFile( LPCWSTR filepath )
 {
-	if(g_gui->m_isbusy) { BEEP_ERROR; return ; } // gui busy (modal dialog)
-	if(!wcsstr(filepath, L".pmp")) { BEEP_ERROR; return ; } // not map
+	if(g_gui->m_isbusy) { BEEP_ERROR(); return ; } // gui busy (modal dialog)
+	if(!wcsstr(filepath, L".pmp")) { BEEP_ERROR(); return ; } // not map
 	
 	try
 	{
@@ -313,12 +313,12 @@ void cEdiApp::HandleReset()
 	EdiApp()->Draw();
 }
 
-BOOL cEdiApp::Update()
+bool cEdiApp::Update()
 {
 	float dtime = (float)App.DeltaTime() / 1000.0f;
 
 	// input
-	if(!I9_IsReady()) return TRUE;
+	if(!I9_IsReady()) return true;
 	I9_Update(dtime);
 
 	// map
@@ -328,8 +328,8 @@ BOOL cEdiApp::Update()
 	
 	g_gui->ToolTip.clear();
 
-	static BOOL gui_wasbusy=FALSE;
-	BOOL tool_isbusy = FALSE;
+	static bool gui_wasbusy=false;
+	bool tool_isbusy = false;
 
 	// tool
 	if(!g_gui->m_isbusy && !map_isbusy)
@@ -341,7 +341,7 @@ BOOL cEdiApp::Update()
 	if(!gui_wasbusy)
 	{
 		m_tool[m_toolcrt]->Reset(); // reset tool mode
-		tool_isbusy = FALSE;
+		tool_isbusy = false;
 	}
 	gui_wasbusy = g_gui->m_isbusy;
 
@@ -361,13 +361,13 @@ BOOL cEdiApp::Update()
 	// print screen
 	if(I9_GetKeyDown(I9K_SYSRQ)) 
 	{
-		BOOL ctrl = I9_GetKeyValue(I9K_LCONTROL) || I9_GetKeyValue(I9K_RCONTROL);
+		bool ctrl = I9_GetKeyValue(I9K_LCONTROL) || I9_GetKeyValue(I9K_RCONTROL);
 		fRect r(0,0,R9_GetWidth(),R9_GetHeight());
 		R9_SaveScreenShot(&r,!ctrl);
 	}
 
-	if(m_exit) return FALSE;
-	return TRUE;
+	if(m_exit) return false;
+	return true;
 }
 
 
@@ -405,16 +405,14 @@ void cEdiApp::Draw()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiApp::DrawStats()
 {
-	char sz[64];
-	sprintf(sz, "fps: %i", App.FPS());
-	
-	float w = (float)ChrW*(int)strlen(sz)+4;
-	float h = (float)ChrH+4;
-	float x=R9_GetWidth()-w-2;
-	float y=2;
+	std::ostringstream o;
+	o << "fps: " << App.FPS();
+	std::string str = o.str();
+	fV2 sz = fV2(ChrW * str.size(), ChrH) + 4;
+	fV2 p(R9_GetWidth() - sz.x - 2, 2.0f);
 
-	R9_DrawBar( fRect(x,y,x+w,y+h), 0xa0000000 );
-	R9_DrawText( fV2(x+2,y+2), sz, 0xffffff80 );
+	R9_DrawBar( fRect(p, p + sz), 0xa0000000 );
+	R9_DrawText( p + 2, str.c_str(), 0xffffff80 );
 	R9_Flush();
 }
 
@@ -471,7 +469,7 @@ BOOL cEdiApp::Undo()
 			g_map.PartitionAdd(m_undoidx);
 			m_undoop = UNDOOP_DEL;
 			g_map.m_refresh = TRUE;
-			BEEP_OK;
+			BEEP_OK();
 			return TRUE;
 		}
 		case UNDOOP_DEL:
@@ -483,12 +481,12 @@ BOOL cEdiApp::Undo()
 			g_map.BrushDel(m_undoidx);
 			m_undoop = UNDOOP_ADD;
 			g_map.m_refresh = TRUE;
-			BEEP_OK
+			BEEP_OK();
 			return TRUE;
 		}
 	}
 error:
-	BEEP_ERROR;
+	BEEP_ERROR();
 	return FALSE;
 }
 

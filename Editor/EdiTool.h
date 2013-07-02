@@ -19,7 +19,7 @@
 class cEdiTool
 {
 public:
-					cEdiTool			()							{ m_name[0]=0; m_mode=0; m_ax=m_ay=0; m_isbusy=FALSE; }
+	cEdiTool(const std::string & name);
 virtual				~cEdiTool			()							{};
 
 virtual void		Init				()							{}; // first time init
@@ -35,10 +35,10 @@ virtual	void		BeginUserUpdate		()							{};	// called before user update handler
 virtual	void		EndUserUpdate		()							{}; // called after user update handler
 
 
-		char		m_name[32];			// tool name
+	std::string m_name;	// tool name
 		int			m_mode;				// tool mode (0=default)
 		int			m_ax,m_ay;			// axes
-		BOOL		m_isbusy;			// tool is busy - don't mess with it :)
+		bool		m_isbusy;			// tool is busy - don't mess with it :)
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -47,12 +47,11 @@ virtual	void		EndUserUpdate		()							{}; // called after user update handler
 //////////////////////////////////////////////////////////////////////////////////////////////////
 class cEdiToolPaint : public cEdiTool
 {
+	tBrush m_brushtemp;		// temporary brush
+	int m_brushidx;			// picked brush
 public:
 					cEdiToolPaint		();
-virtual				~cEdiToolPaint		();
 
-virtual void		Init				();
-virtual void		Done				();
 virtual void		Switch				( BOOL on );
 virtual	void		Reset				();
 virtual	void		Command				( int cmd );
@@ -63,8 +62,7 @@ virtual	void		EndUserUpdate		();
 virtual void		Update				( float dtime );
 virtual void		Draw				();
 
-		tBrush		m_brushtemp;		// temporary brush
-		int			m_brushidx;			// picked brush
+
 
 };
 
@@ -76,9 +74,6 @@ class cEdiToolEdit : public cEdiTool
 {
 public:
 					cEdiToolEdit		();
-virtual				~cEdiToolEdit		();
-
-virtual void		Init				();
 virtual void		Done				();
 virtual void		Switch				( BOOL on );
 virtual	void		Reset				();

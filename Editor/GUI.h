@@ -26,7 +26,7 @@ class cGUI
 {
 	cGUIDlg * m_lastdlg;				// last (selected) dlg index
 	cGUIItem * m_lastitem;				// last (selected) item index
-
+	std::vector<cGUIDlg *> m_dlg;
 	void GetMousePos();
 
 public:
@@ -50,9 +50,6 @@ public:
 	int ImgFind( const std::string & image ) { return m_texturepool.Find(image); }
 	r9TexturePool m_texturepool;
 				
-	// inheritance
-	int DlgCount() const { return m_dlg.size(); }
-	cGUIDlg * DlgGet(int idx) { if(0<=idx && idx<DlgCount()) return m_dlg[idx]; return 0; }
 	bool DlgSelect(int id);
 	cGUIDlg * makeDlg();
 	template<class T>
@@ -61,7 +58,7 @@ public:
 	cGUIDlg * GetLastDlg();
 	cGUIItem * GetLastItem(); 	
 
-	std::vector<cGUIDlg *> m_dlg;
+
 	r9Font * m_font;
 
 	cGUIItem * m_capture;				// pointer to capturing item

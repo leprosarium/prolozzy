@@ -85,7 +85,7 @@ public:
 		void		DropFile( LPCWSTR filepath );				// called when file is dropped
 		void		Scroll( int dx, int dy );				// called on scroll messages
 static	void		HandleReset();							// handle render device reset; used to repaint map's render target
-		BOOL		Update();
+		bool		Update();
 		void		Draw();
 static	void		ErrorMessage( LPCWSTR msg );				// error message box
 

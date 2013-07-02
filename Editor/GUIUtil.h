@@ -58,7 +58,7 @@ inline void GUIDrawBar(const iRect & r, dword color )
 
 void GUIDrawGradient(const iRect & r, dword color1, dword color2);
 void GUIDrawRectDot(const iRect & r, dword color);
-void GUIDrawText(const iRect & r, const char* text, dword color, int align = GUIALIGN_CENTERXY, int offset = 0);
+void GUIDrawText(const iRect & r, const std::string & text, dword color, int align = GUIALIGN_CENTERXY, int offset = 0);
 void GUIDrawImg(const iRect & r, int img, dword color = 0xffffffff, int align = GUIALIGN_CENTERXY);
 iV2 Align(const iRect & r, const iV2 & sz, int align, int offset);
 

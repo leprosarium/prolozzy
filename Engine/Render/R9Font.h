@@ -68,20 +68,15 @@ virtual void		Destroy();											// destroy font (not the texture!)
 		float		GetItalic() const									{ return m_scale * m_aspect * m_italic; }
 
 // sizes
-		float		GetCharWidth() const								{ return m_scale * m_aspect * m_chrw; }
-		float		GetCharWidth( char c );								// gets the current width of a char (in pixels) - italic not included
-		float		GetTextWidth( const char* text );					// gets the current width of a string (in pixels) - italic included, newlines ignored
-		float		GetTextWidth( const char* text, int size );				// gets the current width of a string (in pixels) - italic included, newlines ignored
-		void		GetTextBox( const char* text, float &w, float& h );		// gets the box sizes the text fits in; italic and newlines included
+	float GetCharWidth() const { return m_scale * m_aspect * m_chrw; }
+	float GetCharWidth(char c) const;								// gets the current width of a char (in pixels) - italic not included
+	float GetTextWidth(const std::string & text) const;				// gets the current width of a string (in pixels) - italic included, newlines ignored
+	float GetTextWidth(const std::string & text, int size ) const;	// gets the current width of a string (in pixels) - italic included, newlines ignored
+	fV2 GetTextBox(const std::string & text) const;				// gets the box sizes the text fits in; italic and newlines included
 
 // draw
 		void		Char(const fV2 & p, char c);						// draw a single char at point p
-		void		Print( float x, float y, const char* text );				// draw a text at (x,y)
-		void		Printn( float x, float y, char* text, int size );	// draw a text at (x,y) (size characters)
-		void		Printf( float x, float y, char* format, ... );		// draw a formated text at (x,y)
-
-// utils
-		BOOL		Check( const char* text, float size, int& len );			// if FALSE len is size of str that fits in size pixels area (space break if possible)
+		void		Print(const fV2 & p, const std::string & text);	// draw a text at (x,y)
 
 public:
 

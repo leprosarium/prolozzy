@@ -136,18 +136,17 @@ iV2 Align(const iRect & r, const iV2 & sz, int align, int offset)
 }
 
 
-void GUIDrawText( const iRect & r, const char * text, dword color, int align, int offset )
+void GUIDrawText( const iRect & r, const std::string & text, dword color, int align, int offset )
 {
-	if(!text) return;
+	if(text.empty()) return;
 	if(color==0) return;
 	dword oldcolor = g_gui->m_font->GetColor(); 
 	g_gui->m_font->SetColor(color);
-	float w,h;
-	g_gui->m_font->GetTextBox(text, w, h);
-	iV2 p = Align(r, iV2(w, h), align, offset);
+	fV2 sz = g_gui->m_font->GetTextBox(text);
+	iV2 p = Align(r, iV2(sz), align, offset);
 	
 	// clip not needed
-	g_gui->m_font->Print((float)p.x,(float)p.y, text);  
+	g_gui->m_font->Print(p, text);  
 
 	g_gui->m_font->SetColor(oldcolor);
 }

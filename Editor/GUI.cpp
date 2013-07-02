@@ -100,15 +100,13 @@ void cGUI::Draw()
 	// tooltip
 	if(!ToolTip.empty())
 	{
-		float w,h;
-		m_font->GetTextBox(ToolTip.c_str() ,w, h);
-		w+=8; h+=4;
+		fV2 sz = m_font->GetTextBox(ToolTip) + fV2(8, 4);
 		iV2 tt = m_mouse + 16;
-		iRect rr(tt, tt + iV2(w, h)); 
+		iRect rr(tt, tt + iV2(sz)); 
 		GUIDrawBar(rr, 0xffffa000);
 		GUIDrawRect(rr, 0xff000000);
 		iRect rt = rr;
-		GUIDrawText(rt.Inflate(iV2(4, 2)), ToolTip.c_str(), 0xff000000, GUIALIGN_LEFT|GUIALIGN_TOP );
+		GUIDrawText(rt.Inflate(iV2(4, 2)), ToolTip, 0xff000000, GUIALIGN_LEFT|GUIALIGN_TOP );
 	}
 
 	// mouse cursor (for full screen tests)
@@ -238,18 +236,16 @@ PREDICATE_M(gui, fontH, 1)
 PREDICATE_M(gui, textW, 2)
 {
 	if(!g_gui->m_font) return A2 = 0;
-	float w, h;
-	g_gui->m_font->GetTextBox(A1, w, h);
-	return A2 = static_cast<int>(w);
+	fV2 sz = g_gui->m_font->GetTextBox(A1);
+	return A2 = static_cast<int>(sz.x);
 
 }
 
 PREDICATE_M(gui, textH, 2)
 {
 	if(!g_gui->m_font) return A2 = 0;
-	float w, h;
-	g_gui->m_font->GetTextBox(A1, w, h);
-	return A2 = static_cast<int>(h);
+	fV2 sz = g_gui->m_font->GetTextBox(A1);
+	return A2 = static_cast<int>(sz.y);
 }
 
 PREDICATE_M(gui, winDlgOpenFile, 4)

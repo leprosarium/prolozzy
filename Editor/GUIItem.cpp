@@ -63,7 +63,7 @@ void cGUIItem::OnDraw()
 	GUIDrawImg( rc, img0, imgColor, imgAlign);
 
 	// text
-	GUIDrawText( rc, txt.c_str(), txtColor, txtAlign, txtOffset);
+	GUIDrawText( rc, txt, txtColor, txtAlign, txtOffset);
 	
 	// border
 	if( style & GUISTYLE_BORDER )

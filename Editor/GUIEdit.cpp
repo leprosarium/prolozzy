@@ -251,7 +251,7 @@ void cGUIEdit::OnDraw()
 		// text
 		iRect rr = rc;
 		rr.Offset(iV2(deltax, 0));
-		GUIDrawText( rr, txt.c_str(), txtColor, GUIALIGN_LEFT|GUIALIGN_CENTERY, txtOffset);
+		GUIDrawText( rr, txt, txtColor, GUIALIGN_LEFT|GUIALIGN_CENTERY, txtOffset);
 
 		// cursor
 		if(m_edit)
@@ -302,7 +302,7 @@ int cGUIEdit::Pos2Chr(int pos)
 int cGUIEdit::Chr2Pos(int chr)
 {
 	assert(chr<=txt.size());
-	return static_cast<int>(g_gui->m_font->GetTextWidth(txt.c_str(),chr) + txtOffset); 
+	return static_cast<int>(g_gui->m_font->GetTextWidth(txt, chr) + txtOffset); 
 }
 
 

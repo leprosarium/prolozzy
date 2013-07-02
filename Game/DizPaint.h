@@ -91,7 +91,7 @@ class cFont
 public:
 	int id;						// unique id >=0
 	int group;					// resource group
-	r9Font * font;						// font
+	r9Font * font;				// font
 		
 	cFont() : id(), group(), font() {}
 	cFont(int id, int group, r9Font * font) : id(id), group(group), font(font) {}
@@ -99,9 +99,9 @@ public:
 	cFont(cFont && f) : id(f.id), group(f.group), font(f.font) { f.font = 0; }
 	cFont & operator = (cFont && f) { id = f.id; group = f.group; font = f.font; f.font = 0; return *this; }
 
-	int GetSize() const { return (int)font->GetSize(); }
-	int GetCharWidth( char c ) const { return (int)font->GetCharWidth(c); }
-	int GetTextWidth( const char* text ) const { return (int)font->GetTextWidth(text); }
+	int GetSize() const { return static_cast<int>(font->GetSize()); }
+	int GetCharWidth( char c ) const { return static_cast<int>(font->GetCharWidth(c)); }
+	int GetTextWidth( const std::string & text ) const { return static_cast<int>(font->GetTextWidth(text)); }
 	int	GetOfsX() const { return (int)font->GetOfsX(); }
 	int GetOfsY() const { return (int)font->GetOfsY(); }
 };

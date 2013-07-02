@@ -412,7 +412,7 @@ void cEdiApp::DrawStats()
 	fV2 p(R9_GetWidth() - sz.x - 2, 2.0f);
 
 	R9_DrawBar( fRect(p, p + sz), 0xa0000000 );
-	R9_DrawText( p + 2, str.c_str(), 0xffffff80 );
+	R9_DrawText( p + 2, str, 0xffffff80 );
 	R9_Flush();
 }
 

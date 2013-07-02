@@ -19,6 +19,7 @@
 #include <assert.h>
 
 #include <algorithm>
+#include <numeric>
 
 // DirectX
 #define DIRECTINPUT_VERSION 0x0800

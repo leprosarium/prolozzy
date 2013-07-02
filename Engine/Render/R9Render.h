@@ -420,7 +420,7 @@ inline	void		R9_DrawBar( const fRect & dst, dword color=0xffffffff ) {  assert(r
 inline	void		R9_DrawQuad( const fRect & dst, const fRect & src, R9TEXTURE tex, dword color=0xffffffff ) {  assert(r9_render); r9_render->DrawQuad(dst,src,tex,color); }
 inline	void		R9_DrawQuadRot( const fV2 & pos, const fV2 & size, const fV2 & center, float angle, const fRect & src, R9TEXTURE tex, dword color=0xffffffff ) {  assert(r9_render); r9_render->DrawQuadRot(pos,size,center,angle,src,tex,color); }
 inline	void		R9_DrawSprite( const fV2 & pos, const fRect & src, R9TEXTURE tex, dword color=0xffffffff, dword flip=0, float scale=1.0f ) {  assert(r9_render); r9_render->DrawSprite(pos,src,tex,color,flip,scale); }
-		void		R9_DrawText( const fV2 & pos, const char* text, dword color=0xffffffff, float scale=1.0f );
+		void		R9_DrawText( const fV2 & pos, const std::string & text, dword color=0xffffffff, float scale=1.0f );
 
 inline	BOOL		R9_IsClipping()											{ assert(r9_render); return r9_render->IsClipping(); }
 inline	void		R9_SetClipping(const fRect & rect )							{ assert(r9_render); r9_render->SetClipping(rect); }

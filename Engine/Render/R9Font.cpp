@@ -113,48 +113,44 @@ void r9Font::Destroy()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // sizes
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-float r9Font::GetCharWidth( char c )
+float r9Font::GetCharWidth( char c ) const
 {
 	if(!IsValid(c)) return 0.0f;
 	return m_scale * m_aspect * (float)m_char[(byte)c].w;
 }
 
-float r9Font::GetTextWidth( const char* text )
+float r9Font::GetTextWidth( const std::string & text ) const
 {
-	if( text==NULL ) return 0.0f;
-	return GetTextWidth( text, (int)strlen(text) );
+	if(text.empty()) return 0.0f;
+	return GetTextWidth(text, text.size());
 }
 
-float r9Font::GetTextWidth( const char* text, int size )
+float r9Font::GetTextWidth( const std::string & text, int size ) const
 {
-	if( text==NULL ) return 0.0f;
-	int i;
-	float w = 0.0f;
-	for( i=0; i<size; i++ )
-	{
-		w += GetCharWidth(text[i]) + GetOfsX();
-	}
-	return w + GetItalic();
+	if(text.empty()) return 0.0f;
+	return std::accumulate(text.begin(), text.begin() + size, GetItalic() + size * GetOfsX(),
+		[this](float w, char c) { return w + GetCharWidth(c); });
 }
 
-void r9Font::GetTextBox( const char* text, float& w, float& h )
+fV2 r9Font::GetTextBox( const std::string & text) const
 {
-	w=0; h=0;
-	if( text==NULL || text[0]==0) return;
-	int size = (int)strlen(text);
-	h = m_chrh;
-	float wi=0;
-	for( int i=0; i<size; i++ )
+	fV2 sz;
+	if( text.empty()) return sz;
+	sz.y = m_chrh;
+	float w = 0;
+	for(auto c: text)
 	{
-		if(text[i]=='\n')
+		if(c=='\n')
 		{
-			if(wi>w) w=wi;
-			wi=0; h+=m_chrh;
+			if(w > sz.x) sz.x = w;
+			w = 0;
+			sz.y += m_chrh;
 		}
 		else
-			wi += GetCharWidth( text[i] ) + GetOfsX();
+			w += GetCharWidth( c ) + GetOfsX();
 	}
-	if(wi>w) w=wi;
+	if(w > sz.x) sz.x = w;
+	return sz;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -189,23 +185,19 @@ void r9Font::Char( const fV2 & p, char c )
 
 }
 
-void r9Font::Print( float x, float y, const char* text )
+void r9Font::Print(const fV2 & start, const std::string & text )
 {
-	fV2 p(x, y);
-	if( text==NULL ) return;
-
-	while( *text!=0 )
-	{
-		char c = *text;
+	fV2 p(start);
+	for(auto c: text)
 		if( c=='\n' )
 		{
-			p.x = x;
+			p.x = start.x;
 			p.y += GetSize() + GetOfsY();
 		}
 		else 
 		if( c=='\r')
 		{
-			p.x = x;
+			p.x = start.x;
 		}
 		else
 		if( c=='\t')
@@ -218,57 +210,6 @@ void r9Font::Print( float x, float y, const char* text )
 			Char(p, c);
 			p.x += GetCharWidth(c) + GetOfsX();
 		}
-		text++;
-	}
-
-}
-
-void r9Font::Printn( float x, float y, char* text, int size )
-{
-	if( text==NULL ) return;
-	char c = text[size];
-	text[size] = 0;
-	Print(x,y,text);
-	text[size] = c;
-}
-
-void r9Font::Printf( float x, float y, char* format, ... )
-{
-	if( format==NULL ) return;
-
-	va_list		va;
-	char		msg[1024]; // @WARNING!!!!
-	va_start(va, format);
-	vsprintf(msg, format, va);
-	va_end(va);
-
-	Print(x, y, msg);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// utils
-///////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL r9Font::Check( const char* text, float size, int& len )
-{
-
-	float textsize = 0;
-	int sppos = -1; // space positioning
-	len = 0;
-	size -= GetItalic(); // use the italic factor
-
-	while(text[len]!=0)
-	{
-		if(text[len]==' ') sppos = len;
-		textsize += GetCharWidth(text[len])+GetOfsX();
-		if(textsize>size) 
-		{
-			if(sppos!=-1) len=sppos; // break at last space
-			return FALSE;
-		}
-		len++;
-	}
-
-	return TRUE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

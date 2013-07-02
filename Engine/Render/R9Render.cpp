@@ -460,13 +460,13 @@ void R9_Done()
 	dlog(LOGRND, L"Render done.\n");
 }
 
-void R9_DrawText(const fV2 & pos, const char* text, dword color, float scale )
+void R9_DrawText(const fV2 & pos, const std::string & text, dword color, float scale )
 { 
 	assert(r9_render); 
 	if(!r9_render->m_font) return; 
 	r9_render->m_font->SetColor(color); 
 	r9_render->m_font->m_scale=scale; 
-	r9_render->m_font->Print(pos.x,pos.y,text); 
+	r9_render->m_font->Print(pos, text); 
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

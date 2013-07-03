@@ -33,28 +33,28 @@
 #include "R9Render.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct r9FontChar
-{
-	word x,y;		// cel pos
-	word w;			// cel width
-};
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class r9Font  
-{		
+{	
+	struct Char
+	{
+		word x,y;		// cel pos
+		word w;			// cel width
+	};
+
 	word		m_chrw;			// character max width
 	word		m_chrh;			// character max height (font size)
 	short int	m_ofsx;			// character offset on x (added between characters) (0)
 	short int	m_ofsy;			// character offset on y (added between rows) (0)
-	word		m_texw;			// texture width
-	word		m_texh;			// texture height
 	float		m_scale;		// general scale [0..1]
 	float		m_aspect;		// aspect (widths are multiplied by this) [0..1]
 	word		m_italic;		// italic shift width (0)
 	dword		m_color;		// color (0xffffffff)
 	Blend		m_blend;		// blend state
 	R9TEXTURE	m_tex;			// texture
-	r9FontChar	m_char[256];	// chars mapping
+	Char		m_char[256];	// chars mapping
 public:
 	r9Font();
 // load
@@ -73,13 +73,15 @@ public:
 	bool IsValid( char c ) const { return ( m_char[(byte)c].w>0 ); }
 
 	dword GetColor() const { return m_color; }
-	float GetSize() const { return m_scale * m_chrh; }
-	float GetOfsX() const { return m_scale * m_aspect * m_ofsx; }
-	float GetOfsY() const { return m_scale * m_ofsy; }
-	float GetItalic() const { return m_scale * m_aspect * m_italic; }
+	float GetScale() const { return m_scale; }
+	float GetScaleW() const { return GetScale() * m_aspect; }
+	float GetSize() const { return GetScale() * m_chrh; }
+	float GetOfsX() const { return GetScaleW() * m_ofsx; }
+	float GetOfsY() const { return GetScale() * m_ofsy; }
+	float GetItalic() const { return GetScaleW() * m_italic; }
 
 // sizes
-	float GetCharWidth() const { return m_scale * m_aspect * m_chrw; }
+	float GetCharWidth() const { return GetScaleW() * m_chrw; }
 	float GetCharWidth(char c) const;								// gets the current width of a char (in pixels) - italic not included
 	float GetTextWidth(const std::string & text) const;				// gets the current width of a string (in pixels) - italic included, newlines ignored
 	float GetTextWidth(const std::string & text, int size ) const;	// gets the current width of a string (in pixels) - italic included, newlines ignored

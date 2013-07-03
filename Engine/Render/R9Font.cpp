@@ -6,19 +6,16 @@
 #include "R9Render.h"
 #include "F9Files.h"
 
-#ifndef TAB_SIZE
-#define TAB_SIZE	4
-#endif
+const int TAB_SIZE = 4;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // construction
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-r9Font::r9Font() : m_chrw(),
+r9Font::r9Font() :
+	m_chrw(),
 	m_chrh(),
 	m_ofsx(),
 	m_ofsy(),
-	m_texw(),
-	m_texh(),
 	m_scale(1.0f),
 	m_aspect(1.0f),
 	m_italic(),
@@ -35,8 +32,6 @@ bool r9Font::Create( int chrw, int chrh, int cols, int start, int count )
 	m_chrh		= chrh;
 	m_ofsx		= 0;
 	m_ofsy		= 0;
-	m_texw		= 0; // unused
-	m_texh		= 0; // unused
 	m_scale		= 1.0f;
 	m_aspect	= 1.0f;
 	m_italic	= 0;
@@ -76,15 +71,14 @@ bool r9Font::Create( const std::string & filename )
 
 	// HEADER (24 bytes)
 
-	if( !(buffer[0]=='F' && buffer[1]=='N' && buffer[2]=='T' && buffer[3]=='0') ) return false;
-	buffer += 4;
+	if(get<dword>(buffer) != 0x30544e46u) return false; // "FNT0"
 
 	m_chrw		= get<word>(buffer);
 	m_chrh		= get<word>(buffer);
 	m_ofsx		= get<short int>(buffer);
 	m_ofsy		= get<short int>(buffer);
-	m_texw		= get<word>(buffer);
-	m_texh		= get<word>(buffer);
+	get<word>(buffer);  //skip  unused
+	get<word>(buffer);
 	m_scale		= get<word>(buffer) / 100.0f;
 	m_aspect	= get<word>(buffer) / 100.0f;
 	m_italic	= get<word>(buffer);
@@ -109,7 +103,7 @@ bool r9Font::Create( const std::string & filename )
 float r9Font::GetCharWidth( char c ) const
 {
 	if(!IsValid(c)) return 0.0f;
-	return m_scale * m_aspect * (float)m_char[(byte)c].w;
+	return GetScaleW() * m_char[(byte)c].w;
 }
 
 float r9Font::GetTextWidth( const std::string & text ) const

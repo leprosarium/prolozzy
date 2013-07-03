@@ -13,25 +13,20 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // construction
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-r9Font::r9Font()
+r9Font::r9Font() : m_chrw(),
+	m_chrh(),
+	m_ofsx(),
+	m_ofsy(),
+	m_texw(),
+	m_texh(),
+	m_scale(1.0f),
+	m_aspect(1.0f),
+	m_italic(),
+	m_color(0xffffffff),
+	m_blend(Blend::AlphaRep),
+	m_tex()
 {
-	m_chrw		= 0;
-	m_chrh		= 0;
-	m_ofsx		= 0;
-	m_ofsy		= 0;
-	m_texw		= 0;
-	m_texh		= 0;
-	m_scale		= 1.0f;
-	m_aspect	= 1.0f;
-	m_italic	= 0;
-	m_color		= 0xffffffff;
-	m_blend		= Blend::AlphaRep;
-	m_tex		= NULL;
 	memset( &m_char, 0, sizeof(m_char) );
-}
-
-r9Font::~r9Font()
-{
 }
 
 bool r9Font::Create( int chrw, int chrh, int cols, int start, int count )
@@ -59,55 +54,53 @@ bool r9Font::Create( int chrw, int chrh, int cols, int start, int count )
 	return true;
 }
 
+template<class T>
+T get(byte * & buf) 
+{
+	T t(*(reinterpret_cast<T*>(buf)));
+	buf += sizeof(T);
+	return t;
+}
+
 bool r9Font::Create( const std::string & filename )
 {
-	
-	F9FILE file = files->OpenFile(filename);
+	std::unique_ptr<f9File, std::function<void(F9FILE)>> file(files->OpenFile(filename), [](f9File * f) { files->FileClose(f);});
 	if(!file) return false;
 	int size = static_cast<int>(file->Size());
-	if(size==0) { files->FileClose(file); return false; }
-	byte * buffer = new byte[size];
-	file->Read( buffer, size);
-	files->FileClose(file);
+	if(!size) return false;
+	std::unique_ptr<byte> buffer0(new byte[size]);
+	file->Read(buffer0.get(), size);
+	file.reset();
 
-	byte * buffer0 = buffer;
+	byte * buffer = buffer0.get();
 
 	// HEADER (24 bytes)
 
-	if( !(buffer[0]=='F' && buffer[1]=='N' && buffer[2]=='T' && buffer[3]=='0') ) { delete [] buffer; return false; }
+	if( !(buffer[0]=='F' && buffer[1]=='N' && buffer[2]=='T' && buffer[3]=='0') ) return false;
 	buffer += 4;
 
-	m_chrw		= *((word*)buffer);			buffer += sizeof(word);
-	m_chrh		= *((word*)buffer);			buffer += sizeof(word);
-	m_ofsx		= *((short int*)buffer);	buffer += sizeof(short int);
-	m_ofsy		= *((short int*)buffer);	buffer += sizeof(short int);
-	m_texw		= *((word*)buffer);			buffer += sizeof(word);
-	m_texh		= *((word*)buffer);			buffer += sizeof(word);
-	m_scale		= *((word*)buffer);			buffer += sizeof(word); m_scale /= 100.0f;
-	m_aspect	= *((word*)buffer);			buffer += sizeof(word);	m_aspect /= 100.0f;
-	m_italic	= *((word*)buffer);			buffer += sizeof(word);
+	m_chrw		= get<word>(buffer);
+	m_chrh		= get<word>(buffer);
+	m_ofsx		= get<short int>(buffer);
+	m_ofsy		= get<short int>(buffer);
+	m_texw		= get<word>(buffer);
+	m_texh		= get<word>(buffer);
+	m_scale		= get<word>(buffer) / 100.0f;
+	m_aspect	= get<word>(buffer) / 100.0f;
+	m_italic	= get<word>(buffer);
 
 	buffer += 2; // empty up to pos 24
 	
 	// DATA
-	int charsize = 1+2+2+1; // char data size
 
-	while( buffer-buffer0 <= size - charsize )
+	while( buffer-buffer0.get() < size)
 	{
-		byte ci			= *((byte*)buffer); buffer += sizeof(byte);
-		m_char[ci].x	= *((word*)buffer); buffer += sizeof(word);
-		m_char[ci].y	= *((word*)buffer); buffer += sizeof(word);
-		m_char[ci].w	= *((byte*)buffer); buffer += sizeof(byte);
+		byte ci			= get<byte>(buffer);
+		m_char[ci].x	= get<word>(buffer);
+		m_char[ci].y	= get<word>(buffer);
+		m_char[ci].w	= get<byte>(buffer);
 	}
-	
-	delete [] buffer0;
 	return true;
-}
-
-void r9Font::Destroy()
-{
-	// let the user deal with the texture...
-	// if(m_tex) R9_TextureDestroy((R9TEXTURE)m_tex);		
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -170,7 +163,7 @@ void r9Font::Char( const fV2 & p, char c )
 
 	fRect dst(p, p + fV2(GetCharWidth(c), GetSize()));
 	
-	fRect src((float)m_char[ci].x, (float)m_char[ci].y, (float)(m_char[ci].x + m_char[ci].w), (float)(m_char[ci].y + m_chrh));
+	fRect src(m_char[ci].x, m_char[ci].y, m_char[ci].x + m_char[ci].w, m_char[ci].y + m_chrh);
 
 	// clipping
 	R9_ClipQuad( dst, src );

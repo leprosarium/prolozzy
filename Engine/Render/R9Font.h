@@ -41,31 +41,42 @@ struct r9FontChar
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class r9Font  
-{
+{		
+	word		m_chrw;			// character max width
+	word		m_chrh;			// character max height (font size)
+	short int	m_ofsx;			// character offset on x (added between characters) (0)
+	short int	m_ofsy;			// character offset on y (added between rows) (0)
+	word		m_texw;			// texture width
+	word		m_texh;			// texture height
+	float		m_scale;		// general scale [0..1]
+	float		m_aspect;		// aspect (widths are multiplied by this) [0..1]
+	word		m_italic;		// italic shift width (0)
+	dword		m_color;		// color (0xffffffff)
+	Blend		m_blend;		// blend state
+	R9TEXTURE	m_tex;			// texture
+	r9FontChar	m_char[256];	// chars mapping
 public:
-					r9Font();
-virtual				~r9Font();
-
+	r9Font();
 // load
-virtual	bool		Create( int chrw, int chrh, int cols=16, int start=32, int count=96 ); // create from a table with given cel size and columns (fixed char size)
-virtual	bool		Create( const std::string & fontfile );				// create from a .fnt file
-virtual void		Destroy();											// destroy font (not the texture!)
+	bool Create( int chrw, int chrh, int cols=16, int start=32, int count=96 ); // create from a table with given cel size and columns (fixed char size)
+	bool Create( const std::string & fontfile );				// create from a .fnt file
 
 // config
-		void		SetTexture( R9TEXTURE texture )						{ m_tex = texture; } // set a texture for the font
-		R9TEXTURE	GetTexture() const									{ return m_tex; }
+	void SetTexture(R9TEXTURE texture) { m_tex = texture; }
+	R9TEXTURE GetTexture() const { return m_tex; }
 	void SetBlend( Blend blend ) { m_blend = blend; }
 	Blend GetBlend() const { return m_blend; }
-		void		SetColor( dword color )								{ m_color = color; }
-		void		SetSize( float size )								{ m_scale = size / m_chrh; }
-		void		SetSpace( int width )								{ m_char[32].w = width; }
-		BOOL		IsValid( char c ) const								{ return ( m_char[(byte)c].w>0 ); }
+	void SetColor( dword color ) { m_color = color; }
+	void SetSize( float size ) { m_scale = size / m_chrh; }
+	void SetSpace( int width ) { m_char[32].w = width; }
+	void SetScale(float s) { m_scale = s; }
+	bool IsValid( char c ) const { return ( m_char[(byte)c].w>0 ); }
 
-		dword		GetColor() const									{ return m_color; }
-		float		GetSize() const										{ return m_scale * m_chrh; }
-		float		GetOfsX() const										{ return m_scale * m_aspect * m_ofsx; }
-		float		GetOfsY() const										{ return m_scale * m_ofsy; }
-		float		GetItalic() const									{ return m_scale * m_aspect * m_italic; }
+	dword GetColor() const { return m_color; }
+	float GetSize() const { return m_scale * m_chrh; }
+	float GetOfsX() const { return m_scale * m_aspect * m_ofsx; }
+	float GetOfsY() const { return m_scale * m_ofsy; }
+	float GetItalic() const { return m_scale * m_aspect * m_italic; }
 
 // sizes
 	float GetCharWidth() const { return m_scale * m_aspect * m_chrw; }
@@ -75,26 +86,8 @@ virtual void		Destroy();											// destroy font (not the texture!)
 	fV2 GetTextBox(const std::string & text) const;				// gets the box sizes the text fits in; italic and newlines included
 
 // draw
-		void		Char(const fV2 & p, char c);						// draw a single char at point p
-		void		Print(const fV2 & p, const std::string & text);	// draw a text at (x,y)
-
-public:
-
-		word		m_chrw;			// character max width
-		word		m_chrh;			// character max height (font size)
-		short int	m_ofsx;			// character offset on x (added between characters) (0)
-		short int	m_ofsy;			// character offset on y (added between rows) (0)
-		word		m_texw;			// texture width
-		word		m_texh;			// texture height
-		float		m_scale;		// general scale [0..1]
-		float		m_aspect;		// aspect (widths are multiplied by this) [0..1]
-		word		m_italic;		// italic shift width (0)
-		dword		m_color;		// color (0xffffffff)
-		Blend		m_blend;		// blend state
-		R9TEXTURE	m_tex;			// texture
-
-public:
-		r9FontChar	m_char[256];	// chars mapping
+	void Char(const fV2 & p, char c);						// draw a single char at point p
+	void Print(const fV2 & p, const std::string & text);	// draw a text at (x,y)
 };
 
 #endif

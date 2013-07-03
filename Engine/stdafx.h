@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <numeric>
+#include <memory>
 
 // DirectX
 #define DIRECTINPUT_VERSION 0x0800

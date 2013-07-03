@@ -65,7 +65,6 @@ void r9Render::Done()
 	if(m_font)
 	{
 		TextureDestroy(m_font->GetTexture()); 
-		m_font->Destroy(); 
 		delete m_font; 
 	}
 	Finish();
@@ -465,7 +464,7 @@ void R9_DrawText(const fV2 & pos, const std::string & text, dword color, float s
 	assert(r9_render); 
 	if(!r9_render->m_font) return; 
 	r9_render->m_font->SetColor(color); 
-	r9_render->m_font->m_scale=scale; 
+	r9_render->m_font->SetScale(scale); 
 	r9_render->m_font->Print(pos, text); 
 }
 

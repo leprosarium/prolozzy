@@ -129,51 +129,51 @@ updateBubbles(_, _, _, _, _).
 updateActiveBubbles(_, 0, _, []).
 updateActiveBubbles(Id, Count, Life, Free) :-
 	format(atom(AId), 'id~d', [Id]),
-	map:objFind(AId, Idx),
-	(   obj:disable(Idx)
-	->  Free = [Idx|OtherFree]
+	brush:find(AId, Br),
+	(   brush:getDisable(Br, 1)
+	->  Free = [Br|OtherFree]
 	;   Free = OtherFree,
-	    updateBubble(Idx, Life)),
+	    updateBubble(Br, Life)),
 
 	NId is Id + 1,
 	NCount is Count - 1,
 	updateActiveBubbles(NId, NCount, Life, OtherFree).
 
 
-updateBubble(Idx, Life) :-
-	updateBubbleLive(Idx, Life)
-	-> updateBubblePosition(Idx)
+updateBubble(Br, Life) :-
+	updateBubbleLive(Br, Life)
+	-> updateBubblePosition(Br)
 	; true.
 
-updateBubbleLive(Idx, Life) :-
-	  obj:user(Idx, 1, Time),
+updateBubbleLive(Br, Life) :-
+	  brush:getEx(Br, time, Time),
 	  NTime is Time + 1,
 	  (   Time > Life + random(10)
-	  ->  obj:disable(Idx, 1), !, fail
-	  ;   obj:user(Idx, 1, NTime)).
+	  ->  brush:setDisable(Br, 1), !, fail
+	  ;   brush:setEx(Br, time, NTime)).
 
-updateBubblePosition(Idx) :-
-	newBubblePosition(Idx, X, Y),
+updateBubblePosition(Br) :-
+	newBubblePosition(Br, X, Y),
 	game:roomSize(RoomW, RoomH),
-	obj:w(Idx, W),
-	obj:h(Idx, H),
+	brush:getW(Br, W),
+	brush:getH(Br, H),
 	Cx is X rem RoomW + W // 2,
 	Cy is Y rem RoomH + H // 2,
 	core:materialRead(Cx, Cy, 1, 1, Mat),
 	def:material(water, Water),
 	(   Mat =\= 1 << Water
-	->  obj:disable(Idx, 1)
-	;   obj:x(Idx, X),
-	    obj:y(Idx, Y),
-	    obj:disable(Idx, 0)).
+	->  brush:setDisable(Br, 1)
+	;   brush:setX(Br, X),
+	    brush:setY(Br, Y),
+	    brush:setDisable(Br, 0)).
 
-newBubblePosition(Idx, X, Y) :-
-	obj:user(Idx, 0, SpeedY),
+newBubblePosition(Br, X, Y) :-
+	brush:getEx(Br, speed, SpeedY),
 	(   random(3) =\= 0
 	->  SpeedX = 0
 	;   SpeedX is SpeedY // 2 - random(SpeedY)),
-	obj:x(Idx, OX),
-	obj:y(Idx, OY),
+	brush:getX(Br, OX),
+	brush:getY(Br, OY),
 	X is OX + SpeedX,
 	Y is OY - SpeedY.
 
@@ -185,7 +185,7 @@ spawnBubbles(Free, Debit, Speed) :-
 	FreeCount > 0,
 	random(Debit) =:= 0,
 	Fr is random(FreeCount),
-	util:nth0(Fr, Free, Idx),
+	util:nth0(Fr, Free, Br),
 	player:pos(PX, PY),
 	X is PX + 8 - random(16),
 	Y is PY - 16,
@@ -195,16 +195,17 @@ spawnBubbles(Free, Debit, Speed) :-
 	core:materialRead(Cx, Cy, 1, 1, Mat),
 	def:material(water, Water),
 	Mat =:= 1 << Water,
-	obj:disable(Idx, 0),
-	obj:w(Idx, W),
-	obj:h(Idx, H),
+	brush:setDisable(Br, 0),
+	brush:getW(Br, W),
+	brush:getH(Br, H),
 	NX is X - W // 2,
 	NY is Y - H // 2,
-	obj:x(Idx, NX),
-	obj:y(Idx, NY),
+	brush:setX(Br, NX),
+	brush:setY(Br, NY),
 	BubbleSpeed is Speed // 2 + random(Speed),
-	obj:user(Idx, 0, BubbleSpeed),
-	obj:user(Idx, 1, 0),
+	brush:setEx(Br, speed, BubbleSpeed),
+	brush:setEx(Br, time, 0),
+	brush:idx(Br, Idx),
 	core:objPresent(Idx), !.
 spawnBubbles(_, _, _).
 

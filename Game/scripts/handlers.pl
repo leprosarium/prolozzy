@@ -181,8 +181,9 @@ event(_, roomOut) :-
 
 
 
-event(_, collision(ObjIdx, Mode)) :-
+event(_, collision(ID, Mode)) :-
 	\+ player:dead,
+	map:objFind(ID, ObjIdx),
 	obj:class(ObjIdx, Class),
 	collision(ObjIdx, Class, Mode),
 	obj:id(ObjIdx, ID),

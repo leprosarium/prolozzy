@@ -45,11 +45,11 @@ PREDICATE_NONDET_M(map, brush, 1)
 	if (br.type() != PL_VARIABLE) {
 		tBrush * b = g_map.brushPtrNoEx(br);
 		if(g_map.objects.empty())
-			return 0;
+			return false;
 		return b >= & g_map.objects.front() && b < & g_map.objects.front() + g_map.objects.size();
 	}
 	size_t idx = call == PL_FIRST_CALL ? 0 : PL_foreign_context(handle);
-	if(idx < g_map.objects.size() && (br = & g_map.objects[idx]))
+	if(idx < g_map.objects.size() && (br = & g_map.objects.get(idx)))
 		if(++idx == g_map.objects.size())
 			return true;
 		else
@@ -57,6 +57,27 @@ PREDICATE_NONDET_M(map, brush, 1)
 	return false;
 }
 
+
+PREDICATE_M(brush, idx, 2)
+{
+	PlTerm t = A1;
+	if(!(t = g_map.brush))
+		return false;
+	PlTerm br = t[1];
+	if (br.type() != PL_VARIABLE) {
+		tBrush * b = g_map.brushPtrNoEx(br);
+		if(g_map.objects.empty())
+			return false;
+		for(int idx = 0; idx < g_map.objects.size(); ++idx)
+			if(&g_map.objects.get(idx) == b)
+				return A2 = idx;
+		return false;
+	}
+	int idx = A2;
+	if(g_map.objects.InvalidIdx(idx))
+		throw PlException("invalid brush index");
+	return A1 = & g_map.objects.get(idx);
+}
 
 #define BRUSH_PROP(Prop, PROP)\
 GET_BRUSH_PROP(Prop, PROP)\
@@ -292,7 +313,12 @@ PREDICATE_M(map, objVar, 3)
 	tBrush & obj = g_map.objects.get(idx);
 	PlTerm val = A3;
 	if(val.type() == PL_VARIABLE)
-		return A3 = obj.Get(var);
+		return var == 17 ? A3 = obj.id : A3 = obj.Get(var);
+	if(var == 17)
+	{
+		obj.id = static_cast<const char *>(val);
+		return true;
+	}
 	int64 v = val;
 	obj.Set(var, static_cast<int>(v)); 
 	return true;

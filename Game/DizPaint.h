@@ -109,99 +109,168 @@ public:
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // BRUSH OBJECTS
 //////////////////////////////////////////////////////////////////////////////////////////////////
-#define BRUSH_TILE		5			// tile id
-#define BRUSH_FRAME		6			// current tile animation frame (starts with 0)
-#define BRUSH_MAP		7			// 4 values: x1,y1,x2,y2
-#define BRUSH_FLIP		11			// flip: 0=none, 1=x, 2=y, 3=xy
-#define BRUSH_COLOR		12			// color
-#define BRUSH_SHADER	13			// shader 0..SHADER_MAX
-#define BRUSH_SCALE		14			// scale value (0=1, 1, 2, ...)
+//#define BRUSH_TILE		5			
+//#define BRUSH_FRAME		6			
+//#define BRUSH_MAP		7			// 4 values: x1,y1,x2,y2
+//#define BRUSH_FLIP		11			
+//#define BRUSH_COLOR		12			// color
+//#define BRUSH_SHADER	13			// shader 0..SHADER_MAX
+//#define BRUSH_SCALE		14			// scale value (0=1, 1, 2, ...)
 
-#define BRUSH_TYPE		16			// type: 0=static(for map drawing), 1=dynamic(for objects)
-#define BRUSH_ID		17			// id used to access from script (brush + obj)
-#define BRUSH_MATERIAL	18			// material that brushes will write in material map if draw set correctly (brush only)
-#define BRUSH_DRAW		19			// draw mode: 0=don't draw, 1=draw in view, 2=write material in material map (brush only), 3=both (brush only)
-#define BRUSH_DISABLE	20			// 0=enable, 1=disabled (don't draw, don't update)      
-#define BRUSH_DELAY		21			// frame delay ( should be updated only once in BRUSH_DELAY frames ) (brush + obj)
-#define BRUSH_ANIM		22			// animation mode: 0=none, 1=play once, 2=play loop 
-#define BRUSH_COLLIDER	23			// colider mode: 0=none, 1=call handler, 2=hard collision, 3=both
-#define BRUSH_CLASS		24			// generic object class (pickable, action, hurt and others)
-#define BRUSH_STATUS	25			// generic object status (used to select different behaviours)
-#define BRUSH_TARGET	26			// generic object target id (used to link objects)
-#define BRUSH_DEATH		27			// death cause, set in player P_DEATH for hurt and kill objects
-#define BRUSH_COLLISION	31			// if collision with player 1, else 0 (updated per frame)
+//#define BRUSH_TYPE		16			// type: 0=static(for map drawing), 1=dynamic(for objects)
+//#define BRUSH_ID		17			// id used to access from script (brush + obj)
+//#define BRUSH_MATERIAL	18			// material that brushes will write in material map if draw set correctly (brush only)
+//#define BRUSH_DRAW		19			// draw mode: 0=don't draw, 1=draw in view, 2=write material in material map (brush only), 3=both (brush only)
+//#define BRUSH_DISABLE	20			// 0=enable, 1=disabled (don't draw, don't update)      
+//#define BRUSH_DELAY		21			// frame delay ( should be updated only once in BRUSH_DELAY frames ) (brush + obj)
+//#define BRUSH_ANIM		22			// animation mode: 0=none, 1=play once, 2=play loop 
+//#define BRUSH_COLLIDER	23			// colider mode: 0=none, 1=call handler, 2=hard collision, 3=both
+//#define BRUSH_CLASS		24			// generic object class (pickable, action, hurt and others)
+//#define BRUSH_STATUS	25			// generic object status (used to select different behaviours)
+//#define BRUSH_TARGET	26			// generic object target id (used to link objects)
+//#define BRUSH_DEATH		27			// death cause, set in player P_DEATH for hurt and kill objects
+//#define BRUSH_COLLISION	31			// if collision with player 1, else 0 (updated per frame)
 
-#define BRUSH_USER		32			// more user defined free values
+//#define BRUSH_USER		32			// more user defined free values
 #define BRUSH_MAX		48			// dummy
 
 struct tBrush
 {
 	int		m_data[BRUSH_MAX];
-	PlAtom _id;
-	Blend _shader;
-	int _layer;		// layer idx
-	iV2 _pos;		//  position in world
-	iV2 _size;
+
 public:
-	tBrush() : _id("0"), _shader(Blend::Opaque), _layer() { 	memset(m_data, 0, sizeof(m_data)); Set(BRUSH_TILE, -1); Set(BRUSH_COLOR, 0xffffffff); }
-	PlAtom id() const { return _id;}
-	void id(const PlAtom &id) { _id = id; }
+	int layer;		// layer idx
+	iV2 pos;		//  position in world
+	iV2 size;
+	int tile;		// tile id
+	int frame;		// current tile animation frame (starts with 0)
+	iRect map;		
+	int flip;		// flip: 0=none, 1=x, 2=y, 3=xy
+	dword color;
+	Blend shader;
+	int scale;
+	int type;
+	std::string id;
+	int material;
+	int draw;
+	bool disable;
+	int delay;
+	int anim;
+	int collider;
+	int _class;
+	int status;
+	bool collision;
+		
+	tBrush() : shader(Blend::Opaque), 
+		layer(), 
+		tile(-1), 
+		frame(), 
+		flip(), 
+		color(0xffffffff), 
+		scale(0), 
+		type(0),
+		material(),
+		draw(),
+		disable(),
+		delay(),
+		anim(),
+		collider(),
+		_class(),
+		status(),
+		collision()
+	{ 	memset(m_data, 0, sizeof(m_data)); }
 	int Get( int idx ) const 
 	{ 
-		if(idx == 0) return _layer;
-		if(idx == 1) return _pos.x;
-		if(idx == 2) return _pos.y;
-		if(idx == 3) return _size.x;
-		if(idx == 4) return _size.y;
-
-		if (idx == BRUSH_SHADER) return static_cast<int>(shader()); return m_data[idx]; }
+		if(idx == 0) return layer;
+		else if(idx == 1) return pos.x;
+		else if(idx == 2) return pos.y;
+		else if(idx == 3) return size.x;
+		else if(idx == 4) return size.y;
+		else if(idx == 5) return tile;
+		else if(idx == 6) return frame;
+		else if(idx == 7) return map.p1.x;
+		else if(idx == 8) return map.p1.y;
+		else if(idx == 9) return map.p2.x;
+		else if(idx == 10) return map.p2.y;
+		else if(idx == 11) return flip;
+		else if(idx == 12) return color;
+		else if(idx == 13) return static_cast<int>(shader);
+		else if(idx == 14) return scale;
+		//15
+		else if(idx == 16) return type;
+		else if(idx == 18) return material;
+		else if(idx == 19) return draw;
+		else if(idx == 20) return disable ? 1 : 0;
+		else if(idx == 21) return delay;
+		else if(idx == 22) return anim;
+		else if(idx == 23) return collider;
+		else if(idx == 24) return _class;
+		else if(idx == 25) return status;
+		//
+		else if(idx == 31) return collision ? 1 : 0;
+		else return m_data[idx]; 
+	}
 	void Set( int idx, int val ) 
 	{ 
-		if(idx == 0)
-			_layer = val;
-		else if(idx == 1)
-			_pos.x = val;
-		else if(idx == 2)
-			_pos.y = val;
-		else if(idx == 3)
-			_size.x = val;
-		else if(idx == 4)
-			_size.y = val;
-		m_data[idx] = val; if(idx == BRUSH_SHADER) shader(static_cast<Blend>(val)); 
+		if(idx == 0) layer = val;
+		else if(idx == 1) pos.x = val;
+		else if(idx == 2) pos.y = val;
+		else if(idx == 3) size.x = val;
+		else if(idx == 4) size.y = val;
+		else if(idx == 5) tile = val;
+		else if(idx == 6) frame = val;
+		else if(idx == 7) map.p1.x = val;
+		else if(idx == 8) map.p1.y = val;
+		else if(idx == 9) map.p2.x = val;
+		else if(idx == 10) map.p2.y = val;
+		else if(idx == 11) flip = val;
+		else if(idx == 12) color = val;
+		else if(idx == 13) shader= static_cast<Blend>(val);
+		else if(idx == 14) scale = val;
+		//15
+		else if(idx == 16) type = val;
+		else if(idx == 17) { std::ostringstream o; o << "id" << val; id = o.str(); }
+		else if(idx == 18) material = val;
+		else if(idx == 19) draw = val;
+		else if(idx == 20) disable = val != 0;
+		else if(idx == 21) delay = val;
+		else if(idx == 22) anim = val;
+		else if(idx == 23) collider = val;
+		else if(idx == 24) _class = val;
+		else if(idx == 25) status = val;
+		//26
+		//27
+		//28
+		//29
+		//30
+		else if(idx == 31) collision = val != 0;
+		else m_data[idx] = val; 
 	}
-	float mapScale() const { return Get(BRUSH_SCALE) > 0 ? Get(BRUSH_SCALE) / 100.0f : 1.0f; }		
-	float mapWith() const   { return ( Is<Flip::R>(Get(BRUSH_FLIP)) ? (Get(BRUSH_MAP+3) - Get(BRUSH_MAP+1)) : (Get(BRUSH_MAP+2) - Get(BRUSH_MAP+0)) ) * mapScale(); }
-	float mapHeight() const { return ( Is<Flip::R>(Get(BRUSH_FLIP)) ? (Get(BRUSH_MAP+2) - Get(BRUSH_MAP+0)) : (Get(BRUSH_MAP+3) - Get(BRUSH_MAP+1)) ) * mapScale(); }
+	float mapScale() const { return scale > 0 ? scale / 100.0f : 1.0f; }		
+	float mapWith() const   { return ( Is<Flip::R>(flip) ? map.Height() : map.Width())  * mapScale(); }
+	float mapHeight() const { return ( Is<Flip::R>(flip) ? map.Width( ) : map.Height()) * mapScale(); }
 	static bool InvalidProp(int idx) { return idx < 0 || idx >= BRUSH_MAX; }	
 
-	iV2 pos() const { return _pos; }
-	iV2 size() const { return _size; }
-	iRect rect() const { iV2 p = pos(); return iRect(p, p + size()); }
-	iRect map() const { return iRect(Get(BRUSH_MAP+0), Get(BRUSH_MAP+1), Get(BRUSH_MAP+2), Get(BRUSH_MAP+3)); }
-	fV2 mapSize() const { fV2 sz = map().Size(); return (Is<Flip::R>(Get(BRUSH_FLIP)) ? fV2(sz.y, sz.x) : sz) * mapScale(); }
-
-	Blend shader() const { return _shader; }
-	void shader(Blend s) { _shader = s; }
-
-	int layer() const { return _layer; }
-	int x() const { return _pos.x; }
-	int y() const { return _pos.y; }
-
+ 	iRect rect() const { return iRect(pos, pos + size); }
+	fV2 mapSize() const { fV2 sz = map.Size(); return (Is<Flip::R>(flip) ? fV2(sz.y, sz.x) : sz) * mapScale(); }
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // DIZPAINT
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-template<class T>
+template<class T, class Key = int>
 class Indexed : std::vector<T>
 {
 public:
 	typedef std::vector<T> Cont;
-	IntIndex Index;
+	typedef std::unordered_map<Key, int> IndexType;
+	IndexType Index;
 	using Cont::size;
 	using Cont::begin;
 	using Cont::end;
+	using Cont::empty;
+	using Cont::front;
 
 	bool InvalidIdx(int idx) const {return idx < 0 && static_cast<size_type>(idx) >= size(); }
 	T & get(int idx) { return (*this)[idx]; }
@@ -213,14 +282,14 @@ public:
 	void clear() { Index.clear(); Cont::clear(); }
 	void erase(iterator i) { Index.erase(i->id); Cont::erase(i); }
 	
-	int Find(int id) const { auto i = Index.find(id); return i != Index.end() ? i->second : -1; }
-	int Add(int id, T && t)
+	int Find(const Key & id) const { auto i = Index.find(id); return i != Index.end() ? i->second : -1; }
+	int Add(const Key & id, T && t)
 	{
 		if(Find(id)!=-1) return -1; // duplicate id
 		push_back(std::move(t));
 		int idx = size() - 1;
 
-		Index.insert(IntIndex::value_type(id, idx));
+		Index.insert(IndexType::value_type(id, idx));
 		return idx;
 	}
 	void Erase( int idx )

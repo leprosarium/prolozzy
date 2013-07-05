@@ -484,15 +484,10 @@ bool cDizGame::Update()
 		for(int idx: m_obj)
 		{
 			tBrush & obj = g_map.objects.get(idx);
-			if( obj.Get(BRUSH_DISABLE)!=0 ) continue; // only enabled objects
-			if( obj.Get(BRUSH_ANIM)!=0 )
-			{
-				if(IsUpdate(obj.Get(BRUSH_DELAY)))
-				{
-					int frame=obj.Get(BRUSH_FRAME);
-					obj.Set(BRUSH_FRAME,frame+1);
-				}
-			}
+			if(obj.disable) continue; // only enabled objects
+			if( obj.anim )
+				if(IsUpdate(obj.delay))
+					++obj.frame;
 		}
 	}
 
@@ -623,9 +618,9 @@ void cDizGame::Draw()
 		for(int idx: m_obj)
 		{
 			tBrush & obj = g_map.objects.get(idx);
-			if( obj.layer() != layer ) continue;
-			if( obj.Get(BRUSH_DISABLE)!=0 ) continue;
-			if((obj.Get(BRUSH_DRAW) & 1)==0 ) continue;
+			if( obj.layer != layer ) continue;
+			if(obj.disable) continue;
+			if((obj.draw & 1)==0 ) continue;
 			ObjDraw(obj);
 		}
 
@@ -771,10 +766,10 @@ void cDizGame::ObjGather()
 void cDizGame::ObjDraw( const tBrush & brush )
 {
 	// draw current tile frame
-	int idx = g_paint.tiles.Find(brush.Get(BRUSH_TILE));
+	int idx = g_paint.tiles.Find(brush.tile);
 	cTile* tile = g_paint.tiles.Get(idx); if(!tile) return;
-	int frame = tile->ComputeFrame(brush.Get(BRUSH_FRAME),brush.Get(BRUSH_ANIM));
-	g_paint.DrawBrush( brush, viewShift + brush.pos() - roomPos() * Room::Size, frame );
+	int frame = tile->ComputeFrame(brush.frame,brush.anim);
+	g_paint.DrawBrush( brush, viewShift + brush.pos - roomPos() * Room::Size, frame );
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

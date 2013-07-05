@@ -125,9 +125,9 @@ closeRoom(X, Y) :-
 outRoom(X, Y) :-
 	core:debugData(8, our(X, Y)).
 
-collideObject(100, 1) :-
+collideObject(id100, 1) :-
 	update:register(player, player:playStun),
-	core:debugData(9, coll(100, 1)).
+	core:debugData(9, coll(id100, 1)).
 
 
 objectsSetNames :-

@@ -35,24 +35,9 @@ varDef(status, 25, 0).
 varDef(target,  26, 0).
 varDef(death,	27, 0).
 varDef(collision,	31, 0).
-varDef(user(0),	32, 0).
-varDef(user(1),	33, 0).
-varDef(user(2),	34, 0).
-varDef(user(3),	35, 0).
-varDef(user(4),	36, 0).
-varDef(user(5),	37, 0).
-varDef(user(6),	38, 0).
-varDef(user(7),	39, 0).
-varDef(user(8),	40, 0).
-varDef(user(9),	41, 0).
-varDef(user(10),42, 0).
-varDef(user(11),43, 0).
-varDef(user(12),44, 0).
-varDef(user(13),45, 0).
-varDef(user(14),46, 0).
-varDef(user(15),47, 0).
-%varDef('O_MAX',	48).
-
+varDef(user(N),	ID, 0) :-
+	between(0, 15, N),
+	ID is 32 + N.
 
 setBrush(ObjIdx, Var, Val) :-
 	varDef(Var, VarIdx, _),

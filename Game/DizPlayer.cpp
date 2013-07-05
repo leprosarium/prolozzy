@@ -864,17 +864,17 @@ void cDizPlayer::CheckColliders()
 	for(int idx: g_game.m_collider)
 	{
 		tBrush & obj = g_map.objects.get(idx);
-		if( obj.Get(BRUSH_DISABLE)!=0 ) continue; // only enabled objects
-		if(!(obj.Get(BRUSH_COLLIDER) & COLLIDER_HANDLE)) continue; // just those that request it
+		if(obj.disable) continue; // only enabled objects
+		if(!(obj.collider & COLLIDER_HANDLE)) continue; // just those that request it
 		bool collision = pr.Intersects(obj.rect());
-		if(!collision && !obj.Get(BRUSH_COLLISION)) continue; // no collision event
+		if(!collision && !obj.collision) continue; // no collision event
 
 		// call
 
 		enum collMode { exit = 0, enter = 1, keep = 2};
-		g_script.collision(idx, !collision ? exit : obj.Get(BRUSH_COLLISION) ? keep : enter);   // entering collision
+		g_script.collision(obj.id, !collision ? exit : obj.collision ? keep : enter);   // entering collision
 
-		obj.Set(BRUSH_COLLISION,collision);
+		obj.collision = collision;
 	}
 
 }
@@ -892,8 +892,8 @@ bool cDizPlayer::CheckCollidersSnap()
 	for(int idx: g_game.m_collider)
 	{
 		tBrush & obj = g_map.objects.get(idx);
-		if( obj.Get(BRUSH_DISABLE)!=0 ) continue; // only enabled objects
-		if(!(obj.Get(BRUSH_COLLIDER) & COLLIDER_HARD)) continue; // only those that need it
+		if(obj.disable) continue; // only enabled objects
+		if(!(obj.collider & COLLIDER_HARD)) continue; // only those that need it
 		iRect c = obj.rect();
 		if( x2<=c.p1.x || x1>=c.p2.x ) continue;
 		

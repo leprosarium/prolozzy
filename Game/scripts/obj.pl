@@ -54,24 +54,9 @@ varDef(status, 25).
 varDef(target,  26).
 varDef(death,	27).
 varDef(collision,	31).
-varDef(user(0),	32).
-varDef(user(1),	33).
-varDef(user(2),	34).
-varDef(user(3),	35).
-varDef(user(4),	36).
-varDef(user(5),	37).
-varDef(user(6),	38).
-varDef(user(7),	39).
-varDef(user(8),	40).
-varDef(user(9),	41).
-varDef(user(10),42).
-varDef(user(11),43).
-varDef(user(12),44).
-varDef(user(13),45).
-varDef(user(14),46).
-varDef(user(15),47).
-%varDef('O_MAX',	48).
-
+varDef(user(N),	ID) :-
+	between(0, 15, N),
+	ID is 32 + N.
 
 var(ObjIdx, Var, Val) :-
 	varDef(Var, VarIdx),

@@ -270,27 +270,26 @@ void cDizPaint::DrawChar( int fontidx, const iV2 & p, char c, dword color ) cons
 
 std::function<void(const iV2 &)> cDizPaint::selectDrawMethod(const tBrush & brush, int idx, int frame) const
 {
-	iRect map = brush.map();
-	int color = brush.Get(BRUSH_COLOR);
-	int flip = brush.Get(BRUSH_FLIP);
-	Blend blend = brush.shader();
+	iRect map = brush.map;
+	dword color = brush.color;
+	int flip = brush.flip;
+	Blend blend = brush.shader;
 	float ms = brush.mapScale();
 	if(!drawtilesoft())
 		return [this, idx, map, color, flip, frame, blend, ms](const iV2 & p) { DrawTile(idx, p, map, color, flip, frame, blend, ms); };
-	int bs = brush.Get(BRUSH_SCALE);
-	if(Is<Flip::R>(flip) || (bs != 0 && bs != 100))
+	if(Is<Flip::R>(flip) || (brush.scale != 0 && brush.scale != 100))
 		return [this, idx, map, color, flip, frame, blend, ms](const iV2 & p) { DrawTileSoft2(idx, p, map, color, flip, frame, blend, ms); };
 	return [this, idx, map, color, flip, frame, blend, ms](const iV2 & p) { DrawTileSoft(idx, p, map, color, flip, frame, blend, ms); };
 }
 
 void cDizPaint::DrawBrush( const tBrush & brush, const iV2 & p0, int frame ) const
 {
-	int idx = tiles.Find(brush.Get(BRUSH_TILE));
+	int idx = tiles.Find(brush.tile);
 	if(idx==-1) return;
 
 	iV2 msz = brush.mapSize();
 	if( msz == 0) return;
-	iV2 sz = brush.size();
+	iV2 sz = brush.size;
 
 	fRect oldclip = R9_GetClipping();
 	iV2 p1 = scrPos(p0);

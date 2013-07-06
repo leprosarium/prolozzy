@@ -27,7 +27,6 @@ bool cDizMap::UnifyBrush(PlTerm t, tBrush * b)
 
 PREDICATE_M(brush, create, 1)
 {
-
 	return g_map.UnifyBrush(A1, &g_map.objects.get(g_map.objects.New()));
 }
 
@@ -67,7 +66,6 @@ PREDICATE_NONDET_M(map, brush, 1)
 			PL_retry(idx);
 	return false;
 }
-
 
 PREDICATE_M(brush, idx, 2)
 {
@@ -110,18 +108,12 @@ BRUSH_PROP(MapX2, map.p2.x)
 BRUSH_PROP(MapY2, map.p2.y)
 BRUSH_PROP(Flip, flip)
 BRUSH_PROP(Scale, scale)
-BRUSH_PROP(Type, type)
 BRUSH_PROP(Material, material)
 BRUSH_PROP(Draw, draw)
 BRUSH_PROP(Delay, delay)
 BRUSH_PROP(Anim, anim)
 BRUSH_PROP(Collider, collider)
-//BRUSH_PROP(Class, CLASS)
-//BRUSH_PROP(Status, STATUS)
-//BRUSH_PROP(Target, TARGET)
-//BRUSH_PROP(Death, DEATH)
-//
-//
+
 PREDICATE_M(brush, getColor, 2) 
 {
 	int64 color = static_cast<dword>(g_map.brushPtr(A1)->color);
@@ -134,7 +126,7 @@ PREDICATE_M(brush, setColor , 2)
 	g_map.brushPtr(A1)->color = static_cast<dword>(color);
 	return true;
 }
-//
+
 PREDICATE_M(brush, getShader, 2) 
 {
 	return A2 = static_cast<int>(g_map.brushPtr(A1)->shader);
@@ -178,42 +170,6 @@ PREDICATE_M(brush, setCollision, 2)
 	g_map.brushPtr(A1)->collision = static_cast<int>(A2) != 0;
 	return true;
 }
-//
-//PREDICATE_M(brush, getProp, 3) 
-//{
-//	tBrush * brush = g_map.brushPtr(A1);
-//	int idx = A2;
-//	if(idx < 0 || idx >= BRUSH_MAX) 
-//		throw PlDomainError("invalid brush variable", A2);
-//	if(idx == BRUSH_COLOR) {
-//		int64 color = static_cast<unsigned>(brush->m_data[idx]);
-//		return A3 = color;
-//	}
-//	return A3 = brush->m_data[idx];
-//}
-//
-//
-//
-//PREDICATE_M(brush, setProp , 3) 
-//{
-//	tBrush * brush = g_map.brushPtr(A1);
-//	int idx = A2;
-//	if(idx < 0 || idx >= BRUSH_MAX) 
-//		throw PlDomainError("invalid brush variable", A2);
-//	if(idx == BRUSH_COLOR)
-//	{
-//		int64 color = A3;
-//		brush->m_data[idx] = static_cast<int>(color);
-//	} 
-//	else 
-//	{
-//		brush->m_data[idx] = A3;
-//	}
-//	return true;
-//}
-
-
-
 
 PREDICATE_M(map, size, 1)
 {

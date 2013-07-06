@@ -12,28 +12,28 @@
 % user(0) = upper y value
 % user(1) = lower y value
 % status = direction 0=up, 1=down
-updateSpider(Idx) :-
-	Idx =\= -1,
-	\+ obj:disable(Idx),
-	obj:delay(Idx, Delay),
+updateSpider(Id) :-
+	brush:find(Id, Spider),
+	\+ brush:getDisable(Spider, 1),
+	brush:getDelay(Spider, Delay),
 	util:isUpdate(Delay),
-	obj:y(Idx, Y),
-	obj:status(Idx, Status),
-	updateSpider(Idx, Y, Y0, Status),
-	obj:y(Idx, Y0).
+	brush:getY(Spider, Y),
+	brush:getEx(Spider, status, Status),
+	updateSpider(Spider, Y, Y0, Status),
+	brush:setY(Spider, Y0).
 % up
-updateSpider(Idx, Y, Y0, 0) :-
-	obj:user(Idx, 0, Ty),
+updateSpider(Spider, Y, Y0, up) :-
+	brush:getEx(Spider, upper, Ty),
 	(   Y > Ty
 	->  Y0 is Y - 1
-	;   (Y0 = Y, obj:status(Idx, 1))).
+	;   (Y0 = Y, brush:setEx(Spider, status, down))).
 
 % down
-updateSpider(Idx, Y, Y0, 1) :-
-	obj:user(Idx, 1, Ty),
+updateSpider(Spider, Y, Y0, down) :-
+	brush:getEx(Spider, lower, Ty),
 	(   Y < Ty
 	->  Y0 is Y + 4
-	;   (Y0 = Y, obj:status(Idx, 0))).
+	;   (Y0 = Y, brush:setEx(Spider, status, up))).
 
 
 % IN: int; idx; object index
@@ -41,17 +41,14 @@ updateSpider(Idx, Y, Y0, 1) :-
 % Updates chain's height, down to the target's y position.
 % Used for elevator's chains or spiders wires.
 % target = target object's id
-updateChainLink(Idx) :-
-	Idx =\= -1,
-	obj:target(Idx, Id2),
-	Id2 =\= 0,
-	format(atom(AId2), 'id~d', [Id2]),
-	map:objFind(AId2, Idx2),
-	Idx2 =\= -1,
-	obj:y(Idx2, Y1),
-	obj:y(Idx, Y2),
+updateChainLink(Id) :-
+	brush:find(Id, Link),
+	brush:getEx(Link, target, Id2),
+	brush:find(Id2, Target),
+	brush:getY(Target, Y1),
+	brush:getY(Link, Y2),
 	Len is Y1 - Y2,
-	obj:h(Idx, Len).
+	brush:setH(Link, Len).
 
 % IN: int; idx; object index
 % Train AI
@@ -65,33 +62,29 @@ updateChainLink(Idx) :-
 % user(0) = speed value
 % user(1) = flip value
 
-updateTrain(Idx) :-
-	Idx =\= -1,
-	\+ obj:disable(Idx),
-	obj:delay(Idx, Delay),
+updateTrain(Id) :-
+	brush:find(Id, Obj),
+	brush:getDisable(Obj, 0),
+	brush:getDelay(Obj, Delay),
 	util:isUpdate(Delay),
-	obj:status(Idx, Status),
-	Status =:= 1,
-	obj:target(Idx, Id2),
-	Id2 =\= 0,
-	format(atom(AId2), 'id~d', [Id2]),
-	map:objFind(AId2, Idx2),
-	Idx2 =\= -1,
-	obj:user(Idx2, 0, Speed),
-	obj:user(Idx2, 1, Flip),
-	obj:x(Idx2, X2),
-	obj:y(Idx2, Y2),
-	obj:x(Idx, X),
-	obj:y(Idx, Y),
-	obj:flip(Idx, Flip),
+	brush:getEx(Obj, status, moves),
+	brush:getEx(Obj, target, Id2),
+	brush:find(Id2, Obj2),
+	brush:getEx(Obj2, speed, Speed),
+	brush:getEx(Obj2, toflip, Flip),
+	brush:getX(Obj2, X2),
+	brush:getY(Obj2, Y2),
+	brush:getX(Obj, X),
+	brush:getY(Obj, Y),
+	brush:setFlip(Obj, Flip),
 	updateTrain(X, X2, Xn, Speed),
 	updateTrain(Y, Y2, Yn, Speed),
 	(   Xn =:= X2, Yn =:= Y2
-	->  (obj:target(Idx2, Target),
-	    obj:target(Idx, Target))
+	->  (brush:getEx(Obj2, target, Target),
+	    brush:setEx(Obj, target, Target))
 	;   true),
-	obj:x(Idx, Xn),
-	obj:y(Idx, Yn).
+	brush:setX(Obj, Xn),
+	brush:setY(Obj, Yn).
 
 updateTrain(X, X2, Xn, Speed) :-
 	updateTrainUp(X, X2, Xu, Speed),
@@ -128,8 +121,7 @@ updateBubbles(_, _, _, _, _).
 
 updateActiveBubbles(_, 0, _, []).
 updateActiveBubbles(Id, Count, Life, Free) :-
-	format(atom(AId), 'id~d', [Id]),
-	brush:find(AId, Br),
+	brush:find(Id, Br),
 	(   brush:getDisable(Br, 1)
 	->  Free = [Br|OtherFree]
 	;   Free = OtherFree,
@@ -206,7 +198,7 @@ spawnBubbles(Free, Debit, Speed) :-
 	brush:setEx(Br, speed, BubbleSpeed),
 	brush:setEx(Br, time, 0),
 	brush:idx(Br, Idx),
-	core:objPresent(Idx), !.
+	core:setObjPresent(Idx), !.
 spawnBubbles(_, _, _).
 
 

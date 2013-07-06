@@ -148,21 +148,16 @@ clearKeys :-
 % IN: int; idx; object index
 % OUT: int; 0/1
 % Tests if object is pickable, by class.
-objIsPickup(Idx) :-
-	obj:class(Idx, Class),
-	core:dl(objIsPickup(Idx, Class)),
-	(   def:class(item, Class);
-	def:class(coin, Class);
-	def:class(food, Class);
-	def:class(life, Class)).
+objIsPickup(Obj) :-
+	brush:getEx(Obj, class, Class),
+	member(Class, [item, coin, food, life]).
 
 % IN: int; idx; object index
 % OUT: int; 0/1
 % Tests if object is action, by class.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%/
-objIsAction(Idx) :-
-	obj:class(Idx, Class),
-	def:class(action, Class).
+objIsAction(Obj) :-
+	brush:getEx(Obj, class, action).
 
 % Stores music id and music position to use when player dies and gets respawned
 musicStore :-

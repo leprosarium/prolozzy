@@ -382,46 +382,46 @@ openDialogInventory(Def) :-
 	update:regPop(ui, menu:openDialogInventoryFinish),
 	(   Def = exit
 	->  dialog:runSelect2(menu:dialogInventory, exit)
-	;   (   inventory:find(Idx, _)
-	    ->	dialog:runSelect2(menu:dialogInventory, Idx)
+	;   (   inventory:find(Obj, _)
+	    ->	dialog:runSelect2(menu:dialogInventory, Obj)
 	    ;	dialog:runSelect2(menu:dialogInventory, exit))).
 
 openDialogInventoryFinish(exit) :- !, openDialogInventoryReturn(-1).
-openDialogInventoryFinish(Idx) :- !, openDialogInventoryReturn(Idx).
+openDialogInventoryFinish(Obj) :- !, openDialogInventoryReturn(Obj).
 
-openDialogInventoryReturn(ObjIdx) :-
+openDialogInventoryReturn(Obj) :-
 	dialog:popAll,
 	game:unpause,
-	update:push(ObjIdx).
+	update:push(Obj).
 
-dialogInventory2([exit], _Idx, action, return(exit)) :-!.
-dialogInventory2(Inv, Idx, Action, NewIdx) :-
-	dialogInventoryRight(Inv, Idx, Action, NewIdx).
-dialogInventory2(Inv, Idx, Action, NewIdx) :-
-	dialogInventoryLeft(Inv, Idx, Action, NewIdx).
-dialogInventoryNext(Inv, Idx, NextIdx) :-
-	util:append(_, [Idx, NextIdx|_End], Inv);
-	util:append([NextIdx|_], [Idx], Inv).
+dialogInventory2([exit], _Obj, action, return(exit)) :-!.
+dialogInventory2(Inv, Obj, Action, NewObj) :-
+	dialogInventoryRight(Inv, Obj, Action, NewObj).
+dialogInventory2(Inv, Obj, Action, NewObj) :-
+	dialogInventoryLeft(Inv, Obj, Action, NewObj).
+dialogInventoryNext(Inv, Obj, NextObj) :-
+	util:append(_, [Obj, NextObj|_End], Inv);
+	util:append([NextObj|_], [Obj], Inv).
 
-dialogInventoryRight(Inv, Idx, Action, NewIdx) :-
-	dialogInventoryNext(Inv, Idx, NewIdx),
+dialogInventoryRight(Inv, Obj, Action, NewObj) :-
+	dialogInventoryNext(Inv, Obj, NewObj),
 	(   Action = right
 	;   Action = down).
-dialogInventoryLeft(Inv, Idx, Action, NewIdx) :-
-	dialogInventoryNext(Inv, NewIdx, Idx),
+dialogInventoryLeft(Inv, Obj, Action, NewObj) :-
+	dialogInventoryNext(Inv, NewObj, Obj),
 	(   Action = left
 	;   Action = up).
 % IN: int; select; default selection
 % Dialog creation function used by OpenDialogInventory().
 
-dialogInventory(state, Idx, Action, NewIdx) :-
+dialogInventory(state, Obj, Action, NewObj) :-
 	inventory:inv(Inv),
 	InvR = [exit|Inv],
-	dialogInventory2(InvR, Idx, Action, NewIdx).
+	dialogInventory2(InvR, Obj, Action, NewObj).
 
-dialogInventory(state, Idx, action, return(Idx)).
+dialogInventory(state, Obj, action, return(Obj)).
 dialogInventory(start, _, menu, return(exit)).
-dialogInventory(final, return(Idx), Idx).
+dialogInventory(final, return(Obj), Obj).
 
 
 dialogInventory(draw, State) :-
@@ -451,7 +451,7 @@ dialogInventory(draw, State) :-
 	dialogTooltip(Y2).
 
 dialogInventoryText(State, Text) :-
-	findall(Idx/Name, (inventory:find(Idx, _), map:objName(Idx, Name)), Names),
+	findall(Id/Name, (inventory:find(Id, _), brush:find(Id, Obj), brush:getEx(Obj, name, Name)), Names),
 	dialogMainMenum2(State, Names, Text), !.
 dialogInventoryText(_State, '{c:0xffffffff}N O T H I N G\n').
 

@@ -291,11 +291,10 @@ enterSpin(Dir) :-
 % OUT: int; 0/1
 % Tests if player touches an object (bounding boxes intersect)
 
-touchObject(Idx) :-
-	touchObject(Idx, _OX1, _OY1, _OX2, _OY2).
+touchObject(Obj) :-
+	touchObject(Obj, _OX1, _OY1, _OX2, _OY2).
 
-touchObject(Idx, OX1, OY1, OX2, OY2) :-
-	core:dl(touchObject(Idx)),
+touchObject(Obj, OX1, OY1, OX2, OY2) :-
 	w(W),
 	PW is W + 4, % use a small horisontal boggus (-2/+2) so it can pick hard objects
 	h(PH),
@@ -304,21 +303,20 @@ touchObject(Idx, OX1, OY1, OX2, OY2) :-
 	PY1 is Y - PH // 2,
 	PX2 is PX1 + PW,
 	PY2 is PY1 + PH,
-	obj:x(Idx, OX1),
-	obj:y(Idx, OY1),
-	obj:w(Idx, OW),
-	obj:h(Idx, OH),
+	brush:getX(Obj, OX1),
+	brush:getY(Obj, OY1),
+	brush:getW(Obj, OW),
+	brush:getH(Obj, OH),
 	OX2 is OX1 + OW,
 	OY2 is OY1 + OH,
-	core:dl(pp(p1(PX1, PY1), p2(PX2, PY2), o1(OX1, OY1), o2(OX2, OY2))),
 	PX1 < OX2, PX2 > OX1,
 	PY1 < OY2, PY2 > OY1.
 
 % IN: int; idx; object index
 % OUT: int; 0/1
 % Tests if player touches an object that's visible in the current room (bounding boxes intersect)
-touchObjectInRoom(Idx) :-
-	touchObject(Idx, OX1, OY1, OX2, OY2),
+touchObjectInRoom(Obj) :-
+	touchObject(Obj, OX1, OY1, OX2, OY2),
 	% check room visibility
 	game:roomSize(RW, RH),
 	game:roomPos(X, Y),
@@ -334,7 +332,6 @@ touchObjectInRoom(Idx) :-
 
 %Dead event requested by HandlerPlayerUpdate when player died on ground.
 playDead:-
-	core:dl(playDead),
 	sample:play(death),
 	update:register(player, player:loseLife),
 	player:playAnim(dead).

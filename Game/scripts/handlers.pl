@@ -41,18 +41,16 @@ scroll :-
 scroll.
 
 playerDeath(Obj) :-
-	obj:death(Obj, Death),
+	brush:getEx(Obj, death, Death),
 	player:death(Death).
 
 
-collision(Obj, HURTi, Mode) :-
-	class(hurt, HURTi),
+collision(Obj, hurt, Mode) :-
 	Mode =\= 0,
 	player:hurt(5),
 	(player:dead -> playerDeath(Obj); true).
 
-collision(Obj, KILLi, Mode) :-
-	class(kill, KILLi),
+collision(Obj, kill, Mode) :-
 	Mode =\= 0,
 	playerDeath(Obj),
 	player:setLife(0).
@@ -131,10 +129,7 @@ event(gameInit) :- !,
 
 event(Event) :-
 	game:state(State),
-%	core:dl(enter(State, Event)),
 	event(State, Event).
-%	core:dl(exit(State, Event)).
-
 
 event(init, gameStart) :-
 	start:load.
@@ -178,15 +173,11 @@ event(_, roomOut) :-
 	game:roomPos(X, Y),
 	catch(game:outRoom(X, Y), _, true).
 
-
-
-
 event(_, collision(ID, Mode)) :-
 	\+ player:dead,
-	map:objFind(ID, ObjIdx),
-	obj:class(ObjIdx, Class),
-	collision(ObjIdx, Class, Mode),
-	obj:id(ObjIdx, ID),
+	brush:find(ID, Obj),
+	(   brush:getEx(Obj, class, Class); Class=none),
+	collision(Obj, Class, Mode),
 	game:collideObject(ID, Mode).
 
 

@@ -29,35 +29,7 @@ public:
 	static iRect Rect(const iV2 & r) { return iRect(r * Size, (r + 1) * Size); } 
 };
 
-class Object : public tBrush
-{
-	std::string _Name;
-public:
-	Object() : tBrush() {}
-	std::string Name() const { return _Name; }
-	void Name(const std::string & name) { _Name = name; std::transform(_Name.begin(), _Name.end(), _Name.begin(), ::toupper);  }
-};
-
-template<typename T>
-class Reindexed : public Indexed<T, std::string>
-{
-public:
-	void Reindex();
-};
-
-template<typename T>
-void Reindexed<T>::Reindex()
-{
-	Index.clear();
-	for(size_t i = 0, e = size(); i != e; ++i) {
-		T & b = get(i);
-		if(!b.id.empty())
-			Index.insert(IndexType::value_type(b.id, i));
-	}
-}
-
-typedef Reindexed<tBrush> Brushes;
-typedef Reindexed<Object> Objects;
+typedef Indexed<tBrush, std::string> Brushes;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cDizMap
@@ -92,7 +64,7 @@ public:
 	iV2 size() const { return _size; }
 
 	Brushes brushes;
-	Objects objects;
+	Brushes objects;
 
 private:
 	// partition

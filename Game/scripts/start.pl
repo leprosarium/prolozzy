@@ -70,7 +70,6 @@ reloadMap:-
 	map:reset,
 	setup_call_cleanup(
 	    catch(core:open_resource(File, S), Ex, (core:dl(Ex), fail)), file:loadTerms(S), close(S)),
-	game:objectsSetNames,
 	menu:main.
 
 	% INTRO

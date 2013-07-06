@@ -43,6 +43,8 @@ public:
 inline  void cGUIEdit::ShiftLeft(int chr, int count)
 {
 	if(!count) return;
+	if(chr > txt.size())
+		return;
 	std::string tail = txt.substr(chr);
 	int begin = chr - count;
 	if(begin <= 0) 

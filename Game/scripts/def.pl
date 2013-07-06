@@ -5,7 +5,6 @@
 		key/2,
 		color/2,
 		cmd/2,
-		class/2,
 		windPow/1,
 		dizHurt/1,
 		ptile/2,
@@ -31,17 +30,6 @@ material(wind,	 6, soft, 0xFF707070).	% winds (medium); player is pushed up
 material(block,	 7, hard, 0xFF006000).	% ground, walls (hard); blocks the player
 material(jumpFix, 8, jump, 0xFF008000).	% jumper fix (hard)
 material(jumpPro, 9, jump, 0xFF00B000).	% jumper progressive (hard)
-
-% objects classes
-class(none,	0).			% default
-class(action,	1).			% those objects can be used with action
-class(hurt,	2).			% used for objects that should hurt you (no automation implemented)
-class(kill,	3).			% used for objects that should kill you (no automation implemented)
-class(item,	4).			% those objects can be picked up in the inventory
-class(coin,	5).			% those objects can be collected as coins
-class(food,	6).			% those objects can eaten to grow the life
-class(life,	7).			% those objects gives a credit when picked up.
-class(waypoint,	8).			% used for dummy waypoints (no automation implemented)
 
 emotion(ok, 0).
 emotion(noair1, 6).			% player's emotion offset for no air1

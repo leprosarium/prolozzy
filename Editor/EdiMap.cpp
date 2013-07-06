@@ -400,7 +400,7 @@ cEdiMap::cEdiMap() : brush("brush", 1)
 	// others
 	m_count_brushdraw = 0;
 	m_count_brushcheck = 0;
-
+	m_brush.reserve(20000);
 }
 
 cEdiMap::~cEdiMap()

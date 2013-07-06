@@ -25,6 +25,17 @@ bool cDizMap::UnifyBrush(PlTerm t, tBrush * b)
 	return t[1] = b;
 }
 
+PREDICATE_M(brush, create, 1)
+{
+
+	return g_map.UnifyBrush(A1, &g_map.objects.get(g_map.objects.New()));
+}
+
+PREDICATE_M(brush, createStatic, 1)
+{
+	return g_map.UnifyBrush(A1, &g_map.brushes.get(g_map.brushes.New()));
+}
+
 PREDICATE_M(brush, find, 2)
 {
 	int idx = g_map.objects.Find(A1);
@@ -76,7 +87,7 @@ PREDICATE_M(brush, idx, 2)
 	int idx = A2;
 	if(g_map.objects.InvalidIdx(idx))
 		throw PlException("invalid brush index");
-	return A1 = & g_map.objects.get(idx);
+	return t[1] = & g_map.objects.get(idx);
 }
 
 #define BRUSH_PROP(Prop, PROP)\
@@ -210,143 +221,6 @@ PREDICATE_M(map, size, 1)
 	bool r1 = A1 = sz.x;
 	bool r2 = A2 = sz.y;
 	return r1 && r2;
-}
-
-PREDICATE_M(map, brushCount, 1)
-{
-	return A1 = static_cast<int>(g_map.brushes.size());
-}
-
-PREDICATE_M(map, brushFind, 2)
-{
-	int idx = g_map.brushes.Find(A1);
-	if(idx == -1)
-		return false;
-	return A2 = idx;
-}
-
-PREDICATE_M(map, brushVar, 3)
-{
-	int idx = A1;
-	int var = A2;
-	if(g_map.brushes.InvalidIdx(idx))
-		throw PlException("invalid brush index");
-	if(tBrush::InvalidProp(var)) 
-		throw PlException("invalid brush variable");
-	if(tBrush * brush = g_map.brushes.Get(idx))
-	{
-		PlTerm val = A3;
-		if(val.type() == PL_VARIABLE)
-			return A3 = brush->Get(var);
-		brush->Set(var, val);
-		return true;
-	}
-	return false;
-}
-
-PREDICATE_M(map, brushSet , 3) 
-{
-	int idx = A1;
-	if(g_map.brushes.InvalidIdx(idx))
-		throw PlException("invalid brush index");
-	int var = A2;
-	if(tBrush::InvalidProp(var)) 
-		throw PlException("invalid brush variable");
-	if(tBrush * brush = g_map.brushes.Get(idx))
-	{
-
-		if(var == 12)
-		{
-			int64 color = A3;
-			brush->Set(var, static_cast<int>(color));
-		} 
-		else 
-		{
-			brush->Set(var, A3);
-		}
-		return true;
-	}
-	return false;
-}
-
-PREDICATE_M(map, objSet , 3) 
-{
-	int idx = A1;
-	if(g_map.objects.InvalidIdx(idx)) 
-		throw PlException("invalid object index");
-	int var = A2;
-	if(Object::InvalidProp(var)) 
-		throw PlException("invalid object variable"); 
-
-	tBrush & obj = g_map.objects.get(idx);
-	if(var == 12)
-	{
-		int64 color = A3;
-		obj.Set(var, static_cast<int>(color));
-	} 
-	else 
-	{
-		obj.Set(var, A3);
-	}
-	return true;
-}
-
-PREDICATE_M(map, objCount, 1)
-{
-	return A1 = static_cast<int>(g_map.objects.size()); 
-}
-
-PREDICATE_M(map, objFind, 2)
-{
-	return A2 = g_map.objects.Find(A1);
-}
-
-PREDICATE_M(map, objVar, 3)
-{
-	int idx = A1;
-	if(g_map.objects.InvalidIdx(idx)) 
-		throw PlException("invalid object index");
-	int var = A2;
-	if(Object::InvalidProp(var)) 
-		throw PlException("invalid object variable"); 
-
-	tBrush & obj = g_map.objects.get(idx);
-	PlTerm val = A3;
-	if(val.type() == PL_VARIABLE)
-		return var == 17 ? A3 = obj.id : A3 = obj.Get(var);
-	if(var == 17)
-	{
-		obj.id = static_cast<const char *>(val);
-		return true;
-	}
-	int64 v = val;
-	obj.Set(var, static_cast<int>(v)); 
-	return true;
-}
-
-PREDICATE_M(map, objName, 2)
-{
-	int idx = A1;
-	if(g_map.objects.InvalidIdx(idx)) 
-		throw PlException("invalid object index");
-	PlTerm val = A2;
-	if(val.type() == PL_VARIABLE) {
-		return val = g_map.objects.get(idx).Name().c_str();
-	}
-	g_map.objects.get(idx).Name(val); 
-	return true;
-}
-
-PREDICATE_M(map, brushNew, 1)
-{
-	int idx = g_map.brushes.New();
-	return A1 = idx;
-}
-
-PREDICATE_M(map, objNew, 1)
-{
-	int idx = g_map.objects.New();
-	return A1 = idx;
 }
 
 PREDICATE_M(map, resize, 2)

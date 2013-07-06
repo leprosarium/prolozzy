@@ -385,7 +385,7 @@ toolPickMenu(BrushIdx) :-
 	def:toolCmd(toFront, ToBack),
 	def:toolCmd(delete, Delete),
 	Data = [
-		item(bprop-bprop,	(gui:dlgClose, dlgBrushProps:create(BrushIdx)), [tooltip("B properties")]),
+		item(bprop-bprop,	(gui:dlgClose, dlgBrushProps:create(Brush)), [tooltip("B properties")]),
 		item(prop-prop,	(gui:dlgClose, dlgProps:create(normal, Brush)), [key(p), tooltip("properties [P]")]),
 		item(pb-'pick brush',	(gui:dlgClose, edi:toolCommand(PickBrush)), [tooltip("pick brush")]),
 		item(pt-'pick tile',	(gui:dlgClose, actions:toolCommandPickBrush(Brush)), [key(t), tooltip("pick tile [T]")]),

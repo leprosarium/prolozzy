@@ -8,7 +8,6 @@
 		 closeRoom/2,
 		 outRoom/2,
 		 collideObject/2,
-		 objectsSetNames/0,
 		 beginNewGame/0,
 		 roomPos/2,
 		 roomSize/2,
@@ -94,18 +93,14 @@ setRoomPos(X, Y) :- setRoomX(X), setRoomY(Y).
 roomSize(W, H) :- map:roomW(W), map:roomH(H).
 
 updateRoom(2, 1) :-
-	map:objFind(id3000, Platform),
-	ai:updateTrain(Platform).
+	ai:updateTrain(3000).
 updateRoom(2, 1) :- !.
 
 
 updateRoom(3, 1) :-
-	map:objFind(id7010, Spider),
-	ai:updateSpider(Spider),
-	map:objFind(id7009, Link),
-	ai:updateChainLink(Link),
-	map:objFind(id7011, Fly),
-	ai:updateTrain(Fly).
+	ai:updateSpider(7010),
+	ai:updateChainLink(7009),
+	ai:updateTrain(7011).
 updateRoom(3, 1) :- !.
 
 updateRoom(X, Y) :-
@@ -125,21 +120,9 @@ closeRoom(X, Y) :-
 outRoom(X, Y) :-
 	core:debugData(8, our(X, Y)).
 
-collideObject(id100, 1) :-
+collideObject('100', 1) :-
 	update:register(player, player:playStun),
-	core:debugData(9, coll(id100, 1)).
-
-
-objectsSetNames :-
-	map:objFind(id8000, D),
-	map:objName(D, 'DIAMOND'),
-	map:objFind(id2000, L),
-	map:objName(L, 'LIVES'),
-	map:objFind(id9000, F),
-	map:objName(F, 'FLIPPERS'),
-	map:objFind(id9001, S),
-	map:objName(S, 'SCUBA'),
-	core:dlog('objectsSetNames\n').
+	core:debugData(9, coll(100, 1)).
 
 
 beginNewGame :-
@@ -161,22 +144,21 @@ beginNewGame :-
 %actionObject(Id) :-
 %	core:dl(action(Id)).
 
-useObject(Id, Idx) :-
-	core:dl(use(Id, Idx)).
+useObject(Id1, Id2) :-
+	core:dl(use(Id1, Id2)).
 
 
-actionObject(1000) :-
-	map:objFind(id1000, Idx),
+actionObject('1000') :-
+	brush:find(1000, Obj),
 	update:register(ui, message:pop),
-	obj:status(Idx, Status),
-	(   Status =:= 0
-	->  obj:status(Idx, 1),
+	(   brush:getEx(Obj, status, st1)
+	->  brush:setEx(Obj, status, st2),
 	    message:qmsg(1, 2, 2, '"DORA SEEMS\nTO NEED SOMETHING."')
 	;   message:qmsg(1, 2, 2, '"DORA NEEDS SOME LEAFS"')).
 
 
-actionObject(1001) :-
-	update:register(ui, action:useObject),
+actionObject('1001') :-
+	update:regPop(ui, action:useObject),
 	update:register(ui, menu:openDialogInventory),
 	update:register(ui, message:pop),
 	message:qmsg(1, 6, 5, '"I NEED LEAFS!"').

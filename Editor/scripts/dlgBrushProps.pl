@@ -1,14 +1,14 @@
 :-module(dlgBrushProps, [create/1, dlgClose/1]).
 
-create(IDX) :-
-	format(string(Title), 'Brush ~d', [IDX]),
+create(Brush) :-
+	format(string(Title), '~p', [Brush]),
 	gui:dlgTitleH(TitleH),
 	gui:createDlgTitleModal(0, 0, 216, 100, Title),
 	def:dlg(brushProps, ID),
 	dlg:setID(ID),
 	gui:addKey(escape > gui:dlgClose),
 	dlg:setCloseOut,
-	dlg:setCloseCmd(dlgBrushProps:dlgClose(IDX)),
+	dlg:setCloseCmd(dlgBrushProps:dlgClose(Brush)),
 	Y0 is TitleH + 8,
 	gui:styleCode([backgr, border], Style),
 	gui:createText(8, Y0, 64, 'Property'),
@@ -18,7 +18,7 @@ create(IDX) :-
 	gui:itemSetStyle(Style),
 	gui:itemSetProps([color(0, gui1), color(1, gui1), color(2, black)]),
 	YP is Y0 + 22,
-	createProps(IDX, 8, YP, 22, Y),
+	createProps(Brush, 8, YP, 22, Y),
 	gui:dlgResize(0, 0, 216, Y),
 	gui:dlgMoveToMouse,
 	gui:dlgDockUp.
@@ -41,8 +41,8 @@ appendEmpty(Props, N, NProps) :-
 fill([]).
 fill([''-''|O]) :- fill(O).
 
-createProps(IDX, X0, Y0, H, YY) :-
-	brush:getEx(IDX, Props),
+createProps(Br, X0, Y0, H, YY) :-
+	brush:getEx(Br, Props),
 	extendProps(Props, 20, NProps),
 	createProps(NProps, 0, X0, Y0, H, YY).
 
@@ -65,10 +65,10 @@ createProp(Prop-Val, I, X, Y) :-
 	def:dlg(item(II1), ID1),
 	gui:itemSetID(ID1).
 
-dlgClose(IDX):-
+dlgClose(Br):-
 	collectProps(0, Props),
-	core:dl(set(IDX, Props)),
-	brush:setEx(IDX, Props).
+	core:dl(set(Br, Props)),
+	brush:setEx(Br, Props).
 
 collectProps(N, Props) :-
 	(   gui:select(N)
@@ -84,11 +84,6 @@ collectProps(N, Props) :-
 		collectProps(N2, Other),
 		Props = [Key-Val|Other])
 	;   Props = []).
-
-
-
-
-
 
 
 

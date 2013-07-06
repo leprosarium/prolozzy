@@ -10,7 +10,6 @@
 :- use_module(dialog, []).
 :- use_module(message, []).
 :- use_module(menu, []).
-:- use_module(obj, []).
 :- use_module(action, []).
 :- use_module(inventory, []).
 :- use_module(file, []).

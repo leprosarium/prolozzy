@@ -260,7 +260,7 @@ PREDICATE_M(core, materialGetFreeDist, 7)
 // OBJECTS
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-PREDICATE_M(core, objPresent, 1)
+PREDICATE_M(core, setObjPresent, 1)
 {
 	int idx = A1;
 	if(g_map.objects.InvalidIdx(idx)) 
@@ -269,17 +269,31 @@ PREDICATE_M(core, objPresent, 1)
 	return true;
 }
 
-PREDICATE_M(core, objPresentCount, 1)
+PREDICATE_NONDET_M(core, objPresent, 1)
 {
-	return A1 = static_cast<int>(g_game.m_obj.size());
-}
-
-PREDICATE_M(core, objPresentIdx, 2)
-{
-	int presentidx = A1;
-	if(presentidx < 0 || static_cast<size_t>(presentidx) >= g_game.m_obj.size()) 
-		throw PlException("invalid present index");	
-	return A2 = g_game.m_obj[presentidx];
+	auto call = PL_foreign_control(handle);
+	if(call == PL_PRUNED)
+		return true;
+	PlTerm t = A1;
+	if(!(t = g_map.brush))
+		return false;
+	PlTerm br = t[1];
+	if (br.type() != PL_VARIABLE) {
+		tBrush * b = g_map.brushPtrNoEx(br);
+		if(g_map.objects.empty())
+			return false;
+		for(auto idx: g_game.m_obj)
+			if(b == g_map.objects.Get(idx))
+				return true;
+		return false;
+	}
+	size_t idx = call == PL_FIRST_CALL ? 0 : PL_foreign_context(handle);
+	if(idx < g_game.m_obj.size() && (br = g_map.objects.Get(g_game.m_obj[idx])))
+		if(++idx == g_game.m_obj.size())
+			return true;
+		else
+			PL_retry(idx);
+	return false;
 }
 
 PREDICATE_M(core, objPresentGather, 0)

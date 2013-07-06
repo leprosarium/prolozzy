@@ -272,6 +272,7 @@ public:
 	using Cont::empty;
 	using Cont::front;
 
+	Indexed() { reserve(2000); }
 	bool InvalidIdx(int idx) const {return idx < 0 && static_cast<size_type>(idx) >= size(); }
 	T & get(int idx) { return (*this)[idx]; }
 	const T & get(int idx) const{ return (*this)[idx]; }
@@ -297,7 +298,15 @@ public:
 		if(!InvalidIdx(idx))
 			erase(begin() + idx);
 	}
-
+	void Reindex()
+	{
+		Index.clear();
+		for(size_t i = 0, e = size(); i != e; ++i) {
+			T & b = get(i);
+			if(!b.id.empty())
+				Index.insert(IndexType::value_type(b.id, i));
+		}
+	}
 };
 
 class Tiles : public Indexed<cTile>

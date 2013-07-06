@@ -11,26 +11,24 @@ count(Count) :-
 	inv(List),
 	length(List, Count).
 
-add(Idx) :-
+add(Id) :-
 	count(Count),
 	gamedef:maxInventory(Max),
 	Count < Max,
-	recordz(inventory, Idx).
+	recordz(inventory, Id).
 
-sub(Idx) :-
-	recorded(inventory, Idx, Ref),
+sub(Id) :-
+	recorded(inventory, Id, Ref),
 	erase(Ref).
 
 clear :-
 	sub(_) -> clear ; true.
 
-find(Idx, Ref) :-
-	recorded(inventory, Idx, Ref).
+find(Id, Ref) :-
+	recorded(inventory, Id, Ref).
 
 hasItem(Id) :-
-	map:objFind(Id, Idx),
-	Idx =\= -1,
-	find(Idx, _Ref).
+	find(Id, _Ref).
 
 
 

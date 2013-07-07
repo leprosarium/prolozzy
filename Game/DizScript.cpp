@@ -262,10 +262,7 @@ PREDICATE_M(core, materialGetFreeDist, 7)
 
 PREDICATE_M(core, setObjPresent, 1)
 {
-	int idx = A1;
-	if(g_map.objects.InvalidIdx(idx)) 
-		throw PlException("invalid object index");
-	g_game.ObjPresent(idx); 
+	g_game.ObjPresent(g_map.brushPtr(A1)); 
 	return true;
 }
 
@@ -278,17 +275,11 @@ PREDICATE_NONDET_M(core, objPresent, 1)
 	if(!(t = g_map.brush))
 		return false;
 	PlTerm br = t[1];
-	if (br.type() != PL_VARIABLE) {
-		tBrush * b = g_map.brushPtrNoEx(br);
-		if(g_map.objects.empty())
-			return false;
-		for(auto idx: g_game.m_obj)
-			if(b == g_map.objects.Get(idx))
-				return true;
-		return false;
-	}
+	if (br.type() != PL_VARIABLE)
+		return std::find(g_game.m_obj.begin(), g_game.m_obj.end(), g_map.brushPtrNoEx(br)) != g_game.m_obj.end();
+
 	size_t idx = call == PL_FIRST_CALL ? 0 : PL_foreign_context(handle);
-	if(idx < g_game.m_obj.size() && (br = g_map.objects.Get(g_game.m_obj[idx])))
+	if(idx < g_game.m_obj.size() && (br = g_game.m_obj[idx]))
 		if(++idx == g_game.m_obj.size())
 			return true;
 		else
@@ -310,12 +301,11 @@ PREDICATE_M(core, colliderSnapDistance, 5)
 	int y2 = A4;
 
 	int dist = 0; // max distance from box bottom to collider top (if collider top is inside box)
-	for(int idx: g_game.m_collider)
+	for(auto obj: g_game.m_collider)
 	{
-		tBrush & obj = g_map.objects.get(idx);
-		if(obj.disable) continue; // only enabled objects
-		if(!(obj.collider & COLLIDER_HARD)) continue; // only those that need it
-		iRect c = obj.rect();
+		if(obj->disable) continue; // only enabled objects
+		if(!(obj->collider & COLLIDER_HARD)) continue; // only those that need it
+		iRect c = obj->rect();
 		if( x2<=c.p1.x || x1 >= c.p2.x ) continue; // not intersecting
 		if(y1 <= c.p1.y && c.p1.y < y2) dist = std::max(dist,y2-c.p1.y);
 	}

@@ -27,12 +27,12 @@ bool cDizMap::UnifyBrush(PlTerm t, tBrush * b)
 
 PREDICATE_M(brush, create, 1)
 {
-	return g_map.UnifyBrush(A1, &g_map.objects.get(g_map.objects.New()));
+	return g_map.UnifyBrush(A1, g_map.objects.get(g_map.objects.New()));
 }
 
 PREDICATE_M(brush, createStatic, 1)
 {
-	return g_map.UnifyBrush(A1, &g_map.brushes.get(g_map.brushes.New()));
+	return g_map.UnifyBrush(A1, g_map.brushes.get(g_map.brushes.New()));
 }
 
 PREDICATE_M(brush, find, 2)
@@ -56,36 +56,15 @@ PREDICATE_NONDET_M(map, brush, 1)
 		tBrush * b = g_map.brushPtrNoEx(br);
 		if(g_map.objects.empty())
 			return false;
-		return b >= & g_map.objects.front() && b < & g_map.objects.front() + g_map.objects.size();
+		return std::find(g_map.objects.begin(), g_map.objects.end(), b) != g_map.objects.end();
 	}
 	size_t idx = call == PL_FIRST_CALL ? 0 : PL_foreign_context(handle);
-	if(idx < g_map.objects.size() && (br = & g_map.objects.get(idx)))
+	if(idx < g_map.objects.size() && (br = g_map.objects.get(idx)))
 		if(++idx == g_map.objects.size())
 			return true;
 		else
 			PL_retry(idx);
 	return false;
-}
-
-PREDICATE_M(brush, idx, 2)
-{
-	PlTerm t = A1;
-	if(!(t = g_map.brush))
-		return false;
-	PlTerm br = t[1];
-	if (br.type() != PL_VARIABLE) {
-		tBrush * b = g_map.brushPtrNoEx(br);
-		if(g_map.objects.empty())
-			return false;
-		for(int idx = 0; idx < g_map.objects.size(); ++idx)
-			if(&g_map.objects.get(idx) == b)
-				return A2 = idx;
-		return false;
-	}
-	int idx = A2;
-	if(g_map.objects.InvalidIdx(idx))
-		throw PlException("invalid brush index");
-	return t[1] = & g_map.objects.get(idx);
 }
 
 #define BRUSH_PROP(Prop, PROP)\
@@ -326,10 +305,10 @@ void cDizMap::DrawRoom( const iV2 & rp, int layer, int mode, const iV2 & ofs)
 // PARTITIONS
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void cDizMap::PartitionAdd( int brushidx )
+void cDizMap::PartitionAdd(int brushidx)
 {
-	const tBrush & brush = brushes.get(brushidx);
-	iRect rbrush = brush.rect();
+	const tBrush * brush = brushes.get(brushidx);
+	iRect rbrush = brush->rect();
 	auto room = Rooms.begin();
 	for(iV2 r; r.y < size().y; ++r.y)
 		for(r.x = 0; r.x < size().x; ++r.x, ++room)

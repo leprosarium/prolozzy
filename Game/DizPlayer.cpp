@@ -861,20 +861,19 @@ int cDizPlayer::CheckJumper()
 void cDizPlayer::CheckColliders()
 {
 	iRect pr = bbw();
-	for(int idx: g_game.m_collider)
+	for(auto obj: g_game.m_collider)
 	{
-		tBrush & obj = g_map.objects.get(idx);
-		if(obj.disable) continue; // only enabled objects
-		if(!(obj.collider & COLLIDER_HANDLE)) continue; // just those that request it
-		bool collision = pr.Intersects(obj.rect());
-		if(!collision && !obj.collision) continue; // no collision event
+		if(obj->disable) continue; // only enabled objects
+		if(!(obj->collider & COLLIDER_HANDLE)) continue; // just those that request it
+		bool collision = pr.Intersects(obj->rect());
+		if(!collision && !obj->collision) continue; // no collision event
 
 		// call
 
 		enum collMode { exit = 0, enter = 1, keep = 2};
-		g_script.collision(obj.id, !collision ? exit : obj.collision ? keep : enter);   // entering collision
+		g_script.collision(obj->id, !collision ? exit : obj->collision ? keep : enter);   // entering collision
 
-		obj.collision = collision;
+		obj->collision = collision;
 	}
 
 }
@@ -889,12 +888,11 @@ bool cDizPlayer::CheckCollidersSnap()
 
 	bool snap=false;
 
-	for(int idx: g_game.m_collider)
+	for(auto obj: g_game.m_collider)
 	{
-		tBrush & obj = g_map.objects.get(idx);
-		if(obj.disable) continue; // only enabled objects
-		if(!(obj.collider & COLLIDER_HARD)) continue; // only those that need it
-		iRect c = obj.rect();
+		if(obj->disable) continue; // only enabled objects
+		if(!(obj->collider & COLLIDER_HARD)) continue; // only those that need it
+		iRect c = obj->rect();
 		if( x2<=c.p1.x || x1>=c.p2.x ) continue;
 		
 		if(y2<=c.p1.y && c.p1.y < y2 + DIZ_STEPY + 1)	// collider's top is inside player's box

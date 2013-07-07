@@ -205,6 +205,63 @@ public:
 	}
 };
 
+template<class T, class Key>
+class Indexed<T*, Key> : std::vector<T*>
+{
+public:
+	typedef std::vector<T*> Cont;
+	typedef std::unordered_map<Key, int> IndexType;
+	IndexType Index;
+	using Cont::size;
+	using Cont::begin;
+	using Cont::end;
+	using Cont::empty;
+	using Cont::front;
+
+	~Indexed() { clear(); }
+
+	bool InvalidIdx(int idx) const {return idx < 0 && static_cast<size_type>(idx) >= size(); }
+	T * get(int idx) { return (*this)[idx]; }
+	const T * get(int idx) const{ return (*this)[idx]; }
+	T * Get(int idx) { return InvalidIdx(idx) ? nullptr : get(idx); }
+	const T * Get(int idx) const { return InvalidIdx(idx) ? nullptr : get(idx); }
+	int	New() { push_back(new T()); return size() - 1; }
+
+	void clear() { for(auto a: *this) delete a; Index.clear(); Cont::clear(); }
+	void erase(iterator i) { Index.erase(i->id); delete *i; Cont::erase(i); }
+	
+	int Find(const Key & id) const { auto i = Index.find(id); return i != Index.end() ? i->second : -1; }
+	int Add(const Key & id, T * t)
+	{
+		if(Find(id)!=-1) return -1; // duplicate id
+		push_back(t);
+		int idx = size() - 1;
+
+		Index.insert(IndexType::value_type(id, idx));
+		return idx;
+	}
+	void Erase( int idx )
+	{
+		if(!InvalidIdx(idx))
+		{
+			auto it = begin() + idx;
+			delete *it;
+			erase(it);
+		}
+	}
+	void Reindex()
+	{
+		Index.clear();
+		for(size_t i = 0, e = size(); i != e; ++i) {
+			auto id = get(i)->id;
+			if(!id.empty())
+				Index.insert(IndexType::value_type(id, i));
+		}
+	}
+};
+
+
+
 class Tiles : public Indexed<cTile>
 {
 	bool LoadFile(const std::string & file, size_t & total, size_t & fail, size_t & duplicates, int group);	// load a tile file

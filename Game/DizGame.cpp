@@ -480,16 +480,9 @@ bool cDizGame::Update()
 
 	// update present objects
 	if(!pause())
-	{
-		for(int idx: m_obj)
-		{
-			tBrush & obj = g_map.objects.get(idx);
-			if(obj.disable) continue; // only enabled objects
-			if( obj.anim )
-				if(IsUpdate(obj.delay))
-					++obj.frame;
-		}
-	}
+		for(auto obj: m_obj)
+			if(!obj->disable && obj->anim && IsUpdate(obj->delay))
+				++obj->frame;
 
 	// player update
 	if(!pause()) g_player.Update();
@@ -615,14 +608,9 @@ void cDizGame::Draw()
 
 		// objects present
 		R9_SetClipping( rect );
-		for(int idx: m_obj)
-		{
-			tBrush & obj = g_map.objects.get(idx);
-			if( obj.layer != layer ) continue;
-			if(obj.disable) continue;
-			if((obj.draw & 1)==0 ) continue;
-			ObjDraw(obj);
-		}
+		for(auto obj: m_obj)
+			if( !obj->disable && obj->layer == layer && obj->draw & 1) 
+				ObjDraw(*obj);
 
 		// dizzy
 		if(g_player.layer()==layer) g_player.Draw();
@@ -745,10 +733,10 @@ int MatMap::Get(int x1, int x2, int y) const
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // OBJECTS
 //////////////////////////////////////////////////////////////////////////////////////////////////
-void cDizGame::ObjPresent( int idx )
+void cDizGame::ObjPresent(tBrush * b)
 {
-	if(std::find(m_obj.begin(), m_obj.end(), idx) == m_obj.end())
-		ObjAdd(idx);
+	if(std::find(m_obj.begin(), m_obj.end(), b) == m_obj.end())
+		ObjAdd(b);
 }
 
 void cDizGame::ObjGather()
@@ -758,9 +746,9 @@ void cDizGame::ObjGather()
 	iRect roombb = viewportMode() ? 
 		RoomBorderRect(Room::Size) :  // extended room bound to 3x3 rooms
 		RoomBorderRect(Room::Border); // room bound with small border
-	for(int i=0; i<g_map.objects.size(); i++ )
-		if(g_map.objects.get(i).rect().Intersects(roombb)) 
-			ObjAdd(i); // object is present in current bordered room
+	for(auto b: g_map.objects)
+		if(b->rect().Intersects(roombb)) 
+			ObjAdd(b); // object is present in current bordered room
 }
 
 void cDizGame::ObjDraw( const tBrush & brush )

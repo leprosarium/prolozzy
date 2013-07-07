@@ -29,7 +29,7 @@ public:
 	static iRect Rect(const iV2 & r) { return iRect(r * Size, (r + 1) * Size); } 
 };
 
-typedef Indexed<tBrush, std::string> Brushes;
+typedef Indexed<tBrush *, std::string> Brushes;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cDizMap

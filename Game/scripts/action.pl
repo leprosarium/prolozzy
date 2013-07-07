@@ -157,8 +157,7 @@ doDropObject(Id) :-
 	Y is Py + Ph // 2 - H,
 	brush:setX(Obj, X),
 	brush:setY(Obj, Y),
-	brush:idx(Obj, Idx),
-	core:setObjPresent(Idx). % force it to be present in current room
+	core:setObjPresent(Obj). % force it to be present in current room
 
 % IN: int; idx; object index
 % Action performed on the object the player stands in front of.

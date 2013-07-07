@@ -104,12 +104,12 @@ inline	bool			KeyHit( int key )						{ return (keysHit() & (1<<key)) ? 1 : 0; }	
 		int				m_drawmode;								// 0=imgmap (normal), 1=matmap, 2=densitymap, 3=none
 			
 		// objects
-inline	void			ObjAdd				( int idx );		// add object to present lists (objects and coliders)
+inline	void			ObjAdd				(tBrush *);		// add object to present lists (objects and coliders)
 		void			ObjGather			();					// gather objects present in current room
-		void			ObjPresent			( int idx );		// add object to present list if not in it already
+		void			ObjPresent			(tBrush *);		// add object to present list if not in it already
 		void			ObjDraw				( const tBrush & brush	);	// draw one object
-		std::vector<int> m_obj;									// objects list with objects indexes (present in current room)
-		std::vector<int> m_collider;							// colliders list with objects indexes (present in current room)
+		std::vector<tBrush *> m_obj;									// objects list with objects indexes (present in current room)
+		std::vector<tBrush *> m_collider;							// colliders list with objects indexes (present in current room)
 
 		// FFFX Rumble
 		int				m_fffx_magnitude;						// force magnitude [0,100] (0=stopped)
@@ -198,11 +198,11 @@ private:
 		bool			_fullMaterialMap;						// material map size: false=normal (current room with small border), true=extended to 3x3 rooms for scrolling
 };
 
-inline void cDizGame::ObjAdd( int idx )
+inline void cDizGame::ObjAdd(tBrush *b)
 {
- 	m_obj.push_back(idx);
-	if( g_map.objects.get(idx).collider )
-		m_collider.push_back(idx);
+ 	m_obj.push_back(b);
+	if(b->collider)
+		m_collider.push_back(b);
 
 //	obj->Set(BRUSH_COLLISION,0); // reset collision
 }

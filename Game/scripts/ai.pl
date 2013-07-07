@@ -197,8 +197,7 @@ spawnBubbles(Free, Debit, Speed) :-
 	BubbleSpeed is Speed // 2 + random(Speed),
 	brush:setEx(Br, speed, BubbleSpeed),
 	brush:setEx(Br, time, 0),
-	brush:idx(Br, Idx),
-	core:setObjPresent(Idx), !.
+	core:setObjPresent(Br), !.
 spawnBubbles(_, _, _).
 
 

@@ -48,20 +48,19 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // partitioning
 //////////////////////////////////////////////////////////////////////////////////////////////////
-#define PARTITION_CELSIZE		1024
+const int PARTITION_CELSIZE = 1024;
 
-class cPartitionCel
+class cPartitionCel : std::vector<tBrush *>
 {
+	typedef std::vector<tBrush *> Cont;
 public:
-	int	 m_count;	// how many elements
-	int	 m_size;	// how big the databuffer
-	int* m_data;	// data buffer
+	using Cont::begin;
+	using Cont::end;
+	using Cont::clear;
 
-	cPartitionCel();
-	~cPartitionCel();
-	void	Add( int val );		// adds a value
-	void	Sub( int val );		// delete a value
-	int		Find( int val );	// find a value; ret index or -1
+	void Add(tBrush *b) { push_back(b); }
+	void Del(tBrush * b) { auto it = std::find(begin(), end(), b); if(it != end()) erase(it); }
+	bool Find(tBrush * b) { return std::find(begin(), end(), b) != end(); }
 };
 
 struct tMarker
@@ -75,6 +74,7 @@ struct tMarker
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cEdiMap
 //////////////////////////////////////////////////////////////////////////////////////////////////
+
 class cEdiMap
 {
 public:
@@ -124,25 +124,27 @@ public:
 //		void		BrushDrawOld		( iRect& view );			// draw brushes in view
 		void		BrushDrawExtra		( iRect& view );			// draw brushes in view using partitioning
 		int			BrushPick			( int x, int y );			// pick brush from a map position; -1 if not found
-		void		BrushToFront		( int idx );				// bring brush to front (first visible in layer)
-		void		BrushToBack			( int idx );				// bring brush to back (last visible in layer)
+	void BrushToFront(tBrush * b) { BrushTo(m_brush.rbegin(), m_brush.rend(), b); }				// bring brush to front (first visible in layer)
+	void BrushToBack (tBrush * b) { BrushTo(m_brush.begin(), m_brush.end(), b); } 				// bring brush to back (last visible in layer)
 		void		BrushClear			();							// free brush buffers and counts; selectcount friendly
 
-		tBrush &	GetBrush			(int idx);
+	template<class It>
+	void BrushTo(It begin, It end, tBrush * b);
+
+		void TakeBrush(tBrush * b);
 		bool validBrushIdx(int idx) const { return static_cast<size_t>(idx) < m_brush.size(); }
-		std::vector<tBrush> m_brush;							// brush buffer list (brushes in map)
-		std::vector<int> brushvis;									// visible brushes list (brushes to draw; updated on refresh)
+		std::vector<tBrush *> m_brush;							// brush buffer list (brushes in map)
+		std::vector<tBrush *> brushvis;									// visible brushes list (brushes to draw; updated on refresh)
 
 		// partitioning
 		void		PartitionInit		();							// create partitions cels depending on the map size
 		void		PartitionDone		();							// destroy partitions cels
-inline	void		PartitionReset		()							{ PartitionDone(); PartitionInit(); }
-inline	int		PartitionCountW		()							{ return (m_mapw+PARTITION_CELSIZE-1) / PARTITION_CELSIZE; }
-inline	int		PartitionCountH		()							{ return (m_maph+PARTITION_CELSIZE-1) / PARTITION_CELSIZE; }
-		BOOL		PartitionAdd		( int brushidx );			// add a brush index to partitioning; true if successful
-		void		PartitionDel		( int brushidx );			// del a brush index from partitioning; might need PartitionFix
+	void		PartitionReset		()							{ PartitionDone(); PartitionInit(); }
+	int		PartitionCountW		()							{ return (m_mapw+PARTITION_CELSIZE-1) / PARTITION_CELSIZE; }
+	int		PartitionCountH		()							{ return (m_maph+PARTITION_CELSIZE-1) / PARTITION_CELSIZE; }
+		BOOL		PartitionAdd		(tBrush * b);			// add a brush index to partitioning; true if successful
+		void		PartitionDel		(tBrush * b);			// del a brush index from partitioning; might need PartitionFix
 		int			PartitionGet		( iRect& rect, int* buffer, int buffersize );	// retrive all partitions that intersect a specified area
-		void		PartitionFix		( int brushidx1, int brushidx2, int delta ); // adjust all indices in interval (including) by delta
 		BOOL		PartitionRepartition();							// remove and reenter all brushes; ret ok (or false if some failures)
 		iRect		PartitionRect(int idx, int countw) const {  iV2 p1 = iV2(idx % countw, idx / countw) * PARTITION_CELSIZE; return iRect(p1, p1 + PARTITION_CELSIZE); }
 		
@@ -182,6 +184,23 @@ inline	int		PartitionCountH		()							{ return (m_maph+PARTITION_CELSIZE-1) / PA
 		bool		Load( const std::string & filename );
 		bool		LoadMap(const std::string & filename );
 };				
+
+
+template<class It>
+void cEdiMap::BrushTo(It begin, It end, tBrush * b)
+{
+	It cur = std::find(begin,end, b);
+	if(cur == end)
+		return;
+	int layer = b->m_data[BRUSH_LAYER];
+	It front = std::find_if(begin, cur, [layer](tBrush * b) { return b->m_data[BRUSH_LAYER]==layer; });
+	if(front == cur)
+		return;
+	It to = cur++;
+	std::copy_backward(front, to, cur);
+	*front = b;
+	PartitionRepartition();
+}
 
 extern	cEdiMap		g_map;
 

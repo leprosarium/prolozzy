@@ -94,7 +94,7 @@ virtual void		Draw				();
 		iV2			m_move;			// movement start
 		iV2			m_moved;		// movement offset
 
-		std::vector<int> m_drag;	 // drag list
+		std::vector<tBrush *> m_drag;	 // drag list
 
 
 };

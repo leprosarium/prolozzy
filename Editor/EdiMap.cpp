@@ -133,7 +133,7 @@ inline tBrush * brushPtr(PlTerm t)
 
 PREDICATE_M(map, brushIdx, 2)
 {
-	return g_map.UnifyBrush(A2, & g_map.m_brush[static_cast<int>(A1)]);
+	return g_map.UnifyBrush(A2, g_map.m_brush[static_cast<int>(A1)]);
 }
 
 PREDICATE_NONDET_M(map, brush, 1)
@@ -145,14 +145,10 @@ PREDICATE_NONDET_M(map, brush, 1)
 	if(!(t = g_map.brush))
 		return false;
 	PlTerm br = t[1];
-	if (br.type() != PL_VARIABLE) {
-		tBrush * b = brushPtrNoEx(br);
-		if(g_map.m_brush.empty())
-			return 0;
-		return b >= & g_map.m_brush.front() && b < & g_map.m_brush.front() + g_map.m_brush.size();
-	}
+	if (br.type() != PL_VARIABLE)
+			return std::find(g_map.m_brush.begin(), g_map.m_brush.end(), brushPtrNoEx(br)) != g_map.m_brush.end();
 	size_t idx = call == PL_FIRST_CALL ? 0 : PL_foreign_context(handle);
-	if(idx < g_map.m_brush.size() && (br = & g_map.m_brush[idx]))
+	if(idx < g_map.m_brush.size() && (br = g_map.m_brush[idx]))
 		if(++idx == g_map.m_brush.size())
 			return true;
 		else
@@ -259,7 +255,7 @@ PREDICATE_M(map, brushNew, 1)
 {
 	int idx = g_map.BrushNew();
 	EdiApp()->UndoReset();
-	return g_map.UnifyBrush(A1, &g_map.m_brush[idx]);
+	return g_map.UnifyBrush(A1, g_map.m_brush[idx]);
 }
 
 PREDICATE_M(map, brushDel, 1)
@@ -316,54 +312,6 @@ PREDICATE_M(map, saveImage, 1)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-// PARTITION
-//////////////////////////////////////////////////////////////////////////////////////////////////
-cPartitionCel::cPartitionCel()
-{
-	m_count=0;
-	m_size=0;
-	m_data=NULL;
-}
-
-cPartitionCel::~cPartitionCel()
-{
-	delete [] m_data;
-}
-
-void cPartitionCel::Add( int val )
-{
-	if(m_count==m_size)
-	{
-		m_size+=256;
-		m_data = (int*)realloc(m_data,m_size*sizeof(int));
-		assert(m_data!=NULL);
-	}
-	m_data[m_count]=val;
-	m_count++;
-}
-
-void cPartitionCel::Sub( int val )
-{
-	for(int i=0;i<m_count;i++)
-	{
-		if(m_data[i]==val) 
-		{
-			if( i<m_count-1 ) 
-				memcpy( &m_data[i], &m_data[i+1], (m_count-1-i)*sizeof(int) );
-			m_count--;
-			return;
-		}
-	}
-}
-
-int cPartitionCel::Find( int val )
-{
-	for(int i=0;i<m_count;i++)
-		if(m_data[i]==val) return i;
-	return -1;
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
 // INIT
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -400,7 +348,6 @@ cEdiMap::cEdiMap() : brush("brush", 1)
 	// others
 	m_count_brushdraw = 0;
 	m_count_brushcheck = 0;
-	m_brush.reserve(20000);
 }
 
 cEdiMap::~cEdiMap()
@@ -445,6 +392,7 @@ void cEdiMap::Done()
 	// refresh
 	if(m_target) { R9_TextureDestroy(m_target); m_target=NULL; }
 	
+	for(auto b: m_brush) delete b;
 	m_brush.clear();
 }
 
@@ -701,7 +649,7 @@ int cEdiMap::Resize( int width, int height )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 int	cEdiMap::BrushNew()
 {
-	m_brush.push_back(tBrush());
+	m_brush.push_back(new tBrush());
 	return m_brush.size()-1;
 }
 
@@ -710,70 +658,29 @@ void cEdiMap::BrushIns( int idx, tBrush& brush )
 	assert(validBrushIdx(idx));
 	BrushNew();
 	for(int i=m_brush.size()-1;i>idx;i--) m_brush[i] = m_brush[i-1];
-	m_brush[idx]=brush;
-	if(m_brush[idx].m_data[BRUSH_SELECT]) m_selectcount++;
+	*m_brush[idx]=brush;
+	if(m_brush[idx]->m_data[BRUSH_SELECT]) m_selectcount++;
+}
+
+void cEdiMap::TakeBrush(tBrush * b)
+{
+	auto it = std::find(m_brush.begin(), m_brush.end(), b);
+	if(it == m_brush.end())
+		return;
+	if(b->m_data[BRUSH_SELECT]) m_selectcount--;
+	m_brush.erase(it);
+	brushvis.clear();
 }
 
 void cEdiMap::BrushDel( int idx )
 {
 	assert(validBrushIdx(idx));
-	if(m_brush[idx].m_data[BRUSH_SELECT]) m_selectcount--;
-	m_brush.erase(m_brush.begin() + idx);
+	if(m_brush[idx]->m_data[BRUSH_SELECT]) m_selectcount--;
+	auto it = m_brush.begin() + idx;
+	delete *it;
+	m_brush.erase(it);
 	brushvis.clear();
 }
-
-tBrush & cEdiMap::GetBrush(int idx)
-{
-	if(!validBrushIdx(idx)) 
-		throw PlDomainError("invalid map brush index");
-	return m_brush[idx];
-}
-
-/*
-void cEdiMap::BrushDrawOld( iRect& view )
-{
-	return; // update brushview to be usable !!!???
-
-	m_count_brushdraw = 0;
-	m_count_brushcheck = 0;
-
-	tBrush brushtemp = EdiApp()->m_brush;
-	int fid = gs_findfn(g_gui->m_vm,"MOD_BrushDraw");
-
-	for( int idx=0; idx<m_brushcount; idx++ )
-	{
-		m_count_brushcheck++;
-		tBrush& brush = m_brush[idx];
-		int layer = brush.m_data[BRUSH_LAYER];
-		if(layer<0 || layer>=LAYER_MAX) continue;
-		if(EdiApp()->LayerGet(layer)==0) continue; // hidden
-
-		iRect bb;
-		bb.x1 = brush.m_data[BRUSH_X];
-		bb.y1 = brush.m_data[BRUSH_Y];
-		bb.x2 = brush.m_data[BRUSH_X] + brush.m_data[BRUSH_W];
-		bb.y2 = brush.m_data[BRUSH_Y] + brush.m_data[BRUSH_H];
-		if(!RECT2RECT(view,bb)) continue;
-
-		// user callback
-		EdiApp()->m_brush = brush;
-		if(fid!=-1)
-		{
-			int ret=g_gui->ScriptCallback(fid);
-			if(!ret) continue;
-		}
-
-		int x = m_camz * (EdiApp()->m_brush.m_data[BRUSH_X]-view.x1);
-		int y = m_camz * (EdiApp()->m_brush.m_data[BRUSH_Y]-view.y1);
-		g_paint.DrawBrushAt( &EdiApp()->m_brush, x, y, m_camz );
-
-		m_count_brushdraw++;
-	}
-
-	EdiApp()->m_brush = brushtemp;
-
-}
-*/
 
 void cEdiMap::BrushDrawExtra( iRect& view )
 {
@@ -793,45 +700,37 @@ void cEdiMap::BrushDrawExtra( iRect& view )
 	for( int p=0; p<partitioncount; p++ )
 	{
 		int pidx = partition[p];
-		int brushcount = m_partition[pidx]->m_count;
-		for( int i=0; i<brushcount; i++ )
+		for(auto brush: *m_partition[pidx])
 		{
-			int idx = m_partition[pidx]->m_data[i];
-			assert(validBrushIdx(idx));
 			m_count_brushcheck++;
 
-			tBrush& brush = m_brush[idx];
-			int layer = brush.m_data[BRUSH_LAYER];
+			int layer = brush->m_data[BRUSH_LAYER];
 			if(layer<0 || layer>=LAYER_MAX) continue;
 			if(EdiApp()->LayerGet(layer)==0) continue; // hidden
 
-			if(!view.Intersects(brush.rect())) continue;
+			if(!view.Intersects(brush->rect())) continue;
 
-			brushvis.push_back(idx); // store in drawbuffer
+			brushvis.push_back(brush); // store in drawbuffer
 		}
 	}
 
 	// order drawbuffer by index // @TODO optimize
 
-	std::sort(brushvis.begin(), brushvis.end(), [this](int idx1, int idx2) {
-			int l1 = m_brush[idx1].m_data[BRUSH_LAYER];
-			int l2 = m_brush[idx2].m_data[BRUSH_LAYER];
-			return l1 == l2 ? idx1 < idx2 : l1 < l2;
+	std::sort(brushvis.begin(), brushvis.end(), [](tBrush * b1, tBrush * b2) {
+			return  b1->m_data[BRUSH_LAYER] < b2->m_data[BRUSH_LAYER];
 	});
 
 	// remove duplicates
 	brushvis.erase( std::unique( brushvis.begin(), brushvis.end() ), brushvis.end() );
 
 	// draw drawbuffer
-	for(size_t idx: brushvis)
+	for(auto brush: brushvis)
 	{
-		tBrush & brush = m_brush[idx];
-
 		// user callback
-		EdiApp()->m_brush = brush;
+		EdiApp()->m_brush = * brush;
 		if(!g_gui->ScriptPrologDo("mod:brushDraw")) continue;
 
-		if( m_hideselected && brush.m_data[BRUSH_SELECT] ) continue;
+		if( m_hideselected && brush->m_data[BRUSH_SELECT] ) continue;
 		iV2 p = m_camz  * (EdiApp()->m_brush.pos() - view.p1);
 		g_paint.DrawBrushAt( &EdiApp()->m_brush, p.x, p.y, (float)m_camz );
 
@@ -846,74 +745,18 @@ int	cEdiMap::BrushPick( int x, int y )
 {
 	for( int idx=m_brush.size()-1; idx>=0; idx-- ) // top to bottom
 	{
-		tBrush& brush = m_brush[idx];
-		int layer = brush.m_data[BRUSH_LAYER];
+		tBrush * brush = m_brush[idx];
+		int layer = brush->m_data[BRUSH_LAYER];
 		if(layer<0 || layer>=LAYER_MAX) continue;
 		if(EdiApp()->LayerGet(layer)==0) continue; // hidden
-		if(brush.rect().IsInside(iV2(x,y))) return idx;
+		if(brush->rect().IsInside(iV2(x,y))) return idx;
 	}
 	return -1;
 }
 
-void cEdiMap::BrushToFront( int idx )
-{
-	assert(validBrushIdx(idx));
-	// search	
-	int i;
-	int idx0=idx;
-	int layer = m_brush[idx].m_data[BRUSH_LAYER];
-	for(i=idx;i<m_brush.size();i++)
-	{
-		if(m_brush[i].m_data[BRUSH_LAYER]==layer) idx0=i;
-	}
-	if(idx0==idx) return; // already in front
-
-	PartitionDel(idx); // delete before messing it
-
-	// shift and replace
-	tBrush brush = m_brush[idx];
-	for(i=idx;i<idx0;i++)
-	{
-		m_brush[i] = m_brush[i+1];
-	}
-	m_brush[idx0] = brush;
-
-	PartitionFix(idx+1,idx0,-1); // fix indices after shifting
-	PartitionAdd(idx0); // add new one
-
-}
-
-void cEdiMap::BrushToBack( int idx )
-{
-	assert(validBrushIdx(idx));
-	// search	
-	int i;
-	int idx0=idx;
-	int layer = m_brush[idx].m_data[BRUSH_LAYER];
-	for(i=idx;i>=0;i--)
-	{
-		if(m_brush[i].m_data[BRUSH_LAYER]==layer) idx0=i;
-	}
-	if(idx0==idx) return; // already in back
-
-	PartitionDel(idx); // delete before messing it
-
-	// shift and replace
-	tBrush brush = m_brush[idx];
-	for(i=idx;i>idx0;i--)
-	{
-		m_brush[i] = m_brush[i-1];
-	}
-	m_brush[idx0] = brush;
-
-	PartitionFix(idx0, idx-1, 1); // fix indices after shifting
-	PartitionAdd(idx0); // add new one
-	
-
-}
-
 void cEdiMap::BrushClear()
 {
+	for(auto b: m_brush) delete b;
 	m_brush.clear();
 	brushvis.clear();
 	m_selectcount=0;
@@ -937,29 +780,29 @@ void cEdiMap::PartitionDone()
 	m_partition.clear(); 
 }
 
-BOOL cEdiMap::PartitionAdd( int brushidx )
+BOOL cEdiMap::PartitionAdd( tBrush * b)
 {
 	int pcountw = PartitionCountW();
-	iRect br = m_brush[brushidx].rect();
+	iRect br = b->rect();
 	BOOL ok=FALSE;
 	for(size_t i=0; i<m_partition.size(); i++)
 		if( br.Intersects(PartitionRect(i, pcountw)) )
 		{	
-			m_partition[i]->Add(brushidx);
+			m_partition[i]->Add(b);
 			ok = TRUE;
 		}
 	if(!ok)
-		dlog(LOGAPP, L"Brush # %d (%d, %d)-(%d, %d) out of bounds\n", brushidx, br.p1.x, br.p1.y, br.p2.x, br.p2.y);
+		dlog(LOGAPP, L"Brush # %p (%d, %d)-(%d, %d) out of bounds\n", b, br.p1.x, br.p1.y, br.p2.x, br.p2.y);
 	return ok;
 }
 
-void cEdiMap::PartitionDel( int brushidx )
+void cEdiMap::PartitionDel( tBrush * b )
 {
 	int pcountw = PartitionCountW();
-	iRect br = m_brush[brushidx].rect();
+	iRect br =b->rect();
 	for(size_t i=0; i<m_partition.size(); i++)
 		if( br.Intersects(PartitionRect(i, pcountw)) )
-			m_partition[i]->Sub(brushidx);
+			m_partition[i]->Del(b);
 }
 
 int	cEdiMap::PartitionGet( iRect& rect, int* buffer, int buffersize )
@@ -978,22 +821,11 @@ int	cEdiMap::PartitionGet( iRect& rect, int* buffer, int buffersize )
 	return count;
 }
 
-void cEdiMap::PartitionFix( int brushidx1, int brushidx2, int delta )
-{
-	for(cPartitionCel* pcel: m_partition)
-		for(int j=0; j<pcel->m_count; j++)
-			if( pcel->m_data[j]>=brushidx1 && pcel->m_data[j]<=brushidx2 )
-				pcel->m_data[j] += delta;
-}
-
 BOOL cEdiMap::PartitionRepartition()
 {
-	// force all clean
-	for(cPartitionCel *c: m_partition) c->m_count = 0;
-	// repartition all brushes
+	for(cPartitionCel *c: m_partition) c->clear();
 	BOOL ok = TRUE;
-	for(int i=0; i<m_brush.size(); i++)
-		ok &= PartitionAdd(i);
+	for(auto b: m_brush) ok &= PartitionAdd(b);
 	return ok;
 }
 
@@ -1090,8 +922,8 @@ BOOL cEdiMap::MarkerTest( int idx )
 void cEdiMap::SelectionRefresh()
 {
 	m_selectcount=0;
-	for(tBrush & b: m_brush)
-		if(b.m_data[BRUSH_SELECT]) 
+	for(tBrush * b: m_brush)
+		if(b->m_data[BRUSH_SELECT]) 
 			m_selectcount++;
 }
 
@@ -1107,10 +939,10 @@ void cEdiMap::SelectionGoto( int dir )
 		i+=dir;
 		if(i<=-1) i=m_brush.size()-1;
 		if(i>=m_brush.size()) i=0;
-		if(m_brush[i].m_data[BRUSH_SELECT]) 
+		if(m_brush[i]->m_data[BRUSH_SELECT]) 
 		{
-			m_camx = m_brush[i].m_data[BRUSH_X];
-			m_camy = m_brush[i].m_data[BRUSH_Y];
+			m_camx = m_brush[i]->m_data[BRUSH_X];
+			m_camy = m_brush[i]->m_data[BRUSH_Y];
 			m_refresh = TRUE;
 			m_selectgoto = i;
 			return;
@@ -1385,7 +1217,7 @@ bool cEdiMap::LoadMap(const std::string &filename)
 						int val = 0;
 						if(!file->Read(&val, sizeof(val))) { ERROR_CHUNK("size"); }
 
-						g_map.m_brush[i].m_data[j] = val;
+						g_map.m_brush[i]->m_data[j] = val;
 					}
 				}
 				break;

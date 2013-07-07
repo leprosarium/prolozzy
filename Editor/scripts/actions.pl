@@ -382,7 +382,7 @@ toolPickMenu(BrushIdx) :-
 	def:toolCmd(pickBrush, PickBrush),
 	def:toolCmd(pickColor, PickColor),
 	def:toolCmd(toFront, ToFront),
-	def:toolCmd(toFront, ToBack),
+	def:toolCmd(toBack, ToBack),
 	def:toolCmd(delete, Delete),
 	Data = [
 		item(bprop-bprop,	(gui:dlgClose, dlgBrushProps:create(Brush)), [tooltip("B properties")]),

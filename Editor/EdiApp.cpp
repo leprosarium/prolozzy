@@ -69,8 +69,6 @@ cEdiApp::cEdiApp()
 	m_color[EDI_COLORGRID3-EDI_COLOR]		= 0x80ffff00;
 	m_color[EDI_COLORMAP-EDI_COLOR]			= 0xff000000;
 	
-	strcpy(m_mapid,		"mapid");
-
 	m_toolcrt			= TOOL_PAINT;
 	m_tool[TOOL_PAINT]	= new cEdiToolPaint();
 	m_tool[TOOL_EDIT]	= new cEdiToolEdit();

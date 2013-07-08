@@ -107,7 +107,6 @@ inline	int			GetScrH()								{ return R9_GetHeight(); }
 		int			m_gridsize;								// grid size
 		dword		m_color[EDI_COLORMAX-EDI_COLOR];		// editor colors
 inline	dword		GetColor( int idx )						{ return m_color[idx-EDI_COLOR]; }
-		char		m_mapid[32];							// map id name
 		void		WaitCursor( BOOL on );					// set cursor wait on/off
 
 
@@ -129,7 +128,7 @@ inline	int			LayerActive			()							{ for(int i=LAYER_MAX-1;i>=0;i--) if(m_layer
 		tBrush		m_undobrush;							// undo brush
 		BOOL		Undo				();
 		void		UndoSet				( int op, int idx=-1, tBrush* brush=NULL );
-inline	void		UndoReset			()					{ UndoSet(UNDOOP_NONE); }
+		void		UndoReset			()					{ UndoSet(UNDOOP_NONE); }
 
 protected:
 		void		DrawStats			();					// draw stats info

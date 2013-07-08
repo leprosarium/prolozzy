@@ -165,6 +165,19 @@ bool cGUI::ScriptPrologDo(const std::string & pred)
 }
 
 
+bool cGUI::ScriptPrologDo(const char *module, const char *predicate, const PlTermv &args)
+{
+	try
+	{
+		return PlCall(module, predicate, args);
+	}
+	catch(PlException const & e)
+	{
+		dlog(L"Exception: %s", static_cast<LPCWSTR>(e));
+	}
+	return false;
+}
+
 cGUIDlg * cGUI::GetLastDlg()
 {
 	if(m_lastdlg)

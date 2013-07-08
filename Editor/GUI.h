@@ -66,6 +66,7 @@ public:
 				
 	// script
 	bool ScriptPrologDo(const std::string & pred);
+	bool ScriptPrologDo(const char *module, const char *predicate, const PlTermv & args = 0);
 
 	void SetLast(cGUIDlg * d = nullptr, cGUIItem * i = nullptr) { m_lastdlg = d; m_lastitem = i; }
 };

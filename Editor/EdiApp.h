@@ -122,14 +122,6 @@ inline	void		LayerSet			( int layer, int status )	{ m_layer[layer]=status; }
 inline	int			LayerActive			()							{ for(int i=LAYER_MAX-1;i>=0;i--) if(m_layer[i]==2) return i; return -1; }
 		int			m_layer[LAYER_MAX];						// layers states 0=invisible, 1=visibil, 2=active)
 
-		// undo
-		int			m_undoop;								// undo operation 0=none,1=add,2=del
-		int			m_undoidx;								// undo idx
-		tBrush		m_undobrush;							// undo brush
-		BOOL		Undo				();
-		void		UndoSet				( int op, int idx=-1, tBrush* brush=NULL );
-		void		UndoReset			()					{ UndoSet(UNDOOP_NONE); }
-
 protected:
 		void		DrawStats			();					// draw stats info
 		BOOL		m_drawstats;

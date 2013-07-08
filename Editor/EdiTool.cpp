@@ -85,7 +85,7 @@ void cEdiToolPaint::Update( float dtime )
 		else
 		if(I9_GetKeyValue(I9_MOUSE_B3) || alt) m_mode=3;
 		else
-		if(ctrl && I9_GetKeyDown(I9K_Z)) EdiApp()->Undo();
+//		if(ctrl && I9_GetKeyDown(I9K_Z)) EdiApp()->Undo();
 
 		// axes
 		m_ax = mx;
@@ -132,7 +132,6 @@ void cEdiToolPaint::Update( float dtime )
 				b->m_data[BRUSH_LAYER] = EdiApp()->LayerActive();
 				g_map.m_refresh = TRUE;
 				g_map.PartitionAdd(b);
-				EdiApp()->UndoSet(UNDOOP_DEL,idx);
 			}
 			m_mode=0;
 		}
@@ -231,20 +230,17 @@ void cEdiToolPaint::Command( int cmd )
 	{
 		g_map.BrushToFront(g_map.m_brush[m_brushidx]);
 		g_map.m_refresh = TRUE;
-		EdiApp()->UndoReset();
 	}
 	else
 	if(cmd==TOOLCMD_TOBACK)
 	{
 		g_map.BrushToBack(g_map.m_brush[m_brushidx]);
 		g_map.m_refresh = TRUE;
-		EdiApp()->UndoReset();
 	}
 	else
 	if(cmd==TOOLCMD_DELETE)
 	{
 		tBrush * brush = g_map.m_brush[m_brushidx];
-		EdiApp()->UndoSet(UNDOOP_ADD, m_brushidx, brush);
 		g_map.PartitionDel(brush);
 		g_map.BrushDel(m_brushidx);
 		m_brushidx=-1;
@@ -518,7 +514,6 @@ void cEdiToolEdit::BrushMove()
 void cEdiToolEdit::BrushDeleteSelected()
 {
 	BEEP_OK();
-	EdiApp()->UndoReset();
 	for(int idx=0;idx<g_map.m_brush.size();idx++)
 	{
 		tBrush * brush = g_map.m_brush[idx];
@@ -578,7 +573,6 @@ void cEdiToolEdit::BrushPaste()
 		char* data = (char*)GlobalLock(handler);
 		if(data)
 		{
-			EdiApp()->UndoReset();
 			BrushDeselect();
 			std::istringstream s;
 			s.str(std::string(data));

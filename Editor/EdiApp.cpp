@@ -453,48 +453,6 @@ void cEdiApp::WaitCursor( BOOL on )
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-// UNDO
-//////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL cEdiApp::Undo()
-{
-	switch(m_undoop)
-	{
-		case UNDOOP_ADD:
-		{
-			if(!g_map.validBrushIdx(m_undoidx)) goto error;
-			g_map.BrushIns(m_undoidx, m_undobrush);
-			g_map.PartitionAdd(g_map.m_brush[m_undoidx]);
-			m_undoop = UNDOOP_DEL;
-			g_map.m_refresh = TRUE;
-			BEEP_OK();
-			return TRUE;
-		}
-		case UNDOOP_DEL:
-		{
-			if(!g_map.validBrushIdx(m_undoidx)) goto error;
-			m_undobrush = * g_map.m_brush[m_undoidx];
-			g_map.PartitionDel(g_map.m_brush[m_undoidx]);
-			g_map.BrushDel(m_undoidx);
-			m_undoop = UNDOOP_ADD;
-			g_map.m_refresh = TRUE;
-			BEEP_OK();
-			return TRUE;
-		}
-	}
-error:
-	BEEP_ERROR();
-	return FALSE;
-}
-
-void cEdiApp::UndoSet( int op, int idx, tBrush* brush )
-{
-	m_undoop = op;
-	m_undoidx = idx;
-	if(brush) m_undobrush=*brush;
-}
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
 // SCRIPTING
 //////////////////////////////////////////////////////////////////////////////////////////////////
 

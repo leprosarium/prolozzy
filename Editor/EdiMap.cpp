@@ -247,14 +247,12 @@ PREDICATE_M(brush, setProp , 3)
 PREDICATE_M(map, brushNew, 0)
 {
 	g_map.BrushNew();
-	EdiApp()->UndoReset();
 	return true;
 }
 
 PREDICATE_M(map, brushNew, 1)
 {
 	int idx = g_map.BrushNew();
-	EdiApp()->UndoReset();
 	return g_map.UnifyBrush(A1, g_map.m_brush[idx]);
 }
 
@@ -272,7 +270,6 @@ PREDICATE_M(map, refresh, 0)
 PREDICATE_M(map, reset, 0)
 {
 	g_map.Reset();
-	EdiApp()->UndoReset();
 	return true;
 }
 
@@ -280,7 +277,6 @@ PREDICATE_M(map, reset, 0)
 PREDICATE_M(map, resize, 2)
 {
 	int ret = g_map.Resize(A1, A2); 
-	EdiApp()->UndoReset();
 	return ret; 
 }
 
@@ -1234,7 +1230,6 @@ bool cEdiMap::LoadMap(const std::string &filename)
 	dlog(LOGAPP, L"  map=%ix%i, room=%ix%i, brushes=%i, objects=%i\n", m_mapw, m_maph, g_map.m_roomw, g_map.m_roomh, count_brush, count_obj );
 
 	int ret=g_map.Resize(m_mapw, m_maph); 
-	EdiApp()->UndoReset();
 
 	return true;
 }

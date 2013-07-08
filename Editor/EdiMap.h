@@ -94,6 +94,10 @@ virtual	void		Refresh				();							// refresh draw
 public:
 	PlFunctor brush;
 	bool UnifyBrush(PlTerm t, tBrush * b);
+	tBrush * brushPtrNoEx(PlTerm t) { return reinterpret_cast<tBrush *>(static_cast<void *>(t)); }
+	tBrush * brushPtr(PlTerm t) { if(!(t = brush)) throw PlTypeError("brush", t); return brushPtrNoEx(t[1]); }
+
+
 		// map
 		int			m_mapw;											// map width
 		int			m_maph;											// map height
@@ -120,10 +124,10 @@ public:
 		// brushes
 		int			BrushNew			();							// add a new brush to the brushlist
 		void		BrushIns			( int idx, tBrush& brush );	// insert a new brush and shift others; selectcount friendly
-		void		BrushDel			( int idx );				// delete one brush from brushlist and shift others; selectcount friendly
+		void		BrushDel			( tBrush * b );				// delete one brush from brushlist and shift others; selectcount friendly
 //		void		BrushDrawOld		( iRect& view );			// draw brushes in view
 		void		BrushDrawExtra		( iRect& view );			// draw brushes in view using partitioning
-		int			BrushPick			( int x, int y );			// pick brush from a map position; -1 if not found
+		tBrush *	BrushPick			( int x, int y );			// pick brush from a map position; -1 if not found
 	void BrushToFront(tBrush * b) { BrushTo(m_brush.rbegin(), m_brush.rend(), b); }				// bring brush to front (first visible in layer)
 	void BrushToBack (tBrush * b) { BrushTo(m_brush.begin(), m_brush.end(), b); } 				// bring brush to back (last visible in layer)
 		void		BrushClear			();							// free brush buffers and counts; selectcount friendly

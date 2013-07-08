@@ -41,8 +41,7 @@ saveMapToStream(S) :-
 	saveMapCtl(S).
 
 saveBrushes(S) :-
-	forall(map:brush(B), (brush:getProps(B, Props), writet(S, brush:new(Props)))).
-
+	forall(map:brush(B), (brush:getNonDefProps(B, Props), writet(S, brush:new(Props)))).
 
 saveMapCtl(S):-
 	map:getMapW(MapW),

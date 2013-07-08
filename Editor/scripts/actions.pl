@@ -377,8 +377,7 @@ script2:-
 
 
 
-toolPickMenu(BrushIdx) :-
-	map:brushIdx(BrushIdx, Brush),
+toolPickMenu(Brush) :-
 	def:toolCmd(pickBrush, PickBrush),
 	def:toolCmd(pickColor, PickColor),
 	def:toolCmd(toFront, ToFront),

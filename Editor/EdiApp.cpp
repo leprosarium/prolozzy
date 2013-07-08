@@ -344,9 +344,8 @@ bool cEdiApp::Update()
 	gui_wasbusy = g_gui->m_isbusy;
 
 	// statusbar
-	m_tool[m_toolcrt]->BeginUserUpdate();
-	g_gui->ScriptPrologDo("mod:userUpdate");
-	m_tool[m_toolcrt]->EndUserUpdate();
+	g_gui->ScriptPrologDo("mod", "userUpdate");
+	m_tool[m_toolcrt]->UserUpdate();
 
 	// gui
 	g_gui->ReadInput();

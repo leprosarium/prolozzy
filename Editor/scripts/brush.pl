@@ -1,9 +1,16 @@
-:-module(brush, [varDef/3, set/2, set/3, get/3, getProps/2, delete/1,
+:-module(brush, [varDef/3, set/2, set/3, get/3,
+		 new/1,
+		 new/2,
+		 getProps/2,
+		 getNonDefProps/2,
+		 delete/1,
 		 eraseAll/0,
 		 getEx/2,
 		 getEx/3,
 		 setEx/2,
-		 setEx/3]).
+		 setEx/3,
+		 clone/2,
+		 assign/2]).
 
 %varDef(type,	16, 0).
 varDef(id,	17, 0).
@@ -64,15 +71,22 @@ get(B, Var, Val) :-
 set(Br, Props) :-
 	forall(member(Var=Val, Props), (set(Br, Var, Val);setEx(Br, Var, Val))).
 
-getProps(Br, Props) :-
+getNonDefProps(Br, Props) :-
 	findall(Var=Val, (get(Br, Var, Val), varDef(Var, _, Def), Val =\= Def;getEx(Br, Var, Val)), Props).
 
+getProps(Br, Props) :-
+	findall(Var=Val, (get(Br, Var, Val);getEx(Br, Var, Val)), Props).
+
+
 new(Props):-
+	new(Props, _).
+
+new(Props, Br) :-
 	map:brushNew(Br),
 	set(Br, Props).
 
+
 delete(Br) :-
-	core:dl(delete(Br)),
 	recorded(brushProps, brush(Br, _), Ref) -> erase(Ref) ; true.
 
 eraseAll :-
@@ -100,6 +114,18 @@ setEx(Br, List) :-
 	;   true),
 	list_to_assoc(List, Props),
 	recordz(brushProps, brush(Br, Props)).
+
+clone(Org, New) :-
+	getNonDefProps(Org, Props),
+	new(Props, New),
+	core:dl(cloned(Props)).
+
+assign(To, From) :-
+	getProps(From, Props),
+	delete(To),
+	set(To, Props).
+
+
 
 
 

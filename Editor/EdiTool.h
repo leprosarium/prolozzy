@@ -31,8 +31,8 @@ virtual	void		Command				( int cmd )					{}; // general command
 virtual void		Update				( float dtime )				{}; // update tool stuff
 virtual void		Draw				()							{}; // draw tool stuff
 
-virtual	void		BeginUserUpdate		()							{};	// called before user update handler
-virtual	void		EndUserUpdate		()							{}; // called after user update handler
+virtual	void UserUpdate() {};
+
 
 
 	std::string m_name;	// tool name
@@ -47,17 +47,15 @@ virtual	void		EndUserUpdate		()							{}; // called after user update handler
 //////////////////////////////////////////////////////////////////////////////////////////////////
 class cEdiToolPaint : public cEdiTool
 {
-	tBrush m_brushtemp;		// temporary brush
-	int m_brushidx;			// picked brush
+	tBrush * picked;
 public:
-					cEdiToolPaint		();
+	cEdiToolPaint();
 
 virtual void		Switch				( BOOL on );
 virtual	void		Reset				();
 virtual	void		Command				( int cmd );
 
-virtual	void		BeginUserUpdate		();
-virtual	void		EndUserUpdate		();
+virtual	void UserUpdate();
 
 virtual void		Update				( float dtime );
 virtual void		Draw				();
@@ -80,7 +78,7 @@ virtual	void		Reset				();
 
 virtual void		Update				( float dtime );
 virtual void		Draw				();
-
+virtual	void UserUpdate();
 		void		BrushSelect			();					// select brushes in m_rect using m_selop
 		void		BrushDeselect		();					// select brushes in m_rect using m_selop
 		void		BrushDeleteSelected	();

@@ -3,13 +3,12 @@
 	       viewMode/2,
 	       roomInfo/1,
 	       setRoomInfo/1,
-	       brushToolDraw/0,
+	       brushToolDraw/1,
 	       brushNew/1,
 	       brushProp/2,
 	       brushProp/5,
-	       brushDraw/0,
 	       brushDraw/1,
-	       userUpdate/0]).
+	       brushDraw/2]).
 
 brushProp(user, 32).
 brushProp(max, 48).
@@ -78,7 +77,7 @@ propSet(Key, Val) :-
 viewMode(default, 'default view').
 viewMode(select, 'select view').
 viewMode(game, 'game view').
-viewMode(matrial, 'matrial view').
+viewMode(material, 'material view').
 viewMode(density, 'density view').
 
 property(roomInfo, name).
@@ -93,8 +92,7 @@ setView(V) :- viewMode(V, _), propSet(view, V).
 roomInfo(I):- propGet(roomInfo, I).
 setRoomInfo(I) :- propSet(roomInfo, I).
 
-brushToolDraw :-
-	edi:toolBrush(B),
+brushToolDraw(B) :-
 	(   brush:getAnim(B, 0);
 	brush:getDelay(B, Delay),
 	core:tickCount(Time),
@@ -123,17 +121,15 @@ brushNew(Type) :-
 	forall(between(0, UserMax, Idx), brush:set(B, user(Idx))).
 
 
-brushDraw :-
+brushDraw(Br) :-
 	view(V),
-	brushDraw(V).
+	brushDraw(V, Br).
 
-brushDraw(default).
-brushDraw(select) :-
-	edi:toolBrush(B),
+brushDraw(default, _).
+brushDraw(select, B) :-
 	brush:getSelect(B, Select),
 	Select \= 0.
-brushDraw(game) :-
-	edi:toolBrush(B),
+brushDraw(game, B) :-
 	brush:getDraw(B, DrawCode),
 	(def:drawMode(img, DrawCode, _); def:drawMode(imgmat, DrawCode, _)),
 	brush:getType(B, TypeCode),
@@ -142,21 +138,18 @@ brushDraw(game) :-
 	brush:getDisable(B, 0)).
 
 
-brushDraw(matrial) :-
-	brushDrawStaticAlpha(MatCode),
+brushDraw(material, B) :-
+	brushDrawStaticAlpha(MatCode, B),
 	def:material(_, MatCode, _, Color),
-	edi:toolBrush(B),
 	brush:setColor(B, Color).
 
-brushDraw(density) :-
-	brushDrawStaticAlpha(MatCode),
+brushDraw(density, B) :-
+	brushDrawStaticAlpha(MatCode, B),
 	def:material(_, MatCode, Density, _),
 	def:density(Density, Color),
-	edi:toolBrush(B),
 	brush:setColor(B, Color).
 
-brushDrawStaticAlpha(MatCode) :-
-	edi:toolBrush(B),
+brushDrawStaticAlpha(MatCode, B) :-
 	brush:getType(B, TypeCode),
 	def:brushType(static, TypeCode),
 	brush:getDraw(B, DrawCode),
@@ -166,15 +159,12 @@ brushDrawStaticAlpha(MatCode) :-
 	brush:setShader(B, Shader).
 
 userUpdate :-
-	edi:getTool(Tool),
-	userUpdate(Tool),
 	view(V),
 	viewMode(V, View),
 	format(string(Bar2), '~s  ', [View]),
 	dlgStatusBar:set(2, Bar2).
 
-userUpdate(0) :-
-	edi:toolBrush(B),
+userUpdatePaint(B) :-
 	brush:getID(B, ID),
 	formatID(ID, IDt),
 	brush:getType(B, TypeCode),
@@ -205,7 +195,7 @@ userUpdate(0) :-
 	dlgStatusBar:set(3, Bar3),
 	updateRoomInfo(X, Y).
 
-userUpdate(1) :-
+userUpdateEdit :-
 	map:getSelect(Select),
 	format(string(Bar1), '  selected ~d', [Select]),
 	dlgStatusBar:set(1, Bar1),

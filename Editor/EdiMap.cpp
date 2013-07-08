@@ -113,22 +113,9 @@ PREDICATE_M(map, brushCount, 1)
 
 bool cEdiMap::UnifyBrush(PlTerm t, tBrush * b)
 {
-	if(!(t = g_map.brush))
+	if(!(t = brush))
 		return false;
 	return t[1] = b;
-}
-
-
-inline tBrush * brushPtrNoEx(PlTerm t) 
-{
-	return reinterpret_cast<tBrush *>(static_cast<void *>(t));
-}
-
-inline tBrush * brushPtr(PlTerm t) 
-{
-	if(!(t = g_map.brush))
-		throw PlTypeError("brush", t);
-	return brushPtrNoEx(t[1]);
 }
 
 PREDICATE_M(map, brushIdx, 2)
@@ -146,7 +133,7 @@ PREDICATE_NONDET_M(map, brush, 1)
 		return false;
 	PlTerm br = t[1];
 	if (br.type() != PL_VARIABLE)
-			return std::find(g_map.m_brush.begin(), g_map.m_brush.end(), brushPtrNoEx(br)) != g_map.m_brush.end();
+			return std::find(g_map.m_brush.begin(), g_map.m_brush.end(), g_map.brushPtrNoEx(br)) != g_map.m_brush.end();
 	size_t idx = call == PL_FIRST_CALL ? 0 : PL_foreign_context(handle);
 	if(idx < g_map.m_brush.size() && (br = g_map.m_brush[idx]))
 		if(++idx == g_map.m_brush.size())
@@ -162,12 +149,12 @@ SET_BRUSH_PROP(Prop, PROP)
 
 #define GET_BRUSH_PROP(Prop, PROP) PREDICATE_M(brush, get##Prop, 2)\
 {\
-	return A2 = brushPtr(A1)->m_data[BRUSH_##PROP];\
+	return A2 = g_map.brushPtr(A1)->m_data[BRUSH_##PROP];\
 }
 
 #define SET_BRUSH_PROP(Prop, PROP) PREDICATE_M(brush, set##Prop, 2)\
 {\
-	brushPtr(A1)->m_data[BRUSH_##PROP] = A2; \
+	g_map.brushPtr(A1)->m_data[BRUSH_##PROP] = A2; \
 	return true;\
 }
 
@@ -202,13 +189,13 @@ BRUSH_PROP(Death, DEATH)
 
 PREDICATE_M(brush, getColor, 2) 
 {
-	int64 color = static_cast<unsigned>(brushPtr(A1)->m_data[BRUSH_COLOR]);
+	int64 color = static_cast<unsigned>(g_map.brushPtr(A1)->m_data[BRUSH_COLOR]);
 	return A2 = color;
 }
 
 PREDICATE_M(brush, getProp, 3) 
 {
-	tBrush * brush = brushPtr(A1);
+	tBrush * brush = g_map.brushPtr(A1);
 	int idx = A2;
 	if(idx < 0 || idx >= BRUSH_MAX) 
 		throw PlDomainError("invalid brush variable", A2);
@@ -222,13 +209,13 @@ PREDICATE_M(brush, getProp, 3)
 PREDICATE_M(brush, setColor , 2) 
 {
 	int64 color = A2;
-	brushPtr(A1)->m_data[BRUSH_COLOR] = static_cast<int>(color);
+	g_map.brushPtr(A1)->m_data[BRUSH_COLOR] = static_cast<int>(color);
 	return true;
 }
 
 PREDICATE_M(brush, setProp , 3) 
 {
-	tBrush * brush = brushPtr(A1);
+	tBrush * brush = g_map.brushPtr(A1);
 	int idx = A2;
 	if(idx < 0 || idx >= BRUSH_MAX) 
 		throw PlDomainError("invalid brush variable", A2);
@@ -661,16 +648,16 @@ void cEdiMap::TakeBrush(tBrush * b)
 	brushvis.clear();
 }
 
-void cEdiMap::BrushDel( int idx )
+void cEdiMap::BrushDel(tBrush * brush)
 {
-	assert(validBrushIdx(idx));
-	if(m_brush[idx]->m_data[BRUSH_SELECT]) m_selectcount--;
-	auto it = m_brush.begin() + idx;
-	tBrush * brush = *it;
+	if(brush->m_data[BRUSH_SELECT]) m_selectcount--;
 	PlTermv a(1);
 	UnifyBrush(a[0], brush);
 	g_gui->ScriptPrologDo("brush", "delete", a);
 	delete brush;
+	auto it = std::find(m_brush.begin(), m_brush.end(), brush);
+	if(it == m_brush.end())
+		return;
 	m_brush.erase(it);
 	brushvis.clear();
 }
@@ -680,7 +667,7 @@ void cEdiMap::BrushDrawExtra( iRect& view )
 	m_count_brushdraw = 0;
 	m_count_brushcheck = 0;
 
-	tBrush brushtemp = EdiApp()->m_brush;
+
 
 	int partition[32];
 	int partitioncount = PartitionGet(view, partition,32);
@@ -717,34 +704,30 @@ void cEdiMap::BrushDrawExtra( iRect& view )
 	brushvis.erase( std::unique( brushvis.begin(), brushvis.end() ), brushvis.end() );
 
 	// draw drawbuffer
+
+	tBrush brushtemp;
 	for(auto brush: brushvis)
 	{
-		// user callback
-		EdiApp()->m_brush = * brush;
-		if(!g_gui->ScriptPrologDo("mod:brushDraw")) continue;
-
 		if( m_hideselected && brush->m_data[BRUSH_SELECT] ) continue;
-		iV2 p = m_camz  * (EdiApp()->m_brush.pos() - view.p1);
-		g_paint.DrawBrushAt( &EdiApp()->m_brush, p.x, p.y, (float)m_camz );
-
+		brushtemp = *brush;
+		PlTermv br(1);
+		g_map.UnifyBrush(br[0], & brushtemp);
+		if(!g_gui->ScriptPrologDo("mod", "brushDraw", br)) continue;
+		iV2 p = m_camz  * (brushtemp.pos() - view.p1);
+		g_paint.DrawBrushAt( &brushtemp, p.x, p.y, (float)m_camz );
 		m_count_brushdraw++;
 	}
-
-	EdiApp()->m_brush = brushtemp;
-
 }
 
-int	cEdiMap::BrushPick( int x, int y )
+tBrush * cEdiMap::BrushPick( int x, int y )
 {
-	for( int idx=m_brush.size()-1; idx>=0; idx-- ) // top to bottom
-	{
-		tBrush * brush = m_brush[idx];
+	auto it = find_if(m_brush.rbegin(), m_brush.rend(), 
+		[x,y](tBrush *brush) -> bool
+	{ 
 		int layer = brush->m_data[BRUSH_LAYER];
-		if(layer<0 || layer>=LAYER_MAX) continue;
-		if(EdiApp()->LayerGet(layer)==0) continue; // hidden
-		if(brush->rect().IsInside(iV2(x,y))) return idx;
-	}
-	return -1;
+		return layer >= 0 && layer < LAYER_MAX && EdiApp()->LayerGet(layer) != 0 && brush->rect().IsInside(iV2(x,y));
+	});
+	return it == m_brush.rend() ? nullptr : *it;
 }
 
 void cEdiMap::BrushClear()

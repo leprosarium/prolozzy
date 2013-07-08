@@ -71,10 +71,9 @@ new(Props):-
 	map:brushNew(Br),
 	set(Br, Props).
 
-delete(Idx) :-
-	def:toolCmd(delete, C),
-	edi:toolCommand(C),
-	recorded(brushProps, brush(Idx, _), Ref) -> erase(Ref) ; true.
+delete(Br) :-
+	core:dl(delete(Br)),
+	recorded(brushProps, brush(Br, _), Ref) -> erase(Ref) ; true.
 
 eraseAll :-
 	forall(recorded(brushProps, _, Ref), erase(Ref)).

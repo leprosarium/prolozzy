@@ -258,13 +258,6 @@ PREDICATE_M(map, brushNew, 1)
 	return g_map.UnifyBrush(A1, g_map.m_brush[idx]);
 }
 
-PREDICATE_M(map, brushDel, 1)
-{
-	g_map.BrushDel(A1);
-	EdiApp()->UndoReset();
-	return 0;
-}
-
 PREDICATE_M(map, repartition, 0)
 {
 	return g_map.PartitionRepartition();
@@ -677,7 +670,11 @@ void cEdiMap::BrushDel( int idx )
 	assert(validBrushIdx(idx));
 	if(m_brush[idx]->m_data[BRUSH_SELECT]) m_selectcount--;
 	auto it = m_brush.begin() + idx;
-	delete *it;
+	tBrush * brush = *it;
+	PlTermv a(1);
+	UnifyBrush(a[0], brush);
+	g_gui->ScriptPrologDo("brush", "delete", a);
+	delete brush;
 	m_brush.erase(it);
 	brushvis.clear();
 }

@@ -132,7 +132,7 @@ void cEdiToolPaint::Update( float dtime )
 				b->m_data[BRUSH_LAYER] = EdiApp()->LayerActive();
 				g_map.m_refresh = TRUE;
 				g_map.PartitionAdd(b);
-				EdiApp()->UndoSet(UNDOOP_DEL,idx,NULL);
+				EdiApp()->UndoSet(UNDOOP_DEL,idx);
 			}
 			m_mode=0;
 		}
@@ -243,8 +243,9 @@ void cEdiToolPaint::Command( int cmd )
 	else
 	if(cmd==TOOLCMD_DELETE)
 	{
-		EdiApp()->UndoSet(UNDOOP_ADD, m_brushidx, g_map.m_brush[m_brushidx]);
-		g_map.PartitionDel(g_map.m_brush[m_brushidx]);
+		tBrush * brush = g_map.m_brush[m_brushidx];
+		EdiApp()->UndoSet(UNDOOP_ADD, m_brushidx, brush);
+		g_map.PartitionDel(brush);
 		g_map.BrushDel(m_brushidx);
 		m_brushidx=-1;
 		g_map.m_refresh = TRUE;
@@ -344,13 +345,13 @@ void cEdiToolEdit::Update( float dtime )
 			App.SetCursor(Cursor::Hand);
 		}
 		else
-		if(I9_GetKeyDown(I9K_DELETE))	BrushDelete();
+		if(I9_GetKeyDown(I9K_DELETE))	BrushDeleteSelected();
 		else
 		if(ctrl && I9_GetKeyDown(I9K_C)) BrushCopy();
 		else
 		if(ctrl && I9_GetKeyDown(I9K_V)) { BrushPaste(); g_map.SelectionGoto(); }
 		else
-		if(ctrl && I9_GetKeyDown(I9K_X)) { BrushCopy(); BrushDelete(); }
+		if(ctrl && I9_GetKeyDown(I9K_X)) { BrushCopy(); BrushDeleteSelected(); }
 	}	
 	else
 	if( m_mode==1 )
@@ -514,7 +515,7 @@ void cEdiToolEdit::BrushMove()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-void cEdiToolEdit::BrushDelete()
+void cEdiToolEdit::BrushDeleteSelected()
 {
 	BEEP_OK();
 	EdiApp()->UndoReset();
@@ -533,22 +534,30 @@ void cEdiToolEdit::BrushDelete()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiToolEdit::BrushCopy()
 {
-	std::vector<tBrush> m_clip;
+	std::ostringstream o;
 	for(tBrush * b: g_map.m_brush)
-		if(b->m_data[BRUSH_SELECT]) m_clip.push_back(*b);
+		if(b->m_data[BRUSH_SELECT])
+		{
+			PlTermv a(2);
+			g_map.UnifyBrush(a[0], b);
+			if(g_gui->ScriptPrologDo("brush", "getProps", a))
+			{
+				std::string props = static_cast<const char *>(a[1]);
+				o << props << std::endl;
+			}
+		}
+	std::string clip = o.str();
+	if(clip.empty()) return;
 
-	if(m_clip.empty()) return;
-
-	int size = m_clip.size() * sizeof(tBrush);
+	int size = clip.size()+1;
 	UINT reg = RegisterClipboardFormat("DizzyAGE_Brushes");
 	if(reg == NULL) return;
 	if(!OpenClipboard(NULL)) return;
 	if(EmptyClipboard())
 	{
-		HGLOBAL handler = GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE,size+4); assert(handler!=NULL);
+		HGLOBAL handler = GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE,size); assert(handler!=NULL);
 		byte* data = (byte*)GlobalLock(handler); assert(data!=NULL);
-		*(int*)data = size;
-		memcpy(data+4, &m_clip.front(),size);
+		memcpy(data, clip.c_str(), size);
 		GlobalUnlock(handler);
 		SetClipboardData(reg,handler);
 	}
@@ -566,28 +575,32 @@ void cEdiToolEdit::BrushPaste()
 	HGLOBAL handler = GetClipboardData(reg);
 	if(handler)
 	{
-		byte* data = (byte*)GlobalLock(handler);
+		char* data = (char*)GlobalLock(handler);
 		if(data)
 		{
-			int size = *(int*)data;
-			int count = size / sizeof(tBrush);
-			if(count>0)
+			EdiApp()->UndoReset();
+			BrushDeselect();
+			std::istringstream s;
+			s.str(std::string(data));
+			int count = 0;
+			while(s)
 			{
-				EdiApp()->UndoReset();
-				BrushDeselect();
-				for(int i=0;i<count;i++)
+				std::string props;
+				std::getline(s, props);
+				if(props.empty()) continue;
+				++count;
+				PlCompound a(props.c_str());
+				if(g_gui->ScriptPrologDo("brush", "new", a))
 				{
-					tBrush * b = g_map.m_brush[g_map.BrushNew()];
-					*b = *(tBrush*)(data+4+i*sizeof(tBrush));
-					b->m_data[BRUSH_LAYER] = EdiApp()->LayerActive(); // use current layer !
-					g_map.m_refresh = TRUE;
+					tBrush * b = g_map.m_brush.back();
+					b->m_data[BRUSH_LAYER] = EdiApp()->LayerActive();
+					b->m_data[BRUSH_SELECT] = 1;
 					g_map.PartitionAdd(b);	
 				}
-				g_map.m_selectcount=count;
-				g_map.m_refresh=TRUE;
-				BEEP_OK();
 			}
-			
+			g_map.m_selectcount=count;
+			g_map.m_refresh=TRUE;
+			BEEP_OK();			
 			GlobalUnlock(handler); 
 		}
 	}

@@ -139,7 +139,7 @@ public:
 		// partitioning
 		void		PartitionInit		();							// create partitions cels depending on the map size
 		void		PartitionDone		();							// destroy partitions cels
-	void		PartitionReset		()							{ PartitionDone(); PartitionInit(); }
+	void PartitionReset		()							{ PartitionDone(); PartitionInit(); }
 	int		PartitionCountW		()							{ return (m_mapw+PARTITION_CELSIZE-1) / PARTITION_CELSIZE; }
 	int		PartitionCountH		()							{ return (m_maph+PARTITION_CELSIZE-1) / PARTITION_CELSIZE; }
 		BOOL		PartitionAdd		(tBrush * b);			// add a brush index to partitioning; true if successful

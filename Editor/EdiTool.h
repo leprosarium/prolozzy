@@ -83,7 +83,7 @@ virtual void		Draw				();
 
 		void		BrushSelect			();					// select brushes in m_rect using m_selop
 		void		BrushDeselect		();					// select brushes in m_rect using m_selop
-		void		BrushDelete			();
+		void		BrushDeleteSelected	();
 		void		BrushCopy			();
 		void		BrushPaste			();
 		void		BrushMoveStart		();

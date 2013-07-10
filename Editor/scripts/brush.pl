@@ -10,7 +10,7 @@
 		 assign/2]).
 
 
-varDef(id,	0).
+varDef(id,	'').
 varDef(layer,	0).
 varDef(x,	0).
 varDef(y,	0).

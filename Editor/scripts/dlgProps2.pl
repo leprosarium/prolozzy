@@ -71,7 +71,9 @@ create(Mode, Brush) :-
 createProps(WMax, CurMax, Mode, Brush) :-
 	gui:dlgTitleH(TitleH),
 	Y is TitleH + 8 + 24,
-	findall(bp(Id, Value, Name, ToolTip, Type), (mod:brushProp(Id, Name, ToolTip, Type), brush:getEx(Brush, Id, Value)), Props),
+	findall(bp(Id, Value, Name, ToolTip, Type),
+		(   mod:brushProp(Id, Name, ToolTip, Type),
+		    (	brush:getEx(Brush, Id, Value)->true;brush:varDef(Id, Value))), Props),
 	createProps(Props, 0, Y, W, Mode, Brush),
 	CurMax is max(WMax, W).
 

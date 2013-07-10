@@ -117,7 +117,7 @@ brushChange(Br, C, Props) :-
 	(   brush:getSelect(Br, 0)
 	->  C = 0
 	;   C = 1,
-	    forall(member(p(Idx, 1, V), Props), brush:setProp(Br, Idx, V))).
+	    forall(member(p(Prop, 1, V), Props), brush:setEx(Br, Prop, V))).
 
 brushInvert :-
 	forallBrush(brushInvert(_, _), C),

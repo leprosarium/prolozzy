@@ -18,7 +18,7 @@ class cGUIDlg;
 class cGUIItem
 {
 public:
-	int id;
+	std::string id;
 	int style;
 	bool hidden;
 	bool disable;

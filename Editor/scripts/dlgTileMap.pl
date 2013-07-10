@@ -170,7 +170,7 @@ close :-
 	(   M2 - M0 > 0,
 	    M3 - M1 > 0
 	->  edi:toolBrush(B),
-	    brush:set(B, [x1=M0, y1=M1, x2=M2, y2=M3])
+	    brush:setProps(B, [x1=M0, y1=M1, x2=M2, y2=M3])
 	;   true),
 	gui:itemGetGuiTileMapScale(Scale),
 	gui:itemGetGuiTileMapSnap(Snap),

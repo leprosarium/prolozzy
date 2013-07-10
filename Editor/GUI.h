@@ -50,7 +50,7 @@ public:
 	int ImgFind( const std::string & image ) { return m_texturepool.Find(image); }
 	r9TexturePool m_texturepool;
 				
-	bool DlgSelect(int id);
+	bool DlgSelect(const std::string & id);
 	cGUIDlg * makeDlg();
 	template<class T>
 	void makeItem();

@@ -47,13 +47,13 @@ public:
 	using Items::begin;
 	using Items::end;
 	~DlgItems() { for(cGUIItem * i: *this) { delete i; }; }
-	cGUIItem * Find(int id) { auto i = std::find_if(begin(), end(), [id](cGUIItem *i){ return i->id == id; }); return i == end() ? nullptr : *i; }
+	cGUIItem * Find(const std::string & id) { auto i = std::find_if(begin(), end(), [id](cGUIItem *i){ return i->id == id; }); return i == end() ? nullptr : *i; }
 };
 
 class cGUIDlg
 {
 public:
-	int id;
+	std::string id;
 	bool hidden;
 	bool disable;
 	iRect rect;

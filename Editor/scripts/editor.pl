@@ -13,7 +13,8 @@
 :- use_module(dlgTileBrowse, []).
 :- use_module(dlgColor, []).
 :- use_module(dlgTileMap, []).
-:- use_module(dlgProps, []).
+%:- use_module(dlgProps, []).
+:- use_module(dlgProps2, []).
 :- use_module(dlgRoomProps, []).
 :- use_module(dlgBrushProps, []).
 :- use_module(keys, []).
@@ -47,9 +48,12 @@ init :-
 	def:color(grid3, GRID3), edi:setColorGrid3(GRID3),
 
 	% MenuBar
+	core:dl(1),
 	dlgMenuBar:create,
+	core:dl(2),
 
 	dlgStatusBar:create,
+	core:dl(3),
 
 	dlgColor:init,
 	(   edi:tileReload
@@ -57,12 +61,16 @@ init :-
 	    ->	gui:msgBoxOk("Warning","No tiles loaded.\nCheck the path and the tiles folder.", icon_warning)
 	    ;	true)
 	;   actions:options), %failed to load tiles, check the tiles folder
+	core:dl(4),
 
 	roomNames:reset(false),
+	core:dl(5),
 
 
 	% initialize default static brush
-	mod:brushNew(static).
+	mod:brushNew(static),
+	core:dl(6).
+
 
 % also called on Alt+F4
 close :-

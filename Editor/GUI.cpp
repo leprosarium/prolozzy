@@ -138,7 +138,7 @@ void cGUI::GetMousePos()
 	m_mouse = iV2(pt.x, pt.y);
 }
 
-bool cGUI::DlgSelect(int id)
+bool cGUI::DlgSelect(const std::string & id)
 {
 	auto i = std::find_if(m_dlg.begin(), m_dlg.end(), [&id](cGUIDlg * d) { return d->id == id;});
 	if(i == m_dlg.end())
@@ -353,7 +353,7 @@ PREDICATE_M(dlg, getPos2, 2)
 
 PREDICATE_M(dlg, setID, 1)
 {
-	g_gui->GetLastDlg()->id = A1;
+	g_gui->GetLastDlg()->id = static_cast<const char *>(A1);
 	return true;
 }
 
@@ -485,7 +485,7 @@ PREDICATE_M(gui, itemGetColor, 1)
 
 PREDICATE_M(gui, itemSetID, 1)
 {
-	g_gui->GetLastItem()->id = A1;
+	g_gui->GetLastItem()->id = static_cast<const char *>(A1);
 	return true;
 }
 

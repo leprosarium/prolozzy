@@ -10,41 +10,38 @@
 :-use_module(gui, [waitCall/1]).
 
 brushSearch :-
-	dlgProps:create(search),
+	dlgProps2:create(search),
 	gui:dlgSetTitle('Brush Search'),
 	dlg:getRect(X1, Y1, X2, Y2),
 	Y is Y2 - Y1 + 8,
 	gui:createButton(8, Y, 80, 'SEARCH', scripts:brushSearchApply),
 	gui:itemSetToolTip('Select brushes that match checked properties\nusing the specified selection operation.'),
 
-	createOpt(104, Xo1, Y, 1, 1000, 'select brushes', 'SET'),
-	createOpt(Xo1, Xo2, Y, 0, 1001, 'add to current selection', 'ADD'),
-	createOpt(Xo2, _Xo3, Y, 0, 1002, 'remove from current selection', 'SUB'),
+	createOpt(104, Xo1, Y, 1, set, 'select brushes', 'SET'),
+	createOpt(Xo1, Xo2, Y, 0, add, 'add to current selection', 'ADD'),
+	createOpt(Xo2, Xo3, Y, 0, del, 'remove from current selection', 'SUB'),
 	YY is Y + 22 + 8,
-	W is X2 - X1,
+	W is Xo3 - X1,
 	gui:dlgResize(0, 0, W, YY).
 
-createOpt(X, XO, Y, V, N, ToolTip, Text) :-
+createOpt(X, XO, Y, V, ID, ToolTip, Text) :-
 	gui:createRadio(X, Y, V, 2),
-	def:dlg(item(N), ID),
 	gui:itemSetID(ID),
 	gui:itemSetToolTip(ToolTip),
 	XX is X + 20,
 	gui:createText( XX, Y, 32, Text),
 	XO is XX + 40.
 
-brushSearchMode(set) :- gui:select(1000), gui:itemGetValue(1).
-brushSearchMode(add) :- gui:select(1001), gui:itemGetValue(1).
-brushSearchMode(del) :- gui:select(1002), gui:itemGetValue(1).
+brushSearchMode(Mode) :- member(Mode, [set, add, del]), gui:itemSelect(Mode), gui:itemGetValue(1).
 
 
-getCheckProp(p(Idx, C, V)) :-
-	brush:varDef(Prop,Idx,_),
-	dlgProps:select(Idx, 1),
+getCheckProp(p(Prop, C, V)) :-
+	brush:varDef(Prop,_),
+	gui:itemSelect(id(Prop, check)),
 	gui:itemGetValue(C),
 	C =\= 0,
 	edi:toolBrush(B),
-	brush:get(B, Prop, V).
+	brush:getEx(B, Prop, V).
 
 getCheckProps(Props) :-
 	findall(P, getCheckProp(P), Props).
@@ -86,12 +83,12 @@ brushSearchMatch(Props, Brush, yes) :-
 	forall(member(Prop, Props), brushSearchMatch(Prop, Brush)), !.
 brushSearchMatch(_, _, no).
 
-brushSearchMatch(p(Idx, C, V), Br) :-
-	brush:getProp(Br, Idx, Val),
-	(C=\=1,V=\=Val; C==1,V==Val).
+brushSearchMatch(p(Prop, C, V), Br) :-
+	brush:getEx(Br, Prop, Val),
+	(C=\=1,V \= Val; C==1,V = Val).
 
 brushChange :-
-	dlgProps:create(change),
+	dlgProps2:create(change),
 	gui:dlgSetTitle('Brush Change'),
 	dlg:getRect(X1, Y1, X2, Y2),
 	Y is Y2 - Y1 + 8,

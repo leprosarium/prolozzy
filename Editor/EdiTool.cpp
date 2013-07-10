@@ -74,10 +74,8 @@ void cEdiToolPaint::Update( float dtime )
 		my = my-bh;
 		SNAP2GRID(mx,my); // grid snap
 
-		brush->m_data[BRUSH_X] = mx;
-		brush->m_data[BRUSH_Y] = my;
-		brush->m_data[BRUSH_W] = bw;
-		brush->m_data[BRUSH_H] = bh;
+		brush->pos = iV2(mx, my);
+		brush->size = iV2(bw, bh);
 
 		if(I9_GetKeyDown(I9_MOUSE_B1)) m_mode=1;
 		else
@@ -98,8 +96,8 @@ void cEdiToolPaint::Update( float dtime )
 		if(mx>CAMX2) mx=CAMX2;
 		if(my>CAMY2) my=CAMY2;
 
-		int bw = mx - brush->m_data[BRUSH_X];
-		int bh = my - brush->m_data[BRUSH_Y];
+		int bw = mx - brush->pos.x;
+		int bh = my - brush->pos.y;
 		if(bw<0) bw=0;
 		if(bh<0) bh=0;
 		
@@ -113,25 +111,24 @@ void cEdiToolPaint::Update( float dtime )
 		else
 			SNAP2GRID(bw,bh); // grid snap
 
-		brush->m_data[BRUSH_W] = bw;
-		brush->m_data[BRUSH_H] = bh;
+		brush->size = iV2(bw, bh);
 
 		// axes
-		m_ax = brush->m_data[BRUSH_X] + bw;
-		m_ay = brush->m_data[BRUSH_Y] + bh;
+		m_ax = brush->pos.x + bw;
+		m_ay = brush->pos.y + bh;
 
 		if(!I9_GetKeyValue(I9_MOUSE_B1)) 
 		{
 			// add brush !
-			if( brush->m_data[BRUSH_W]>0 && brush->m_data[BRUSH_H]>0 && inview)
+			if( brush->size.x>0 && brush->size.y>0 && inview)
 			{
 				PlTermv a(2);
 				g_map.UnifyBrush(a[0], brush);
 				if(g_gui->ScriptPrologDo("brush", "clone", a))
 				{
 					tBrush * b = g_map.brushPtr(a[1]);
-					b->m_data[BRUSH_SELECT] = 0;
-					b->m_data[BRUSH_LAYER] = EdiApp()->LayerActive();
+					b->select = false;
+					b->layer = EdiApp()->LayerActive();
 					g_map.m_refresh = TRUE;
 					g_map.PartitionAdd(b);
 				}
@@ -205,20 +202,21 @@ void cEdiToolPaint::Draw()
 
 	if(m_mode==0||m_mode==1)
 	{
+		tBrush tmp = *brush;
 		PlTermv br(1);
-		g_map.UnifyBrush(br[0], brush);
+		g_map.UnifyBrush(br[0], &tmp);
 		g_gui->ScriptPrologDo("mod", "brushToolDraw", br);	
 		
-		int x = CAMZ*(brush->m_data[BRUSH_X] - CAMX1) + VIEWX;
-		int y = CAMZ*(brush->m_data[BRUSH_Y] - CAMY1) + VIEWY;
+		int x = CAMZ*(brush->pos.x - CAMX1) + VIEWX;
+		int y = CAMZ*(brush->pos.y - CAMY1) + VIEWY;
 		
-		g_paint.DrawBrushAt( brush, x, y, (float)CAMZ, TRUE ); // animated
+		g_paint.DrawBrushAt( &tmp, x, y, (float)CAMZ, TRUE ); // animated
 	}
 	else
 	if( (m_mode==2 || m_mode==3) && picked )
 	{
-		int x = CAMZ*(picked->m_data[BRUSH_X] - CAMX1) + VIEWX;
-		int y = CAMZ*(picked->m_data[BRUSH_Y] - CAMY1) + VIEWY;
+		int x = CAMZ*(picked->pos.x - CAMX1) + VIEWX;
+		int y = CAMZ*(picked->pos.y - CAMY1) + VIEWY;
 		g_paint.DrawBrushFlashAt( picked, x, y, (float)CAMZ ); // not animated
 	}
 }
@@ -238,7 +236,7 @@ void cEdiToolPaint::Command( int cmd )
 	else
 	if(cmd==TOOLCMD_PICKCOLOR)
 	{
-		EdiApp()->m_brush.m_data[BRUSH_COLOR] = picked->m_data[BRUSH_COLOR];
+		EdiApp()->m_brush.color = picked->color;
 	}
 	else
 	if(cmd==TOOLCMD_TOFRONT)
@@ -420,17 +418,17 @@ void cEdiToolEdit::Draw()
 	{
 		tBrush * brush = (m_mode!=2) ? g_map.brushvis[i] : m_drag[i];
 
-		if(!brush->m_data[BRUSH_SELECT]) continue;
-		int x = VIEWX + CAMZ * (brush->m_data[BRUSH_X]-CAMX1+d.x);
-		int y = VIEWY + CAMZ * (brush->m_data[BRUSH_Y]-CAMY1+d.y);
+		if(!brush->select) continue;
+		int x = VIEWX + CAMZ * (brush->pos.x-CAMX1+d.x);
+		int y = VIEWY + CAMZ * (brush->pos.y-CAMY1+d.y);
 
-		int shd = brush->m_data[BRUSH_SHADER];
-		int col = brush->m_data[BRUSH_COLOR];
-		brush->m_data[BRUSH_SHADER] = -1;
-		brush->m_data[BRUSH_COLOR] = g_paint.GetFlashingColorBW();
+		Blend shd = brush->shader;
+		int col = brush->color;
+		brush->shader = Blend::AlphaRep;
+		brush->color = g_paint.GetFlashingColorBW();
 		g_paint.DrawBrushAt( brush, x, y, (float)CAMZ );
-		brush->m_data[BRUSH_SHADER] = shd;
-		brush->m_data[BRUSH_COLOR] = col;
+		brush->shader = shd;
+		brush->color = col;
 	}
 
 	if( m_mode==1 )	
@@ -456,7 +454,7 @@ void cEdiToolEdit::BrushSelect()
 {
 	for(auto brush: g_map.brushvis)
 	{
-		int layer = brush->m_data[BRUSH_LAYER];
+		int layer = brush->layer;
 		if(layer<0 || layer>=LAYER_MAX) continue;
 		if(EdiApp()->LayerGet(layer)==0) continue; // hidden
 
@@ -464,15 +462,15 @@ void cEdiToolEdit::BrushSelect()
 		
 		if( m_rect.Intersects(brush->rect()) )
 		{
-			if(m_selop==-1 && (brush->m_data[BRUSH_SELECT]!=0) )
+			if(m_selop==-1 && brush->select)
 			{
-				brush->m_data[BRUSH_SELECT] = 0;
+				brush->select = false;
 				g_map.m_selectcount--;
 			}
 			else
-			if((m_selop==0 || m_selop==1) && (brush->m_data[BRUSH_SELECT]==0) )
+			if((m_selop==0 || m_selop==1) && !brush->select)
 			{
-				brush->m_data[BRUSH_SELECT] = 1;
+				brush->select = true;
 				g_map.m_selectcount++;
 			}
 		}
@@ -484,7 +482,7 @@ void cEdiToolEdit::BrushSelect()
 void cEdiToolEdit::BrushDeselect()
 {
 	for(tBrush * b: g_map.m_brush) 
-		b->m_data[BRUSH_SELECT] = 0;
+		b->select = false;
 	g_map.m_selectcount=0;
 	g_map.m_refresh=TRUE;
 }
@@ -495,7 +493,7 @@ void cEdiToolEdit::BrushMoveStart()
 	// create drag list with those visible and selected
 	m_drag.clear();
 	for(auto brush: g_map.brushvis)
-		if(brush->m_data[BRUSH_SELECT]) 
+		if(brush->select) 
 			m_drag.push_back(brush);
 	g_map.m_hideselected = TRUE;
 	g_map.m_refresh=TRUE;
@@ -506,10 +504,9 @@ void cEdiToolEdit::BrushMove()
 {
 	for(auto b: g_map.m_brush)
 	{
-		if(!b->m_data[BRUSH_SELECT]) continue;
+		if(!b->select) continue;
 		g_map.PartitionDel(b); // delete before changing
-		b->m_data[BRUSH_X] += m_moved.x;
-		b->m_data[BRUSH_Y] += m_moved.y;
+		b->pos += m_moved;
 		g_map.PartitionAdd(b); // readd after changed
 
 	}
@@ -525,7 +522,7 @@ void cEdiToolEdit::BrushDeleteSelected()
 	for(int idx=0;idx<g_map.m_brush.size();idx++)
 	{
 		tBrush * brush = g_map.m_brush[idx];
-		if(!brush->m_data[BRUSH_SELECT]) continue;
+		if(!brush->select) continue;
 		g_map.PartitionDel(brush);
 		g_map.BrushDel(brush); 
 		idx--;
@@ -539,7 +536,7 @@ void cEdiToolEdit::BrushCopy()
 {
 	std::ostringstream o;
 	for(tBrush * b: g_map.m_brush)
-		if(b->m_data[BRUSH_SELECT])
+		if(b->select)
 		{
 			PlTermv a(2);
 			g_map.UnifyBrush(a[0], b);
@@ -595,8 +592,8 @@ void cEdiToolEdit::BrushPaste()
 				if(g_gui->ScriptPrologDo("brush", "new", a))
 				{
 					tBrush * b = g_map.m_brush.back();
-					b->m_data[BRUSH_LAYER] = EdiApp()->LayerActive();
-					b->m_data[BRUSH_SELECT] = 1;
+					b->layer = EdiApp()->LayerActive();
+					b->select = true;
 					g_map.PartitionAdd(b);	
 				}
 			}

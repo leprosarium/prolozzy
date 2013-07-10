@@ -196,8 +196,8 @@ void cEdiMap::BrushTo(It begin, It end, tBrush * b)
 	It cur = std::find(begin,end, b);
 	if(cur == end)
 		return;
-	int layer = b->m_data[BRUSH_LAYER];
-	It front = std::find_if(begin, cur, [layer](tBrush * b) { return b->m_data[BRUSH_LAYER]==layer; });
+	int layer = b->layer;
+	It front = std::find_if(begin, cur, [layer](tBrush * b) { return b->layer==layer; });
 	if(front == cur)
 		return;
 	It to = cur++;

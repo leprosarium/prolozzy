@@ -147,87 +147,94 @@ PREDICATE_NONDET_M(map, brush, 1)
 GET_BRUSH_PROP(Prop, PROP)\
 SET_BRUSH_PROP(Prop, PROP)
 
-#define GET_BRUSH_PROP(Prop, PROP) PREDICATE_M(brush, get##Prop, 2)\
-{\
-	return A2 = g_map.brushPtr(A1)->m_data[BRUSH_##PROP];\
-}
+#define GET_BRUSH_PROP(Prop, PROP) PREDICATE_M(brush, get##Prop, 2) { return A2 = g_map.brushPtr(A1)->PROP; }
+#define SET_BRUSH_PROP(Prop, PROP) PREDICATE_M(brush, set##Prop, 2) { g_map.brushPtr(A1)->PROP = A2; return true; }
 
-#define SET_BRUSH_PROP(Prop, PROP) PREDICATE_M(brush, set##Prop, 2)\
-{\
-	g_map.brushPtr(A1)->m_data[BRUSH_##PROP] = A2; \
-	return true;\
-}
-
-BRUSH_PROP(Layer, LAYER)
-BRUSH_PROP(X, X)
-BRUSH_PROP(Y, Y)
-BRUSH_PROP(W, W)
-BRUSH_PROP(H, H)
-BRUSH_PROP(Tile, TILE)
-BRUSH_PROP(Frame, FRAME)
-BRUSH_PROP(MapX1, MAP)
-BRUSH_PROP(MapY1, MAP+1)
-BRUSH_PROP(MapX2, MAP+2)
-BRUSH_PROP(MapY2, MAP+3)
-BRUSH_PROP(Flip, FLIP)
-BRUSH_PROP(Shader, SHADER)
-BRUSH_PROP(Scale, SCALE)
-BRUSH_PROP(Select, SELECT)
-
-BRUSH_PROP(Type, TYPE)
-BRUSH_PROP(ID, ID)
-BRUSH_PROP(Material, MATERIAL)
-BRUSH_PROP(Draw, DRAW)
-BRUSH_PROP(Disable, DISABLE)
-BRUSH_PROP(Delay, DELAY)
-BRUSH_PROP(Anim, ANIM)
-BRUSH_PROP(Collider, COLLIDER)
-BRUSH_PROP(Class, CLASS)
-BRUSH_PROP(Status, STATUS)
-BRUSH_PROP(Target, TARGET)
-BRUSH_PROP(Death, DEATH)
+BRUSH_PROP(Layer, layer)
+BRUSH_PROP(X, pos.x)
+BRUSH_PROP(Y, pos.y)
+BRUSH_PROP(W, size.x)
+BRUSH_PROP(H, size.y)
+BRUSH_PROP(Tile, tile)
+BRUSH_PROP(Frame, frame)
+BRUSH_PROP(MapX1, map.p1.x)
+BRUSH_PROP(MapY1, map.p1.y)
+BRUSH_PROP(MapX2, map.p2.x)
+BRUSH_PROP(MapY2, map.p2.y)
+BRUSH_PROP(Flip, flip)
+BRUSH_PROP(Scale, scale)
+BRUSH_PROP(Material, material)
+BRUSH_PROP(Draw, draw)
+BRUSH_PROP(Delay, delay)
+BRUSH_PROP(Anim, anim)
+BRUSH_PROP(Collider, collider)
 
 PREDICATE_M(brush, getColor, 2) 
 {
-	int64 color = static_cast<unsigned>(g_map.brushPtr(A1)->m_data[BRUSH_COLOR]);
+	int64 color = static_cast<dword>(g_map.brushPtr(A1)->color);
 	return A2 = color;
-}
-
-PREDICATE_M(brush, getProp, 3) 
-{
-	tBrush * brush = g_map.brushPtr(A1);
-	int idx = A2;
-	if(idx < 0 || idx >= BRUSH_MAX) 
-		throw PlDomainError("invalid brush variable", A2);
-	if(idx == BRUSH_COLOR) {
-		int64 color = static_cast<unsigned>(brush->m_data[idx]);
-		return A3 = color;
-	}
-	return A3 = brush->m_data[idx];
 }
 
 PREDICATE_M(brush, setColor , 2) 
 {
 	int64 color = A2;
-	g_map.brushPtr(A1)->m_data[BRUSH_COLOR] = static_cast<int>(color);
+	g_map.brushPtr(A1)->color = static_cast<dword>(color);
 	return true;
 }
 
-PREDICATE_M(brush, setProp , 3) 
+PREDICATE_M(brush, getShader, 2) 
 {
-	tBrush * brush = g_map.brushPtr(A1);
-	int idx = A2;
-	if(idx < 0 || idx >= BRUSH_MAX) 
-		throw PlDomainError("invalid brush variable", A2);
-	if(idx == BRUSH_COLOR)
-	{
-		int64 color = A3;
-		brush->m_data[idx] = static_cast<int>(color);
-	} 
-	else 
-	{
-		brush->m_data[idx] = A3;
-	}
+	return A2 = static_cast<int>(g_map.brushPtr(A1)->shader);
+}
+
+PREDICATE_M(brush, setShader, 2) 
+{
+	g_map.brushPtr(A1)->shader =  static_cast<Blend>(static_cast<int>(A2));
+	return true;
+}
+
+PREDICATE_M(brush, getID, 2) 
+{
+	const std::string & id = g_map.brushPtr(A1)->id;
+	return id.empty() ? false : (A2 = id);
+}
+
+PREDICATE_M(brush, setID , 2) 
+{
+	g_map.brushPtr(A1)->id = static_cast<const char *>(A2);
+	return true;
+}
+
+PREDICATE_M(brush, getDisable, 2) 
+{
+	return A2 = g_map.brushPtr(A1)->disable ? 1 : 0;
+}
+
+PREDICATE_M(brush, setDisable , 2) 
+{
+	g_map.brushPtr(A1)->disable = static_cast<int>(A2) != 0;
+	return true;
+}
+
+PREDICATE_M(brush, getSelect, 2) 
+{
+	return A2 = g_map.brushPtr(A1)->select ? 1 : 0;
+}
+
+PREDICATE_M(brush, setSelect , 2) 
+{
+	g_map.brushPtr(A1)->select = static_cast<int>(A2) != 0;
+	return true;
+}
+
+PREDICATE_M(brush, getCollision, 2) 
+{
+	return A2 = g_map.brushPtr(A1)->collision ? 1 : 0;
+}
+
+PREDICATE_M(brush, setCollision, 2) 
+{
+	g_map.brushPtr(A1)->collision = static_cast<int>(A2) != 0;
 	return true;
 }
 
@@ -635,7 +642,7 @@ void cEdiMap::BrushIns( int idx, tBrush& brush )
 	BrushNew();
 	for(int i=m_brush.size()-1;i>idx;i--) m_brush[i] = m_brush[i-1];
 	*m_brush[idx]=brush;
-	if(m_brush[idx]->m_data[BRUSH_SELECT]) m_selectcount++;
+	if(m_brush[idx]->select) m_selectcount++;
 }
 
 void cEdiMap::TakeBrush(tBrush * b)
@@ -643,14 +650,14 @@ void cEdiMap::TakeBrush(tBrush * b)
 	auto it = std::find(m_brush.begin(), m_brush.end(), b);
 	if(it == m_brush.end())
 		return;
-	if(b->m_data[BRUSH_SELECT]) m_selectcount--;
+	if(b->select) m_selectcount--;
 	m_brush.erase(it);
 	brushvis.clear();
 }
 
 void cEdiMap::BrushDel(tBrush * brush)
 {
-	if(brush->m_data[BRUSH_SELECT]) m_selectcount--;
+	if(brush->select) m_selectcount--;
 	PlTermv a(1);
 	UnifyBrush(a[0], brush);
 	g_gui->ScriptPrologDo("brush", "delete", a);
@@ -684,7 +691,7 @@ void cEdiMap::BrushDrawExtra( iRect& view )
 		{
 			m_count_brushcheck++;
 
-			int layer = brush->m_data[BRUSH_LAYER];
+			int layer = brush->layer;
 			if(layer<0 || layer>=LAYER_MAX) continue;
 			if(EdiApp()->LayerGet(layer)==0) continue; // hidden
 
@@ -696,24 +703,21 @@ void cEdiMap::BrushDrawExtra( iRect& view )
 
 	// order drawbuffer by index // @TODO optimize
 
-	std::sort(brushvis.begin(), brushvis.end(), [](tBrush * b1, tBrush * b2) {
-			return  b1->m_data[BRUSH_LAYER] < b2->m_data[BRUSH_LAYER];
-	});
+	std::sort(brushvis.begin(), brushvis.end(), [](tBrush * b1, tBrush * b2) { return  b1->layer < b2->layer; } );
 
 	// remove duplicates
 	brushvis.erase( std::unique( brushvis.begin(), brushvis.end() ), brushvis.end() );
 
 	// draw drawbuffer
-
 	tBrush brushtemp;
 	for(auto brush: brushvis)
 	{
-		if( m_hideselected && brush->m_data[BRUSH_SELECT] ) continue;
+		if( m_hideselected && brush->select ) continue;
 		brushtemp = *brush;
 		PlTermv br(1);
 		g_map.UnifyBrush(br[0], & brushtemp);
 		if(!g_gui->ScriptPrologDo("mod", "brushDraw", br)) continue;
-		iV2 p = m_camz  * (brushtemp.pos() - view.p1);
+		iV2 p = m_camz  * (brushtemp.pos - view.p1);
 		g_paint.DrawBrushAt( &brushtemp, p.x, p.y, (float)m_camz );
 		m_count_brushdraw++;
 	}
@@ -724,7 +728,7 @@ tBrush * cEdiMap::BrushPick( int x, int y )
 	auto it = find_if(m_brush.rbegin(), m_brush.rend(), 
 		[x,y](tBrush *brush) -> bool
 	{ 
-		int layer = brush->m_data[BRUSH_LAYER];
+		int layer = brush->layer;
 		return layer >= 0 && layer < LAYER_MAX && EdiApp()->LayerGet(layer) != 0 && brush->rect().IsInside(iV2(x,y));
 	});
 	return it == m_brush.rend() ? nullptr : *it;
@@ -899,7 +903,7 @@ void cEdiMap::SelectionRefresh()
 {
 	m_selectcount=0;
 	for(tBrush * b: m_brush)
-		if(b->m_data[BRUSH_SELECT]) 
+		if(b->select) 
 			m_selectcount++;
 }
 
@@ -915,10 +919,10 @@ void cEdiMap::SelectionGoto( int dir )
 		i+=dir;
 		if(i<=-1) i=m_brush.size()-1;
 		if(i>=m_brush.size()) i=0;
-		if(m_brush[i]->m_data[BRUSH_SELECT]) 
+		if(m_brush[i]->select) 
 		{
-			m_camx = m_brush[i]->m_data[BRUSH_X];
-			m_camy = m_brush[i]->m_data[BRUSH_Y];
+			m_camx = m_brush[i]->pos.x;
+			m_camy = m_brush[i]->pos.y;
 			m_refresh = TRUE;
 			m_selectgoto = i;
 			return;
@@ -1188,12 +1192,35 @@ bool cEdiMap::LoadMap(const std::string &filename)
 				for(int i = 0; i < brushcount;i++)
 				{
 					if(i != g_map.BrushNew()) { ERROR_CHUNK("index"); }
+					tBrush * b = g_map.m_brush[i];
 					for(int j = 0; j  < BRUSH_MAX; j++)
 					{	
 						int val = 0;
 						if(!file->Read(&val, sizeof(val))) { ERROR_CHUNK("size"); }
 
-						g_map.m_brush[i]->m_data[j] = val;
+						if(j == BRUSH_LAYER) b->layer = val;
+						else if(j == BRUSH_X) b->pos.x = val;
+						else if(j == BRUSH_Y) b->pos.y = val;
+						else if(j == BRUSH_W) b->size.x = val;
+						else if(j == BRUSH_H) b->size.y = val;
+						else if(j == BRUSH_TILE) b->tile = val;
+						else if(j == BRUSH_FRAME) b->frame = val;
+						else if(j == BRUSH_MAP) b->map.p1.x = val;
+						else if(j == BRUSH_MAP+1) b->map.p1.y = val;
+						else if(j == BRUSH_MAP+2) b->map.p2.x = val;
+						else if(j == BRUSH_MAP+3) b->map.p2.y = val;
+						else if(j == BRUSH_FLIP) b->flip = val;
+						else if(j == BRUSH_COLOR) b->color = val;
+						else if(j == BRUSH_SHADER) b->shader = static_cast<Blend>(val);
+						else if(j == BRUSH_SCALE) b->scale = val;
+						else if(j == BRUSH_SELECT) b->select = val != 0;
+						else if(j == BRUSH_ID) {std::ostringstream o; o << val; b->id = o.str(); }
+						else if(j == BRUSH_MATERIAL) b->material = val;
+						else if(j == BRUSH_DRAW) b->draw = val;
+						else if(j == BRUSH_DISABLE) b->disable = val != 0;
+						else if(j == BRUSH_DELAY) b->delay = val;
+						else if(j == BRUSH_ANIM) b->anim = val;
+						else if(j == BRUSH_COLLIDER) b->collider = val;
 					}
 				}
 				break;

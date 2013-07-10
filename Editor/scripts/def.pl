@@ -13,7 +13,6 @@
 		drawMode/3,
 		material/4,
 		density/2,
-		class/2,
 		toolCmd/2]).
 
 roomW(240).	% default game room width
@@ -62,15 +61,15 @@ density(soft, 0xff606060).
 density(hard, 0xffa0a0a0).
 density(jump, 0xffffffff).
 
-class(none, 0).
-class(action, 1).
-class(hurt, 2).
-class(kill, 3).
-class(item, 4).
-class(coin, 5).
-class(food, 6).
-class(life, 7).
-class(waypoint, 8).
+%class(none, 0).
+%class(action, 1).
+%class(hurt, 2).
+%class(kill, 3).
+%class(item, 4).
+%class(coin, 5).
+%class(food, 6).
+%class(life, 7).
+%class(waypoint, 8).
 
 
 
@@ -189,10 +188,8 @@ mb(t1, mapping, 1105).
 mb(t1, flip, 1106).
 mb(t1, color, 1107).
 mb(t1, shader, 1108).
-mb(t1, type, 1109).
 mb(t1, draw, 1110).
 mb(t1, material, 1111).
-mb(t1, class, 1112).
 
 mb(t2, search, 1113).
 mb(t2, change, 1114).

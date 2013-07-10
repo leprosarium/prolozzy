@@ -98,6 +98,7 @@
     <ClInclude Include="Files\F9FileRes.h" />
     <ClInclude Include="Files\F9Files.h" />
     <ClInclude Include="Files\F9FileZip.h" />
+    <ClInclude Include="Brush.h" />
     <ClInclude Include="Input\I9Def.h" />
     <ClInclude Include="Input\I9DeviceDX.h" />
     <ClInclude Include="Input\I9FFDX.h" />

@@ -14,7 +14,6 @@ cEdiPaint g_paint;
 cEdiPaint::cEdiPaint()
 {
 	m_tilepath[0] = 0;
-	m_shadersel = Blend::AlphaRep;
 	m_brushrect = 0;
 }
 
@@ -208,23 +207,23 @@ void cEdiPaint::DrawTile( int idx, int x, int y, dword color, int flip, int fram
 void cEdiPaint::DrawBrushAt( tBrush* brush, int x, int y, float zoom, BOOL anim )
 {
 	if(brush==NULL) return;
-	int idx = TileFind(brush->m_data[BRUSH_TILE]);
+	int idx = TileFind(brush->tile);
 	// if(idx==-1) return;
 
-	iRect map = brush->map();
+	iRect map = brush->map;
 	int mw = static_cast<int>(brush->mapWith());
 	int mh = static_cast<int>(brush->mapHeight());
 	float ms = brush->mapScale();
 	if( mw==0 || mh==0 ) return;
 
 	fRect oldclip = R9_GetClipping();
-	fRect newclip( (float)x, (float)y, (float)x+zoom*brush->m_data[BRUSH_W], (float)y+zoom*brush->m_data[BRUSH_H] );
+	fRect newclip( (float)x, (float)y, (float)x+zoom*brush->size.x, (float)y+zoom*brush->size.y );
 	R9_AddClipping(newclip);
 	if(!R9_IsClipping()) { R9_SetClipping(oldclip); return; } // fully clipped
 
 	if(idx==-1) // no tile
 	{
-		dword color = brush->m_data[BRUSH_COLOR] & 0xffff40ff;
+		dword color = brush->color & 0xffff40ff;
 		R9_DrawLine( fV2(newclip.p1.x,newclip.p1.y),		fV2(newclip.p2.x-1,newclip.p1.y),	color );
 		R9_DrawLine( fV2(newclip.p2.x-1,newclip.p1.y),		fV2(newclip.p2.x-1,newclip.p2.y-1),	color );
 		R9_DrawLine( fV2(newclip.p2.x-1,newclip.p2.y-1),	fV2(newclip.p1.x,newclip.p2.y-1),	color );
@@ -235,24 +234,17 @@ void cEdiPaint::DrawBrushAt( tBrush* brush, int x, int y, float zoom, BOOL anim 
 		return;
 	}
 
-	int cx = (brush->m_data[BRUSH_W]+mw-1) / mw;
-	int cy = (brush->m_data[BRUSH_H]+mh-1) / mh;
+	int cx = (brush->size.x+mw-1) / mw;
+	int cy = (brush->size.y+mh-1) / mh;
 
-	int sh = brush->m_data[BRUSH_SHADER];
-	Blend shader;
-	if(sh < static_cast<int>(Blend::Min) || sh >= static_cast<int>(Blend::Max)) shader = m_shadersel;
-	else shader = static_cast<Blend>(sh);
 
-	int frame = brush->m_data[BRUSH_FRAME];
-	//@ if(!anim) frame=0;
-	
 	int xt=x;
 	for(int i=0;i<cy;i++)
 	{
 		x = xt;
 		for(int j=0;j<cx;j++)
 		{
-			DrawTile( idx, x, y, map, brush->m_data[BRUSH_COLOR], brush->m_data[BRUSH_FLIP], frame, shader, zoom*ms );
+			DrawTile( idx, x, y, map, brush->color, brush->flip, brush->frame, brush->shader, zoom*ms );
 			x+=(int)(zoom*mw);
 		}
 		y+=(int)(zoom*mh);
@@ -273,13 +265,13 @@ void cEdiPaint::DrawBrushAt( tBrush* brush, int x, int y, float zoom, BOOL anim 
 void cEdiPaint::DrawBrushFlashAt( tBrush* brush, int x, int y, float zoom, BOOL anim )
 {
 	if(brush==NULL) return;
-	int shd = brush->m_data[BRUSH_SHADER];
-	int col = brush->m_data[BRUSH_COLOR];
-	brush->m_data[BRUSH_SHADER] = -1; // will use the shadersel (with the ALPHAREP blend)
-	brush->m_data[BRUSH_COLOR] = GetFlashingColorBW();
+	Blend shd = brush->shader;
+	int col = brush->color;
+	brush->shader = Blend::AlphaRep;
+	brush->color = GetFlashingColorBW();
 	g_paint.DrawBrushAt( brush, x, y, zoom, anim );
-	brush->m_data[BRUSH_SHADER] = shd ;
-	brush->m_data[BRUSH_COLOR] = col;
+	brush->shader = shd ;
+	brush->color = col;
 }
 
 dword cEdiPaint::GetFlashingColorBW()

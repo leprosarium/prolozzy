@@ -73,15 +73,6 @@ cEdiApp::cEdiApp()
 	m_tool[TOOL_PAINT]	= new cEdiToolPaint();
 	m_tool[TOOL_EDIT]	= new cEdiToolEdit();
 
-	// reset brush
-	memset(&m_brush,0,sizeof(m_brush));
-	m_brush.m_data[BRUSH_TILE]	= 0; // brush 0 must exist
-	m_brush.m_data[BRUSH_MAP+0]	= 0;
-	m_brush.m_data[BRUSH_MAP+1]	= 0;
-	m_brush.m_data[BRUSH_MAP+2]	= 8;
-	m_brush.m_data[BRUSH_MAP+3]	= 8;
-	m_brush.m_data[BRUSH_COLOR] = 0xffffffff;
-
 	for(int i=0;i<LAYER_MAX;i++) m_layer[i]=1;
 	m_layer[0]=2;
 

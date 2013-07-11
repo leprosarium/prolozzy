@@ -17,7 +17,7 @@
 		    maxCoins/1,
 		    scuba/1,
 		    flippers/1,
-		    bubbles/1]).
+		    bubbles/0]).
 
 maxCredits(3).		% max number of credits
 maxCoins(4).		% max number of coins or diamonds to find (set it to the number of coins you added in your map)
@@ -48,9 +48,9 @@ fontDefault(4).		% id of the default font
 % flippers(-1).		% set flipers item's id if you have any flippers in your game and you want to swim in WaterPlay (or you can set the id of the scuba if no flippers item)
 % bubbles(-1).		% set this to the first valid bubble object. the rest of the PLAYER_BUBBLES bubbles have consecutive ids. used in WaterPlay
 
-scuba('9001').
-flippers('9000').
-bubbles(500).
+scuba(scuba).
+flippers(flippers).
+bubbles.
 
 
 

@@ -1,7 +1,7 @@
 :- module(ai, [updateSpider/1,
 	      updateChainLink/1,
 	      updateTrain/1,
-	      updateBubbles/5]).
+	      updateBubbles/3]).
 
 
 
@@ -104,33 +104,19 @@ updateTrainDown(X, X2, Xn, Speed) :-
 
 
 
-% IN: int; id; first bubble object's id
-% IN: int; count; maximum number of bubble objects, with ids starting from id, id+1, id+2, etc
-% IN: int; debit; the spawning debit delay factor, higher values means rare spawns, 0 means stopped
-% IN: int; speed; the moving speed factor of bubbles (with some random variation)
-% IN: int; life; the number of cycles a bubble lives, until respawned (with some random variation)
-% This is used to manage the air bubbles the player spawns, while in water.
-% disable = if bubble is active or not (default must be disabled)
-% user(0) = bubble particular speed value (O_BUBBLESPEED)
-% user(1) = bubble life timer (O_BUBBLETIME)
-% Make sure all bubbles are disabled by default !
-updateBubbles(Id, Count, Debit, Speed, Life) :-
-	updateActiveBubbles(Id, Count, Life, Free), !,
+% +debit; the spawning debit delay factor, higher values means rare spawns, 0 means stopped
+% +speed; the moving speed factor of bubbles (with some random variation)
+% +life; the number of cycles a bubble lives, until respawned (with some random variation)
+updateBubbles(Debit, Speed, Life) :-
+	updateActiveBubbles(Life, Free), !,
 	spawnBubbles(Free, Debit, Speed).
-updateBubbles(_, _, _, _, _).
+updateBubbles(_, _, _).
 
-updateActiveBubbles(_, 0, _, []).
-updateActiveBubbles(Id, Count, Life, Free) :-
-	brush:find(Id, Br),
-	(   brush:getDisable(Br, 1)
-	->  Free = [Br|OtherFree]
-	;   Free = OtherFree,
-	    updateBubble(Br, Life)),
-
-	NId is Id + 1,
-	NCount is Count - 1,
-	updateActiveBubbles(NId, NCount, Life, OtherFree).
-
+%updateActiveBubbles( _, []).
+updateActiveBubbles(Life, Free) :-
+	findall(Br, brush:getEx(Br, class, bubble), Bubbles),
+	partition(brush:disabled, Bubbles, Free, Active),
+	forall(member(B, Active), updateBubble(B, Life)).
 
 updateBubble(Br, Life) :-
 	updateBubbleLive(Br, Life)

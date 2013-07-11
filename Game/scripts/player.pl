@@ -501,8 +501,8 @@ updateWaterPlay :-
 	updateBubbles(BubbleParam).
 
 updateBubbles(bubble(Debit, Speed)) :-
-	(   gamedef:bubbles(BubbleID)
-	->  gamedef:playerBubbles(PB), ai:updateBubbles(BubbleID,PB, Debit, Speed,24)
+	(   gamedef:bubbles
+	->  ai:updateBubbles(Debit, Speed, 24)
 	;   true).
 
 updateWaterPlay(Costume, Bubble) :-

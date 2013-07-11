@@ -93,14 +93,14 @@ setRoomPos(X, Y) :- setRoomX(X), setRoomY(Y).
 roomSize(W, H) :- map:roomW(W), map:roomH(H).
 
 updateRoom(2, 1) :-
-	ai:updateTrain(3000).
+	ai:updateTrain(train).
 updateRoom(2, 1) :- !.
 
 
 updateRoom(3, 1) :-
-	ai:updateSpider(7010),
-	ai:updateChainLink(7009),
-	ai:updateTrain(7011).
+	ai:updateSpider(spider),
+	ai:updateChainLink(spider_link),
+	ai:updateTrain(fly).
 updateRoom(3, 1) :- !.
 
 updateRoom(X, Y) :-
@@ -120,9 +120,9 @@ closeRoom(X, Y) :-
 outRoom(X, Y) :-
 	core:debugData(8, our(X, Y)).
 
-collideObject('100', 1) :-
+collideObject(collide_handler, 1) :-
 	update:register(player, player:playStun),
-	core:debugData(9, coll(100, 1)).
+	core:debugData(9, coll(ch, 1)).
 
 
 beginNewGame :-
@@ -145,11 +145,13 @@ beginNewGame :-
 %	core:dl(action(Id)).
 
 useObject(Id1, Id2) :-
-	core:dl(use(Id1, Id2)).
+	core:dl(use(Id1, Id2)),
+	findall(Br-V, brush:getEx(Br, bubble, V), Brs),
+	core:dl(Brs).
 
 
-actionObject('1000') :-
-	brush:find(1000, Obj),
+actionObject(dylan) :-
+	brush:find(dylan, Obj),
 	update:register(ui, message:pop),
 	(   brush:getEx(Obj, status, st1)
 	->  brush:setEx(Obj, status, st2),
@@ -157,7 +159,7 @@ actionObject('1000') :-
 	;   message:qmsg(1, 2, 2, '"DORA NEEDS SOME LEAFS"')).
 
 
-actionObject('1001') :-
+actionObject(dora) :-
 	update:regPop(ui, action:useObject),
 	update:register(ui, menu:openDialogInventory),
 	update:register(ui, message:pop),

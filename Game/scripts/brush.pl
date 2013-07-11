@@ -1,4 +1,7 @@
-:- module(brush, [new/1]).
+:- module(brush, [new/1,
+		 disabled/1]).
+
+disabled(Br) :- brush:getDisable(Br, 1).
 
 setObj(brush(Br), Props) :- !, forall(member(Var=Val, Props), setEx(brush(Br), Var, Val)).
 setObj(Id, Props) :- !, brush:find(Id, Br), setObj(Br, Props).

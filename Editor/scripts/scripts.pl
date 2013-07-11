@@ -12,7 +12,7 @@
 brushSearch :-
 	dlgProps2:create(search),
 	gui:dlgSetTitle('Brush Search'),
-	dlg:getRect(X1, Y1, X2, Y2),
+	dlg:getRect(X1, Y1, _X2, Y2),
 	Y is Y2 - Y1 + 8,
 	gui:createButton(8, Y, 80, 'SEARCH', scripts:brushSearchApply),
 	gui:itemSetToolTip('Select brushes that match checked properties\nusing the specified selection operation.'),

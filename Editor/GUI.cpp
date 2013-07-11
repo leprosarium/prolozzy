@@ -428,13 +428,29 @@ PREDICATE_M(gui, itemNew, 1)
 	return g_gui->makeItem(A1);
 }
 
-PREDICATE_M(gui, itemSelect, 1)
+PREDICATE_NONDET_M(gui, itemSelect, 1)
 {
-	cGUIDlg * d = g_gui->GetLastDlg();
-	if(cGUIItem * i = d->Items.Find(A1))
-	{
-		i->Select();
+	auto call = PL_foreign_control(handle);
+	if(call == PL_PRUNED)
 		return true;
+	cGUIDlg * d = g_gui->GetLastDlg();
+	size_t idx = call == PL_FIRST_CALL ? 0 : PL_foreign_context(handle);
+	DlgItems & items = d->Items;
+	PlFrame fr;
+	for(;idx < items.size(); ++idx)
+	{
+		cGUIItem * i = items[idx];
+		if(i->id.empty())
+			continue;
+		if(A1 = PlCompound(i->id.c_str()))
+		{
+			i->Select();
+			if(++idx == items.size())
+				return true;
+			else
+				PL_retry(idx);
+		}
+		fr.rewind();
 	}
 	return false;
 }

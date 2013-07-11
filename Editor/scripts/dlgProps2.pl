@@ -2,7 +2,7 @@
 		     create/1,
 		     create/2]).
 
-propsCount(16).
+propsCount(22).
 
 readOnly(x).
 readOnly(y).

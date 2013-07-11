@@ -39,7 +39,6 @@ init :-
 	gui:loadResources,
 	dlgOptions:load,
 
-
 	% editor colors
 	def:color(back1, BACK1), edi:setColorBack1(BACK1),
 	def:color(back2, BACK2), edi:setColorBack2(BACK2),
@@ -47,30 +46,17 @@ init :-
 	def:color(grid2, GRID2), edi:setColorGrid2(GRID2),
 	def:color(grid3, GRID3), edi:setColorGrid3(GRID3),
 
-	% MenuBar
-	core:dl(1),
 	dlgMenuBar:create,
-	core:dl(2),
-
 	dlgStatusBar:create,
-	core:dl(3),
-
 	dlgColor:init,
 	(   edi:tileReload
 	->  (   edi:tileCount(0)
 	    ->	gui:msgBoxOk("Warning","No tiles loaded.\nCheck the path and the tiles folder.", icon_warning)
 	    ;	true)
 	;   actions:options), %failed to load tiles, check the tiles folder
-	core:dl(4),
 
 	roomNames:reset(false),
-	core:dl(5),
-
-
-	% initialize default static brush
-	mod:brushNew(static),
-	core:dl(6).
-
+	mod:brushNew(static).   % initialize default static brush
 
 % also called on Alt+F4
 close :-

@@ -112,7 +112,7 @@ brushNew(Type) :-
 	;   def:drawMode(img, Draw, _)), % visible
 
 	edi:toolBrush(B),
-	brush:setProps(B, [shader=SHADER_BLEND, scale=100, id=0, material=0, disable=0, delay=3, anim=2, collider=0, draw=Draw]),
+	brush:setProps(B, [shader=SHADER_BLEND, scale=100, id='', material=0, disable=0, delay=3, anim=2, collider=0, draw=Draw]),
 	brush:delete(B).
 
 

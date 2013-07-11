@@ -55,36 +55,20 @@ createProps([P|Ps], I, X, Y, H, YY) :-
 
 createProp(Prop-Val, I, X, Y) :-
 	gui:createEdit(X, Y, 64, Prop),
-	II is I * 2,
-	def:dlg(item(II), ID0),
-	gui:itemSetID(ID0),
+	gui:itemSetID(id(I,name)),
 	X2 is X + 68,
 	term_to_atom(Val, VV),
 	gui:createEdit(X2, Y, 136, VV),
-	II1 is II + 1,
-	def:dlg(item(II1), ID1),
-	gui:itemSetID(ID1).
+	gui:itemSetID(id(I,value)).
 
 dlgClose(Br):-
-	collectProps(0, Props),
-	core:dl(set(Br, Props)),
+	findall(Key-Val, (gui:itemSelect(id(N,name)),
+			  gui:itemGetTxt(Key),
+			  Key \= '',
+			  gui:itemSelect(id(N,value)),
+			  gui:itemGetTxt(V),
+			  atom_to_term(V, Val, _)), Props),
 	brush:setEx(Br, Props).
-
-collectProps(N, Props) :-
-	(   gui:select(N)
-	->  gui:itemGetTxt(Key),
-	    (	Key == ''
-	    ->	N2 is N + 2,
-		collectProps(N2, Props)
-	    ;	N1 is N + 1,
-		gui:select(N1),
-		gui:itemGetTxt(V),
-		atom_to_term(V, Val, _),
-		N2 is N1 + 1,
-		collectProps(N2, Other),
-		Props = [Key-Val|Other])
-	;   Props = []).
-
 
 
 

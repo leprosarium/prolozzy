@@ -46,6 +46,8 @@ public:
 	friend class cGUIDlg;
 	using Items::begin;
 	using Items::end;
+	using Items::size;
+	using Items::operator[];
 	~DlgItems() { for(cGUIItem * i: *this) { delete i; }; }
 	cGUIItem * Find(const std::string & id) { auto i = std::find_if(begin(), end(), [id](cGUIItem *i){ return i->id == id; }); return i == end() ? nullptr : *i; }
 };

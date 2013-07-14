@@ -101,9 +101,6 @@ updateTrainDown(X, X2, Xn, Speed) :-
 	;   Xn = X.
 
 
-
-
-
 % +debit; the spawning debit delay factor, higher values means rare spawns, 0 means stopped
 % +speed; the moving speed factor of bubbles (with some random variation)
 % +life; the number of cycles a bubble lives, until respawned (with some random variation)
@@ -114,9 +111,14 @@ updateBubbles(_, _, _).
 
 %updateActiveBubbles( _, []).
 updateActiveBubbles(Life, Free) :-
-	findall(Br, brush:getEx(Br, class, bubble), Bubbles),
+	(recorded(bubbles, Bubbles); initBubbles(Bubbles)),
 	partition(brush:disabled, Bubbles, Free, Active),
 	forall(member(B, Active), updateBubble(B, Life)).
+
+initBubbles(Bubbles) :-
+	findall(Br, brush:getEx(Br, class, bubble), Bubbles),
+	recorda(bubbles, Bubbles).
+
 
 updateBubble(Br, Life) :-
 	updateBubbleLive(Br, Life)

@@ -184,7 +184,7 @@ event(_, collision(ID, Mode)) :-
 event(_, fall) :-
 	(player:dead; player:inWater) ->
 	player:stopStun;
-	(player:inStun -> update:register(player, player:playStun) ; true).
+	(player:inStun -> player:playStun ; true).
 
 
 event(State, drawHud) :- (State = init; State = restart),!,

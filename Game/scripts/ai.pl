@@ -14,29 +14,27 @@
 % status = direction 0=up, 1=down
 updateSpider(Id) :-
 	brush:find(Id, Spider),
-	\+ brush:getDisable(Spider, 1),
+	\+ brush:disabled(Spider),
 	brush:getDelay(Spider, Delay),
 	util:isUpdate(Delay),
 	brush:getY(Spider, Y),
 	brush:getEx(Spider, status, Status),
 	updateSpider(Spider, Y, Y0, Status),
 	brush:setY(Spider, Y0).
-% up
+
 updateSpider(Spider, Y, Y0, up) :-
 	brush:getEx(Spider, upper, Ty),
 	(   Y > Ty
 	->  Y0 is Y - 1
-	;   (Y0 = Y, brush:setEx(Spider, status, down))).
+	;   Y0 = Y, brush:setEx(Spider, status, down)).
 
-% down
 updateSpider(Spider, Y, Y0, down) :-
 	brush:getEx(Spider, lower, Ty),
 	(   Y < Ty
 	->  Y0 is Y + 4
-	;   (Y0 = Y, brush:setEx(Spider, status, up))).
+	;   Y0 = Y, brush:setEx(Spider, status, up)).
 
 
-% IN: int; idx; object index
 % ChainLink AI
 % Updates chain's height, down to the target's y position.
 % Used for elevator's chains or spiders wires.
@@ -50,7 +48,6 @@ updateChainLink(Id) :-
 	Len is Y1 - Y2,
 	brush:setH(Link, Len).
 
-% IN: int; idx; object index
 % Train AI
 % Those are objects that move from a waypoint to another.
 % Can be used for elevators, moving platforms or a walking creature, like a rat.
@@ -64,7 +61,7 @@ updateChainLink(Id) :-
 
 updateTrain(Id) :-
 	brush:find(Id, Obj),
-	brush:getDisable(Obj, 0),
+	\+ brush:disabled(Obj),
 	brush:getDelay(Obj, Delay),
 	util:isUpdate(Delay),
 	brush:getEx(Obj, status, moves),
@@ -80,25 +77,16 @@ updateTrain(Id) :-
 	updateTrain(X, X2, Xn, Speed),
 	updateTrain(Y, Y2, Yn, Speed),
 	(   Xn =:= X2, Yn =:= Y2
-	->  (brush:getEx(Obj2, target, Target),
-	    brush:setEx(Obj, target, Target))
+	->  brush:getEx(Obj2, target, Target),
+	    brush:setEx(Obj, target, Target)
 	;   true),
 	brush:setX(Obj, Xn),
 	brush:setY(Obj, Yn).
 
-updateTrain(X, X2, Xn, Speed) :-
-	updateTrainUp(X, X2, Xu, Speed),
-	updateTrainDown(Xu, X2, Xn, Speed).
+updateTrain(X, X2, Xn, Speed) :- X < X2, !, Xn is min(X + Speed, X2).
+updateTrain(X, X2, Xn, Speed) :- X > X2, !, Xn is max(X - Speed, X2).
+updateTrain(X, _, X, _).
 
-updateTrainUp(X, X2, Xn, Speed) :-
-	X < X2
-	->  (Xx is X + Speed, (Xx > X2 -> Xn = X2 ; Xn = Xx))
-	;   Xn = X.
-
-updateTrainDown(X, X2, Xn, Speed) :-
-	X > X2
-	->  (Xx is X - Speed, (Xx < X2 -> Xn = X2 ; Xn = Xx))
-	;   Xn = X.
 
 
 % +debit; the spawning debit delay factor, higher values means rare spawns, 0 means stopped
@@ -109,7 +97,6 @@ updateBubbles(Debit, Speed, Life) :-
 	spawnBubbles(Free, Debit, Speed).
 updateBubbles(_, _, _).
 
-%updateActiveBubbles( _, []).
 updateActiveBubbles(Life, Free) :-
 	(recorded(bubbles, Bubbles); initBubbles(Bubbles)),
 	partition(brush:disabled, Bubbles, Free, Active),
@@ -129,7 +116,7 @@ updateBubbleLive(Br, Life) :-
 	  brush:getEx(Br, time, Time),
 	  NTime is Time + 1,
 	  (   Time > Life + random(10)
-	  ->  brush:setDisable(Br, 1), !, fail
+	  ->  brush:disable(Br), !, fail
 	  ;   brush:setEx(Br, time, NTime)).
 
 updateBubblePosition(Br) :-
@@ -142,10 +129,10 @@ updateBubblePosition(Br) :-
 	core:materialRead(Cx, Cy, 1, 1, Mat),
 	def:material(water, Water),
 	(   Mat =\= 1 << Water
-	->  brush:setDisable(Br, 1)
+	->  brush:disable(Br)
 	;   brush:setX(Br, X),
 	    brush:setY(Br, Y),
-	    brush:setDisable(Br, 0)).
+	    brush:enable(Br)).
 
 newBubblePosition(Br, X, Y) :-
 	brush:getEx(Br, speed, SpeedY),
@@ -175,7 +162,7 @@ spawnBubbles(Free, Debit, Speed) :-
 	core:materialRead(Cx, Cy, 1, 1, Mat),
 	def:material(water, Water),
 	Mat =:= 1 << Water,
-	brush:setDisable(Br, 0),
+	brush:enable(Br),
 	brush:getW(Br, W),
 	brush:getH(Br, H),
 	NX is X - W // 2,

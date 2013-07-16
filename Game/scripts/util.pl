@@ -17,10 +17,9 @@
 
 :-use_module(def).
 
-% IN: int; delay; number of frames
-% OUT: int; 0/1
+% +delay; number of frames
 % Test if it's time for an object's update, once each delay frames.
-% Usually delay is object's O_DELAY.
+% Usually delay is object's delay.
 isUpdate(0) :- !.
 
 isUpdate(Delay) :-
@@ -172,6 +171,8 @@ musicRestore :-
 	game:musicSafe(Safe),
 	game:musicPosSafe(Pos),
 	music:play(Safe, Pos).
+
+
 
 
 

@@ -1,7 +1,11 @@
 :- module(brush, [new/1,
-		 disabled/1]).
+		 disabled/1,
+		 disable/1,
+		 enable/1]).
 
 disabled(Br) :- brush:getDisable(Br, 1).
+disable(Br) :- brush:setDisable(Br, 1).
+enable(Br) :- brush:setDisable(Br, 0).
 
 setObj(brush(Br), Props) :- !, forall(member(Var=Val, Props), setEx(brush(Br), Var, Val)).
 setObj(Id, Props) :- !, brush:find(Id, Br), setObj(Br, Props).

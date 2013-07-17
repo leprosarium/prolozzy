@@ -41,7 +41,7 @@ scroll :-
 scroll.
 
 playerDeath(Obj) :-
-	brush:getEx(Obj, death, Death),
+	brush:get(Obj, death, Death),
 	player:death(Death).
 
 
@@ -176,7 +176,7 @@ event(_, roomOut) :-
 event(_, collision(ID, Mode)) :-
 	\+ player:dead,
 	brush:find(ID, Obj),
-	(   brush:getEx(Obj, class, Class); Class=none),
+	(   brush:get(Obj, class, Class); Class=none),
 	collision(Obj, Class, Mode),
 	game:collideObject(ID, Mode).
 

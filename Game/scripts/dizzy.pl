@@ -1,3 +1,4 @@
+:- abolish(system:get/2).
 :- use_module(def, []).
 :- use_module(gamedef, []).
 :- use_module(handlers, []).

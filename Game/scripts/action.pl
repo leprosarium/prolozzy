@@ -57,7 +57,7 @@ pickupObject(Id) :-
 % Called by PickupObject().
 doPickupObject(Id) :-
 	brush:find(Id, Obj),
-	brush:getEx(Obj, class, Class),
+	brush:get(Obj, class, Class),
 	doPickupObject(Obj, Class).
 doPickupObject(Obj, item) :- % items are to be picked up in the inventory
 	brush:getID(Obj, Id),

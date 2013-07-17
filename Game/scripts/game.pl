@@ -146,15 +146,15 @@ beginNewGame :-
 
 useObject(Id1, Id2) :-
 	core:dl(use(Id1, Id2)),
-	findall(Br-V, brush:getEx(Br, bubble, V), Brs),
+	findall(Br-V, brush:get(Br, bubble, V), Brs),
 	core:dl(Brs).
 
 
 actionObject(dylan) :-
 	brush:find(dylan, Obj),
 	update:register(ui, message:pop),
-	(   brush:getEx(Obj, status, st1)
-	->  brush:setEx(Obj, status, st2),
+	(   brush:get(Obj, status, st1)
+	->  brush:set(Obj, status, st2),
 	    message:qmsg(1, 2, 2, '"DORA SEEMS\nTO NEED SOMETHING."')
 	;   message:qmsg(1, 2, 2, '"DORA NEEDS SOME LEAFS"')).
 

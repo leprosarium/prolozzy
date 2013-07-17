@@ -451,7 +451,7 @@ dialogInventory(draw, State) :-
 	dialogTooltip(Y2).
 
 dialogInventoryText(State, Text) :-
-	findall(Id/Name, (inventory:find(Id, _), brush:find(Id, Obj), brush:getEx(Obj, name, Name)), Names),
+	findall(Id/Name, (inventory:find(Id, _), brush:find(Id, Obj), brush:get(Obj, name, Name)), Names),
 	dialogMainMenum2(State, Names, Text), !.
 dialogInventoryText(_State, '{c:0xffffffff}N O T H I N G\n').
 

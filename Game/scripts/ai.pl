@@ -18,21 +18,21 @@ updateSpider(Id) :-
 	brush:getDelay(Spider, Delay),
 	util:isUpdate(Delay),
 	brush:getY(Spider, Y),
-	brush:getEx(Spider, status, Status),
+	brush:get(Spider, status, Status),
 	updateSpider(Spider, Y, Y0, Status),
 	brush:setY(Spider, Y0).
 
 updateSpider(Spider, Y, Y0, up) :-
-	brush:getEx(Spider, upper, Ty),
+	brush:get(Spider, upper, Ty),
 	(   Y > Ty
 	->  Y0 is Y - 1
-	;   Y0 = Y, brush:setEx(Spider, status, down)).
+	;   Y0 = Y, brush:set(Spider, status, down)).
 
 updateSpider(Spider, Y, Y0, down) :-
-	brush:getEx(Spider, lower, Ty),
+	brush:get(Spider, lower, Ty),
 	(   Y < Ty
 	->  Y0 is Y + 4
-	;   Y0 = Y, brush:setEx(Spider, status, up)).
+	;   Y0 = Y, brush:set(Spider, status, up)).
 
 
 % ChainLink AI
@@ -41,7 +41,7 @@ updateSpider(Spider, Y, Y0, down) :-
 % target = target object's id
 updateChainLink(Id) :-
 	brush:find(Id, Link),
-	brush:getEx(Link, target, Id2),
+	brush:get(Link, target, Id2),
 	brush:find(Id2, Target),
 	brush:getY(Target, Y1),
 	brush:getY(Link, Y2),
@@ -64,11 +64,11 @@ updateTrain(Id) :-
 	\+ brush:disabled(Obj),
 	brush:getDelay(Obj, Delay),
 	util:isUpdate(Delay),
-	brush:getEx(Obj, status, moves),
-	brush:getEx(Obj, target, Id2),
+	brush:get(Obj, status, moves),
+	brush:get(Obj, target, Id2),
 	brush:find(Id2, Obj2),
-	brush:getEx(Obj2, speed, Speed),
-	brush:getEx(Obj2, toflip, Flip),
+	brush:get(Obj2, speed, Speed),
+	brush:get(Obj2, toflip, Flip),
 	brush:getX(Obj2, X2),
 	brush:getY(Obj2, Y2),
 	brush:getX(Obj, X),
@@ -77,8 +77,8 @@ updateTrain(Id) :-
 	updateTrain(X, X2, Xn, Speed),
 	updateTrain(Y, Y2, Yn, Speed),
 	(   Xn =:= X2, Yn =:= Y2
-	->  brush:getEx(Obj2, target, Target),
-	    brush:setEx(Obj, target, Target)
+	->  brush:get(Obj2, target, Target),
+	    brush:set(Obj, target, Target)
 	;   true),
 	brush:setX(Obj, Xn),
 	brush:setY(Obj, Yn).
@@ -103,7 +103,7 @@ updateActiveBubbles(Life, Free) :-
 	forall(member(B, Active), updateBubble(B, Life)).
 
 initBubbles(Bubbles) :-
-	findall(Br, brush:getEx(Br, class, bubble), Bubbles),
+	findall(Br, brush:get(Br, class, bubble), Bubbles),
 	recorda(bubbles, Bubbles).
 
 
@@ -113,11 +113,11 @@ updateBubble(Br, Life) :-
 	; true.
 
 updateBubbleLive(Br, Life) :-
-	  brush:getEx(Br, time, Time),
+	  brush:get(Br, time, Time),
 	  NTime is Time + 1,
 	  (   Time > Life + random(10)
 	  ->  brush:disable(Br), !, fail
-	  ;   brush:setEx(Br, time, NTime)).
+	  ;   brush:set(Br, time, NTime)).
 
 updateBubblePosition(Br) :-
 	newBubblePosition(Br, X, Y),
@@ -135,7 +135,7 @@ updateBubblePosition(Br) :-
 	    brush:enable(Br)).
 
 newBubblePosition(Br, X, Y) :-
-	brush:getEx(Br, speed, SpeedY),
+	brush:get(Br, speed, SpeedY),
 	(   random(3) =\= 0
 	->  SpeedX = 0
 	;   SpeedX is SpeedY // 2 - random(SpeedY)),
@@ -170,8 +170,8 @@ spawnBubbles(Free, Debit, Speed) :-
 	brush:setX(Br, NX),
 	brush:setY(Br, NY),
 	BubbleSpeed is Speed // 2 + random(Speed),
-	brush:setEx(Br, speed, BubbleSpeed),
-	brush:setEx(Br, time, 0),
+	brush:set(Br, speed, BubbleSpeed),
+	brush:set(Br, time, 0),
 	core:setObjPresent(Br), !.
 spawnBubbles(_, _, _).
 

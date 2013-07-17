@@ -60,8 +60,8 @@ saveObjects(F):-
 
 saveObj(Obj, F) :-
 	brush:getID(Obj, Id),
-	brush:getObj(Obj, Props),
-	writet(F, brush:setObj(Id, Props)).
+	brush:get(Obj, Props),
+	writet(F, brush:set(Id, Props)).
 
 savePlayer(F) :-
 	forall( player:property(Name, SetName),

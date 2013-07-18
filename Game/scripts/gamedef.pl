@@ -43,11 +43,6 @@ musicDefault(music_a).	% id of the default music
 fontDefault(4).		% id of the default font
 
 % WaterPlay items: scuba and flippers
-% For more details see HandlerPlayerUpdate and PlayerCanSwim functions
-% scuba(-1).		% set scuba item's id if you have a scuba in your game and you want to wear it as a costume for WaterPlay
-% flippers(-1).		% set flipers item's id if you have any flippers in your game and you want to swim in WaterPlay (or you can set the id of the scuba if no flippers item)
-% bubbles(-1).		% set this to the first valid bubble object. the rest of the PLAYER_BUBBLES bubbles have consecutive ids. used in WaterPlay
-
 scuba(scuba).
 flippers(flippers).
 bubbles.

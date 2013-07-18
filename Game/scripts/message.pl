@@ -27,7 +27,7 @@ msg(X, Y, Text, ColorInk, ColorBorder) :-
 	X1 is X * 8,
 	Y1 is Y * 8,
 	game:pause,
-	format(atom(Msg), '{c:0x~16r}~a', [ColorInk, Text]),
+	format(atom(Msg), '{c:~16r}~a', [ColorInk, Text]),
 	gamedef:fontDefault(Font),
 	dialog:fitAt(dialog(_, _, style(Font, ColorBorder), Msg), pos(X1, Y1), Dialog),
 	dialog:push(Dialog),

@@ -185,7 +185,7 @@ dialogMainMenum(final, return(State), State).
 % IN: int; select; default selection
 % Dialog creation function used by OpenDialogMainMenu().
 dialogMainMenum(draw, State) :-
-	Header = '{a:center}GAME MENU\n\n{c:0xff0000}',
+	Header = '{a:center}GAME MENU\n\n{c:ffff0000}',
 	dialogMainMenum2(State, [start/'START', load/'LOAD', options/'OPTIOS', credits/'CREDITS', exit/'EXIT'], MenuText),
 	atom_concat(Header, MenuText, Text),
 	def:color(dialog, Color),
@@ -222,11 +222,11 @@ dialogMainMenu1(_, _, Elem, Elem).
 % Opens the Credits dialog with the authors information.
 openDialogCredits :-
 	gamedef:gameAuthor(Autor),
-	format(atom(Text), '{a:center}CREDITS\n\n{c:0xffffffff}\c
+	format(atom(Text), '{a:center}CREDITS\n\n{c:ffffffff}\c
 	GAME CREATED BY\n\c
-	{c:0xff0080ff}~a{c:0xffffffff}\n\n\c
+	{c:ff0080ff}~a{c:ffffffff}\n\n\c
 	ORIGINAL DIZZY GAMES BY\n\c
-	{c:0xff0080ff}OLIVER TWINS\nAND CODEMASTERS{c:0xffffff00}\n', Autor),
+	{c:ff0080ff}OLIVER TWINS\nAND CODEMASTERS{c:ffffff00}\n', Autor),
 	dialog:openMessage(Text).
 
 
@@ -295,7 +295,7 @@ dialogOption(final, return(State), State).
 dialogOption(draw, State) :-
 	getOpt('dizzy.ini', 'AUDIO', 'volfx', 100, Volfx),
 	getOpt('dizzy.ini', 'AUDIO', 'volmusic',100, Volmusic),
-	Header = '{a:center}GAME OPTIONS\n\n{c:0xff0000}',
+	Header = '{a:center}GAME OPTIONS\n\n{c:ffff0000}',
 	format(atom(Text0), 'FX VOLUME ~a%', Volfx),
 	format(atom(Text1), 'MUSIC VOLUME ~a%', Volmusic),
 	dialogMainMenum2(State, [fx/Text0, music/Text1, control/'CONTROLS', return/'RETURN'], MenuText),
@@ -314,14 +314,14 @@ dialogOption(draw, State) :-
 % Opens the Controls dialog.
 openDialogControls :-
 	Text = '{a:center}\c
-{c:0xffff00}GAME CONTROLS\n\n{a:left}\c
-{c:0xffffff}Z{c:0xffff00} OR {c:0xffffff}LEFT{c:0xffff00}   - MOVE LEFT\n\c
-{c:0xffffff}X{c:0xffff00} OR {c:0xffffff}RIGHT{c:0xffff00}  - MOVE RIGHT\n\c
-{c:0xffffff}SPACE{c:0xffff00} OR {c:0xffffff}UP{c:0xffff00} - JUMP\n\c
-{c:0xffffff}ENTER{c:0xffff00}       - ACTION\n\c
-{c:0xffffff}ESCAPE{c:0xffff00} OR {c:0xffffff}Q{c:0xffff00} - MENU\n\n\c
-{c:0xffffff}F9{c:0xffff00}  - MUTE ALL SOUND\n\c
-{c:0xffffff}F10{c:0xffff00} - TOGGLE SCREEN\n',
+{c:ffffff00}GAME CONTROLS\n\n{a:left}\c
+{c:ffffffff}Z{c:ffffff00} OR {c:ffffffff}LEFT{c:ffffff00}   - MOVE LEFT\n\c
+{c:ffffffff}X{c:ffffff00} OR {c:ffffffff}RIGHT{c:ffffff00}  - MOVE RIGHT\n\c
+{c:ffffffff}SPACE{c:ffffff00} OR {c:ffffffff}UP{c:ffffff00} - JUMP\n\c
+{c:ffffffff}ENTER{c:ffffff00}       - ACTION\n\c
+{c:ffffffff}ESCAPE{c:ffffff00} OR {c:ffffffff}Q{c:ffffff00} - MENU\n\n\c
+{c:ffffffff}F9{c:ffffff00}  - MUTE ALL SOUND\n\c
+{c:ffffffff}F10{c:ffffff00} - TOGGLE SCREEN\n',
 	dialog:openMessage(Text).
 
 
@@ -361,7 +361,7 @@ openDialogGameMenuFinishCmd(_, _).
 % IN: int; select; default selection
 % Dialog creation function used by OpenDialogGameMenu().
 dialogGameMenu(Select) :-
-	Header = '{a:center}GAME PAUSED\n\n{c:0xff0000}',
+	Header = '{a:center}GAME PAUSED\n\n{c:ffff0000}',
 	dialogMainMenu(Select, 0, ['RESUME', 'SAVE', 'LOAD', 'OPTIOS', 'RESTART', 'EXIT'], MenuText),
 	atom_concat(Header, MenuText, Text),
 	def:color(dialog, Color),
@@ -426,7 +426,7 @@ dialogInventory(final, return(Obj), Obj).
 
 dialogInventory(draw, State) :-
 	dialog:popAll,
-	Header = '{a:center}YOU ARE CARRYING\n\n{c:0xff0000}',
+	Header = '{a:center}YOU ARE CARRYING\n\n{c:ffff0000}',
 
 	% push elements names in reverse order (last is first)
 	dialogInventoryText(State, Text),
@@ -453,7 +453,7 @@ dialogInventory(draw, State) :-
 dialogInventoryText(State, Text) :-
 	findall(Id/Name, (inventory:find(Id, _), brush:find(Id, Obj), brush:get(Obj, name, Name)), Names),
 	dialogMainMenum2(State, Names, Text), !.
-dialogInventoryText(_State, '{c:0xffffffff}N O T H I N G\n').
+dialogInventoryText(_State, '{c:ffffffff}N O T H I N G\n').
 
 
 
@@ -463,7 +463,7 @@ dialogInventoryText(_State, '{c:0xffffffff}N O T H I N G\n').
 dialogTooltip(Y2) :-
 	def:color(white, Color),
 	gamedef:fontDefault(Font),
-	Dialog = dialog(pos(X, Y2), size(W, H), style(Font, Color), '{c:0xff00ffff}CHOOSE ITEM TO\nUSE OR DROP'),
+	Dialog = dialog(pos(X, Y2), size(W, H), style(Font, Color), '{c:ff00ffff}CHOOSE ITEM TO\nUSE OR DROP'),
 	dialog:textWH(Dialog, Wt, Ht),
 	W is Wt + 8,   % add some space
 	H is Ht + 8,   % add some space
@@ -537,7 +537,7 @@ dialogFiles(final, return(S), S).
 dialogFiles(draw, Select, Title) :-
 	dialogFiles2(Select, 3, Body),
 	(Select = exit -> Exit = '{f:1}RETURN{f:0}' ; Exit = 'RETURN'),
-	format(string(Text), '{a:center}~a\n\n{c:0xff0000}~a\n\n~a', [Title, Body, Exit]),
+	format(string(Text), '{a:center}~a\n\n{c:ffff0000}~a\n\n~a', [Title, Body, Exit]),
 	def:color(dialog, Color),
 	gamedef:fontDefault(Font),
 	dialog:fitCenter(dialog(_, _, style(Font, Color), Text), Dialog),

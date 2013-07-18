@@ -1,14 +1,11 @@
 :- module(def, [material/4,
 		material/2,
-		def/2,
-		dlg/2,
 		key/2,
 		color/2,
 		cmd/2,
 		windPow/1,
 		dizHurt/1,
 		ptile/2,
-		tile/2,
 		emotion/2,
 		noairEmotion/1,
 		maxAirLevel/1,
@@ -70,32 +67,6 @@ ptile(swimup,	21).
 ptile(swimjump,	22).
 ptile(drawn,	23).
 
-tile(id, 0).
-tile(w, 1).
-tile(h, 2).
-tile(frames, 3).
-tile(name, 5).
-
-def('TILE_IDLE',	10).			% default
-def('TILE_WALK',	11).			% default
-def('TILE_UP',		12).			% default
-def('TILE_JUMP',	13).			% default
-def('TILE_STUN',	14).			% default
-def('TILE_DEAD',	15).			% default
-
-def('R_MAX', 8).
-
-dlg(style, 0).				% style
-dlg(x,	1).				% x in scr pixels
-dlg(y,	2).				% y in scr pixels
-dlg(w,	3).				% w in scr pixels
-dlg(h,	4).				% h in scr pixels
-dlg(color,5).				% user color (usualy for border)
-dlg(font,	6).				% font tile id
-dlg(user,	8).				% user defined
-dlg(max,	16).
-
-
 key(left,	1).
 key(right,	2).
 key(up,		4).
@@ -106,7 +77,6 @@ key(menu,	64).
 key(max,	128).
 
 
-% colors
 color(black,	0xff000000).
 color(blue,	0xff0000ff).
 color(red,      0xffff0000).

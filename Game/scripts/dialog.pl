@@ -11,7 +11,6 @@
 		   textH/2,
 		   draw/1,
 		   drawAll/0,
-		   drawAll/1,
 		   fitAt/3,
 		   fitCenter/2,
 		  run/0,
@@ -24,7 +23,7 @@
 		  openQuestion/2]).
 
 empty :-
-	not(recorded(dialogStack, _)).
+	\+ recorded(dialogStack, _).
 
 push(Dialog) :-
 	recorda(dialogStack, Dialog).
@@ -60,13 +59,10 @@ text(dialog(_, _, _, Text), Text).
 
 
 drawAll :-
-	findall(D, recorded(dialogStack, D), List),
-	drawAll(List).
+	findall(D, recorded(dialogStack, D), L1),
+	reverse(L1, L2),
+	forall(member(D, L2), draw(D)).
 
-drawAll([]).
-drawAll([Last|Other]) :-
-	drawAll(Other), !,
-	draw(Last).
 
 % IN: int; idx; dialog index
 % Draw a dialog with border and text.
@@ -297,7 +293,7 @@ question(final, return(State), State).
 % Dialog creation function used by OpenDialogQuestion().
 
 question(draw, State, Text) :-
-	format(atom(Text1), '{a:center}~a\n\n{c:0xff0000}', Text),
+	format(atom(Text1), '{a:center}~a\n\n{c:ffff0000}', Text),
 	(   State = yes
 	->  Text2 = '{f:1}YES{f:0}   NO'
 	;   Text2 = 'YES   {f:1}NO{f:0}'),

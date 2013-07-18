@@ -138,7 +138,7 @@ beginNewGame :-
 	color(magenta, C1),
 	color(green, C2),
 	update:register(ui, message:pop),
-	message:msg(14, 6, 'HELLO {c:0xffffff00}WORLD\nNEW LINE!', C1, C2).
+	message:msg(4, 6, 'HELLO 1 {c:ffffff00 }WORLD\nNEW LINE! {c:ffffffff}{t:1236 0 0}', C1, C2).
 
 
 %actionObject(Id) :-

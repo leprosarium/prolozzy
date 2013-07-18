@@ -502,8 +502,12 @@ HUD::Cmd HUD::ScanText(std::string::const_iterator start, std::string::const_ite
 		{
 			std::istringstream i(szdata);
 			i >> std::hex;
-			if(i >> data[0])
+			dword t;
+			if(i >> t)
+			{
+				data[0] = static_cast<int>(t);
 				return Color;
+			}
 		}
 		case 'f': // focus
 		case 'F': // focus
@@ -662,7 +666,7 @@ void HUD::DrawText( int tileid, const iRect & dst, const std::string & text, int
 			if( *m == '{')	cmd = ScanText(m,text.end(), m2, data); // read command
 			if(cmd != None) // only if command found and valid
 			{
-				if(cmd == Color) 	clr=0xff000000 | data[0];
+				if(cmd == Color) 	clr=data[0];
 				else
 				if(cmd == Focus)	focus=data[0];
 				else

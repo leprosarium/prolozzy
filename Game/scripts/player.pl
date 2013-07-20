@@ -191,8 +191,7 @@ safe :-
 	material(wind, M5),
 	Mask is (1 << M1) \/ (1 << M2) \/ (1 << M3) \/ (1 << M4) \/ (1 << M5),
 	matInside(Mat),
-	Res is Mat /\ \Mask,
-	Res =:= 0. % no other materials are allowed
+	Mat /\ \Mask =:= 0. % no other materials are allowed
 
 stable :-
 	material(block, Bl),
@@ -201,8 +200,7 @@ stable :-
 	material(climb, Cl),
 	Mask is (1 << Bl) \/ (1 << Jf) \/ (1 << Jp) \/ (1 << Cl),
 	matUnder(Mat),
-	Res is Mat /\ Mask,
-	Res =\= 0.
+	Mat /\ Mask =\= 0.
 
 stopStun:-
 	setStunLevel(0).

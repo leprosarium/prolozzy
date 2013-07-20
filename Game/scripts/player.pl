@@ -140,10 +140,8 @@ enterIdle :-
 
 damageLife(Damage) :-
 	life(Life),
-	L is Life - Damage,
-	( L =< 0
-	  -> setLife(0);
-	  setLife(L)).
+	L is max(0, Life - Damage),
+	setLife(L).
 
 hurt(Damage) :-
 	%doRumble(6),
@@ -153,22 +151,20 @@ hurt(Damage) :-
 	safe(0).
 hurt(_).
 
-% OUT: int; 0/1
+
 % Tests if player should update this frame.
 % It can also be used to syncronize the update of other objects with the update of the player.
 isUpdate :-
 	delay(Delay),
 	util:isUpdate(Delay).
 
-% IN: int; mat; material
-% OUT: int; 0/1
+% +material
 % Tests if the specified material is found inside player's bounding box.
 isMaterialInsidePlayer(Mat) :-
 	matInside(MatI),
 	isMaterialMask(MatI, Mat).
 
-% IN: int; mat; material
-% OUT: int; 0/1
+% +material
 % Tests if the material is found just under player's bounding box.
 isMaterialUnderPlayer(Mat) :-
 	matUnder(MatU),
@@ -210,7 +206,6 @@ inStun :-
 	def:maxStunLevel(SL),
 	S >= SL.
 
-
 playStun :-
 	stable,
 	live,
@@ -220,9 +215,9 @@ playStun :-
 	playAnimFrames(stun, [0,1,0,1,0,1,0,1,2,3,2,3,2,3,2,3,4,4,4,4], true), !.
 playStun.
 
-% IN: int; tile; tile id
+% +tile id
 % Player plays all frames from the tile's animation.
-% Latent function.
+
 playAnim(Tile) :-
 	setStatus(scripted),
 	def:ptile(Tile, TILEi),
@@ -254,7 +249,6 @@ playAnimFrames(Tile, Frames) :-
 playAnimFrames(Tile, Frames, Breakdead) :-
 	playAnimFramesInit(Tile, Delay),
 	playAnimFramesUpdate(Frames, Delay, Breakdead).
-%	update:register(player:playAnimFramesUpdate(Frames, Delay, Breakdead)).
 
 playAnimFramesUpdate(_, _, true) :-
 	dead.
@@ -265,13 +259,12 @@ playAnimFramesUpdate([Frame|Frames], Delay, Breakdead) :-
 	update:waitFrames(player, Delay).
 
 % Set player in fall state
-
 enterFall :-
 	setStatus(fall),
 	setPow(1),
 	setAnim(2).
 
-% IN: int; dir; direction -1=left, 0=up; 1=right
+% +direction -1=left, 0=up; 1=right
 % Set player in fall state
 enterSpin(Dir) :-
 	enterFall,
@@ -285,10 +278,7 @@ enterSpin(Dir) :-
 	T is C + TJ,
 	setTile(T).
 
-% IN: int; idx; object index
-% OUT: int; 0/1
 % Tests if player touches an object (bounding boxes intersect)
-
 touchObject(Obj) :-
 	touchObject(Obj, _OX1, _OY1, _OX2, _OY2).
 
@@ -310,8 +300,6 @@ touchObject(Obj, OX1, OY1, OX2, OY2) :-
 	PX1 < OX2, PX2 > OX1,
 	PY1 < OY2, PY2 > OY1.
 
-% IN: int; idx; object index
-% OUT: int; 0/1
 % Tests if player touches an object that's visible in the current room (bounding boxes intersect)
 touchObjectInRoom(Obj) :-
 	touchObject(Obj, OX1, OY1, OX2, OY2),
@@ -326,15 +314,13 @@ touchObjectInRoom(Obj) :-
 	OY1 < RY + RH.
 
 
-
-
-%Dead event requested by HandlerPlayerUpdate when player died on ground.
+%Dead event requested by player:update when player died on ground.
 playDead:-
 	sample:play(death),
 	update:register(player, player:loseLife),
 	player:playAnim(dead).
 
-% Dead in water event requested by HandlerPlayerUpdate() when player died in water.
+% Dead in water event requested by player:update when player died in water.
 playDeadWater :-
 	sample:play(death),
 	setStatus(scripted),
@@ -360,8 +346,7 @@ playDeadWaterNext :-
 	update:waitFrames(player, D).
 
 % Lose life event.
-% Test P_DEATH to request the death message from the PlayerDeathMessage callback.
-% Calls PlayerRespawn_DEATH callback, if available
+% Calls game:respawn/1 callback, if available
 loseLife :-
 	credits(Credits),
 	Credits2 is Credits - 1,
@@ -380,7 +365,7 @@ loseLifeNext(Death, Credits) :-
 
 
 % Default player respawn
-% Can also be called at the beginning of the PlayerRespawn_DEATH respawn callbacks,
+% Can also be called at the beginning of the game:respawn/1 callback,
 % since it resets some general properties
 respawn :-
 	sample:play(respawn),
@@ -393,9 +378,6 @@ respawn :-
 	util:musicRestore.
 
 update :-
-%	player:makeBB(X, Y, _, _),
-%	core:materialDensityRead(X, Y, 32, 32, D),
-%	core:debugData(1, D),
 	updateCostume,
 	checkWind,
 	checkClouds,
@@ -462,9 +444,9 @@ checkMustDie :-
 
 checkMustDie1 :-
 	life(Life),
-	(   Life < 0
-	->  setLife(0)
-	;   true).
+	L is max(0, Life),
+	setLife(L).
+
 checkMustDie2 :-
 	(   dead,
 	    \+ status(scripted)
@@ -620,10 +602,9 @@ swimCanSwim(_).
 swimCanSwimPow(false, true, Dir) :-
 	Dir =\= 0,
 	pow(Pow),
-	(   Pow < 4 -> Pow1 = 4; Pow1 = Pow),
-	(   Pow1 > 7 -> Pow2 = 7; Pow2 = Pow1),
+	PowClip is max(4, min(7, Pow)),
+	setPow(PowClip),
 	setStatus(jump),
-	setPow(Pow2),
 	setFrame(-1).
 swimCanSwimPow(_, _, _).
 
@@ -650,9 +631,8 @@ swimDirKey(Tile) :-
 
 swimPower :-
 	pow(Pow),
-	(   Pow > 10
-	->  setPow(10)
-	;   true).
+	P is min(10, Pow),
+	setPow(P).
 
 
 

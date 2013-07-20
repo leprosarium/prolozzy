@@ -52,8 +52,8 @@ flipY(2).	% flip y (bit value)
 flipR(4).	% flip rotate (bit value)
 
 
-ptile(idle, 10).			% ptileault player's idle tile id
-ptile(walk, 11).			% ptileault player's walk tile id
+ptile(idle, 10).
+ptile(walk, 11).
 ptile(up, 12).
 ptile(jump, 13).
 ptile(stun, 14).

@@ -234,7 +234,7 @@ event(_, jump(Mat, _Clean, Pow)) :-
 
 
 % Handler PlayerUpdate
-% This handler is called each player update (depending on P_DELAY value).
+% This handler is called each player update (depending on player's delay value).
 % It is supposed to customise player behaviour and respond to life lose.
 % It may check materials inside player's bound or under it and deal with wind, clouds, water, hurting or killing.
 % It is called before keys are checked and player updated by engine.

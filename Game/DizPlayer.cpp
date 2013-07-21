@@ -7,202 +7,66 @@
 
 cDizPlayer	g_player;
 
-#define DATA(idx)					( m_data[idx] )
-//#define MATINSIDE(mat)				( _matInside & (1<<mat) )
-#define KEY(key)					( (m_input) ? g_game.Key(key) : false )
-#define KEYHIT(key)					( (m_input) ? g_game.KeyHit(key) : false )
+inline bool cDizPlayer::key(int k) const { return input ? g_game.Key(k) : false; }
+inline bool cDizPlayer::keyHit(int k) const { return input ? g_game.KeyHit(k) : false; }
 
-void cDizPlayer::MakeBB	( int &x1, int &y1, int &x2, int &y2 ) const
+iRect cDizPlayer::rect() const
 { 
-	iV2 r = g_game.roomPos() * Room::Size;
-	MakeBBW(x1,y1,x2,y2);			
-	x1 -= r.x;			
-	x2 -= r.x;			
-	y1 -= r.y;			
-	y2 -= r.y;			
+	return worldRect().Offset(-g_game.roomPos() * Room::Size);
 }
 
-PREDICATE_M(player, x, 1)
-{
-	return A1 = g_player.x();
-}
+#define PLAYER_GET(Prop, Pr) PREDICATE_M(player, Prop, 1) { return A1 = g_player.Pr; }
+#define PLAYER_SET(Prop, Pr) PREDICATE_M(player, set##Prop, 1) { g_player.Pr = A1; return true; }
+#define PLAYER_PROP(PropGet, PropSet, Pr) PLAYER_GET(PropGet, Pr) PLAYER_SET(PropSet, Pr)
 
-PREDICATE_M(player, setX, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_player.x(v); 
-	return true;
-}
+PLAYER_PROP(x, X, pos.x)
+PLAYER_PROP(y, Y, pos.y)
+PLAYER_PROP(life, Life, life)
+PLAYER_PROP(tile, Tile, tile)
+PLAYER_PROP(frame, Frame, frame)
+PLAYER_PROP(costume, Costume, costume)
+PLAYER_PROP(emotion, Emotion, emotion)
+PLAYER_PROP(stunLevel, StunLevel, stunLevel)
+PLAYER_PROP(delay, Delay, delay)
+PLAYER_PROP(layer, Layer, layer)
+PLAYER_PROP(dir, Dir, dir)
+PLAYER_PROP(tileIdle, TileIdle, tileIdle)
+PLAYER_PROP(tileWalk, TileWalk, tileWalk)
+PLAYER_PROP(tileUp, TileUp, tileUp)
+PLAYER_PROP(tileJump, TileJump, tileJump)
+PLAYER_PROP(pow, Pow, pow)
+PLAYER_PROP(anim, Anim, anim)
 
+PLAYER_GET(w, size.x)
+PLAYER_GET(h, size.y)
 
-PREDICATE_M(player, y, 1)
-{
-	return A1 = g_player.y();
-}
-
-PREDICATE_M(player, setY, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_player.y(v); 
-	return true;
-}
-
-
-PREDICATE_M(player, w, 1)
-{
-	return A1 = g_player.w();
-}
-
-PREDICATE_M(player, h, 1)
-{
-	return A1 = g_player.h();
-}
-
-PREDICATE_M(player, status, 1)
-{
-	return A1 = g_player.status();
-}
+PLAYER_GET(status, status)
 
 PREDICATE_M(player, setStatus, 1)
 {
-	g_player.status(PlAtom(A1));
+	g_player.status = PlAtom(A1);
 	return true;
 }
 
-PREDICATE_M(player, life, 1)
-{
-	return A1 = g_player.life();
-}
-
-PREDICATE_M(player, setLife, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_player.life(v); 
-	return true;
-}
-
-PREDICATE_M(player, tile, 1)
-{
-	return A1 = g_player.tile();
-}
-
-PREDICATE_M(player, setTile, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_player.tile(v); 
-	return true;
-}
-
-PREDICATE_M(player, frame, 1)
-{
-	return A1 = g_player.frame();
-}
-
-PREDICATE_M(player, setFrame, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_player.frame(v); 
-	return true;
-}
-
-
-PREDICATE_M(player, costume, 1)
-{
-	return A1 = g_player.costume();
-}
-
-PREDICATE_M(player, setCostume, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_player.costume(v); 
-	return true;
-}
-
-
-PREDICATE_M(player, stunLevel, 1)
-{
-	return A1 = g_player.stunLevel();
-}
-
-PREDICATE_M(player, setStunLevel, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_player.stunLevel(v); 
-	return true;
-}
-
-PREDICATE_M(player, matInside, 1)
-{
-	return A1 = g_player.matInside();
-}
-
-PREDICATE_M(player, matUnder, 1)
-{
-	return A1 = g_player.matUnder();
-}
-
-PREDICATE_M(player, matCenter, 1)
-{
-	return A1 = g_player.matCenter();
-}
-
-PREDICATE_M(player, delay, 1)
-{
-	return A1 = g_player.delay();
-}
-
-PREDICATE_M(player, setDelay, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_player.delay(v); 
-	return true;
-}
-
-PREDICATE_M(player, layer, 1)
-{
-	return A1 = g_player.layer();
-}
-
-PREDICATE_M(player, setLayer, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_player.layer(v); 
-	return true;
-}
+PLAYER_GET(matInside, matInside())
+PLAYER_GET(matUnder, matUnder())
+PLAYER_GET(matCenter, matCenter())
 
 PREDICATE_M(player, color, 1)
 {
-	return A1 = static_cast<int>(g_player.color());
+	return A1 = static_cast<int>(g_player.color);
 }
 
 PREDICATE_M(player, setColor, 1)
 {
 	int64 v = A1;
-	g_player.color(static_cast<int>(v)); 
+	g_player.color = static_cast<dword>(v); 
 	return true;
 }
 
 PREDICATE_M(player, shader, 1)
 {
-	return A1 = static_cast<int>(g_player.shader());
+	return A1 = static_cast<int>(g_player.shader);
 }
 
 PREDICATE_M(player, setShader, 1)
@@ -211,202 +75,36 @@ PREDICATE_M(player, setShader, 1)
 	if (v <  static_cast<int>(Blend::Min) || 
 		v >= static_cast<int>(Blend::Max))
 		return false;
-	g_player.shader(static_cast<Blend>(v)); 
+	g_player.shader = static_cast<Blend>(v); 
 	return true;
 }
 
-PREDICATE_M(player, flipX, 0)
-{
-	return g_player.flipX();
-}
+#define PLAYER_B_GET(Prop) PREDICATE_M(player, Prop, 0) { return g_player.Prop; }
+#define PLAYER_B_SET(Prop, Pr) PREDICATE_M(player, set##Prop, 1) { int v; if(!PL_get_bool(A1, &v)) return false; g_player.Pr = v == TRUE; return true; }
+#define PLAYER_B_PROP(Prop, PropSet) PLAYER_B_GET(Prop) PLAYER_B_SET(PropSet, Prop)
 
-PREDICATE_M(player, flipY, 0)
-{
-	return g_player.flipY();
-}
-
-PREDICATE_M(player, setFlipX, 1)
-{
-	int v;
-	if(!PL_get_bool(A1, &v))
-		return false; 
-	g_player.flipX(v == TRUE); 
-	return true;
-}
-
-PREDICATE_M(player, setFlipY, 1)
-{
-	int v;
-	if(!PL_get_bool(A1, &v))
-		return false; 
-	g_player.flipY(v == TRUE); 
-	return true;
-}
-
-PREDICATE_M(player, dir, 1)
-{
-	return A1 = g_player.dir();
-}
-
-PREDICATE_M(player, setDir, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_player.dir(v); 
-	return true;
-}
-
-PREDICATE_M(player, tileIdle, 1)
-{
-	return A1 = g_player.tileIdle();
-}
-
-PREDICATE_M(player, setTileIdle, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_player.tileIdle(v); 
-	return true;
-}
-
-PREDICATE_M(player, tileWalk, 1)
-{
-	return A1 = g_player.tileWalk();
-}
-
-PREDICATE_M(player, setTileWalk, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_player.tileWalk(v); 
-	return true;
-}
-
-PREDICATE_M(player, tileUp, 1)
-{
-	return A1 = g_player.tileUp();
-}
-
-PREDICATE_M(player, setTileUp, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_player.tileUp(v); 
-	return true;
-}
-
-PREDICATE_M(player, tileJump, 1)
-{
-	return A1 = g_player.tileJump();
-}
-
-PREDICATE_M(player, setTileJump, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_player.tileJump(v); 
-	return true;
-}
-
-PREDICATE_M(player, emotion, 1)
-{
-	return A1 = g_player.emotion();
-}
-
-PREDICATE_M(player, setEmotion, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_player.emotion(v); 
-	return true;
-}
-
-PREDICATE_M(player, pow, 1)
-{
-	return A1 = g_player.pow();
-}
-
-PREDICATE_M(player, setPow, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_player.pow(v); 
-	return true;
-}
-
-PREDICATE_M(player, anim, 1)
-{
-	return A1 = g_player.anim();
-}
-
-PREDICATE_M(player, setAnim, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_player.anim(v); 
-	return true;
-}
-
-
-PREDICATE_M(player, disable, 0)
-{
-	return g_player.disable();
-}
-
-PREDICATE_M(player, setDisable, 1)
-{
-	int v;
-	if(!PL_get_bool(A1, &v))
-		return false; 
-	g_player.disable(v == TRUE); 
-	return true;
-}
-
-PREDICATE_M(player, customMove, 0)
-{
-	return g_player.customMove();
-}
-
-PREDICATE_M(player, setCustomMove, 1)
-{
-	int v;
-	if(!PL_get_bool(A1, &v))
-		return false; 
-	g_player.customMove(v == TRUE); 
-	return true;
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// PLAYER
-//////////////////////////////////////////////////////////////////////////////////////////////////
+PLAYER_B_PROP(flipX, FlipX)
+PLAYER_B_PROP(flipY, FlipY)
+PLAYER_B_PROP(disable, Disable)
+PLAYER_B_PROP(customMove, CustomMove)
 
 PREDICATE_M(player, makeBB, 4)
 {
-	int x1, x2, y1, y2;
-	g_player.MakeBB(x1, y1, x2, y2);
-	A1 = x1;
-	A2 = y1;
-	A3 = x2;
-	A4 = y2;
+	iRect r = g_player.rect();
+	A1 = r.p1.x;
+	A2 = r.p1.y;
+	A3 = r.p2.x;
+	A4 = r.p2.y;
 	return true;
 }
 
 PREDICATE_M(player, makeBBW, 4)
 {
-	int x1,y1,x2,y2;
-	g_player.MakeBBW(x1,y1,x2,y2);
-	A1 = x1;
-	A2 = y1;
-	A3 = x2;
-	A4 = y2;
+	iRect r = g_player.worldRect();
+	A1 = r.p1.x;
+	A2 = r.p1.y;
+	A3 = r.p2.x;
+	A4 = r.p2.y;
 	return true;
 }
 
@@ -414,39 +112,31 @@ PREDICATE_M(player, makeBBW, 4)
 // INIT
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-cDizPlayer::cDizPlayer() : idle("idle"), walk("walk"), jump("jump"), fall("fall"), scripted("scripted"), _status(idle)
+cDizPlayer::cDizPlayer() : idle("idle"), walk("walk"), jump("jump"), fall("fall"), scripted("scripted"), status(idle), size(16, 20)
 {
 	Reset();
 }
 
-cDizPlayer::~cDizPlayer()
-{
-}
-
 void cDizPlayer::Reset()
 {
+	shader = Blend::Alpha;
+	status = idle;
+	delay = 3;
+	layer = 7;
 
-	shader(Blend::Alpha);
-	status(idle);
-	delay(3);
-	layer(7);
-	_w					= DIZ_BOXW;
-	_h					= DIZ_BOXH;
+	tile = TILE_IDLE;
+	anim = 2;
+	color = 0xffffffffu;
 
-	tile(TILE_IDLE);
-	anim(2);
-	color(0xffffffffu);
+	tileIdle = TILE_IDLE;
+	tileWalk = TILE_WALK;
+	tileUp = TILE_UP;
+	tileJump = TILE_JUMP;
 
-	tileIdle(TILE_IDLE);
-	tileWalk(TILE_WALK);
-	tileUp(TILE_UP);
-	tileJump(TILE_JUMP);
+	life = 100;
 
-	_life				= 100;
-
-	m_input	= true;
+	input = true;
 	m_debug	= false;
-
 }
 
 
@@ -456,71 +146,38 @@ void cDizPlayer::Reset()
 
 void cDizPlayer::Update()
 {
-
-	//Sleep(200); // @T
-
-	if( disable() || m_debug ) return; // disabled
+	if(disable || m_debug) return;
 
 	// delay
-	if( !g_game.IsUpdate(delay()) ) return;
+	if( !g_game.IsUpdate(delay) ) return;
 
-	// read mat info
-	ReadMatInfo(); // read material info
-
-	// objects collison
+	ReadMatInfo();
 	CheckColliders();
-
-	// script
 	g_script.playerUpdate();
-
-	if(customMove())	return; // player was custom moved on the player update handler
+	if(customMove)	return; // player was custom moved on the player update handler
 
 	// input status
-	if( _status == idle || _status == walk )
-	{
+	if(status == idle || status == walk)
 		EnterKeyState();
-	}
 
-	// states update
-	if( _status == idle ) 
-		UpdateIdle();
-	else
-	if( _status == walk )
-		UpdateWalk();
-	else
-	if( _status == jump )
-		UpdateJump();
-	else
-	if( _status == fall )
-		UpdateFall();
-	else
-	if( _status == scripted )
-		UpdateScripted();
+	if(status == idle) UpdateIdle();
+	else if(status == walk) UpdateWalk();
+	else if(status == jump) UpdateJump();
+	else if(status == fall) UpdateFall();
+	else if(status == scripted) UpdateScripted();
 
-	if( _status != scripted )
+	if(status != scripted)
 	{
-		bool snap = CheckCollidersSnap();
-
-		// stand check only if not already snapped to collider
-		if( !snap && (_status == idle || _status == walk) )
+		// stand check only if not already snapped to collider and if any space below then enter in fall
+		if( !CheckCollidersSnap() && (status == idle || status == walk) && CheckFallY(1)>0)
 		{
-			int h = CheckFallY(1); // see if it can fall 
-			if(h>0) // if any space below then enter in fall
-			{
-				EnterFall();
-				_y++; 
-				_pow++; // force one step down (DIZZYMATCH)
-			}
+			EnterFall();
+			pos.y++; 
+			pow++; // force one step down
 		}
-		
-		// fix collision by rising dizzy
-		CheckCollision();
+		CheckCollision();// fix collision by rising dizzy
 	}
-
 }
-
-
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // ENTER STATES
@@ -529,56 +186,56 @@ void cDizPlayer::Update()
 
 void cDizPlayer::EnterIdle()
 {
-	_status			= idle;
-	dir(0);
-	pow(0);
-	flipX(false);
-	int idleTile = _costume+tileIdle()+emotion();
-	if( _tile != idleTile )
+	status = idle;
+	dir = 0;
+	pow = 0;
+	flipX = false;
+	int idleTile = costume + tileIdle + emotion;
+	if(tile != idleTile)
 	{
-		_frame = 0;
-		_tile = idleTile;
+		frame = 0;
+		tile = idleTile;
 	}
 
 }
 
 void cDizPlayer::EnterWalk( int dr )
 {
-	_status			= walk; 
-	dir(dr);
-	pow(0);
-	flipX(dir()==-1);
-	int walkTile = _costume+tileWalk();
-	if( _tile!= walkTile)
+	status = walk; 
+	dir = dr;
+	pow = 0;
+	flipX = dir == -1;
+	int walkTile = costume + tileWalk;
+	if(tile!= walkTile)
 	{
-		_frame = 0;
-		_tile = walkTile;
+		frame = 0;
+		tile = walkTile;
 	}
 
 }
 
 void cDizPlayer::EnterJump( int dr, int pw )
 {
-	_status			= jump; 
-	dir(dr);
-	pow(pw);
-	flipX(dir()==-1);
-	if( dir() )
+	status = jump; 
+	dir = dr;
+	pow = pw;
+	flipX = dir==-1;
+	if(dir)
 	{
-		int jumpTile = _costume+tileJump();
-		if(_tile != jumpTile)
+		int jumpTile = costume + tileJump;
+		if(tile != jumpTile)
 		{
-			_frame = 0;
-			_tile = jumpTile;
+			frame = 0;
+			tile = jumpTile;
 		}
 	}
 	else
 	{ 
-		int upTile = _costume+tileUp();
-		if(_tile != upTile )
+		int upTile = costume + tileUp;
+		if(tile != upTile)
 		{	
-			_frame = 0;
-			_tile = upTile;
+			frame = 0;
+			tile = upTile;
 		}
 	}
 	
@@ -586,37 +243,36 @@ void cDizPlayer::EnterJump( int dr, int pw )
 
 void cDizPlayer::EnterFall()
 {
-	_status				= fall; 
-	pow(1);
+	status = fall; 
+	pow = 1;
 	// don't change tile and frame
 }
 
 void cDizPlayer::EnterRoll()
 {
+	pow = 1; // cut fall power to roll on ground
 	
-	pow(1); // cut fall power to roll on ground
-	
-	if( _tile==_costume+tileUp() || _tile==_costume+tileJump() ) // only when jumping
+	if(tile == costume + tileUp || tile == costume + tileJump ) // only when jumping
 		if(cTile* tile = FindTile())
-			if(tile->ComputeFrame(frame(), anim()) != 0) return; // don't enter idle unless last frame reached; untill then stay in roll
+			if(tile->ComputeFrame(frame, anim) != 0) return; // don't enter idle unless last frame reached; untill then stay in roll
 
 	EnterKeyState(); // be sure to stop the fall, just in case the fall handler doesn't
 
 	g_script.fall();
 	
-	_stunLevel = 0; // clear stun level
+	stunLevel = 0; // clear stun level
 
 }
 
 void cDizPlayer::EnterJumper( int mat )
 {
-	if(_life == 0) { EnterIdle(); return; } // no more jumps for mr. dead guy
+	if(!life) { EnterIdle(); return; } // no more jumps for mr. dead guy
 
 	int dir = 0;
 
 	// direction
-	if(KEY(KEY_RIGHT))	dir++;
-	if(KEY(KEY_LEFT))	dir--;
+	if(key(KEY_RIGHT))	dir++;
+	if(key(KEY_LEFT))	dir--;
 
 	// call jump handler to determine the power of the jump
 	int pow = g_script.jump(mat, 0); // send the material, clean return for safety
@@ -631,20 +287,20 @@ void cDizPlayer::EnterJumper( int mat )
 void cDizPlayer::EnterSpin( int dr )
 {
 	EnterFall();
-	dir(dr);
-	_tile	= _costume+tileJump();
-	flipX(dir()==-1);
-	_frame	= 1;
+	dir = dr;
+	tile = costume + tileJump;
+	flipX = dir == -1;
+	frame = 1;
 }
 
 void cDizPlayer::EnterKeyState()
 {
-	if( _life <= 0 ) {	EnterIdle(); return; } // prepare to die
+	if( life <= 0 ) {	EnterIdle(); return; } // prepare to die
 
 	int dir = 0;
-	if( KEY(KEY_RIGHT) )	dir++;
-	if( KEY(KEY_LEFT) )		dir--;
-	if( KEY(KEY_JUMP) )		
+	if( key(KEY_RIGHT) )	dir++;
+	if( key(KEY_LEFT) )		dir--;
+	if( key(KEY_JUMP) )		
 	{
 		// call jump handler to determine the power of the jump
 		int pow = g_script.jump(-1, 0); // send no material, clean return for safety
@@ -670,34 +326,28 @@ void cDizPlayer::EnterKeyState()
 
 void cDizPlayer::UpdateIdle()
 {
-
-	_frame++;
-
+	frame++;
 }
 
 void cDizPlayer::UpdateWalk()
 {
-
 	if( CheckWalkX() )
-		_x += dir()*DIZ_STEPX;
-
-	_frame++;
-	
+		pos.x += dir * DIZ_STEPX;
+	frame++;	
 }
 
 void cDizPlayer::UpdateJump()
 {
-	
 	if( CheckJumpX() )
-		_x += dir()*DIZ_STEPX;
-	int step = std::min(pow(), DIZ_STEPYMAX);
+		pos.x += dir * DIZ_STEPX;
+	int step = std::min(pow, DIZ_STEPYMAX);
 	step = CheckJumpY(step);
-	_y -= step;
-	_pow--;
+	pos.y -= step;
+	pow--;
 
-	_frame++;
+	frame++;
 
-	if( pow()<0 ) // done jumping - see where to go idle or fall
+	if(pow < 0) // done jumping - see where to go idle or fall
 	{
 		int under = CheckFallY(1);
 		if(under==0)
@@ -712,14 +362,14 @@ void cDizPlayer::UpdateFall()
 {
 
 	if( CheckFallX() )
-		_x += dir()*DIZ_STEPX;
+		pos.x += dir * DIZ_STEPX;
 
-	int step = std::min(pow(), DIZ_STEPYMAX);
+	int step = std::min(pow, DIZ_STEPYMAX);
 	int step2 = CheckFallY(step);
-	_y += step2;
+	pos.y += step2;
 
-	_frame++; // keep last tile
-	_stunLevel++;
+	frame++; // keep last tile
+	stunLevel++;
 
 	// stopping fall if fall step was reduced
 	if(step2<step)
@@ -732,15 +382,13 @@ void cDizPlayer::UpdateFall()
 			EnterRoll();
 	}
 	else
-		_pow++;
+		pow++;
 
 }
 
 void cDizPlayer::UpdateScripted()
 {
-	
-	if(anim()!=0) _frame++;
-
+	if(anim) frame++;
 }
 
 
@@ -749,106 +397,67 @@ void cDizPlayer::UpdateScripted()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 // check if rectangle have no hard materials in side
-bool cDizPlayer::CheckFree( int x1, int y1, int x2, int y2 )
+bool cDizPlayer::CheckFree(const iRect & r) const
 {
-	for(iV2 i(x1, y1);i.y<y2;i.y++)
-		for(i.x=x1;i.x<x2;i.x++)
+	for(iV2 i(r.p1); i.y < r.p2.y; i.y++)
+		for(i.x = r.p1.x; i.x < r.p2.x; i.x++)
 			if( g_game.DensMap(i) == g_game.hard ) 
 				return false;
 	return true;
 }
 
 // check side, only above 8 bottom pixels. if bottom is blocked it will step-up on it
-bool cDizPlayer::CheckWalkX()
+bool cDizPlayer::CheckWalkX() const
 {
-	int x1,y1,x2,y2;
-	MakeBB(x1,y1,x2,y2);
-	if(dir()==1)
-		return CheckFree( x2,y1,x2+DIZ_STEPX,y2-8 );
-	else
-	if(dir()==-1)
-		return CheckFree( x1-DIZ_STEPX,y1,x1,y2-8 );
-	else
-		return false;
-}
-
-bool cDizPlayer::CheckJumpX()
-{
-	int x1,y1,x2,y2;
-	MakeBB(x1,y1,x2,y2);
-	if(dir()==1)
-		return CheckFree( x2,y1,x2+DIZ_STEPX,y2-8 );
-	else
-	if(dir()==-1)	
-		return CheckFree( x1-DIZ_STEPX,y1,x1,y2-8 );
-	else
-		return false;
+	iRect r = rect();
+	if(dir == 1)
+		return CheckFree( iRect(r.RightUp(), r.RightDown() + iV2(DIZ_STEPX, -8)) );
+	if(dir == -1)
+		return CheckFree( iRect(r.LeftUp() - iV2(DIZ_STEPX, 0), r.LeftDown() - iV2(0, 8)));
+	return false;
 }
 
 // check material above the box and see how far can it go
-int cDizPlayer::CheckJumpY( int step )
+int cDizPlayer::CheckJumpY(int step) const
 {
-	int x1,y1,x2,y2;
-	MakeBB(x1,y1,x2,y2);
-	for(iV2 i(x1, y1-1);i.y>y1-1-step;i.y--)
-		for(i.x=x1;i.x<x2;i.x++)
+	iRect r = rect();
+	for(iV2 i(r.p1.x, r.p1.y-1); i.y > r.p1.y - 1 - step; i.y--)
+		for(i.x = r.p1.x; i.x < r.p2.x; i.x++)
 			if( g_game.DensMap(i) == g_game.hard ) 
-				return ((y1-1)-i.y);
+				return ((r.p1.y-1)-i.y);
 	return step;
 }
 
-bool cDizPlayer::CheckFallX()
-{
-	int x1,y1,x2,y2;
-	MakeBB(x1,y1,x2,y2);
-	if(dir()==1)	
-		return CheckFree( x2,y1,x2+DIZ_STEPX,y2-8 );
-	else
-	if(dir()==-1)	
-		return CheckFree( x1-DIZ_STEPX,y1,x1,y2-8 );
-	else
-		return false;
-}
-
 // check material under the box and see how far can it go
-int cDizPlayer::CheckFallY( int step )
+int cDizPlayer::CheckFallY(int step) const
 {
-	int x1,y1,x2,y2;
-	MakeBB(x1,y1,x2,y2);
-	for( iV2 i(x1, y2); i.y<y2+step; i.y++ )
-		for(i.x=x1;i.x<x2;i.x++)
+	iRect r = rect();
+	for( iV2 i(r.LeftDown()); i.y < r.p2.y + step; i.y++ )
+		for(i.x = r.p1.x; i.x < r.p2.x; i.x++)
 			if( g_game.DensMap(i) != g_game._void ) 
-				return (i.y-y2); // return minimized step if block found
+				return (i.y - r.p2.y); // return minimized step if block found
 	return step;
 }
 
 // collision inside box bottom will rise dizzy up with maximum DIZ_STEPY 
 void cDizPlayer::CheckCollision()
 {
-	int x1,y1,x2,y2;
-	MakeBB(x1,y1,x2,y2);
-	
+	iRect r = rect();	
 	// going from up to bottom until the first hard line found
-	for( iV2 i(x1, y2-DIZ_STEPY); i.y<y2; i.y++ )
-	{
-		bool hard = false;
-		for(i.x=x1;i.x<x2;i.x++)
-		{
+	for( iV2 i = r.LeftDown() - iV2(0, DIZ_STEPY); i.y < r.p2.y; i.y++ )
+		for(i.x = r.p1.x; i.x < r.p2.x;i.x++)
 			if( g_game.DensMap(i) == g_game.hard ) 
 			{
-				_y -= y2-i.y;
+				pos.y -= r.p2.y-i.y;
 				return;
 			}
-		}
-	}
-	
+
 }
 
 int cDizPlayer::CheckJumper()
 {
-	int x1,y1,x2,y2;
-	MakeBB(x1,y1,x2,y2);
-	for(iV2 i(x1, y2); i.x<x2;i.x++)
+	iRect r = rect();	
+	for(iV2 i(r.LeftDown()); i.x < r.p2.x; i.x++)
 	{
 		int mat = g_game.MatMap(i);
 		if( g_game.materials[mat].density == g_game.jump ) return mat;
@@ -860,28 +469,22 @@ int cDizPlayer::CheckJumper()
 
 void cDizPlayer::CheckColliders()
 {
-	iRect pr = bbw();
+	iRect pr = worldRect();
 	for(auto obj: g_game.m_collider)
 	{
 		if(obj->disable) continue; // only enabled objects
 		if(!(obj->collider & COLLIDER_HANDLE)) continue; // just those that request it
 		bool collision = pr.Intersects(obj->rect());
 		if(!collision && !obj->collision) continue; // no collision event
-
-		// call
-
 		enum collMode { exit = 0, enter = 1, keep = 2};
 		g_script.collision(obj->id, !collision ? exit : obj->collision ? keep : enter);   // entering collision
-
 		obj->collision = collision;
 	}
-
 }
 
 bool cDizPlayer::CheckCollidersSnap()
 {
-	int x1,y1,x2,y2;
-	MakeBBW(x1,y1,x2,y2);
+	iRect r = worldRect();
 
 	int stepu=0;			// move player up (deepest entering collider)
 	int stepd=DIZ_STEPY+1;	// move player down (space below to the closest collider)
@@ -893,19 +496,19 @@ bool cDizPlayer::CheckCollidersSnap()
 		if(obj->disable) continue; // only enabled objects
 		if(!(obj->collider & COLLIDER_HARD)) continue; // only those that need it
 		iRect c = obj->rect();
-		if( x2<=c.p1.x || x1>=c.p2.x ) continue;
+		if( r.p2.x <= c.p1.x || r.p1.x >= c.p2.x ) continue;
 		
-		if(y2<=c.p1.y && c.p1.y < y2 + DIZ_STEPY + 1)	// collider's top is inside player's box
-			stepd = std::min(stepd, c.p1.y - y2);
+		if(r.p2.y <= c.p1.y && c.p1.y < r.p2.y + DIZ_STEPY + 1)	// collider's top is inside player's box
+			stepd = std::min(stepd, c.p1.y - r.p2.y);
 
-		if(y1<=c.p1.y && c.p1.y<y2)				// collider's top is not too far under the player's bottom ( a smaller interval would be (y2-DIZ_STEPY<=cy1 && cy1<y2) )
-			stepu = std::max(stepu, y2 - c.p1.y);
+		if(r.p1.y <= c.p1.y && c.p1.y < r.p2.y)				// collider's top is not too far under the player's bottom ( a smaller interval would be (y2-DIZ_STEPY<=cy1 && cy1<y2) )
+			stepu = std::max(stepu, r.p2.y - c.p1.y);
 	}	
 
 	if(stepu>0)
 	{
 		snap = true;
-		_y -= std::min(stepu, DIZ_STEPY);
+		pos.y -= std::min(stepu, DIZ_STEPY);
 	}
 	else
 	if(stepd<=DIZ_STEPY)
@@ -914,11 +517,11 @@ bool cDizPlayer::CheckCollidersSnap()
 		if(stepd2==stepd)
 		{
 			snap = true;
-			_y += stepd;
+			pos.y += stepd;
 		}
 	}
 
-	if(snap && _status == fall) // stop falls
+	if(snap && status == fall) // stop falls
 	{
 		EnterRoll();
 	}
@@ -931,14 +534,13 @@ bool cDizPlayer::CheckCollidersSnap()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cDizPlayer::ReadMatInfo()
 {
-	iV2 p1, p2;
-	MakeBB(p1.x,p1.y,p2.x,p2.y);
+	iRect r = rect();
 	
 	_matInside = 0;
-	for(int y=p1.y;y<p2.y;y++)
-		_matInside |= g_game.MatMap(p1.x, p2.x, y);
-	_matUnder = g_game.MatMap(p1.x, p2.x, p2.y);
-	_matCenter = g_game.MatMap((p1 + p2) / 2);
+	for(int y=r.p1.y; y < r.p2.y; y++)
+		_matInside |= g_game.MatMap(r.p1.x, r.p2.x, y);
+	_matUnder = g_game.MatMap(r.p1.x, r.p2.x, r.p2.y);
+	_matCenter = g_game.MatMap(r.Center());
 }
 
 
@@ -947,13 +549,13 @@ void cDizPlayer::ReadMatInfo()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cDizPlayer::Draw()
 {
-	if( disable()) return; // disabled
+	if(disable) return;
 	if(cTile* tile = FindTile())
 	{
 		iV2 sz = tile->GetSize();
-		R9_SetBlend(shader());
-		iV2 p = pos() - Room::Pos2Room(pos()) * Room::Size + iV2(-sz.x/2, h()/2 - sz.y) + g_game.viewShift;
-		R9_DrawSprite(g_paint.scrPos(p), tile->FrameRect(tile->ComputeFrame(frame(), anim())), tile->tex, color(), flip(), static_cast<float>(g_paint.scale()));
+		R9_SetBlend(shader);
+		iV2 p = pos - Room::Pos2Room(pos) * Room::Size + iV2(-sz.x/2, size.y/2 - sz.y) + g_game.viewShift;
+		R9_DrawSprite(g_paint.scrPos(p), tile->FrameRect(tile->ComputeFrame(frame, anim)), tile->tex, color, flip(), static_cast<float>(g_paint.scale()));
 	}
 }
 

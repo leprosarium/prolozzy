@@ -180,7 +180,7 @@ bool cDizDebug::Update()
 	if(_visible) input.Update(); // update console input command
 	if(input.IsOpened())	// if during console input command
 	{
-		g_player.m_debug = 1; // don't update player
+		g_player.m_debug = true; // don't update player
 		return true;
 	}
 
@@ -306,7 +306,7 @@ void Info::Draw()
 
 	// player
 	std::ostringstream os;
-	os << "room=(" << g_game.roomX() << "," << g_game.roomY() << "), player=(" << g_player.x() << "," << g_player.y() << ")";
+	os << "room=(" << g_game.roomX() << "," << g_game.roomY() << "), player=(" << g_player.pos.x << "," << g_player.pos.y << ")";
 	os << " voices=" << g_sound.samples.playingVoices();
 	R9_DrawText( p, os.str(), COLOR_INFO);
 
@@ -320,31 +320,29 @@ void cDizDebug::NavigationUpdate()
 	bool ctrl  = I9_GetKeyValue(I9K_LCONTROL) || I9_GetKeyValue(I9K_RCONTROL);
 	bool shift = I9_GetKeyValue(I9K_LSHIFT) || I9_GetKeyValue(I9K_RSHIFT);
 
-	int px = g_player.x();
-	int py = g_player.y();
+	iV2 p = g_player.pos;
 	if(ctrl)
 	{
-		if(I9_GetKeyDown(I9K_LEFT))		px-=Room::Size.x;
-		if(I9_GetKeyDown(I9K_RIGHT))	px+=Room::Size.x;
-		if(I9_GetKeyDown(I9K_UP))		py-=Room::Size.y;
-		if(I9_GetKeyDown(I9K_DOWN))		py+=Room::Size.y;
+		if(I9_GetKeyDown(I9K_LEFT))		p.x-=Room::Size.x;
+		if(I9_GetKeyDown(I9K_RIGHT))	p.x+=Room::Size.x;
+		if(I9_GetKeyDown(I9K_UP))		p.y-=Room::Size.y;
+		if(I9_GetKeyDown(I9K_DOWN))		p.y+=Room::Size.y;
 	}
 	else
 	if(shift)
 	{
-		if(I9_GetKeyDown(I9K_LEFT))		px-=4;
-		if(I9_GetKeyDown(I9K_RIGHT))	px+=4;
-		if(I9_GetKeyDown(I9K_UP))		py-=4;
-		if(I9_GetKeyDown(I9K_DOWN))		py+=4;
+		if(I9_GetKeyDown(I9K_LEFT))		p.x-=4;
+		if(I9_GetKeyDown(I9K_RIGHT))	p.x+=4;
+		if(I9_GetKeyDown(I9K_UP))		p.y-=4;
+		if(I9_GetKeyDown(I9K_DOWN))		p.y+=4;
 	}
 	
 	iV2 sz = g_map.size() * Room::Size;
-	if(px >= sz.x) px = sz.x - 1;
-	if(py >= sz.y) py = sz.y - 1;
-	if(px<0) px=0;
-	if(py<0) py=0;
-	g_player.x(px);
-	g_player.y(py);
+	if(p.x >= sz.x) p.x = sz.x - 1;
+	if(p.y >= sz.y) p.y = sz.y - 1;
+	if(p.x<0) p.x=0;
+	if(p.y<0) p.y=0;
+	g_player.pos = p;
 	g_player.m_debug = (ctrl||shift);
 }
 

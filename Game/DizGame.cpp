@@ -375,9 +375,8 @@ bool cDizGame::Start()
 
 	// player
 	g_player.Reset();
-	g_player.x(0);
-	g_player.y(0);
-	g_player.disable(true);
+	g_player.pos = 0;
+	g_player.disable = true;
 
 	// fffx
 	if(I9_IsReady()) FFFXStop();
@@ -491,15 +490,15 @@ bool cDizGame::Update()
 	if( g_map.size() > 0) // if map size is valid
 	{
 		// room bound check
-		if(!Room::Rect(roomPos()).IsInside(g_player.pos()))	g_script.roomOut(); // users may change player's pos on this handler
+		if(!Room::Rect(roomPos()).IsInside(g_player.pos))	g_script.roomOut(); // users may change player's pos on this handler
 
 		// world bound check
-		iV2 r = Room::Pos2Room( g_player.pos() );
-		if( r.x<0 )				{ r.x=0; g_player.x(0); }
+		iV2 r = Room::Pos2Room(g_player.pos);
+		if( r.x<0 )				{ r.x=0; g_player.pos.x = 0; }
 		iV2 sz = g_map.size();
-		if( r.x > sz.x - 1 )	{ r.x = sz.x - 1; g_player.x(sz.x * Room::Size.x - 4); }
-		if( r.y<0 )				{ r.y = 0; g_player.y(0); }
-		if( r.y > sz.y - 1 )	{ r.y = sz.y - 1; g_player.y(sz.y * Room::Size.y - 1); }
+		if( r.x > sz.x - 1 )	{ r.x = sz.x - 1; g_player.pos.x = sz.x * Room::Size.x - 4; }
+		if( r.y<0 )				{ r.y = 0; g_player.pos.y = 0; }
+		if( r.y > sz.y - 1 )	{ r.y = sz.y - 1; g_player.pos.y = sz.y * Room::Size.y - 1; }
 
 		// room tranzit
 		if( r != roomPos())
@@ -515,7 +514,7 @@ bool cDizGame::Update()
 		g_script.menu();
 
 	// action
-	if( KeyHit(KEY_ACTION) && !pause() && g_player.life() > 0 && !g_player.disable() )
+	if( KeyHit(KEY_ACTION) && !pause() && g_player.life > 0 && !g_player.disable)
 		g_script.action();
 
 	// fffx rumble
@@ -613,7 +612,7 @@ void cDizGame::Draw()
 				ObjDraw(*obj);
 
 		// dizzy
-		if(g_player.layer()==layer) g_player.Draw();
+		if(g_player.layer == layer) g_player.Draw();
 	}
 
 	if( flip )

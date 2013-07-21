@@ -179,6 +179,10 @@ struct iRect
 	int Width()	const { return p2.x-p1.x; }
 	int Height() const { return p2.y-p1.y; }
 	iV2 Center() const { return (p1 + p2) / 2; }
+	iV2 LeftUp() const { return p1; }
+	iV2 RightDown() const { return p2; }
+	iV2 RightUp() const { return iV2(p2.x, p1.y); }
+	iV2 LeftDown() const { return iV2(p1.x, p2.y); }
 	iRect &	Inflate( const iV2 & v ) { p1 += v; p2 -= v; return *this; }
 	iRect & Deflate( const iV2 & v ) { p1 -= v; p2 += v; return *this; }
 	iRect & Offset( const iV2 & v ) { p1+= v; p2 +=v; return *this; }

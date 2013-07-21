@@ -41,7 +41,7 @@ getCheckProp(p(Prop, C, V)) :-
 	gui:itemGetValue(C),
 	C =\= 0,
 	edi:toolBrush(B),
-	brush:getEx(B, Prop, V).
+	brush:get(B, Prop, V).
 
 getCheckProps(Props) :-
 	findall(P, getCheckProp(P), Props).
@@ -84,7 +84,7 @@ brushSearchMatch(Props, Brush, yes) :-
 brushSearchMatch(_, _, no).
 
 brushSearchMatch(p(Prop, C, V), Br) :-
-	brush:getEx(Br, Prop, Val),
+	brush:get(Br, Prop, Val),
 	(C=\=1,V \= Val; C==1,V = Val).
 
 brushChange :-
@@ -117,7 +117,7 @@ brushChange(Br, C, Props) :-
 	(   brush:getSelect(Br, 0)
 	->  C = 0
 	;   C = 1,
-	    forall(member(p(Prop, 1, V), Props), brush:setEx(Br, Prop, V))).
+	    forall(member(p(Prop, 1, V), Props), brush:set(Br, Prop, V))).
 
 brushInvert :-
 	forallBrush(brushInvert(_, _), C),

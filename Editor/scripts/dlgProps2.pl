@@ -73,7 +73,7 @@ createProps(WMax, CurMax, Mode, Brush) :-
 	Y is TitleH + 8 + 24,
 	findall(bp(Id, Value, Name, ToolTip, Type),
 		(   mod:brushProp(Id, Name, ToolTip, Type),
-		    (	brush:getEx(Brush, Id, Value)->true;brush:varDef(Id, Value))), Props),
+		    (	brush:get(Brush, Id, Value)->true;brush:varDef(Id, Value))), Props),
 	createProps(Props, 0, Y, W, Mode, Brush),
 	CurMax is max(WMax, W).
 
@@ -177,7 +177,7 @@ setPage(Key, N, Y, Y2, HV) :-
 	(readOnly(Key)->gui:itemSetDisable(1);true).
 
 update(Brush) :-
-	forall(mod:brushProp(Prop, Name,_,Type), (brush:getEx(Brush, Prop, Value), updateItem(Name, Value, Type, Prop))).
+	forall(mod:brushProp(Prop, Name,_,Type), (brush:get(Brush, Prop, Value), updateItem(Name, Value, Type, Prop))).
 
 updateItem(Name, Value, Type, Prop) :-
 	gui:itemSelect(id(Prop, name)),
@@ -197,7 +197,7 @@ browsePos(XX, YY) :-
 
 browse(Prop, Brush) :-
     mod:brushProp(Prop, _, _, Type),
-    brush:getEx(Brush, Prop, Value),
+    brush:get(Brush, Prop, Value),
     browse(Prop, Value, Brush, Type).
 
 browse(Prop, Value, Brush, select(Variants)) :-
@@ -214,7 +214,7 @@ browse(Prop, Color, Brush, color) :-
 
 browseSet(V, Prop, Brush) :-
 	gui:dlgSelect(props),
-	brush:setEx(Brush, Prop, V),
+	brush:set(Brush, Prop, V),
 	gui:itemSelect(id(Prop, edit)),
 	mod:brushProp(Prop, _, _, Type),
 	propFormat(Type, Format),
@@ -233,7 +233,7 @@ inputSet(Prop, Brush) :-
 	gui:itemGetTxt(SZValue),
 	mod:brushProp(Prop, _, _, Type),
 	textToValue(Type, SZValue, Value),
-	brush:setEx(Brush, Prop, Value),
+	brush:set(Brush, Prop, Value),
 	update(Brush).
 
 multiCheck(search, 0, 0, check1).

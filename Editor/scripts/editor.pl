@@ -3,7 +3,7 @@
 		   done/0,
 		   param/3,
 		   param/2]).
-
+:- abolish(system:get/2).
 :- use_module(gui, []).
 :- use_module(mod, []).
 :- use_module(def, []).

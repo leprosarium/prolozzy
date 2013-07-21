@@ -42,7 +42,7 @@ fill([]).
 fill([''-''|O]) :- fill(O).
 
 createProps(Br, X0, Y0, H, YY) :-
-	brush:getEx(Br, Props),
+	brush:get(Br, Props),
 	extendProps(Props, 20, NProps),
 	createProps(NProps, 0, X0, Y0, H, YY).
 
@@ -68,7 +68,7 @@ dlgClose(Br):-
 			  gui:itemSelect(id(N,value)),
 			  gui:itemGetTxt(V),
 			  atom_to_term(V, Val, _)), Props),
-	brush:setEx(Br, Props).
+	brush:set(Br, Props).
 
 
 

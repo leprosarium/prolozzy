@@ -109,6 +109,7 @@ public:
 	int			matUnder() const { return _matUnder; }
 	int			matCenter() const { return _matCenter; }
 	dword		flip() const { return (flipX ? 1 : 0 ) | (flipY ? 2 : 0); }
+	void setDir(int d) { dir = d; flipX = dir == -1; }
 };
 
 extern	cDizPlayer	g_player;

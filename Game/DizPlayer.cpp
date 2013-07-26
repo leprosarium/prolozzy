@@ -187,9 +187,8 @@ void cDizPlayer::Update()
 void cDizPlayer::EnterIdle()
 {
 	status = idle;
-	dir = 0;
+	setDir(0);
 	pow = 0;
-	flipX = false;
 	int idleTile = costume + tileIdle + emotion;
 	if(tile != idleTile)
 	{
@@ -202,9 +201,8 @@ void cDizPlayer::EnterIdle()
 void cDizPlayer::EnterWalk( int dr )
 {
 	status = walk; 
-	dir = dr;
+	setDir(dr);
 	pow = 0;
-	flipX = dir == -1;
 	int walkTile = costume + tileWalk;
 	if(tile!= walkTile)
 	{
@@ -217,9 +215,8 @@ void cDizPlayer::EnterWalk( int dr )
 void cDizPlayer::EnterJump( int dr, int pw )
 {
 	status = jump; 
-	dir = dr;
+	setDir(dr);
 	pow = pw;
-	flipX = dir==-1;
 	if(dir)
 	{
 		int jumpTile = costume + tileJump;
@@ -287,9 +284,8 @@ void cDizPlayer::EnterJumper( int mat )
 void cDizPlayer::EnterSpin( int dr )
 {
 	EnterFall();
-	dir = dr;
+	setDir(dr);
 	tile = costume + tileJump;
-	flipX = dir == -1;
 	frame = 1;
 }
 

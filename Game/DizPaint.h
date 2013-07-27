@@ -235,37 +235,25 @@ public:
 class HUD
 {
 	enum Cmd { None, Align, Color, Focus, Tile };
-	int _font;		// current font id
-	Blend _shader;	// current hud shader
-	dword _color;	// current hud color
-	bool _isDrawing;		// draw allowed
 	Cmd ScanText(std::string::const_iterator start, std::string::const_iterator end, std::string::const_iterator & res, int* data);								// helper for hud text; scans for command and return command and data info
 
 public:
-	HUD() : _font(), _shader(Blend::Alpha), _color(0xffffffff), _isDrawing() {}
+	int font;		// current font id
+	Blend shader;	// current shader
+	dword color;	// current color
+	bool visible;	// draw allowed
+
+	HUD() : font(), shader(Blend::Alpha), color(0xffffffff), visible() {}
 	void SetClipping(const iRect & dst);														// set a clipping rect
 	void DrawTile(int tileid, const iRect & dst, const iRect & src, dword flags, int frame);	// draw tile
 	void DrawText(int tileid, const iRect & dst, const std::string & text, int align);						// draw text with escape commands
 	void GetTextSize(const std::string & text, int& w, int& h, int&c, int&r);								// in text's width and height in pixels and the number of columns and rows
-
-	void font(int f) { _font = f; }
-	void shader(Blend b) { _shader = b; }
-	void color(dword c) { _color = c; }
-	void draw(bool d) { _isDrawing = d; }
-
-	int font() const { return _font; }
-	Blend shader() const { return _shader; }
-	dword color() const { return _color; }
-	bool isDrawing() const { return _isDrawing; }
 };
 
 class cDizPaint
 {
 	r9Img _imgtarget;	// target image in PF_A8 format (pointing to material map data)
 	bool _drawtilesoft;	// true for DrawBrush to call DrawTileSoft
-	byte _drawtilemat;	// material to draw the tile
-	int _scale;		// scale factor
-	iV2 _scrOffs;			// screen offset
 
 	struct
 	{
@@ -280,7 +268,11 @@ class cDizPaint
 	std::function<void(const iV2&)> selectDrawMethod(const tBrush & brush, int idx, int frame) const;
 
 public:
-	cDizPaint() : _scale(1), _drawtilesoft(), _drawtilemat() {}
+	int scale;			// scale factor
+	iV2 scrOffs;		// screen offset
+	byte drawtilemat;	// material to draw the tile
+
+	cDizPaint() : scale(1), _drawtilesoft(), drawtilemat() {}
 	
 	bool Init()	{ Layout(); return true; }
 	void Done() { tiles.clear(); fonts.clear(); }
@@ -302,15 +294,7 @@ public:
 
 
 	// screen props
-	iV2 scrPos(const iV2 & p) const { return scrOffs() + p * scale(); }
-	int scale() const { return _scale; }
-	void scale(int s) { _scale = s; }
-
-	const iV2 & scrOffs() const { return _scrOffs; }
-	void scrOffs(const iV2 & v) { _scrOffs = v; }
-
-	void drawtilemat(int mat) { _drawtilemat = mat; }
-	int drawtilemat() const { return _drawtilemat; }
+	iV2 scrPos(const iV2 & p) const { return scrOffs + p * scale; }
 
 	bool drawtilesoft() const { return _drawtilesoft; }
 

@@ -551,7 +551,7 @@ void cDizPlayer::Draw()
 		iV2 sz = tile->GetSize();
 		R9_SetBlend(shader);
 		iV2 p = pos - Room::Pos2Room(pos) * Room::Size + iV2(-sz.x/2, size.y/2 - sz.y) + g_game.viewShift;
-		R9_DrawSprite(g_paint.scrPos(p), tile->FrameRect(tile->ComputeFrame(frame, anim)), tile->tex, color, flip(), static_cast<float>(g_paint.scale()));
+		R9_DrawSprite(g_paint.scrPos(p), tile->FrameRect(tile->ComputeFrame(frame, anim)), tile->tex, color, flip(), static_cast<float>(g_paint.scale));
 	}
 }
 

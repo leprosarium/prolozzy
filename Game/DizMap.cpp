@@ -263,7 +263,7 @@ void cDizMap::DrawRoom( const iV2 & rp, int layer, int mode, const iV2 & ofs)
 			shader	= brush.shader;
 			brush.color = g_game.materials[brush.material].color | 0xff000000;
 			brush.shader= Blend::AlphaRep;
-			g_paint.drawtilemat(brush.material); // software use this
+			g_paint.drawtilemat = brush.material; // software use this
 			g_paint.DrawBrush( brush, p, frame );
 			brush.color = color;
 			brush.shader = shader;

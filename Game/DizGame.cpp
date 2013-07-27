@@ -560,12 +560,12 @@ void cDizGame::Draw()
 	if( viewportFlipX())
 	{
 		flip |= static_cast<dword>(Flip::X);
-		vv.x = R9_GetWidth() - v.x - Room::Size.x * g_paint.scale() - v.x + 1; // magic +1
+		vv.x = R9_GetWidth() - v.x - Room::Size.x * g_paint.scale - v.x + 1; // magic +1
 	}
 	if( viewportFlipY())
 	{
 		flip |= static_cast<dword>(Flip::Y);
-		vv.y = R9_GetHeight() - v.y - Room::Size.y * g_paint.scale() - v.y + 1; // magic +1
+		vv.y = R9_GetHeight() - v.y - Room::Size.y * g_paint.scale - v.y + 1; // magic +1
 	}
 
 	if( flip )
@@ -592,7 +592,7 @@ void cDizGame::Draw()
 					// Note: brushes order must also be perserved (so the drawframe trick didn't work)
 					R9_SetClipping( rect );
 					iV2 p1 = g_paint.scrPos(viewShift + (r - 1) * Room::Size);
-					R9_AddClipping( fRect(p1, p1 + Room::Size * g_paint.scale()));
+					R9_AddClipping( fRect(p1, p1 + Room::Size * g_paint.scale));
 					iV2 rr = r - 1;
 					g_map.DrawRoom( roomPos() + rr, layer, m_drawmode, viewShift + rr * Room::Size);
 				}
@@ -633,9 +633,9 @@ void cDizGame::Draw()
 */
 	// HUD (cover, dialogs, menus, etc)
 	R9_ResetClipping();
-	g_paint.hud.draw(true);
+	g_paint.hud.visible = true;
 	g_script.drawHud();
-	g_paint.hud.draw(false);
+	g_paint.hud.visible = false;
 	R9_ResetClipping();
 
 }

@@ -140,13 +140,13 @@ PREDICATE_M(hud, clipping, 1)
 
 PREDICATE_M(hud, font, 1)
 {
-	g_paint.hud.font(A1);
+	g_paint.hud.font = A1;
 	return true;
 }
 
 PREDICATE_M(hud, shader, 1)
 {
-	g_paint.hud.shader(BlendAtom().Get(A1));
+	g_paint.hud.shader = BlendAtom().Get(A1);
 	return true;
 }
 
@@ -155,7 +155,7 @@ PREDICATE_M(hud, color, 1)
 	int64 v;
 	if(!PL_get_int64(A1, &v))
 		return false;
-	g_paint.hud.color(static_cast<dword>(v));
+	g_paint.hud.color = static_cast<dword>(v);
 	return true;
 }
 
@@ -189,9 +189,9 @@ void cDizPaint::Unacquire()
 
 void cDizPaint::Layout()
 {
-	scale(g_cfg.m_scale);
-	if(!scale())	scale(std::max(0, std::min(R9_GetWidth()/g_game.screenSize.x, R9_GetHeight()/g_game.screenSize.y)));
-	scrOffs(g_dizdebug.visible() ? iV2() : (iV2(R9_GetWidth(), R9_GetHeight()) - g_game.screenSize * _scale ) / 2);
+	scale = g_cfg.m_scale;
+	if(!scale)	scale = std::max(0, std::min(R9_GetWidth()/g_game.screenSize.x, R9_GetHeight()/g_game.screenSize.y));
+	scrOffs = g_dizdebug.visible() ? iV2() : (iV2(R9_GetWidth(), R9_GetHeight()) - g_game.screenSize * scale ) / 2;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -311,7 +311,7 @@ void cDizPaint::DrawTile( int idx,const iV2 & p, const iRect & map, dword color,
 	if(auto tile = tiles.Get(idx))
 	{
 		R9_SetBlend(blend);
-		R9_DrawSprite( scrPos(p), tile->FrameRect(tile->ComputeFrameLoop(frame), map), tile->tex, color, flip, static_cast<float>(scale() * sc));
+		R9_DrawSprite( scrPos(p), tile->FrameRect(tile->ComputeFrameLoop(frame), map), tile->tex, color, flip, scale * sc);
 	}
 }
 	
@@ -320,7 +320,7 @@ void cDizPaint::DrawTile( int idx, const iV2 & p, dword color, int flip, int fra
 	if(auto tile = tiles.Get(idx))
 	{
 		R9_SetBlend(blend);
-		R9_DrawSprite( scrPos(p), tile->FrameRect(tile->ComputeFrameLoop(frame)), tile->tex, color, flip, static_cast<float>(scale() * sc));
+		R9_DrawSprite( scrPos(p), tile->FrameRect(tile->ComputeFrameLoop(frame)), tile->tex, color, flip, scale * sc);
 	}
 }
 
@@ -330,7 +330,7 @@ void cDizPaint::DrawChar( int fontidx, const iV2 & p, char c, dword color ) cons
 		if(auto font = f->font)
 		{
 			float tsize = font->GetSize();
-			font->SetSize( tsize * scale() );
+			font->SetSize( tsize * scale );
 			font->SetColor( color );
 			font->Char(scrPos(p), c);
 			font->SetSize(tsize);
@@ -362,7 +362,7 @@ void cDizPaint::DrawBrush( const tBrush & brush, const iV2 & p0, int frame ) con
 
 	fRect oldclip = R9_GetClipping();
 	iV2 p1 = scrPos(p0);
-	R9_AddClipping(fRect(p1, p1 + scale() * sz));
+	R9_AddClipping(fRect(p1, p1 + scale * sz));
 	if(R9_IsClipping())
 	{
 		g_game.m_visible_brushes++;
@@ -390,12 +390,12 @@ void cDizPaint::DrawBrush( const tBrush & brush, const iV2 & p0, int frame ) con
 
 void cDizPaint::BeginSoftwareRendering(const iV2 & size, dword cap, byte * data)
 {
-	rollback.scale = scale();
-	rollback.offs = scrOffs();
+	rollback.scale = scale;
+	rollback.offs = scrOffs;
 	rollback.clip = R9_GetClipping(); 
 
-	scrOffs(iV2());
-	scale(1);
+	scrOffs = 0;
+	scale = 1;
 	_drawtilesoft = true;
 	_imgtarget.m_pf = R9_PF_A;
 	_imgtarget.m_width = size.x;
@@ -406,10 +406,9 @@ void cDizPaint::BeginSoftwareRendering(const iV2 & size, dword cap, byte * data)
 
 void cDizPaint::EndSoftwareRendering()
 {
-	// rollback
 	_drawtilesoft = false;
-	scrOffs(rollback.offs);
-	scale(rollback.scale);
+	scrOffs = rollback.offs;
+	scale = rollback.scale;
 	R9_SetClipping(rollback.clip);
 }
 
@@ -464,13 +463,12 @@ void cDizPaint::DrawTileSoft( int idx, const iV2 & p, const iRect & map, dword c
 	}
 
 	// draw loops
-	byte mat = drawtilemat();
 	for(int iy=0;iy<rh;iy++)
 	{
 		byte* src0 = src;
 		for(int ix=0;ix<rw;ix++)
 		{
-			if(*src>128) *dst=mat;
+			if(*src>128) *dst = drawtilemat;
 			dst++; src+=srcsx;
 		}
 		dst += dstw - rw;
@@ -516,8 +514,6 @@ void cDizPaint::DrawTileSoft2( int idx, const iV2 & p, const iRect & map, dword 
 	int srcw = tile->img.m_width;
 	int srch = tile->img.m_height;
 	byte* srcdata = tile->img.m_data;
-	byte mat = drawtilemat();
-
 	// draw
 	for(int iy=0;iy<dh;iy++)
 	{
@@ -529,11 +525,11 @@ void cDizPaint::DrawTileSoft2( int idx, const iV2 & p, const iRect & map, dword 
 			int mx = (int)(src.p1.x + sw*tx);
 			if(rotated)
 			{
-				if(srcdata[mx*srcw+my]>128) *dstdata=mat;
+				if(srcdata[mx*srcw+my]>128) *dstdata = drawtilemat;
 			}
 			else
 			{
-				if(srcdata[my*srcw+mx]>128) *dstdata=mat;
+				if(srcdata[my*srcw+mx]>128) *dstdata = drawtilemat;
 			}
 			dstdata++;
 		}
@@ -599,7 +595,7 @@ void HUD::GetTextSize(const std::string & text, int& w, int& h, int& c, int& r )
 {
 	w = h = c = r = 0;
 	if(text.empty()) return; // invalid text
-	int fontidx = g_paint.fonts.Find(font()); // find font
+	int fontidx = g_paint.fonts.Find(font); // find font
 	const cFont* font = g_paint.fonts.Get(fontidx);
 	if(!font) return; // no font
 
@@ -654,18 +650,18 @@ void HUD::GetTextSize(const std::string & text, int& w, int& h, int& c, int& r )
 
 void HUD::DrawText( int tileid, const iRect & dst, const std::string & text, int m_align )
 {
-	if(!isDrawing()) return; // not in draw
+	if(!visible) return;
 	if( text.empty() ) return;
 	int tileidx = g_paint.tiles.Find(tileid);
 	cTile* tile = g_paint.tiles.Get(tileidx); 
 	if(tile==NULL) return; // invalid tile
-	int fontidx = g_paint.fonts.Find(font()); // find font
+	int fontidx = g_paint.fonts.Find(font); // find font
 	cFont* font = g_paint.fonts.Get(fontidx);
 	if(!font) return; // no font
 
 	// overwrite font's texture and shader
 	font->font->SetTexture(tile->tex);
-	font->font->SetBlend(shader());
+	font->font->SetBlend(shader);
 
 	// draw process
 	iV2 p(dst.p1);
@@ -677,7 +673,7 @@ void HUD::DrawText( int tileid, const iRect & dst, const std::string & text, int
 	auto lnend = text.end();						// end of current line (chr scan pos)
 	int align = m_align;			// lign align mode
 	int focus = 0;					// focus mode 1/0
-	dword clr = color();			// color
+	dword clr = color;			// color
 	dword colorfocus;				// color when focus=1
 	dword focuscolors[8] = { 0xffc80000, 0xffc800c8, 0xff00c800, 0xff00c8c8, 0xffc8c800,  0xff00c8c8, 0xff00c800, 0xffc800c8 };
 //	dword focuscolors[6] = { 0xffff8000, 0xffffa000, 0xffffc000, 0xffffe000, 0xffffc000, 0xffffa000 }; // some orange version
@@ -765,7 +761,7 @@ void HUD::DrawText( int tileid, const iRect & dst, const std::string & text, int
 
 void HUD::DrawTile( int tileid, const iRect & dst, const iRect & src, dword flags, int frame )
 {
-	if(!isDrawing()) return; // not in draw
+	if(!visible) return;
 	int tileidx = g_paint.tiles.Find(tileid);
 	if(tileidx==-1) return;
 	iV2 sz = src.Size();
@@ -776,14 +772,13 @@ void HUD::DrawTile( int tileid, const iRect & dst, const iRect & src, dword flag
 	if(R9_IsClipping())
 	{
 		iV2 c = (dst.Size() + sz - 1) / sz;
-		Blend blend = shader();
 		iV2 p(dst.p1);
 		for(int i=0;i<c.y;i++)
 		{
 			p.x = dst.p1.x;
 			for(int j=0;j<c.x;j++)
 			{
-				g_paint.DrawTile( tileidx, p, src, color(), flags, frame, blend );
+				g_paint.DrawTile( tileidx, p, src, color, flags, frame, shader );
 				p.x+=sz.x;
 			}
 			p.y+=sz.y;
@@ -795,7 +790,7 @@ void HUD::DrawTile( int tileid, const iRect & dst, const iRect & src, dword flag
 
 void HUD::SetClipping( const iRect & dst )
 {
-	if( isDrawing() )
+	if(visible)
 		if(dst.Ordered())
 			R9_SetClipping(fRect(g_paint.scrPos(dst.p1), g_paint.scrPos(dst.p2)));
 		else

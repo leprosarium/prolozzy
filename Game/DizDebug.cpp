@@ -218,7 +218,7 @@ bool cDizDebug::Update()
 	bool shift = I9_GetKeyValue(I9K_LSHIFT) || I9_GetKeyValue(I9K_RSHIFT);
 	if(ctrl && I9_GetKeyDown(I9K_MINUS)) // -
 	{
-		if(g_cfg.m_scale==0) g_cfg.m_scale = g_paint.scale();
+		if(g_cfg.m_scale==0) g_cfg.m_scale = g_paint.scale;
 		g_cfg.m_scale--;
 		if(g_cfg.m_scale==0) g_cfg.m_scale=1;
 		g_paint.Layout();
@@ -255,7 +255,7 @@ void cDizDebug::Draw()
 void cDizDebug::Layout()
 {
 	iV2 renderSize(R9_GetWidth(), R9_GetHeight());
-	iV2 scr = g_game.screenSize * g_paint.scale();
+	iV2 scr = g_game.screenSize * g_paint.scale;
 	con.Layout(iRect(iV2(), renderSize - iV2(0, (INFO_LINES+1)*ChrH)));
 	slots.Layout(iRect(scr.x, 0, renderSize.x, scr.y));
 	info.Layout(iRect(iV2(0, renderSize.y - INFO_LINES * ChrH), renderSize));

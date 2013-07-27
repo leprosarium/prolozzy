@@ -57,25 +57,25 @@ collision(Obj, kill, Mode) :-
 collision(_, _, _).
 
 drawCover(Menuid) :-
-	core:hudDrawTile(Menuid, rect(8,48,240,136), rect(8,48,240,136), 0, 0 ), !.
+	hud:drawTile(Menuid, rect(8,48,240,136), rect(8,48,240,136), 0, 0 ), !.
 
 drawMenu(Menuid) :-
-	core:hudShader(alpha),
-	core:hudColor(0xffffffff),
-	core:hudDrawTile(Menuid, rect(0,0,256,48), rect(0,0,256,48), 0, 0 ),
-	core:hudDrawTile(Menuid, rect(0,48,8,136), rect(0,48,8,136), 0, 0 ),
-	core:hudDrawTile(Menuid, rect(248,48,8,136), rect(248,48,8,136), 0, 0 ),
-	core:hudDrawTile(Menuid, rect(0,184,256,8), rect(0,184,256,8), 0, 0 ), !.
+	hud:shader(alpha),
+	hud:color(0xffffffff),
+	hud:drawTile(Menuid, rect(0,0,256,48), rect(0,0,256,48), 0, 0 ),
+	hud:drawTile(Menuid, rect(0,48,8,136), rect(0,48,8,136), 0, 0 ),
+	hud:drawTile(Menuid, rect(248,48,8,136), rect(248,48,8,136), 0, 0 ),
+	hud:drawTile(Menuid, rect(0,184,256,8), rect(0,184,256,8), 0, 0 ), !.
 
 drawLifebar :-
 	Lifeid = 2,
 	player:life(Life),
 	W is 55 * Life // 100,
 	H = 6,
-	core:hudDrawTile(Lifeid, rect(152, 5, W, H), rect(0, 0, W, H), 0, 0 ), !.
+	hud:drawTile(Lifeid, rect(152, 5, W, H), rect(0, 0, W, H), 0, 0 ), !.
 
 drawCredits(Fontid) :-
-	core:hudColor(0xffffff00),
+	hud:color(0xffffff00),
 	player:credits(Credits),
 	drawCredits(Fontid, 0, Credits), !.
 
@@ -83,7 +83,7 @@ drawCredits(_, 3, _) :- !.
 drawCredits(_, Credits, Credits) :- !.
 drawCredits(Fontid, Credit, Credits) :-
 	X is 78 + Credit * 8,
-	core:hudDrawText(Fontid, rect(X, 4, 8, 8), '@', 0),
+	hud:drawText(Fontid, rect(X, 4, 8, 8), '@', 0),
 	NextCredit is Credit + 1,
 	drawCredits(Fontid, NextCredit, Credits).
 
@@ -91,16 +91,16 @@ drawCredits(Fontid, Credit, Credits) :-
 drawCoins(Fontid) :-
 	player:coins(Coins),
 	format(atom(Text), '~`0t~d~2|', Coins),
-	core:hudGetTextWidth(Text, W),
+	hud:getTextWidth(Text, W),
 	X is 56 - W // 2,
-	core:hudDrawText(Fontid, rect(X, 4, W, 8), Text, 0 ), !.
+	hud:drawText(Fontid, rect(X, 4, W, 8), Text, 0 ), !.
 
 drawTitle(Fontid) :-
 	game:roomPos(Xr, Yr),
 	roomNames:get(Xr, Yr, name, Name),
-	core:hudGetTextWidth(Name, W),
+	hud:getTextWidth(Name, W),
 	X is 128 - W // 2,
-	core:hudDrawText(Fontid, rect(X, 29, W, 8), Name, 0 ), !.
+	hud:drawText(Fontid, rect(X, 29, W, 8), Name, 0 ), !.
 drawTitle(_) :- !.
 
 jump(-1, 0) :-
@@ -188,15 +188,15 @@ event(_, fall) :-
 
 
 event(State, drawHud) :- (State = init; State = restart),!,
-	core:hudDrawTile(6, rect(0,0,256,192), rect(0,0,256,192), 0, 0 ).
+	hud:drawTile(6, rect(0,0,256,192), rect(0,0,256,192), 0, 0 ).
 
 
 event(cover, drawHud) :-
 	Menuid = 1,
 	gamedef:fontDefault(Fontid),
-	core:hudFont(Fontid),
-	core:hudShader(alpha),
-	core:hudColor(0xffffffff),
+	hud:font(Fontid),
+	hud:shader(alpha),
+	hud:color(0xffffffff),
 	drawCover(Menuid),
 	dialog:drawAll,
 	drawMenu(Menuid),
@@ -205,9 +205,9 @@ event(cover, drawHud) :-
 event(_, drawHud) :-
 	Menuid = 1,
 	gamedef:fontDefault(Fontid),
-	core:hudFont(Fontid),
-	core:hudShader(alpha),
-	core:hudColor(0xffffffff),
+	hud:font(Fontid),
+	hud:shader(alpha),
+	hud:color(0xffffffff),
 	dialog:drawAll,
 	drawMenu(Menuid),
 	drawLifebar,

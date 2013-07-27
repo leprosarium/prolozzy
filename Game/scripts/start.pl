@@ -32,7 +32,7 @@ load(0, _) :-
 load(_, Start) :-
 	music:load("data\\music"),
 	sample:load("data\\samples"),
-	core:fontLoad("data\\fonts"), !,
+	font:load("data\\fonts"), !,
 	core:ticktime(End),
 	loaded(Start, End).
 load(_, _) :-

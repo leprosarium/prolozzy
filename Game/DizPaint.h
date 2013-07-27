@@ -22,7 +22,6 @@ class cTile
 	cTile & operator = (const cTile &);
 public:
 		int			id;						// unique id >=0
-		int			group;					// resource group
 		int			frames;					// number of frames
 		int         fx;
 		int			fy;
@@ -30,10 +29,9 @@ public:
 		r9Img		img;						// img alpha mask
 		std::string	name;						// tile name
 		
-		cTile(int id) : id(id), group(), frames(1), fx(1), fy(1), tex(nullptr) { }
+		cTile(int id) : id(id), frames(1), fx(1), fy(1), tex(nullptr) { }
 		cTile(cTile && t) : 
 			id(t.id),
-			group(t.group),
 			frames(t.frames),
 			fx(t.fx),
 			fy(t.fy),
@@ -47,7 +45,6 @@ public:
 		cTile & operator = (cTile && t) 
 		{
 			id = t.id;
-			group = t.group;
 			frames = t.frames;
 			fx = t.fx;
 			fy = t.fy;
@@ -91,14 +88,13 @@ class cFont
 	cFont & operator = (const cFont &);
 public:
 	int id;						// unique id >=0
-	int group;					// resource group
 	r9Font * font;				// font
 		
-	cFont() : id(), group(), font() {}
-	cFont(int id, int group, r9Font * font) : id(id), group(group), font(font) {}
+	cFont() : id(), font() {}
+	cFont(int id, r9Font * font) : id(id), font(font) {}
 	~cFont() { delete font; }
-	cFont(cFont && f) : id(f.id), group(f.group), font(f.font) { f.font = 0; }
-	cFont & operator = (cFont && f) { id = f.id; group = f.group; font = f.font; f.font = 0; return *this; }
+	cFont(cFont && f) : id(f.id), font(f.font) { f.font = 0; }
+	cFont & operator = (cFont && f) { id = f.id; font = f.font; f.font = 0; return *this; }
 
 	int GetSize() const { return static_cast<int>(font->GetSize()); }
 	int GetCharWidth( char c ) const { return static_cast<int>(font->GetCharWidth(c)); }
@@ -220,20 +216,18 @@ public:
 
 class Tiles : public Indexed<cTile>
 {
-	bool LoadFile(const std::string & file, size_t & total, size_t & fail, size_t & duplicates, int group);	// load a tile file
+	bool LoadFile(const std::string & file, size_t & total, size_t & fail, size_t & duplicates);
 public:
-	bool Load(const std::string & path, int group = 0); 	// load tiles from a path, and set the specified group
-	void Unload(int group=0 );						// unload load tiles (destroy) from a specified group
+	bool Load(const std::string & path); 
 	bool Reacquire(); // called before render reset to reload render resources
 	void Unacquire(); // called before render reset to free render resources
 };
 
 class Fonts : public Indexed<cFont>
 {
-	bool LoadFile(const std::string & filepath, size_t & total, size_t & fail, size_t & duplicates, int group = 0);
+	bool LoadFile(const std::string & filepath, size_t & total, size_t & fail, size_t & duplicates);
 public:
-	bool Load(const std::string & path, int group = 0);	// load fonts from a path and set the specified group
-	void Unload(int group = 0);				// unload fonts (destroy) from the specified group
+	bool Load(const std::string & path);
 	void Unacquire() { std::for_each(begin(), end(), [](cFont &f) { if(f.font) f.font->SetTexture(nullptr); }); }
 
 };

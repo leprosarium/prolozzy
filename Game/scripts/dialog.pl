@@ -39,17 +39,17 @@ popAll.
 
 
 textW(dialog(_, _, style(Font, _), Text), Width) :-
-	core:hudFont(Font),
-	core:hudGetTextWidth(Text, Width).
+	hud:font(Font),
+	hud:getTextWidth(Text, Width).
 
 textH(dialog(_, _, style(Font, _), Text), Height) :-
-	core:hudFont(Font),
-	core:hudGetTextHeight(Text, Height).
+	hud:font(Font),
+	hud:getTextHeight(Text, Height).
 
 textWH(dialog(_Pos, _Size, style(Font, _Color), Text), Width, Height) :-
-	core:hudFont(Font),
-	core:hudGetTextWidth(Text, Width),
-	core:hudGetTextHeight(Text, Height).
+	hud:font(Font),
+	hud:getTextWidth(Text, Width),
+	hud:getTextHeight(Text, Height).
 
 pos(dialog(pos(X, Y), _, _, _), X, Y).
 size(dialog(_, size(Width, Height), _, _), Width, Height).
@@ -73,28 +73,28 @@ draw(dialog(pos(Dx, Dy), size(W, H), style(Font, Color), Text)) :-
 	game:viewY(Vy),
 	X is Dx + Vx,
 	Y is Dy + Vy,
-	core:hudColor(Color),
+	hud:color(Color),
 
 	Boxid = 3, % border tile
 	X1 is X - 16,
 	Y1 is Y - 16,
 	X2 is X + W,
 	Y2 is Y + H,
-	core:hudDrawTile( Boxid, rect(X1, Y1,16,16), rect(0,0,16,16), 0, 0),
-	core:hudDrawTile( Boxid, rect(X, Y1, W,16), rect(16,0,8,16), 0, 0),
-	core:hudDrawTile( Boxid, rect(X2, Y1,16,16), rect(24,0,16,16), 0, 0),
+	hud:drawTile( Boxid, rect(X1, Y1,16,16), rect(0,0,16,16), 0, 0),
+	hud:drawTile( Boxid, rect(X, Y1, W,16), rect(16,0,8,16), 0, 0),
+	hud:drawTile( Boxid, rect(X2, Y1,16,16), rect(24,0,16,16), 0, 0),
 
-	core:hudDrawTile( Boxid, rect(X1, Y,16, H), rect(0,16,16,8), 0, 0),
-	core:hudDrawTile( Boxid, rect(X, Y, W, H), rect(16,16,8,8), 0, 0),
-	core:hudDrawTile( Boxid, rect(X2, Y, 16, H), rect(24,16,16,8), 0, 0),
+	hud:drawTile( Boxid, rect(X1, Y,16, H), rect(0,16,16,8), 0, 0),
+	hud:drawTile( Boxid, rect(X, Y, W, H), rect(16,16,8,8), 0, 0),
+	hud:drawTile( Boxid, rect(X2, Y, 16, H), rect(24,16,16,8), 0, 0),
 
-	core:hudDrawTile( Boxid, rect(X1, Y2,16,16), rect(0,24,16,40), 0, 0),
-	core:hudDrawTile( Boxid, rect(X, Y2, W,16), rect(16,24,8,40), 0, 0),
-	core:hudDrawTile( Boxid, rect(X2, Y2,16,16), rect(24,24,16,40), 0, 0),
+	hud:drawTile( Boxid, rect(X1, Y2,16,16), rect(0,24,16,40), 0, 0),
+	hud:drawTile( Boxid, rect(X, Y2, W,16), rect(16,24,8,40), 0, 0),
+	hud:drawTile( Boxid, rect(X2, Y2,16,16), rect(24,24,16,40), 0, 0),
 
-	core:hudFont(Font),
+	hud:font(Font),
 	Yt is Y + 4,
-	core:hudDrawText(Font, rect(X, Yt, W, H), Text, 0).
+	hud:drawText(Font, rect(X, Yt, W, H), Text, 0).
 
 
 

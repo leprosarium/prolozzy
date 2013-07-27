@@ -13,32 +13,19 @@ PREDICATE_M(tile, find, 2)
 	return A2 = g_paint.tiles.Find(A1); 
 }
 
-
 PREDICATE_M(tile, count, 1)
 {
 	return A1 = static_cast<int>(g_paint.tiles.size());
 }
 
-
 PREDICATE_M(tile, load, 1)
 {
-	return g_paint.tiles.Load(A1, 0);
-}
-
-PREDICATE_M(tile, load, 2)
-{
-	return g_paint.tiles.Load(A1, A2);
+	return g_paint.tiles.Load(A1);
 }
 
 PREDICATE_M(tile, unload, 0)
 {
-	g_paint.tiles.Unload(0);
-	return true;
-}
-
-PREDICATE_M(tile, unload, 1)
-{
-	g_paint.tiles.Unload(A1);
+	g_paint.tiles.clear();
 	return true;
 }
 
@@ -75,6 +62,101 @@ PREDICATE_M(tile, name, 2)
 	if(cTile* tile = g_paint.tiles.Get(A1))
 		return A2 = tile->name;
 	throw PlDomainError("invalid tile index", A1); 
+}
+
+PREDICATE_M(font, load, 1)
+{
+	return g_paint.fonts.Load(A1);
+}
+
+PREDICATE_M(font, unload, 0)
+{
+	g_paint.fonts.clear();
+	return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// HUD
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+PREDICATE_M(hud, drawTile, 5)
+{
+	PlTerm r1 = A2;
+	PlTerm r2 = A3;
+	iV2 p1(r1[1], r1[2]);
+	iV2 p2(r2[1], r2[2]);
+	g_paint.hud.DrawTile(A1,
+		iRect(p1, p1 + iV2(r1[3], r1[4])),
+		iRect(p2, p2 + iV2(r2[3], r2[4])),
+		static_cast<int>(A4), A5 );
+	return true;
+}
+
+PREDICATE_M(hud, drawText, 4)
+{
+	PlTerm r = A2;
+	iV2 p(r[1], r[2]);
+	g_paint.hud.DrawText( A1, iRect(p, p + iV2(r[3], r[4])), A3, A4 );
+	return true;
+}
+
+PREDICATE_M(hud, getTextWidth, 2)
+{
+	int w,h,c,r;
+	g_paint.hud.GetTextSize(A1, w, h, c, r);
+	return A2 = w;
+}
+
+
+PREDICATE_M(hud, getTextHeight, 2)
+{
+	int w,h,c,r;
+	g_paint.hud.GetTextSize(A1, w, h, c, r);
+	return A2 = h;
+}
+
+PREDICATE_M(hud, getTextColumns, 2)
+{
+	int w,h,c,r;
+	g_paint.hud.GetTextSize(A1, w, h, c, r);
+	return A2 = c;
+}
+
+PREDICATE_M(hud, getTextRows, 2)
+{
+	int w,h,c,r;
+	g_paint.hud.GetTextSize(A1, w, h, c, r);
+	return A2 = r;
+}
+
+PREDICATE_M(hud, clipping, 1)
+{
+	PlTerm r = A1;	
+	iRect dst( r[0], r[1], r[2], r[3] );
+	dst.p2 += dst.p1;
+	g_paint.hud.SetClipping( dst );
+	return true;
+}
+
+PREDICATE_M(hud, font, 1)
+{
+	g_paint.hud.font(A1);
+	return true;
+}
+
+PREDICATE_M(hud, shader, 1)
+{
+	g_paint.hud.shader(BlendAtom().Get(A1));
+	return true;
+}
+
+PREDICATE_M(hud, color, 1)
+{
+	int64 v;
+	if(!PL_get_int64(A1, &v))
+		return false;
+	g_paint.hud.color(static_cast<dword>(v));
+	return true;
 }
 
 bool Tiles::Reacquire()
@@ -115,7 +197,7 @@ void cDizPaint::Layout()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // TILES
 //////////////////////////////////////////////////////////////////////////////////////////////////
-bool Tiles::LoadFile( const std::string & filepath, size_t & total, size_t & fail, size_t & duplicates, int group)
+bool Tiles::LoadFile( const std::string & filepath, size_t & total, size_t & fail, size_t & duplicates)
 {
 	
 	// check file type (not counted if unaccepted); only TGA and PNG files accepted
@@ -181,7 +263,6 @@ bool Tiles::LoadFile( const std::string & filepath, size_t & total, size_t & fai
 	}
 	cTile tile(id);
 	tile.tex = tex;
-	tile.group	= group;
 	tile.frames = frames;
 	tile.fx = fpl;
 	tile.fy = frames / fpl;
@@ -202,9 +283,9 @@ bool Tiles::LoadFile( const std::string & filepath, size_t & total, size_t & fai
 
 
 
-bool Tiles::Load(const std::string & path, int group )
+bool Tiles::Load(const std::string & path)
 {
-	dlog(LOGAPP, L"Loading tiles from \"%S\" (group=%i)\n", path.c_str(), group);
+	dlog(LOGAPP, L"Loading tiles from \"%S\" \n", path.c_str());
 
 
 	// init
@@ -212,25 +293,13 @@ bool Tiles::Load(const std::string & path, int group )
 	size_t fail = 0;
 	size_t duplicates = 0;
 
-	files->FindFiles(path, [this, &total, &fail, &duplicates, group](const std::string & filepath) { LoadFile(filepath, total, fail, duplicates, group); } );
+	files->FindFiles(path, [this, &total, &fail, &duplicates](const std::string & filepath) { LoadFile(filepath, total, fail, duplicates); } );
 
 	// report
 	dlog(LOGAPP, L"Tiles report: total=%u, failed=%u (duplicates=%u)\n\n", total, fail, duplicates );
 
 	return true;
 }
-
-void Tiles::Unload( int group )
-{
-	for(size_t i=0;i<size();)
-		if(get(i).group == group)
-			Erase(i);
-		else
-			++i;
-}
-
-
-
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -736,7 +805,7 @@ void HUD::SetClipping( const iRect & dst )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // Fonts
 //////////////////////////////////////////////////////////////////////////////////////////////////
-bool Fonts::LoadFile(const std::string & filepath, size_t & total, size_t & fail, size_t & duplicates, int group)
+bool Fonts::LoadFile(const std::string & filepath, size_t & total, size_t & fail, size_t & duplicates)
 {
 	if(file_path2ext(filepath) != "fnt") return false;
 	std::istringstream name(file_path2name(filepath));
@@ -763,7 +832,7 @@ bool Fonts::LoadFile(const std::string & filepath, size_t & total, size_t & fail
 	}
 
 	// add to list
-	cFont font(id, group, new r9Font());
+	cFont font(id, new r9Font());
 	font.font->Create(8,8,8,32,128);
 	if(!font.font->Create(filepath))
 	{
@@ -778,30 +847,20 @@ bool Fonts::LoadFile(const std::string & filepath, size_t & total, size_t & fail
 	return true;
 }
 
-bool Fonts::Load(const std::string & path, int group )
+bool Fonts::Load(const std::string & path)
 {
-	dlog(LOGAPP, L"Loading fonts from \"%S\" (group=%i)\n", path.c_str(), group);
+	dlog(LOGAPP, L"Loading fonts from \"%S\" \n", path.c_str());
 
 	size_t total = 0;
 	size_t fail = 0;
 	size_t duplicates = 0;
 
-	files->FindFiles(path, [this, &total, &fail, &duplicates, group](const std::string & filepath) { LoadFile(filepath, total, fail, duplicates, group); } );
+	files->FindFiles(path, [this, &total, &fail, &duplicates](const std::string & filepath) { LoadFile(filepath, total, fail, duplicates); } );
 
 	// report
 	dlog(LOGAPP, L"Fonts report: total=%u, failed=%u (duplicates=%u)\n\n", total, fail, duplicates );
 	return true;
 }
-
-void Fonts::Unload( int group )
-{
-	for(size_t i=0;i<size();)
-		if(get(i).group==group)
-			Erase(i);
-		else
-			++i;
-}
-
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

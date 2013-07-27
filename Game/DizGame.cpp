@@ -306,7 +306,8 @@ cDizGame g_game;
 
 
 
-cDizGame::cDizGame() : 	_void("void"),	soft("soft"), hard("hard"), jump("jump"), none("none"), start("start"), exit("exit"), refresh("refresh"),
+cDizGame::cDizGame() : 	drawmode(DRAWMODE_NORMAL),
+						_void("void"),	soft("soft"), hard("hard"), jump("jump"), none("none"), start("start"), exit("exit"), refresh("refresh"),
 						screenSize(GAME_SCRW, GAME_SCRH),
 						screenSizeBorder(GAME_SCRWB, GAME_SCRH),
 						_command(none), 
@@ -326,7 +327,7 @@ cDizGame::cDizGame() : 	_void("void"),	soft("soft"), hard("hard"), jump("jump"),
 						_fullMaterialMap()
 {
 	m_gameframe		= 0;
-	m_drawmode		= DRAWMODE_NORMAL;
+
 				
 	m_fffx_magnitude	= 0;
 	m_fffx_period		= 50;
@@ -543,6 +544,7 @@ bool cDizGame::Update()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cDizGame::Draw()
 {
+	if(drawmode == DRAWMODE_NONE) return;
 	// visible room area
 	iV2 view = viewPos();
 	fRect rect( g_paint.scrPos(view), g_paint.scrPos(view + Room::Size));
@@ -594,7 +596,7 @@ void cDizGame::Draw()
 					iV2 p1 = g_paint.scrPos(viewShift + (r - 1) * Room::Size);
 					R9_AddClipping( fRect(p1, p1 + Room::Size * g_paint.scale));
 					iV2 rr = r - 1;
-					g_map.DrawRoom( roomPos() + rr, layer, m_drawmode, viewShift + rr * Room::Size);
+					g_map.DrawRoom( roomPos() + rr, layer, drawmode, viewShift + rr * Room::Size);
 				}
 			}
 		}
@@ -602,7 +604,7 @@ void cDizGame::Draw()
 		{
 			// classic style
 			R9_SetClipping( rect );
-			g_map.DrawRoom( roomPos(), layer, m_drawmode, viewShift);
+			g_map.DrawRoom( roomPos(), layer, drawmode, viewShift);
 		}
 
 		// objects present
@@ -644,6 +646,13 @@ void cDizGame::Resize()
 {
 	matMap.Resize(Room::Size);
 	SetRoom(g_game.roomX(), g_game.roomY()); // updates materialmap and re-gather objects
+}
+
+void cDizGame::NextDrawMode()
+{
+	drawmode++;
+	if(drawmode == DRAWMODE_MAX) drawmode=0;
+	dlog( LOGAPP, L"draw mode %i\n", drawmode );
 }
 
 

@@ -12,31 +12,28 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class cDizApp
 {
+	int gamefps;			// game updates per second (logic fps)
+	int drawstats;			// show stats
+	bool musicwaspaused;	// if music was paused when application was deactivated
+
+	bool InitApp();
+	bool InitFiles();
+	bool InitInput();
+	bool InitAudio();
+	bool InitVideo();
+	void DrawStats();
 public:
-				cDizApp();
+	cDizApp();
 
-		bool	Init();
-		bool	InitApp();
-		bool	InitFiles();
-		bool	InitInput();
-		bool	InitAudio();
-		bool	InitVideo();
+	bool Init();
+	void Done();
+	void Activate(bool active);
+	bool ToggleVideo();  
 
-		void	Done();
-		void	Activate( bool active );
-		bool	ToggleVideo();  
+	bool Update();
+	void Draw();
 
-		bool	Update();
-		void	Draw();
-		void	DrawStats();
-static	void	ErrorMessage(LPCWSTR msg );	// error message box
-
-public:
-		int		m_gamefps;					// game updates per second (logic fps)
-		int		m_drawstats;				// show stats
-
-private:
-		bool	m_musicwaspaused;			// if music was paused when application was deactivated
+	static void ErrorMessage(LPCWSTR msg);	// error message box
 };
 
 inline void ERRORMESSAGE(LPCWSTR msg )	 { cDizApp::ErrorMessage( msg ); }

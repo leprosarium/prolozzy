@@ -60,6 +60,7 @@ public:
 class cDizGame
 {
 	MatMap matMap;
+	int	drawmode;		// 0=imgmap (normal), 1=matmap, 2=densitymap, 3=none
 public:
 	PlAtom _void;		// fall through
 	PlAtom	soft;		// stop fall
@@ -77,7 +78,8 @@ public:
 		bool			Update				();					// update game (called periodical to match the game fps) return false to exit game
 		void			Draw				();					// draw game
 		bool			CheckVersion		();					// check game version (first 2 digits)
-		
+	
+	void NextDrawMode();
 		// settings
 		iV2				screenSize;								// game resolution (256x192 - Z80 res)
 		iV2				screenSizeBorder;						// game resolution border (320x200)
@@ -101,7 +103,7 @@ inline	bool			KeyHit( int key )						{ return (keysHit() & (1<<key)) ? 1 : 0; }	
 		iRect			RoomBorderRect		(const iV2 & border)	{ return g_map.RoomBorderRect(roomPos(), border); }
 
 		iV2				viewShift;								// view position (used in draw, set from G_VIEW, G_SHAKE, and G_VIEWPORT)
-		int				m_drawmode;								// 0=imgmap (normal), 1=matmap, 2=densitymap, 3=none
+
 			
 		// objects
 inline	void			ObjAdd				(tBrush *);		// add object to present lists (objects and coliders)

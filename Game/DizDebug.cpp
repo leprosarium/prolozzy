@@ -200,11 +200,7 @@ bool cDizDebug::Update()
 
 	// draw mode
 	if(I9_GetKeyDown(I9K_F4))
-	{
-		g_game.m_drawmode++;
-		if(g_game.m_drawmode>=DRAWMODE_MAX) g_game.m_drawmode=0;
-		dlog( LOGAPP, L"draw mode %i\n", g_game.m_drawmode );
-	}
+		g_game.NextDrawMode();
 
 	// map reload full WARNING: all items are reloaded too, so your inventory...
 	if(I9_GetKeyDown(I9K_F6))

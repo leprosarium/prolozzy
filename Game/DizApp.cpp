@@ -18,13 +18,12 @@ BOOL CALLBACK DialogProcInfo( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	{
 		// create info content
 		std::ostringstream o1;
-		o1 << g_cfg.GetInfoValue("game_title") << " v";
-		o1 << g_cfg.GetInfoValue("game_version") << "\r\n" << "by ";
-		o1 << g_cfg.GetInfoValue("game_author") << "\r\n"; 
-		o1 << g_cfg.GetInfoValue("game_website");
+		o1 << g_cfg.Info("game_title") << " v" << g_cfg.Info("game_version") << "\r\n" << "by "
+			<< g_cfg.Info("game_author") << "\r\n" 
+			<< g_cfg.Info("game_website");
 		SetDlgItemText(hwndDlg, IDC_TEXT1, o1.str().c_str());
 		std::ostringstream o2;
-		o2 << "Created with DizzyAGE v" << g_cfg.GetInfoValue("dizzyage_version") << "\r\n"
+		o2 << "Created with DizzyAGE v" << g_cfg.Info("dizzyage_version") << "\r\n"
 			<< "by Alexandru and Cristina Simion\r\nhttp://www.yolkfolk.com/dizzyage";
 		SetDlgItemText(hwndDlg, IDC_TEXT2, o2.str().c_str());
 		return true; // autofocus
@@ -57,7 +56,7 @@ bool cDizApp::Init()
 	g_cfg.Init();
 	g_dizdebug.Init();
 	g_paint.Init();
-	g_game.Init();
+	if(!g_game.Init()) { return false; }
 	if(!g_script.Init()) { ERRORMESSAGE(L"Script compiling error."); return false; }
 
 	// game start
@@ -155,9 +154,7 @@ void cDizApp::Done()
 
 	// game
 	g_sound.Done();
-	g_game.Done();
 	g_paint.Done();
-	g_cfg.Done();
 
 	// engine
 	R9_Done();
@@ -174,7 +171,7 @@ void cDizApp::Activate( bool active )
 	if(active)
 	{
 		if(I9_IsReady()) I9_Acquire();
-		g_game.FFFXUpdate();
+		g_game.fffx.Update();
 	}
 	else
 	{

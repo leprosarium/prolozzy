@@ -10,6 +10,9 @@
 // Helpers
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+std::string WideStringToMultiByte(LPCWSTR wszSrc);  
+std::wstring MultiByteToWideString(LPCSTR szSrc);
+
 inline char* sstrdup( const char* sz )
 {
 	if(sz==NULL) return NULL;
@@ -19,27 +22,22 @@ inline char* sstrdup( const char* sz )
 	return szdest;
 }
 
-char* sprint(char* szFormat, ...);
-LPWSTR swprint(LPCWSTR szFormat, ...);
+const std::string WHITESPACE = " \n\r\t";
+inline std::string ltrim(const std::string & s)
+{
+    auto start = s.find_first_not_of(WHITESPACE);
+    return start == std::string::npos ? "" : s.substr(start);
+}
 
-std::string WideStringToMultiByte(LPCWSTR wszSrc);  
-std::wstring    MultiByteToWideString(LPCSTR szSrc);
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// Parsing utils
-///////////////////////////////////////////////////////////////////////////////////////////////////
-const char*	parser_skipchar( const char* buffer, const char* charlist, int& parsedsize );		// skip any of those chars
-const char*	parser_skiptochar( const char* buffer, const char* charlist, int& parsedsize );		// skip until one of those chars
-const char*	parser_skipline( const char* buffer, int& parsedsize );
-const char*	parser_skipspace( const char* buffer, int& parsedsize );
-const char*	parser_skiptotoken( const char* buffer, const char* token, int& parsedsize );		// skip all until token find
-BOOL	parser_readtoken( const char* buffer, const char* token, int& parsedsize );
-BOOL	parser_readword( const char* buffer, char* value, int valuesize, int& parsedsize );
-BOOL	parser_readline( const char* buffer, char* value, int valuesize, int& parsedsize );
-BOOL	parser_readvarstr( const char* buffer, const char* name, char* value, int valuesize, int& parsedsize );
-BOOL	parser_readvarint( const char* buffer, const char* name, int* value, int& parsedsize );
-BOOL	parser_readvarfloat( const char* buffer, const char* name, float* value, int& parsedsize );
-void	parser_trimbackspace( char* buffer, int& pos );							// cuts end spaces, and updates pos (pos=strlen(buffer))
+inline std::string rtrim(const std::string & s)
+{
+    auto end = s.find_last_not_of(WHITESPACE);
+    return end == std::string::npos ? "" : s.substr(0, end + 1);
+}
+inline std::string trim(const std::string & s)
+{
+    return rtrim(ltrim(s));
+}
 
 #endif
 ///////////////////////////////////////////////////////////////////////////////////////////////////

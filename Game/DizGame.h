@@ -57,27 +57,43 @@ public:
 // cDizGame
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
+// FFFX Rumble
+class FFFX
+{
+	int _magnitude;						// force magnitude [0,100] (0=stopped)
+	int	_period;							// force period in miliseconds (50=default)
+	bool updated;
+public:
+	void magnitude(int m) { _magnitude = m; updated = false; }
+	void period(int p) { _period = p; updated = false;}
+
+	int magnitude() const { return _magnitude; }
+	int period() const { return _period; }
+	FFFX() : _magnitude(), _period(50), updated(false) {}
+	void Update();						// update force feedback
+
+};
+
+
 class cDizGame
 {
 	MatMap matMap;
 	int	drawmode;		// 0=imgmap (normal), 1=matmap, 2=densitymap, 3=none
+
+	bool CheckVersion();
 public:
 	PlAtom _void;		// fall through
 	PlAtom	soft;		// stop fall
 	PlAtom	hard;		// stop fall, collide
 	PlAtom	jump;		// jumper
 
+	cDizGame();
 
-						cDizGame			();
-						~cDizGame			();
+	bool Init();
+	bool Start();					// call this to start a new game
+	bool Update();					// update game (called periodical to match the game fps) return false to exit game
+	void Draw();
 
-		// init
-		bool			Init				();					// init
-		void			Done				();					// done
-		bool			Start				();					// call this to start a new game
-		bool			Update				();					// update game (called periodical to match the game fps) return false to exit game
-		void			Draw				();					// draw game
-		bool			CheckVersion		();					// check game version (first 2 digits)
 	
 	void NextDrawMode();
 		// settings
@@ -89,9 +105,9 @@ public:
 
 		int				m_gameframe;							// game frame index
 
-inline	bool			IsUpdate			( int delay )		{ return (delay==0 || (m_gameframe%delay==0)); }
-inline	bool			Key( int key )							{ return (keys() & (1<<key)) ? 1 : 0; }			// test a key
-inline	bool			KeyHit( int key )						{ return (keysHit() & (1<<key)) ? 1 : 0; }			// test a key hit
+	bool IsUpdate(int delay) { return (delay==0 || (m_gameframe%delay==0)); }
+	bool Key(int key) { return (keys() & (1<<key)) ? 1 : 0; }				// test a key
+	bool KeyHit(int key) { return (keysHit() & (1<<key)) ? 1 : 0; }			// test a key hit
 
 		Material		materials[MAT_MAX];
 		byte			MatMap ( const iV2 & p) { return matMap.Get(p); }
@@ -113,11 +129,9 @@ inline	void			ObjAdd				(tBrush *);		// add object to present lists (objects and
 		std::vector<tBrush *> m_obj;									// objects list with objects indexes (present in current room)
 		std::vector<tBrush *> m_collider;							// colliders list with objects indexes (present in current room)
 
-		// FFFX Rumble
-		int				m_fffx_magnitude;						// force magnitude [0,100] (0=stopped)
-		int				m_fffx_period;							// force period in miliseconds (50=default)
-		void			FFFXUpdate();							// update force feedback
-inline	void			FFFXStop()								{ m_fffx_magnitude=0; FFmagnitude(0); FFFXUpdate(); }
+
+		FFFX fffx;
+
 
 		// stats
 		int				m_visible_brushes;
@@ -137,8 +151,6 @@ inline	void			FFFXStop()								{ m_fffx_magnitude=0; FFmagnitude(0); FFFXUpdate
 		int				shakeY() const { return _shakeY; }
 		int				mapColor() const { return _mapColor; }
 		int				borderColor() const { return _borderColor; }
-		int				FFmagnitude() const { return  _FFmagnitude; }
-		int				FFperiod() const { return _FFperiod; }
 		bool			viewportMode() const { return _viewportMode; }
 		iV2				viewportPos() const { return iV2(viewportX(), viewportY()); }
 		int				viewportX() const { return _viewportX; }
@@ -161,8 +173,6 @@ inline	void			FFFXStop()								{ m_fffx_magnitude=0; FFmagnitude(0); FFFXUpdate
 		void			shakeY(int shakeY) { _shakeY = shakeY; }
 		void			mapColor(int color) { _mapColor = color; }
 		void			borderColor(int color) { _borderColor = color; }
-		void			FFmagnitude(int magnitude) { _FFmagnitude = magnitude; }
-		void			FFperiod(int period) { _FFperiod = period; }
 		void			viewportMode(bool viewportMode) { _viewportMode = viewportMode; }
 		void			viewportX(int x) { _viewportX = x; }
 		void			viewportY(int y) { _viewportY = y; }
@@ -190,8 +200,6 @@ private:
 		int				_shakeY;								// view y offset used for shaking
 		int				_mapColor;								// map background color
 		int				_borderColor;							// window border color
-		int				_FFmagnitude;							// force feedback magnitude [0..100]
-		int				_FFperiod;								// force feedback period (miliseconds)
 		bool			_viewportMode;							// viewport mode: false=normal, true=extended to 3x3 rooms for scrolling
 		int				_viewportX;								// viewport x offset
 		int				_viewportY;								// viewport y offset
@@ -205,8 +213,7 @@ inline void cDizGame::ObjAdd(tBrush *b)
  	m_obj.push_back(b);
 	if(b->collider)
 		m_collider.push_back(b);
-
-//	obj->Set(BRUSH_COLLISION,0); // reset collision
+//	b->collision = false; //reset collision
 }
 
 extern cDizGame g_game;

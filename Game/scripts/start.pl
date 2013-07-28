@@ -59,11 +59,10 @@ initPlayer :-
 restart :-
 	game:pause, % start paused
 	resetStaticVars,
-%	game:setViewportMode(true),
+	game:setViewportMode(true),
 	initPlayer,
 	sample:stopAll,
 	reloadMap.
-
 
 reloadMap:-
 	File = "data\\map\\dizzy.pmp",

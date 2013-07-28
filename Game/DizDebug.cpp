@@ -149,7 +149,7 @@ bool cDizDebug::Init()
 	int dev = 0;
 	ini_get(file_getfullpath(GetIniFile()), "ADVANCED",	"dev") >> dev;
 	_active = dev != 0;
-	if(*g_cfg.GetInfoValue("game_protection")) 
+	if(!g_cfg.Info("game_protection").empty()) 
 		_active=false; // no developer for protected games
 
 	// console

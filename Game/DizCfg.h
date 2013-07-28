@@ -5,6 +5,7 @@
 #define __DIZCFG_H__
 
 #include "R9Render.h"
+#include <map>
 
 #define KEY_LEFT			0
 #define KEY_RIGHT			1
@@ -23,15 +24,17 @@ const char*	GetLogFile();		// gets .log file name, based on the executable's nam
 
 class cDizCfg
 {
+	typedef std::map<std::string, std::string> strings;
+	strings info;
+	void LoadInfo();
 public:
-			cDizCfg			();
-	void	Init			();
-	void	Done			();
-	bool	Load			();
-	bool	Save			();
+	cDizCfg();
+	void Init();
+	bool Load();
+	bool Save();
 
 	void	LoadRenderCfg	( r9Cfg& cfg, Api & api );
-	const char*	GetInfoValue	( const char* name );	// returns static info from the info file; line format: "name = value"
+	std::string	Info(const std::string & name);
 
 	int		m_scale;						// scale (0=full)
 	int		m_volfx;						// percent
@@ -40,7 +43,6 @@ public:
 	int		m_rumble;						// rumble
 	int		m_deadzone[2];					// joystick dead zones x, y
 	int		m_joy[6];						// joystick mapping 4 keys and 2 axes
-	char *	m_info;							// info file
 };
 
 extern	cDizCfg		g_cfg;

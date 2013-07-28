@@ -7,6 +7,19 @@
 #include "E9App.h"
 #include <algorithm>
 
+#define GAME_PROP(Prop, Get, Set) \
+PREDICATE_M(game, Get, 1) { return A1 = g_game.Prop(); } \
+PREDICATE_M(game, Set, 1) { g_game.Prop(A1); return true; }
+
+#define GAME_BOOL_PROP(Prop, Check, Set) \
+PREDICATE_M(game, Check, 0) { return g_game.Prop(); } \
+PREDICATE_M(game, Set, 0) {	g_game.Prop(true); return true; } \
+PREDICATE_M(game, un##Set, 0) { g_game.Prop(false); return true; }
+
+#define GAME_COLOR_PROP(Prop, Get, Set) \
+PREDICATE_M(game, Get, 1) { return A1 = static_cast<int>(g_game.Prop()); } \
+PREDICATE_M(game, Set, 1) { g_game.Prop(static_cast<int>(static_cast<int64>(A1))); return true; }
+
 PREDICATE_M(game, frame, 1)
 {
 	return A1 = g_game.m_gameframe;
@@ -24,286 +37,28 @@ PREDICATE_M(game, setName, 1)
 	return true;
 }
 
+GAME_PROP(fps, fps, setFps)
+GAME_PROP(keys, keys, setKeys)
+GAME_PROP(keysHit, keysHit, setKeysHit)
+GAME_PROP(roomX, roomX, setRoomX)
+GAME_PROP(roomY, roomY, setRoomY)
+GAME_PROP(viewX, viewX, setViewX)
+GAME_PROP(viewY, viewY, setViewY)
+GAME_PROP(shakeX, shakeX, setShakeX)
+GAME_PROP(shakeY, shakeY, setShakeY)
+GAME_BOOL_PROP(pause, paused, pause)
+GAME_COLOR_PROP(mapColor, mapColor, setMapColor)
+GAME_COLOR_PROP(borderColor, borderColor, setBorderColor)
+GAME_PROP(fffx.magnitude, ffMagnitude, setFFMagnitude)
+GAME_PROP(fffx.period, ffPeriod, setFFPeriod)
+GAME_BOOL_PROP(viewportMode, viewportMode, setViewportMode)
+GAME_PROP(viewportX, viewportX, setViewportX)
+GAME_PROP(viewportY, viewportY, setViewportY)
+GAME_BOOL_PROP(viewportFlipX, viewportFlipX, setViewportFlipX)
+GAME_BOOL_PROP(viewportFlipY, viewportFlipY, setViewportFlipY)
+GAME_BOOL_PROP(fullMaterialMap, fullMaterialMap, setFullMaterialMap)
 
-PREDICATE_M(game, fps, 1)
-{
-	return A1 = g_game.fps();
-}
-
-PREDICATE_M(game, setFps, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_game.fps(v); 
-	return true;
-}
-
-PREDICATE_M(game, keys, 1)
-{
-	return A1 = g_game.keys();
-}
-
-PREDICATE_M(game, setKeys, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_game.keys(v); 
-	return true;
-}
-
-PREDICATE_M(game, keysHit, 1)
-{
-	return A1 = g_game.keysHit();
-}
-
-PREDICATE_M(game, setKeysHit, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_game.keysHit(v); 
-	return true;
-}
-
-PREDICATE_M(game, roomX, 1)
-{
-	return A1 = g_game.roomX();
-}
-
-PREDICATE_M(game, setRoomX, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_game.roomX(v); 
-	return true;
-}
-PREDICATE_M(game, roomY, 1)
-{
-	return A1 = g_game.roomY();
-}
-
-PREDICATE_M(game, setRoomY, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_game.roomY(v); 
-	return true;
-}
-
-PREDICATE_M(game, viewX, 1)
-{
-	return A1 = g_game.viewX();
-}
-
-PREDICATE_M(game, setViewX, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_game.viewX(v); 
-	return true;
-}
-PREDICATE_M(game, viewY, 1)
-{
-	return A1 = g_game.viewY();
-}
-
-PREDICATE_M(game, setViewY, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_game.viewY(v); 
-	return true;
-}
-PREDICATE_M(game, shakeX, 1)
-{
-	return A1 = g_game.shakeX();
-}
-
-PREDICATE_M(game, setShakeX, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_game.shakeX(v); 
-	return true;
-}
-PREDICATE_M(game, shakeY, 1)
-{
-	return A1 = g_game.shakeY();
-}
-
-PREDICATE_M(game, setShakeY, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_game.shakeY(v); 
-	return true;
-}
-
-PREDICATE_M(game, paused, 0)
-{
-	return g_game.pause();
-}
-
-PREDICATE_M(game, pause, 0)
-{
-	g_game.pause(true); 
-	return true;
-}
-
-PREDICATE_M(game, unpause, 0)
-{
-	g_game.pause(false); 
-	return true;
-}
-
-
-PREDICATE_M(game, mapColor, 1)
-{
-	return A1 = static_cast<int>(g_game.mapColor());
-}
-
-PREDICATE_M(game, setMapColor, 1)
-{
-	int64 v = A1;
-	g_game.mapColor(static_cast<int>(v)); 
-	return true;
-}
-
-PREDICATE_M(game, borderColor, 1)
-{
-	return A1 = static_cast<int>(g_game.borderColor());
-}
-
-PREDICATE_M(game, setBorderColor, 1)
-{
-	int64 v = A1;
-	g_game.borderColor(static_cast<int>(v)); 
-	return true;
-}
-
-PREDICATE_M(game, ffMagnitude, 1)
-{
-	return A1 = g_game.FFmagnitude();
-}
-
-PREDICATE_M(game, setFFMagnitude, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_game.FFmagnitude(v); 
-	return true;
-}
-
-PREDICATE_M(game, ffPeriod, 1)
-{
-	return A1 = g_game.FFperiod();
-}
-
-PREDICATE_M(game, setFFPeriod, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_game.FFperiod(v); 
-	return true;
-}
-
-PREDICATE_M(game, viewportMode, 0)
-{
-	return g_game.viewportMode();
-}
-
-PREDICATE_M(game, setViewportMode, 1)
-{
-	int v;
-	if(!PL_get_bool(A1, &v))
-		return false; 
-	g_game.viewportMode(v != FALSE); 
-	return true;
-}
-PREDICATE_M(game, viewportX, 1)
-{
-	return A1 = g_game.viewportX();
-}
-
-PREDICATE_M(game, setViewportX, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_game.viewportX(v); 
-	return true;
-}
-PREDICATE_M(game, viewportY, 1)
-{
-	return A1 = g_game.viewportY();
-}
-
-PREDICATE_M(game, setViewportY, 1)
-{
-	int v;
-	if(!PL_get_integer(A1, &v))
-		return false; 
-	g_game.viewportY(v); 
-	return true;
-}
-
-PREDICATE_M(game, viewportFlipX, 0)
-{
-	return g_game.viewportFlipX();
-}
-
-PREDICATE_M(game, setViewportFlipX, 1)
-{
-	int v;
-	if(!PL_get_bool(A1, &v))
-		return false; 
-	g_game.viewportFlipX(v != FALSE); 
-	return true;
-}
-PREDICATE_M(game, viewportFlipY, 0)
-{
-	return g_game.viewportFlipY();
-}
-
-PREDICATE_M(game, setViewportFlipY, 1)
-{
-	int v;
-	if(!PL_get_bool(A1, &v))
-		return false; 
-	g_game.viewportFlipY(v != FALSE); 
-	return true;
-}
-
-PREDICATE_M(game, fullMaterialMap, 0)
-{
-	return g_game.fullMaterialMap();
-}
-
-PREDICATE_M(game, setFullMaterialMap, 1)
-{
-	int v;
-	if(!PL_get_bool(A1, &v))
-		return false; 
-	g_game.fullMaterialMap(v != FALSE); 
-	return true;
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// INIT
-//////////////////////////////////////////////////////////////////////////////////////////////////
 cDizGame g_game;
-
-
 
 
 cDizGame::cDizGame() : 	drawmode(DRAWMODE_NORMAL),
@@ -319,73 +74,45 @@ cDizGame::cDizGame() : 	drawmode(DRAWMODE_NORMAL),
 						_shakeX(), _shakeY(),
 						_mapColor(),
 						_borderColor(),
-						_FFmagnitude(),
-						_FFperiod(),
 						_viewportMode(),
 						_viewportX(), _viewportY(),
 						_viewportFlipX(), _viewportFlipY(),
-						_fullMaterialMap()
-{
-	m_gameframe		= 0;
-
-				
-	m_fffx_magnitude	= 0;
-	m_fffx_period		= 50;
-
-	m_visible_brushes	= 0;
-}
-
-cDizGame::~cDizGame()
+						_fullMaterialMap(),
+						m_gameframe(),
+						m_visible_brushes(0)
 {
 }
+
 
 bool cDizGame::Init()
 {
-
 	fps(GAME_FPS);
 
 	// load game resolution settings from inf
-	sscanf( g_cfg.GetInfoValue( "game_screen_bw" ), "%i", & screenSizeBorder.x );
-	sscanf( g_cfg.GetInfoValue( "game_screen_bh" ), "%i", & screenSizeBorder.y );
-	sscanf( g_cfg.GetInfoValue( "game_screen_w" ), "%i", & screenSize.x );
-	sscanf( g_cfg.GetInfoValue( "game_screen_h" ), "%i", & screenSize.y );
+	std::istringstream(g_cfg.Info("game_screen_bw")) >> screenSizeBorder.x;
+	std::istringstream(g_cfg.Info("game_screen_bh")) >> screenSizeBorder.y;
+	std::istringstream(g_cfg.Info("game_screen_w")) >> screenSize.x;
+	std::istringstream(g_cfg.Info("game_screen_h")) >> screenSize.y;
 	g_paint.Layout(); // refresh layout
 
 	return CheckVersion();
 }
 
-void cDizGame::Done()
-{
-	m_obj.clear();
-	m_collider.clear();
-	//m_dlg.Done();
-}
-
 bool cDizGame::Start()
 {
-
-	// map reset
 	g_map.Reset();
 
-	// game
 	m_gameframe = 0;
 	m_collider.clear();
-//	memset(&m_data[G_CFG_MAX], 0, sizeof(int)*(G_MAX-G_CFG_MAX)); // keep cfg
-//	FFperiod(50);
-//	Set(G_PAUSE,1); // start paused
 
-	// player
 	g_player.Reset();
 	g_player.pos = 0;
 	g_player.disable = true;
 
-	// fffx
-	if(I9_IsReady()) FFFXStop();
+	if(I9_IsReady()) { fffx.magnitude(0); }
 
-	// room
 	SetRoom( 0, 0 );
 
-	// script
 	g_script.Start();
 
 	return true;
@@ -395,18 +122,19 @@ bool cDizGame::CheckVersion()
 {
 	// requested version must be in the folowing formats: 2.0, 2.01, 2.01b, etc
 	// the match is done on first 2 digits (2.0)
-	const char* reqv = g_cfg.GetInfoValue("dizzyage_version");
-	char* engv = GAME_VERSION;
-	if(strlen(reqv)>=3) // enough digits
+	std::string reqv = g_cfg.Info("dizzyage_version");
+	std::string engv = GAME_VERSION;
+	std::stringstream msg;
+	if(reqv.size() >= 3) // enough digits
 	{
-		if( reqv[0]==engv[0] && reqv[1]==engv[1] && reqv[2]==engv[2] ) return true; // match
-		sys_msgbox( E9_GetHWND(), swprint(L"This game was made with DizzyAGE v%S\nBut, you are running it with DizzyAGE v%S\nIf you experience malfunctions, contact the author.",reqv,engv), L"WARNING",MB_OK );
+		if(reqv[0]==engv[0] && reqv[1]==engv[1] && reqv[2]==engv[2]) return true; // match
+		msg << "This game was made with DizzyAGE v" << reqv; 
 	}
 	else
-	{
-		sys_msgbox( E9_GetHWND(), swprint(L"This game doesn't specify the version of DizzyAGE it was made for.\nYou are running it with DizzyAGE v%S\nIf you experience malfunctions, contact the author.",engv), L"WARNING",MB_OK );
-	}
-	return true;
+		msg << "This game doesn't specify the version of DizzyAGE it was made for.";
+	msg  << "\nYou are running it with DizzyAGE v" << engv;
+	ERRORMESSAGE(MultiByteToWideString(msg.str().c_str()).c_str());
+	return false;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -414,7 +142,6 @@ bool cDizGame::CheckVersion()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 bool cDizGame::Update()
 {
-
 	int i;
 
 	// command process
@@ -518,19 +245,7 @@ bool cDizGame::Update()
 	if( KeyHit(KEY_ACTION) && !pause() && g_player.life > 0 && !g_player.disable)
 		g_script.action();
 
-	// fffx rumble
-	bool update = false;
-	if(m_fffx_period!=FFperiod())
-	{
-		m_fffx_period = FFperiod();
-		update = true;
-	}
-	if(m_fffx_magnitude!=FFmagnitude())
-	{
-		m_fffx_magnitude = FFmagnitude();
-		update = true;
-	}
-	if(update) FFFXUpdate();
+	fffx.Update();
 
 	// game after update
 	g_script.gameAfterUpdate();
@@ -771,17 +486,18 @@ void cDizGame::ObjDraw( const tBrush & brush )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // FFFX Rumble
 //////////////////////////////////////////////////////////////////////////////////////////////////
-void cDizGame::FFFXUpdate()
+void FFFX::Update()
 {
+	if(updated) return;
+	updated = true;
 	if(!I9_IsReady()) return;
 	if(!I9_DeviceIsPresent(I9_DEVICE_JOYSTICK1)) return; // no joystick
 	BOOL isrunning = I9_DeviceFFIsPlaying(I9_DEVICE_JOYSTICK1);
 	if(g_cfg.m_rumble)
 	{
-		I9_DeviceFFSet(I9_DEVICE_JOYSTICK1, m_fffx_magnitude*100, m_fffx_period);
-		if(m_fffx_magnitude==0 && isrunning) I9_DeviceFFStop(I9_DEVICE_JOYSTICK1);
-		else
-		if(m_fffx_magnitude!=0 && !isrunning) I9_DeviceFFPlay(I9_DEVICE_JOYSTICK1);
+		I9_DeviceFFSet(I9_DEVICE_JOYSTICK1, _magnitude * 100, _period);
+		if(!_magnitude && isrunning) I9_DeviceFFStop(I9_DEVICE_JOYSTICK1);
+		else if(_magnitude && !isrunning) I9_DeviceFFPlay(I9_DEVICE_JOYSTICK1);
 	}
 	else
 	{

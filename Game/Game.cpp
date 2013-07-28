@@ -73,17 +73,16 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	// init engine
 	if(E9_Init())
 	{
-
-		// prepare application callbacks
 		App.OnInit = AppOnInit;
 		App.OnDone = AppOnDone;
-		App.OnRun = AppOnRun;
-		App.OnActivate = AppOnActivate;
-		App.OnPaint = AppOnPaint;
 
 		// init and run application
-		if(App.Init(hInstance, lpCmdLine))
+		if(App.Init(hInstance, lpCmdLine)) {
+			App.OnRun = AppOnRun;
+			App.OnPaint = AppOnPaint;
+			App.OnActivate = AppOnActivate;
 			App.Run();
+		}
 		App.Done(); // done application destroys partial init if needed
 
 		// done engine

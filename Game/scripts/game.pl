@@ -34,9 +34,6 @@ property(state, init).
 
 :- forall(property(Prop, Def), recorda(Prop, Def)).
 
-
-
-
 property(fps, setFps, 36).
 property(keys, setKeys, 0).
 property(keysHit, setKeysHit, 0).
@@ -58,23 +55,25 @@ property(isViewportFlipX, setViewportFlipX, false).
 property(isViewportFlipY, setViewportFlipY, false).
 property(isFullMaterialMap, setFullMaterialMap, false).
 
-isPaused(true) :- paused, !.
-isPaused(false).
-
-setPaused(true) :- pause, !.
+isPaused(X) :- paused -> X = true; X = false.
+setPaused(true) :- pause.
 setPaused(false) :- unpause.
 
-isViewportMode(true) :- viewportMode, !.
-isViewportMode(false).
+isViewportMode(X) :- viewportMode -> X = true; X = false.
+setViewportMode(true) :- setViewportMode.
+setViewportMode(false) :- unsetViewportMode.
 
-isViewportFlipX(true) :- viewportFlipX, !.
-isViewportFlipX(false).
+isViewportFlipX(X) :- viewportFlipX -> X = true; X = false.
+setViewportFlipX(true) :- setViewportFlipX.
+setViewportFlipX(false) :- unsetViewportFlipX.
 
-isViewportFlipY(true) :- viewportFlipY, !.
-isViewportFlipY(false).
+isViewportFlipY(X) :- viewportFlipY -> X = true; X = false.
+setViewportFlipY(true) :- setViewportFlipY.
+setViewportFlipY(false) :- unsetViewportFlipY.
 
-isFullMaterialMap(true) :- fullMaterialMap, !.
-isFullMaterialMap(false).
+isFullMaterialMap(X) :- fullMaterialMap -> X = true; X = false.
+setFullMaterialMap(true) :- setFullMaterialMap.
+setFullMaterialMap(false) :- unsetFullMaterialMap.
 
 recVar(Tag, Val) :-
 	recorded(Tag, CurVal, Ref),

@@ -69,27 +69,38 @@ cDizCfg::cDizCfg()
 	m_joy[3]				= 3;
 	m_joy[4]				= 0;
 	m_joy[5]				= 1;
-
-	m_info					= 0;
-
 }
 
 void cDizCfg::Init()
 {
-	Load(); Save();
-	// read info file
-	F9FILE f = files->OpenFile("data\\dizzy.inf");
-	if(!f) { dlog(LOGAPP, L"dizzy.inf not found\n"); return; }
-	int size = static_cast<int>(f->Size());
-	if(size==0) { files->FileClose(f); return; }
-	m_info = new char[size+1]; m_info[size]=0;
-	f->Read(m_info, size);
-	files->FileClose(f);
+	Load();
+	Save();
+	LoadInfo();
 }
 
-void cDizCfg::Done()
+void cDizCfg::LoadInfo()
 {
-	delete [] m_info;
+	F9FILE f = files->OpenFile("data\\dizzy.inf");
+	if(!f) { dlog(LOGAPP, L"dizzy.inf not found\n"); return; }
+	auto size = f->Size();
+	if(!size) { files->FileClose(f); return; }
+
+	char * buf = new char[static_cast<int>(size)];
+	f->Read(buf, size);
+	files->FileClose(f);
+
+	std::istringstream in;
+	in.str(std::string(buf, buf + size));
+	delete [] buf;
+
+	std::string key, val, eq;
+	while(in)
+	{
+		if(!(in >> key >> eq) || eq != "=")
+			break;
+		std::getline(in, val);
+		info.insert(strings::value_type(key, trim(val)));
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -190,12 +201,12 @@ void cDizCfg::LoadRenderCfg( r9Cfg& cfg, Api & api )
 	cfg.vsync		= 0;
 
 	int apiv;
-	if(ini_get( inifile, "VIDEO", "api") >> apiv)
+	if(ini_get(inifile, "VIDEO", "api") >> apiv)
 		if(apiv == static_cast<int>(Api::DirectX))
 			api = Api::DirectX;
 		else if(apiv == static_cast<int>(Api::OpenGL))
 			api = Api::OpenGL;
-	ini_get( inifile, "VIDEO", "windowed")>> cfg.windowed;
+	ini_get(inifile, "VIDEO", "windowed")>> cfg.windowed;
 	ini_get(inifile, "VIDEO", "bpp") >> cfg.bpp;
 	ini_get(inifile, "VIDEO", "width") >> cfg.width;
 	ini_get(inifile, "VIDEO", "height") >>	cfg.height;
@@ -204,25 +215,10 @@ void cDizCfg::LoadRenderCfg( r9Cfg& cfg, Api & api )
 
 }
 
-const char* cDizCfg::GetInfoValue( const char* name )
+std::string cDizCfg::Info(const std::string & name )
 {
-	int p;
-	const char* sz;
-	static char szret[128];
-	szret[0]=0;
-	if(!m_info) return szret;
-	if(!name || !name[0]) return szret;
-
-	sz = parser_skiptotoken(m_info,name,p);
-	if(!sz) return szret;
-	sz = parser_skiptochar(sz,"=\r\n",p);
-	if(!sz) return szret;
-	if(*sz!='=') return szret;
-	sz = parser_skipchar(sz+1," \t",p);
-	parser_readline(sz,szret,127,p);
-	parser_trimbackspace(szret,p);
-	
-	return szret;
+	auto it = info.find(name);
+	return it == info.end() ? std::string() : it->second;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

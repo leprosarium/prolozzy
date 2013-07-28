@@ -233,7 +233,7 @@ void cDizMap::DrawRoom( const iV2 & rp, int layer, int mode, const iV2 & ofs)
 	// viewport clipping test
 	if( !g_paint.drawtilesoft() )
 	{
-		iV2 p1 = g_game.roomPos() * Room::Size - g_game.viewportPos();
+		iV2 p1 = g_game.roomPos * Room::Size - g_game.viewport;
 		iRect viewport(p1, p1 + Room::Size);
 		if(!(rp * Room::Size < viewport.p2 && (rp + 1) * Room::Size > viewport.p1))
 			return;

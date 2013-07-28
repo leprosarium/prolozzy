@@ -32,7 +32,7 @@ int Prolog::Draw()
 	R9_CheckDevice(); // check for lost device
 	if(R9_BeginScene())
 	{
-		R9_Clear(g_game.mapColor()|0xff000000);
+		R9_Clear(g_game.mapColor|0xff000000);
 		con.Draw();
 		slots.Draw();
 		input.Draw();
@@ -302,7 +302,7 @@ void Info::Draw()
 
 	// player
 	std::ostringstream os;
-	os << "room=(" << g_game.roomX() << "," << g_game.roomY() << "), player=(" << g_player.pos.x << "," << g_player.pos.y << ")";
+	os << "room=(" << g_game.roomPos.x << "," << g_game.roomPos.y << "), player=(" << g_player.pos.x << "," << g_player.pos.y << ")";
 	os << " voices=" << g_sound.samples.playingVoices();
 	R9_DrawText( p, os.str(), COLOR_INFO);
 

@@ -8,17 +8,21 @@
 #include <algorithm>
 
 #define GAME_PROP(Prop, Get, Set) \
+PREDICATE_M(game, Get, 1) { return A1 = g_game.Prop; } \
+PREDICATE_M(game, Set, 1) { g_game.Prop = A1; return true; }
+
+#define GAME_PROP_F(Prop, Get, Set) \
 PREDICATE_M(game, Get, 1) { return A1 = g_game.Prop(); } \
 PREDICATE_M(game, Set, 1) { g_game.Prop(A1); return true; }
 
 #define GAME_BOOL_PROP(Prop, Check, Set) \
-PREDICATE_M(game, Check, 0) { return g_game.Prop(); } \
-PREDICATE_M(game, Set, 0) {	g_game.Prop(true); return true; } \
-PREDICATE_M(game, un##Set, 0) { g_game.Prop(false); return true; }
+PREDICATE_M(game, Check, 0) { return g_game.Prop; } \
+PREDICATE_M(game, Set, 0) {	g_game.Prop = true; return true; } \
+PREDICATE_M(game, un##Set, 0) { g_game.Prop = false; return true; }
 
 #define GAME_COLOR_PROP(Prop, Get, Set) \
-PREDICATE_M(game, Get, 1) { return A1 = static_cast<int>(g_game.Prop()); } \
-PREDICATE_M(game, Set, 1) { g_game.Prop(static_cast<int>(static_cast<int64>(A1))); return true; }
+PREDICATE_M(game, Get, 1) { return A1 = static_cast<int>(g_game.Prop); } \
+PREDICATE_M(game, Set, 1) { g_game.Prop = static_cast<dword>(static_cast<int64>(A1)); return true; }
 
 PREDICATE_M(game, frame, 1)
 {
@@ -27,7 +31,7 @@ PREDICATE_M(game, frame, 1)
 
 PREDICATE_M(game, command, 1)
 {
-	g_game.command(PlAtom(A1));
+	g_game.command = PlAtom(A1);
 	return true;
 }
 
@@ -40,20 +44,20 @@ PREDICATE_M(game, setName, 1)
 GAME_PROP(fps, fps, setFps)
 GAME_PROP(keys, keys, setKeys)
 GAME_PROP(keysHit, keysHit, setKeysHit)
-GAME_PROP(roomX, roomX, setRoomX)
-GAME_PROP(roomY, roomY, setRoomY)
-GAME_PROP(viewX, viewX, setViewX)
-GAME_PROP(viewY, viewY, setViewY)
-GAME_PROP(shakeX, shakeX, setShakeX)
-GAME_PROP(shakeY, shakeY, setShakeY)
+GAME_PROP(roomPos.x, roomX, setRoomX)
+GAME_PROP(roomPos.y, roomY, setRoomY)
+GAME_PROP(viewPos.x, viewX, setViewX)
+GAME_PROP(viewPos.y, viewY, setViewY)
+GAME_PROP(shake.x, shakeX, setShakeX)
+GAME_PROP(shake.y, shakeY, setShakeY)
 GAME_BOOL_PROP(pause, paused, pause)
 GAME_COLOR_PROP(mapColor, mapColor, setMapColor)
 GAME_COLOR_PROP(borderColor, borderColor, setBorderColor)
-GAME_PROP(fffx.magnitude, ffMagnitude, setFFMagnitude)
-GAME_PROP(fffx.period, ffPeriod, setFFPeriod)
+GAME_PROP_F(fffx.magnitude, ffMagnitude, setFFMagnitude)
+GAME_PROP_F(fffx.period, ffPeriod, setFFPeriod)
 GAME_BOOL_PROP(viewportMode, viewportMode, setViewportMode)
-GAME_PROP(viewportX, viewportX, setViewportX)
-GAME_PROP(viewportY, viewportY, setViewportY)
+GAME_PROP(viewport.x, viewportX, setViewportX)
+GAME_PROP(viewport.y, viewportY, setViewportY)
 GAME_BOOL_PROP(viewportFlipX, viewportFlipX, setViewportFlipX)
 GAME_BOOL_PROP(viewportFlipY, viewportFlipY, setViewportFlipY)
 GAME_BOOL_PROP(fullMaterialMap, fullMaterialMap, setFullMaterialMap)
@@ -65,19 +69,17 @@ cDizGame::cDizGame() : 	drawmode(DRAWMODE_NORMAL),
 						_void("void"),	soft("soft"), hard("hard"), jump("jump"), none("none"), start("start"), exit("exit"), refresh("refresh"),
 						screenSize(GAME_SCRW, GAME_SCRH),
 						screenSizeBorder(GAME_SCRWB, GAME_SCRH),
-						_command(none), 
-						_pause(),
-						_fps(GAME_FPS),
-						_keys(),
-						_keysHit(),
-						_viewX(GAME_VIEWX), _viewY(GAME_VIEWY),
-						_shakeX(), _shakeY(),
-						_mapColor(),
-						_borderColor(),
-						_viewportMode(),
-						_viewportX(), _viewportY(),
-						_viewportFlipX(), _viewportFlipY(),
-						_fullMaterialMap(),
+						command(none), 
+						pause(),
+						fps(GAME_FPS),
+						keys(),
+						keysHit(),
+						viewPos(GAME_VIEWX, GAME_VIEWY),
+						mapColor(),
+						borderColor(),
+						viewportMode(),
+						viewportFlipX(), viewportFlipY(),
+						fullMaterialMap(),
 						m_gameframe(),
 						m_visible_brushes(0)
 {
@@ -86,7 +88,7 @@ cDizGame::cDizGame() : 	drawmode(DRAWMODE_NORMAL),
 
 bool cDizGame::Init()
 {
-	fps(GAME_FPS);
+	fps = GAME_FPS;
 
 	// load game resolution settings from inf
 	std::istringstream(g_cfg.Info("game_screen_bw")) >> screenSizeBorder.x;
@@ -111,7 +113,7 @@ bool cDizGame::Start()
 
 	if(I9_IsReady()) { fffx.magnitude(0); }
 
-	SetRoom( 0, 0 );
+	SetRoom(0);
 
 	g_script.Start();
 
@@ -143,20 +145,20 @@ bool cDizGame::CheckVersion()
 bool cDizGame::Update()
 {
 	// command process
-	if(command()==start) // start game
+	if(command == start) // start game
 	{
 		if(!Start()) return false;
 	}
 	else
-	if(command()==exit) // exit game
+	if(command == exit) // exit game
 	{
 		return false;
 	}
-	if(command()==refresh) // refresh room
+	if(command == refresh) // refresh room
 	{
-		matMap.Update(roomPos(), fullMaterialMap());
+		matMap.Update(roomPos, fullMaterialMap);
 	}
-	command(none);
+	command = none;
 
 	// game frame
 	m_gameframe++;
@@ -168,11 +170,9 @@ bool cDizGame::Update()
 	if(I9_IsReady())
 	{
 		for(int i=0;i<KEY_MAX;i++)
-		{
 			if( I9_GetKeyValue(g_cfg.m_key[i][0]) ||
 				I9_GetKeyValue(g_cfg.m_key[i][1]) )	
 				ks |= (1<<i);
-		}
 		
 		// joystick bogus values are higher on y because up can be used as jump...
 		int dzx = g_cfg.m_deadzone[0];
@@ -195,27 +195,27 @@ bool cDizGame::Update()
 	// avoid keys during debug
 	if(g_player.m_debug) ks=0;
 
-	keys(ks);
-	keysHit((ks ^ oldkeys) & ks);
+	keys = ks;
+	keysHit = (ks ^ oldkeys) & ks;
 	oldkeys = ks;
 
 	// game update
 	g_script.gameUpdate();
 
 	// update present objects
-	if(!pause())
+	if(!pause)
 		for(auto obj: m_obj)
 			if(!obj->disable && obj->anim && IsUpdate(obj->delay))
 				++obj->frame;
 
 	// player update
-	if(!pause()) g_player.Update();
+	if(!pause) g_player.Update();
 
 	// map update
 	if( g_map.size() > 0) // if map size is valid
 	{
 		// room bound check
-		if(!Room::Rect(roomPos()).IsInside(g_player.pos))	g_script.roomOut(); // users may change player's pos on this handler
+		if(!Room::Rect(roomPos).IsInside(g_player.pos))	g_script.roomOut(); // users may change player's pos on this handler
 
 		// world bound check
 		iV2 r = Room::Pos2Room(g_player.pos);
@@ -226,17 +226,17 @@ bool cDizGame::Update()
 		if( r.y > sz.y - 1 )	{ r.y = sz.y - 1; g_player.pos.y = sz.y * Room::Size.y - 1; }
 
 		// room tranzit
-		if( r != roomPos())
+		if( r != roomPos)
 		{
 			g_script.roomClose();
-			SetRoom( r.x, r.y );
+			SetRoom(r);
 			g_script.roomOpen();
 		}
 	}
 
-	if( KeyHit(KEY_MENU) && !pause() )
+	if( KeyHit(KEY_MENU) && !pause )
 		g_script.menu();
-	if( KeyHit(KEY_ACTION) && !pause() && g_player.life > 0 && !g_player.disable)
+	if( KeyHit(KEY_ACTION) && !pause && g_player.life > 0 && !g_player.disable)
 		g_script.action();
 
 	fffx.Update();
@@ -253,34 +253,31 @@ void cDizGame::Draw()
 {
 	if(drawmode == DRAWMODE_NONE) return;
 	// visible room area
-	iV2 view = viewPos();
-	fRect rect( g_paint.scrPos(view), g_paint.scrPos(view + Room::Size));
+	fRect rect( g_paint.scrPos(viewPos), g_paint.scrPos(viewPos + Room::Size));
 
 	// view ofset with shake option and optional viewport for scrolling
-	viewShift = view + shake();
-	if( viewportMode() )
-		viewShift += viewportPos();
+	viewShift = viewPos + shake;
+	if(viewportMode)
+		viewShift += viewport;
 	
 	// viewport flipping
 	dword flip = 0;
 	iV2 vv;
 
-	iV2 v = g_paint.scrPos(view);
-	if( viewportFlipX())
+	iV2 v = g_paint.scrPos(viewPos);
+	if(viewportFlipX)
 	{
 		flip |= static_cast<dword>(Flip::X);
 		vv.x = R9_GetWidth() - v.x - Room::Size.x * g_paint.scale - v.x + 1; // magic +1
 	}
-	if( viewportFlipY())
+	if(viewportFlipY)
 	{
 		flip |= static_cast<dword>(Flip::Y);
 		vv.y = R9_GetHeight() - v.y - Room::Size.y * g_paint.scale - v.y + 1; // magic +1
 	}
 
 	if( flip )
-	{
 		R9_SetView( vv, flip );
-	}
 
 	m_visible_brushes = 0;
 
@@ -290,32 +287,28 @@ void cDizGame::Draw()
 	for(int layer=0;layer<GAME_LAYERS;layer++)
 	{
 		// room
-		if( viewportMode() )
-		{
+		if(viewportMode)
 			// full matmap 3x3 rooms
 			for( iV2 r; r.y<3; r.y++ )
-			{
 				for(r.x=0; r.x<3; r.x++ )
 				{
 					// clip here to avoid duplicate draw (brushes shared in neighbour rooms)
 					// Note: brushes order must also be perserved (so the drawframe trick didn't work)
-					R9_SetClipping( rect );
+					R9_SetClipping(rect);
 					iV2 p1 = g_paint.scrPos(viewShift + (r - 1) * Room::Size);
-					R9_AddClipping( fRect(p1, p1 + Room::Size * g_paint.scale));
+					R9_AddClipping(fRect(p1, p1 + Room::Size * g_paint.scale));
 					iV2 rr = r - 1;
-					g_map.DrawRoom( roomPos() + rr, layer, drawmode, viewShift + rr * Room::Size);
+					g_map.DrawRoom(roomPos + rr, layer, drawmode, viewShift + rr * Room::Size);
 				}
-			}
-		}
 		else
 		{
 			// classic style
-			R9_SetClipping( rect );
-			g_map.DrawRoom( roomPos(), layer, drawmode, viewShift);
+			R9_SetClipping(rect);
+			g_map.DrawRoom(roomPos, layer, drawmode, viewShift);
 		}
 
 		// objects present
-		R9_SetClipping( rect );
+		R9_SetClipping(rect);
 		for(auto obj: m_obj)
 			if( !obj->disable && obj->layer == layer && obj->draw & 1) 
 				ObjDraw(*obj);
@@ -328,10 +321,10 @@ void cDizGame::Draw()
 		R9_SetView( iV2(), 0 );
 
 	// borders
-	R9_DrawBar( fRect( 0.0f, 0.0f, (float)R9_GetWidth(), rect.p1.y ),					borderColor()|0xff000000);
-	R9_DrawBar( fRect( 0.0f, rect.p2.y, (float)R9_GetWidth(), (float)R9_GetHeight() ),borderColor()|0xff000000);
-	R9_DrawBar( fRect( 0.0f, rect.p1.y, rect.p1.x, rect.p2.y ),							borderColor()|0xff000000);
-	R9_DrawBar( fRect( rect.p2.x, rect.p1.y, (float)R9_GetWidth(),rect.p2.y ),			borderColor()|0xff000000);
+	R9_DrawBar( fRect( 0.0f, 0.0f, (float)R9_GetWidth(), rect.p1.y ),				borderColor|0xff000000);
+	R9_DrawBar( fRect( 0.0f, rect.p2.y, (float)R9_GetWidth(), (float)R9_GetHeight() ),borderColor|0xff000000);
+	R9_DrawBar( fRect( 0.0f, rect.p1.y, rect.p1.x, rect.p2.y ),						borderColor|0xff000000);
+	R9_DrawBar( fRect( rect.p2.x, rect.p1.y, (float)R9_GetWidth(),rect.p2.y ),		borderColor|0xff000000);
 
 /*	// clip
 	rect.x1 = g_paint.m_scrx;
@@ -352,7 +345,7 @@ void cDizGame::Draw()
 void cDizGame::Resize() 
 {
 	matMap.Resize(Room::Size);
-	SetRoom(g_game.roomX(), g_game.roomY()); // updates materialmap and re-gather objects
+	SetRoom(g_game.roomPos); // updates materialmap and re-gather objects
 }
 
 void cDizGame::NextDrawMode()
@@ -366,11 +359,10 @@ void cDizGame::NextDrawMode()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // ROOM
 //////////////////////////////////////////////////////////////////////////////////////////////////
-void cDizGame::SetRoom( int x, int y )
+void cDizGame::SetRoom(const iV2 & p)
 {
-	roomX(x);
-	roomY(y);
-	matMap.Update(roomPos(), fullMaterialMap());
+	roomPos = p;
+	matMap.Update(roomPos, fullMaterialMap);
 	ObjGather();
 }
 
@@ -458,7 +450,7 @@ void cDizGame::ObjGather()
 {
 	m_obj.clear();
 	m_collider.clear();
-	iRect roombb = viewportMode() ? 
+	iRect roombb = viewportMode ? 
 		RoomBorderRect(Room::Size) :  // extended room bound to 3x3 rooms
 		RoomBorderRect(Room::Border); // room bound with small border
 	for(auto b: g_map.objects)
@@ -472,7 +464,7 @@ void cDizGame::ObjDraw( const tBrush & brush )
 	int idx = g_paint.tiles.Find(brush.tile);
 	cTile* tile = g_paint.tiles.Get(idx); if(!tile) return;
 	int frame = tile->ComputeFrame(brush.frame,brush.anim);
-	g_paint.DrawBrush( brush, viewShift + brush.pos - roomPos() * Room::Size, frame );
+	g_paint.DrawBrush( brush, viewShift + brush.pos - roomPos * Room::Size, frame );
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

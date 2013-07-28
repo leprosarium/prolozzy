@@ -251,7 +251,7 @@ bool cDizApp::Update()
 	g_sound.Update(); // update sounds
 
 	timergame += App.DeltaTime();
-	int gamefps = g_game.fps();
+	int gamefps = g_game.fps;
 	if(gamefps < 1) gamefps = 1;
 	int gameframetime = 1000 / gamefps;
 	if(timergame >= gameframetime)
@@ -308,7 +308,7 @@ void cDizApp::Draw()
 	R9_CheckDevice(); // check for lost device
 	if(R9_BeginScene())
 	{
-		R9_Clear(g_game.mapColor() | 0xff000000);
+		R9_Clear(g_game.mapColor | 0xff000000);
 		g_game.Draw();
 		if(drawstats) DrawStats();
 		g_dizdebug.Draw();

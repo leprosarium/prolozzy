@@ -12,7 +12,7 @@ inline bool cDizPlayer::keyHit(int k) const { return input ? g_game.KeyHit(k) : 
 
 iRect cDizPlayer::rect() const
 { 
-	return worldRect().Offset(-g_game.roomPos() * Room::Size);
+	return worldRect().Offset(-g_game.roomPos * Room::Size);
 }
 
 #define PLAYER_GET(Prop, Pr) PREDICATE_M(player, Prop, 1) { return A1 = g_player.Pr; }

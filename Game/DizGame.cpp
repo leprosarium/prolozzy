@@ -142,8 +142,6 @@ bool cDizGame::CheckVersion()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 bool cDizGame::Update()
 {
-	int i;
-
 	// command process
 	if(command()==start) // start game
 	{
@@ -169,7 +167,7 @@ bool cDizGame::Update()
 
 	if(I9_IsReady())
 	{
-		for(i=0;i<KEY_MAX;i++)
+		for(int i=0;i<KEY_MAX;i++)
 		{
 			if( I9_GetKeyValue(g_cfg.m_key[i][0]) ||
 				I9_GetKeyValue(g_cfg.m_key[i][1]) )	
@@ -198,8 +196,7 @@ bool cDizGame::Update()
 	if(g_player.m_debug) ks=0;
 
 	keys(ks);
-	int keyshit = (ks ^ oldkeys) & ks;
-	keysHit(keyshit);
+	keysHit((ks ^ oldkeys) & ks);
 	oldkeys = ks;
 
 	// game update
@@ -237,17 +234,12 @@ bool cDizGame::Update()
 		}
 	}
 
-	// menu
 	if( KeyHit(KEY_MENU) && !pause() )
 		g_script.menu();
-
-	// action
 	if( KeyHit(KEY_ACTION) && !pause() && g_player.life > 0 && !g_player.disable)
 		g_script.action();
 
 	fffx.Update();
-
-	// game after update
 	g_script.gameAfterUpdate();
 
 	return true;

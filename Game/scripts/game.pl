@@ -22,10 +22,6 @@
 :- use_module(def).
 :- use_module(gamedef).
 
-
-
-
-
 property(shake, 0).
 property(rumble, 0).
 property(musicSafe, 0).
@@ -139,8 +135,6 @@ beginNewGame :-
 	update:register(ui, message:pop),
 	message:msg(4, 6, 'HELLO\n{c:ffffffff}{t:1236 0 0}    \n {c:ffffff00}WORLD\n', C1, C2).
 
-
-
 %actionObject(Id) :-
 %	core:dl(action(Id)).
 
@@ -172,14 +166,7 @@ actionObject1 :-
 
 
 
-% IN: int; death; cause of death
-% Returns the player death message. Called by PlayerLoseLife().
-% Declare more death defines in gamedef.gs (like DEATH_INFIRE, or DEATH_BATS)
-% and set them to hurt and kill objects or just set them in the player's
-% P_DEATH property, then return specific messages in this callback,
-% for each cacuse of death .
-
-deathMessage(-1, '') :- !.
+deathMessage(none, '') :- !.
 deathMessage(water, 'YOU HAVE DROWNED!') :- !.
 deathMessage(_, 'YOU HAVE DIED!').
 

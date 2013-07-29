@@ -11,17 +11,13 @@
 PREDICATE_M(game, Get, 1) { return A1 = g_game.Prop; } \
 PREDICATE_M(game, Set, 1) { g_game.Prop = A1; return true; }
 
-#define GAME_PROP_F(Prop, Get, Set) \
-PREDICATE_M(game, Get, 1) { return A1 = g_game.Prop(); } \
-PREDICATE_M(game, Set, 1) { g_game.Prop(A1); return true; }
-
 #define GAME_BOOL_PROP(Prop, Check, Set) \
 PREDICATE_M(game, Check, 0) { return g_game.Prop; } \
 PREDICATE_M(game, Set, 0) {	g_game.Prop = true; return true; } \
 PREDICATE_M(game, un##Set, 0) { g_game.Prop = false; return true; }
 
 #define GAME_COLOR_PROP(Prop, Get, Set) \
-PREDICATE_M(game, Get, 1) { return A1 = static_cast<int>(g_game.Prop); } \
+PREDICATE_M(game, Get, 1) { return A1 = static_cast<int64>(g_game.Prop); } \
 PREDICATE_M(game, Set, 1) { g_game.Prop = static_cast<dword>(static_cast<int64>(A1)); return true; }
 
 PREDICATE_M(game, frame, 1)
@@ -53,8 +49,8 @@ GAME_PROP(shake.y, shakeY, setShakeY)
 GAME_BOOL_PROP(pause, paused, pause)
 GAME_COLOR_PROP(mapColor, mapColor, setMapColor)
 GAME_COLOR_PROP(borderColor, borderColor, setBorderColor)
-GAME_PROP_F(fffx.magnitude, ffMagnitude, setFFMagnitude)
-GAME_PROP_F(fffx.period, ffPeriod, setFFPeriod)
+GAME_PROP(fffx.magnitude, ffMagnitude, setFFMagnitude)
+GAME_PROP(fffx.period, ffPeriod, setFFPeriod)
 GAME_BOOL_PROP(viewportMode, viewportMode, setViewportMode)
 GAME_PROP(viewport.x, viewportX, setViewportX)
 GAME_PROP(viewport.y, viewportY, setViewportY)
@@ -111,7 +107,7 @@ bool cDizGame::Start()
 	g_player.pos = 0;
 	g_player.disable = true;
 
-	if(I9_IsReady()) { fffx.magnitude(0); }
+	if(I9_IsReady()) { fffx.magnitude = 0; }
 
 	SetRoom(0);
 
@@ -149,12 +145,11 @@ bool cDizGame::Update()
 	{
 		if(!Start()) return false;
 	}
-	else
-	if(command == exit) // exit game
+	else if(command == exit) // exit game
 	{
 		return false;
 	}
-	if(command == refresh) // refresh room
+	else if(command == refresh) // refresh room
 	{
 		matMap.Update(roomPos, fullMaterialMap);
 	}
@@ -219,14 +214,14 @@ bool cDizGame::Update()
 
 		// world bound check
 		iV2 r = Room::Pos2Room(g_player.pos);
-		if( r.x<0 )				{ r.x=0; g_player.pos.x = 0; }
+		if(r.x < 0) r.x = g_player.pos.x = 0;
+		if(r.y < 0)	r.y = g_player.pos.y = 0;
 		iV2 sz = g_map.size();
 		if( r.x > sz.x - 1 )	{ r.x = sz.x - 1; g_player.pos.x = sz.x * Room::Size.x - 4; }
-		if( r.y<0 )				{ r.y = 0; g_player.pos.y = 0; }
 		if( r.y > sz.y - 1 )	{ r.y = sz.y - 1; g_player.pos.y = sz.y * Room::Size.y - 1; }
 
 		// room tranzit
-		if( r != roomPos)
+		if(r != roomPos)
 		{
 			g_script.roomClose();
 			SetRoom(r);
@@ -234,9 +229,9 @@ bool cDizGame::Update()
 		}
 	}
 
-	if( KeyHit(KEY_MENU) && !pause )
+	if(KeyHit(KEY_MENU) && !pause)
 		g_script.menu();
-	if( KeyHit(KEY_ACTION) && !pause && g_player.life > 0 && !g_player.disable)
+	if(KeyHit(KEY_ACTION) && !pause && g_player.life > 0 && !g_player.disable)
 		g_script.action();
 
 	fffx.Update();
@@ -472,8 +467,9 @@ void cDizGame::ObjDraw( const tBrush & brush )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void FFFX::Update()
 {
-	if(updated) return;
-	updated = true;
+	if(_magnitude == magnitude && _period == period) return;
+	_magnitude = magnitude;
+	_period = period;
 	if(!I9_IsReady()) return;
 	if(!I9_DeviceIsPresent(I9_DEVICE_JOYSTICK1)) return; // no joystick
 	BOOL isrunning = I9_DeviceFFIsPlaying(I9_DEVICE_JOYSTICK1);

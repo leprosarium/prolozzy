@@ -61,22 +61,22 @@ public:
 class FFFX
 {
 	int _magnitude;						// force magnitude [0,100] (0=stopped)
-	int	_period;							// force period in miliseconds (50=default)
-	bool updated;
+	int	_period;						// force period in miliseconds (50=default)
 public:
-	void magnitude(int m) { _magnitude = m; updated = false; }
-	void period(int p) { _period = p; updated = false;}
+	int magnitude;
+	int period;
 
-	int magnitude() const { return _magnitude; }
-	int period() const { return _period; }
-	FFFX() : _magnitude(), _period(50), updated(false) {}
-	void Update();						// update force feedback
-
+	FFFX() : _magnitude(), _period(50), magnitude(_magnitude), period(_period) {}
+	void Update();
 };
 
 
 class cDizGame
 {
+	PlAtom none;				// nothing to do
+	PlAtom start;				// must start game
+	PlAtom exit;				// must exit game
+	PlAtom refresh;				// refresh room material map
 	MatMap matMap;
 	int	drawmode;		// 0=imgmap (normal), 1=matmap, 2=densitymap, 3=none
 
@@ -155,58 +155,6 @@ inline	void			ObjAdd				(tBrush *);		// add object to present lists (objects and
 
 		// stats
 		int				m_visible_brushes;
-
-		//bool			pause() const { return _pause; }
-		//int				fps() const { return _fps; }
-		//int				keys() const { return _keys; }
-		//int				keysHit() const { return _keysHit; }
-		//iV2				roomPos() const { return _roomPos; }
-		//int				roomX() const { return _roomPos.x; }
-		//int				roomY() const { return _roomPos.y; }
-		//iV2				viewPos() const { return _viewPos; }
-		//int				viewX() const { return _viewPos.x; }
-		//int				viewY() const { return _viewPos.y; }
-		//iV2				shake() const { return _shake; }
-		//int				shakeX() const { return _shake.x; }
-		//int				shakeY() const { return _shake.y; }
-		//int				mapColor() const { return _mapColor; }
-		//int				borderColor() const { return _borderColor; }
-		//bool			viewportMode() const { return _viewportMode; }
-		//iV2				viewportPos() const { return _viewport; }
-		//int				viewportX() const { return _viewport.x; }
-		//int				viewportY() const { return _viewport.y; }
-		//bool			viewportFlipX() const { return _viewportFlipX; }
-		//bool			viewportFlipY() const { return _viewportFlipY; }
-		//bool			fullMaterialMap() const { return _fullMaterialMap; }
-		//PlAtom			command() const { return _command; }
-
-		//void			pause(bool pause) { _pause = pause; }
-		//void			fps(int fps) { _fps = fps; }
-		//void			keys(int keys) { _keys = keys; }
-		//void			keysHit(int keysHit) { _keysHit = keysHit; }
-		//void			roomPos(const iV2 &p) { _roomPos = p; }
-		//void			roomX(int v) { _roomPos.x = v; }
-		//void			roomY(int v) { _roomPos.y = v; }
-		//void			viewX(int viewX) { _viewPos.x = viewX; }
-		//void			viewY(int viewY) { _viewPos.y = viewY; }
-		//void			shakeX(int shakeX) { _shake.x = shakeX; }
-		//void			shakeY(int shakeY) { _shake.y = shakeY; }
-		//void			mapColor(int color) { _mapColor = color; }
-		//void			borderColor(int color) { _borderColor = color; }
-		//void			viewportMode(bool viewportMode) { _viewportMode = viewportMode; }
-		//void			viewportX(int x) { _viewport.x = x; }
-		//void			viewportY(int y) { _viewport.y = y; }
-		//void			viewportFlipX(bool flip) { _viewportFlipX = flip; }
-		//void			viewportFlipY(bool flip) { _viewportFlipY = flip; }
-		//void			fullMaterialMap(bool fullMaterialMap) { _fullMaterialMap = fullMaterialMap; }
-		//void			command(PlAtom cmd) { _command = cmd; }
-
-private:
-		PlAtom none;				// nothing to do
-		PlAtom start;				// must start game
-		PlAtom exit;				// must exit game
-		PlAtom refresh;				// refresh room material map
-
 };
 
 inline void cDizGame::ObjAdd(tBrush *b)

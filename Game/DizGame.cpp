@@ -164,7 +164,7 @@ bool cDizGame::Update()
 
 	if(I9_IsReady())
 	{
-		for(int i=0;i<KEY_MAX;i++)
+		for(int i=0; i < cDizCfg::key::max; i++)
 			if( I9_GetKeyValue(g_cfg.m_key[i][0]) ||
 				I9_GetKeyValue(g_cfg.m_key[i][1]) )	
 				ks |= (1<<i);
@@ -178,13 +178,13 @@ bool cDizGame::Update()
 		int	jb1 = I9_JOY_FIRSTKEY(0)+g_cfg.m_joy[1];
 		int	jb2 = I9_JOY_FIRSTKEY(0)+g_cfg.m_joy[2];
 
-		if( I9_GetAxeValue(jax)<-dzx || I9_GetJoystickHAT(0,I9_HUT_LEFT)  )	ks |= (1<<KEY_LEFT);
-		if( I9_GetAxeValue(jax)> dzx || I9_GetJoystickHAT(0,I9_HUT_RIGHT) )	ks |= (1<<KEY_RIGHT);
-		if( I9_GetAxeValue(jay)<-dzy || I9_GetJoystickHAT(0,I9_HUT_UP)    ) ks |= (1<<KEY_UP);
-		if( I9_GetAxeValue(jay)> dzy || I9_GetJoystickHAT(0,I9_HUT_DOWN)  )	ks |= (1<<KEY_DOWN);
-		if( I9_GetKeyValue(jb1) )											ks |= (1<<KEY_JUMP);		// xbox360 B
-		if( I9_GetKeyValue(jb0) )											ks |= (1<<KEY_ACTION);	// xbox360 A
-		if( I9_GetKeyValue(jb2) )											ks |= (1<<KEY_MENU);		// xbox360 X
+		if( I9_GetAxeValue(jax)<-dzx || I9_GetJoystickHAT(0,I9_HUT_LEFT)  )	ks |= (1<<cDizCfg::key::left);
+		if( I9_GetAxeValue(jax)> dzx || I9_GetJoystickHAT(0,I9_HUT_RIGHT) )	ks |= (1<<cDizCfg::key::right);
+		if( I9_GetAxeValue(jay)<-dzy || I9_GetJoystickHAT(0,I9_HUT_UP)    ) ks |= (1<<cDizCfg::key::up);
+		if( I9_GetAxeValue(jay)> dzy || I9_GetJoystickHAT(0,I9_HUT_DOWN)  )	ks |= (1<<cDizCfg::key::down);
+		if( I9_GetKeyValue(jb1) )											ks |= (1<<cDizCfg::key::jump);		// xbox360 B
+		if( I9_GetKeyValue(jb0) )											ks |= (1<<cDizCfg::key::action);	// xbox360 A
+		if( I9_GetKeyValue(jb2) )											ks |= (1<<cDizCfg::key::menu);		// xbox360 X
 	}
 
 	// avoid keys during debug
@@ -229,9 +229,9 @@ bool cDizGame::Update()
 		}
 	}
 
-	if(KeyHit(KEY_MENU) && !pause)
+	if(KeyHit(cDizCfg::key::menu) && !pause)
 		g_script.menu();
-	if(KeyHit(KEY_ACTION) && !pause && g_player.life > 0 && !g_player.disable)
+	if(KeyHit(cDizCfg::key::action) && !pause && g_player.life > 0 && !g_player.disable)
 		g_script.action();
 
 	fffx.Update();

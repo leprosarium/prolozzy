@@ -44,21 +44,21 @@ cDizCfg::cDizCfg()
 	m_volfx					= 100;
 	m_volmusic				= 100;
 	
-	m_key[KEY_LEFT][0]		= I9K_LEFT;
-	m_key[KEY_RIGHT][0]		= I9K_RIGHT;
-	m_key[KEY_UP][0]		= I9K_UP;
-	m_key[KEY_DOWN][0]		= I9K_DOWN;
-	m_key[KEY_JUMP][0]		= I9K_SPACE;
-	m_key[KEY_ACTION][0]	= I9K_RETURN;
-	m_key[KEY_MENU][0]		= I9K_ESCAPE;
+	m_key[key::left][0]		= I9K_LEFT;
+	m_key[key::right][0]	= I9K_RIGHT;
+	m_key[key::up][0]		= I9K_UP;
+	m_key[key::down][0]		= I9K_DOWN;
+	m_key[key::jump][0]		= I9K_SPACE;
+	m_key[key::action][0]	= I9K_RETURN;
+	m_key[key::menu][0]		= I9K_ESCAPE;
 	
-	m_key[KEY_LEFT][1]		= I9K_Z;
-	m_key[KEY_RIGHT][1]		= I9K_X;
-	m_key[KEY_UP][1]		= I9K_K;
-	m_key[KEY_DOWN][1]		= I9K_M;
-	m_key[KEY_JUMP][1]		= I9K_SPACE;
-	m_key[KEY_ACTION][1]	= I9K_RETURN;
-	m_key[KEY_MENU][1]		= I9K_Q;
+	m_key[key::left][1]		= I9K_Z;
+	m_key[key::right][1]	= I9K_X;
+	m_key[key::up][1]		= I9K_K;
+	m_key[key::down][1]		= I9K_M;
+	m_key[key::jump][1]		= I9K_SPACE;
+	m_key[key::action][1]	= I9K_RETURN;
+	m_key[key::menu][1]		= I9K_Q;
 
 	m_rumble				= true;
 	m_deadzone[0]			= 500;
@@ -118,21 +118,21 @@ bool cDizCfg::Load()
 	ini_get(inifile, "AUDIO",	"volmusic") >> m_volmusic;
 
 	// INPUT
-	ini_get(inifile, "INPUT",	"key1_left")	>> m_key[KEY_LEFT][0];
-	ini_get(inifile, "INPUT",	"key1_right")	>> m_key[KEY_RIGHT][0];
-	ini_get(inifile, "INPUT",	"key1_up")		>> m_key[KEY_UP][0];
-	ini_get(inifile, "INPUT",	"key1_down")	>> m_key[KEY_DOWN][0];
-	ini_get(inifile, "INPUT",	"key1_jump")	>> m_key[KEY_JUMP][0];
-	ini_get(inifile, "INPUT",	"key1_action")	>> m_key[KEY_ACTION][0];
-	ini_get(inifile, "INPUT",	"key1_menu")	>> m_key[KEY_MENU][0];
+	ini_get(inifile, "INPUT",	"key1_left")	>> m_key[key::left][0];
+	ini_get(inifile, "INPUT",	"key1_right")	>> m_key[key::right][0];
+	ini_get(inifile, "INPUT",	"key1_up")		>> m_key[key::up][0];
+	ini_get(inifile, "INPUT",	"key1_down")	>> m_key[key::down][0];
+	ini_get(inifile, "INPUT",	"key1_jump")	>> m_key[key::jump][0];
+	ini_get(inifile, "INPUT",	"key1_action")	>> m_key[key::action][0];
+	ini_get(inifile, "INPUT",	"key1_menu")	>> m_key[key::menu][0];
 
-	ini_get(inifile, "INPUT",	"key2_left")	>> m_key[KEY_LEFT][1];
-	ini_get(inifile, "INPUT",	"key2_right")	>> m_key[KEY_RIGHT][1];
-	ini_get(inifile, "INPUT",	"key2_up")		>> m_key[KEY_UP][1];
-	ini_get(inifile, "INPUT",	"key2_down")	>> m_key[KEY_DOWN][1];
-	ini_get(inifile, "INPUT",	"key2_jump")	>> m_key[KEY_JUMP][1];
-	ini_get(inifile, "INPUT",	"key2_action")	>> m_key[KEY_ACTION][1];
-	ini_get(inifile, "INPUT",	"key2_menu")	>> m_key[KEY_MENU][1];
+	ini_get(inifile, "INPUT",	"key2_left")	>> m_key[key::left][1];
+	ini_get(inifile, "INPUT",	"key2_right")	>> m_key[key::right][1];
+	ini_get(inifile, "INPUT",	"key2_up")		>> m_key[key::up][1];
+	ini_get(inifile, "INPUT",	"key2_down")	>> m_key[key::down][1];
+	ini_get(inifile, "INPUT",	"key2_jump")	>> m_key[key::jump][1];
+	ini_get(inifile, "INPUT",	"key2_action")	>> m_key[key::action][1];
+	ini_get(inifile, "INPUT",	"key2_menu")	>> m_key[key::menu][1];
 
 	ini_get(inifile, "INPUT",	"rumble")		>> m_rumble;
 	ini_get(inifile, "INPUT",	"joystick_dx")	>> m_deadzone[0];
@@ -159,21 +159,21 @@ bool cDizCfg::Save()
 	ini_set( inifile, "AUDIO",	"volmusic",		m_volmusic				);
 
 	// INPUT
-	ini_set( inifile, "INPUT",	"key1_left",	m_key[KEY_LEFT][0]		);
-	ini_set( inifile, "INPUT",	"key1_right",	m_key[KEY_RIGHT][0]		);
-	ini_set( inifile, "INPUT",	"key1_up",		m_key[KEY_UP][0]		);
-	ini_set( inifile, "INPUT",	"key1_down",	m_key[KEY_DOWN][0]		);
-	ini_set( inifile, "INPUT",	"key1_jump",	m_key[KEY_JUMP][0]		);
-	ini_set( inifile, "INPUT",	"key1_action",	m_key[KEY_ACTION][0]	);
-	ini_set( inifile, "INPUT",	"key1_menu",	m_key[KEY_MENU][0]		);
+	ini_set( inifile, "INPUT",	"key1_left",	m_key[key::left][0]		);
+	ini_set( inifile, "INPUT",	"key1_right",	m_key[key::right][0]	);
+	ini_set( inifile, "INPUT",	"key1_up",		m_key[key::up][0]		);
+	ini_set( inifile, "INPUT",	"key1_down",	m_key[key::down][0]		);
+	ini_set( inifile, "INPUT",	"key1_jump",	m_key[key::jump][0]		);
+	ini_set( inifile, "INPUT",	"key1_action",	m_key[key::action][0]	);
+	ini_set( inifile, "INPUT",	"key1_menu",	m_key[key::menu][0]		);
 
-	ini_set( inifile, "INPUT",	"key2_left",	m_key[KEY_LEFT][1]		);
-	ini_set( inifile, "INPUT",	"key2_right",	m_key[KEY_RIGHT][1]		);
-	ini_set( inifile, "INPUT",	"key2_up",		m_key[KEY_UP][1]		);
-	ini_set( inifile, "INPUT",	"key2_down",	m_key[KEY_DOWN][1]		);
-	ini_set( inifile, "INPUT",	"key2_jump",	m_key[KEY_JUMP][1]		);
-	ini_set( inifile, "INPUT",	"key2_action",	m_key[KEY_ACTION][1]	);
-	ini_set( inifile, "INPUT",	"key2_menu",	m_key[KEY_MENU][1]		);
+	ini_set( inifile, "INPUT",	"key2_left",	m_key[key::left][1]		);
+	ini_set( inifile, "INPUT",	"key2_right",	m_key[key::right][1]	);
+	ini_set( inifile, "INPUT",	"key2_up",		m_key[key::up][1]		);
+	ini_set( inifile, "INPUT",	"key2_down",	m_key[key::down][1]		);
+	ini_set( inifile, "INPUT",	"key2_jump",	m_key[key::jump][1]		);
+	ini_set( inifile, "INPUT",	"key2_action",	m_key[key::action][1]	);
+	ini_set( inifile, "INPUT",	"key2_menu",	m_key[key::menu][1]		);
 
 	ini_set( inifile, "INPUT",	"rumble",		m_rumble				);
 	ini_set( inifile, "INPUT",	"joystick_dx",	m_deadzone[0]			);

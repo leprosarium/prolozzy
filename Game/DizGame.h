@@ -91,8 +91,8 @@ public:
 	
 	bool pause;									// if game is paused
 	int fps;
-	int keys;									// input keys: bit 0=KEY_LEFT, 1=KEY_RIGHT, 2=KEY_UP, 3=KEY_DOWN, 4=KEY_JUMP, 5=KEY_ACTION, 6=KEY_MENU
-	int keysHit;								// input keys: bit 0=KEY_LEFT, 1=KEY_RIGHT, 2=KEY_UP, 3=KEY_DOWN, 4=KEY_JUMP, 5=KEY_ACTION, 6=KEY_MENU; tells if the key was just hitted down this frame !
+	int keys;									// input keys: bit 0=key::left, 1=key::right, 2=key::up, 3=key::down, 4=key::jump, 5=key::action, 6=key::menu
+	int keysHit;								// input keys: bit 0=key::left, 1=key::right, 2=key::up, 3=key::down, 4=key::jump, 5=key::action, 6=key::menu; tells if the key was just hitted down this frame !
 	iV2 roomPos;								// current room pos (x, y)
 	iV2 viewPos;								// position of room's view on the hud
 	iV2 shake;									// view offset used for shaking

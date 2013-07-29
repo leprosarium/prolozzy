@@ -268,8 +268,8 @@ void cDizPlayer::EnterJumper( int mat )
 	int dir = 0;
 
 	// direction
-	if(key(KEY_RIGHT))	dir++;
-	if(key(KEY_LEFT))	dir--;
+	if(key(cDizCfg::key::right))	dir++;
+	if(key(cDizCfg::key::left))	dir--;
 
 	// call jump handler to determine the power of the jump
 	int pow = g_script.jump(mat, 0); // send the material, clean return for safety
@@ -294,9 +294,9 @@ void cDizPlayer::EnterKeyState()
 	if( life <= 0 ) {	EnterIdle(); return; } // prepare to die
 
 	int dir = 0;
-	if( key(KEY_RIGHT) )	dir++;
-	if( key(KEY_LEFT) )		dir--;
-	if( key(KEY_JUMP) )		
+	if(key(cDizCfg::key::right))	dir++;
+	if(key(cDizCfg::key::left))	dir--;
+	if(key(cDizCfg::key::jump))		
 	{
 		// call jump handler to determine the power of the jump
 		int pow = g_script.jump(-1, 0); // send no material, clean return for safety

@@ -1,15 +1,3 @@
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// I9Input.h
-// Generic input class. Platform input is derived from this.
-// Interface:
-// I9_Init, I9_Done, I9_IsReady, I9_Update, I9_Clear, I9_Aquire, I9_Unacquire
-// I9_DeviceInit, I9_DeviceDone, I9_DeviceIsPresent, ...
-// I9_IsKeyPressed, I9_GetKeyValue, I9_GetKeyDown, I9_GetKeyUp
-// I9_GetKeyQCount, I9_GetKeyQCode, I9_GetKeyQValue, I9_ClearKeyQ
-// I9_GetKeyAscii, I9_GetKeyShifted, I9_GetKeyName, I9_FindKeyByAscii, I9_FindKeyByName
-// I9_GetAxeValue, I9_GetAxeDelta, I9_SetAxeClip, I9_SetAxeSpeed
-// ...
-//////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef __I9INPUT_H__
 #define __I9INPUT_H__
 
@@ -58,67 +46,65 @@ struct i9KeyName
 class i9Input
 {
 public:
+	i9Input();
+	virtual ~i9Input();
 
-// initialize
-						i9Input();
-virtual					~i9Input();
-
-virtual	BOOL			Init( HWND hwnd, HINSTANCE hinstance );			// init input
-virtual	void			Done();											// done input
-virtual void			Update( float dtime );							// refresh keys for installed devices
-virtual void			Clear();										// clear keys and axes for installed devices
-virtual	void			Acquire();										// aquire input; call to aquire when input is needed again
-virtual	void			Unacquire();										// unaquire input; call to unaquire when input is not needed for a while
+	virtual	BOOL Init( HWND hwnd, HINSTANCE hinstance );		// init input
+	virtual	void Done();										// done input
+	virtual void Update( float dtime );							// refresh keys for installed devices
+	virtual void Clear();										// clear keys and axes for installed devices
+	virtual	void Acquire();										// aquire input; call to aquire when input is needed again
+	virtual	void Unacquire();									// unaquire input; call to unaquire when input is not needed for a while
 
 // devices
-virtual	BOOL			DeviceInit( int device );						// install device
-virtual	void			DeviceDone( int device );						// uninstall device
-virtual	BOOL			DeviceIsPresent( int device );					// if device is installed
-virtual	void			DeviceUpdate( int device );						// update device to refresh it's keys and axes
-virtual	void			DeviceClear( int device );						// clear device to reset it's keys and axes
-virtual	BOOL			DeviceFFInit( int device );						// init force feedback support on a device
-virtual	void			DeviceFFSet( int device, int mag, int per );	// set force feedback magnitude and period properties on a device
-virtual	void			DeviceFFPlay( int device );						// play force feedback on a device
-virtual	void			DeviceFFStop( int device );						// stop force feedback on a device
-virtual	BOOL			DeviceFFIsPlaying( int device );				// test if force feedback is playing on a device
+	virtual	BOOL DeviceInit( int device );						// install device
+	virtual	void DeviceDone( int device );						// uninstall device
+	virtual	BOOL DeviceIsPresent( int device );					// if device is installed
+	virtual	void DeviceUpdate( int device );					// update device to refresh it's keys and axes
+	virtual	void DeviceClear( int device );						// clear device to reset it's keys and axes
+	virtual	BOOL DeviceFFInit( int device );					// init force feedback support on a device
+	virtual	void DeviceFFSet( int device, int mag, int per );	// set force feedback magnitude and period properties on a device
+	virtual	void DeviceFFPlay( int device );					// play force feedback on a device
+	virtual	void DeviceFFStop( int device );					// stop force feedback on a device
+	virtual	BOOL DeviceFFIsPlaying( int device );				// test if force feedback is playing on a device
 		
 // keys management
-		void			PushKey( int key, BOOL value );					// Push a key in the stack (set key too)
-		dword			PopKey();										// Pop a key from the stack
-		dword			PeekKey();										// return key from the stack - do not pop
+	void PushKey( int key, BOOL value );				// Push a key in the stack (set key too)
+	dword PopKey();										// Pop a key from the stack
+	dword PeekKey();									// return key from the stack - do not pop
 
 // keys access
-inline	i9Key&			GetKey( int key )								{ return m_key[key];		}
-inline	BOOL			GetKeyValue( int key )							{ return m_key[key].m_value;	}
-inline	BOOL			GetKeyDown( int key )							{ return (  m_key[key].m_value && m_key[key].m_frm == m_frm ); }
-inline	BOOL			GetKeyUp( int key )								{ return ( !m_key[key].m_value && m_key[key].m_frm == m_frm ); }
+	i9Key & GetKey( int key )	{ return m_key[key];		}
+	BOOL GetKeyValue( int key )	{ return m_key[key].m_value;	}
+	BOOL GetKeyDown( int key )	{ return (  m_key[key].m_value && m_key[key].m_frm == m_frm ); }
+	BOOL GetKeyUp( int key )	{ return ( !m_key[key].m_value && m_key[key].m_frm == m_frm ); }
 																
-inline	int				GetKeyQCount()									{ return m_nkq; }
-inline	int				GetKeyQCode( int e=0 )							{ return m_keyq[e] & I9_KEYMASK_CODE; }
-inline	BOOL			GetKeyQValue( int e=0 )							{ return (m_keyq[e] & I9_KEYMASK_VALUE)?1:0; }
-inline	void			ClearKeyQ()										{ m_nkq = 0; }
+	int GetKeyQCount()			{ return m_nkq; }
+	int	GetKeyQCode( int e=0 )	{ return m_keyq[e] & I9_KEYMASK_CODE; }
+	BOOL GetKeyQValue( int e=0 ){ return (m_keyq[e] & I9_KEYMASK_VALUE)?1:0; }
+	void ClearKeyQ()			{ m_nkq = 0; }
 																
-inline	char			GetKeyAscii( int key )							{ if( key<0 || key>=I9_KEYS ) return 0; else return m_keyname[ key ].m_ascii; }
-inline	char			GetKeyShifted( int key )						{ if( key<0 || key>=I9_KEYS ) return 0; else return m_keyname[ key ].m_shifted; }
-inline	const char*		GetKeyName( int key )							{ if( key<0 || key>=I9_KEYS ) return m_keyname[0].m_name; else return m_keyname[ key ].m_name; }
-		int				FindKeyByAscii( char ascii );					// find key (0=unknown if not found)
-		int				FindKeyByName( const char* name );				// find key (0=unknown if not found)
+	char GetKeyAscii( int key )			{ if( key<0 || key>=I9_KEYS ) return 0; else return m_keyname[ key ].m_ascii; }
+	char GetKeyShifted( int key )		{ if( key<0 || key>=I9_KEYS ) return 0; else return m_keyname[ key ].m_shifted; }
+	const char * GetKeyName( int key )	{ if( key<0 || key>=I9_KEYS ) return m_keyname[0].m_name; else return m_keyname[ key ].m_name; }
+	int FindKeyByAscii( char ascii );					// find key (0=unknown if not found)
+	int FindKeyByName( const char* name );				// find key (0=unknown if not found)
 
 // axes access
-inline	i9Axe&			GetAxe( int axe )								{ return m_axe[axe]; }
-inline	int				GetAxeValue( int axe )							{ return m_axe[axe].m_value; }
-inline	int				GetAxeDelta( int axe )							{ return m_axe[axe].m_delta; }
-inline	void			SetAxeClip( int axe, int min, int max )			{ m_axe[axe].m_min = min; m_axe[axe].m_max = max; }
-inline	void			SetAxeSpeed( int axe, int speed )				{ m_axe[axe].m_speed = speed; }
+	i9Axe & GetAxe( int axe )						{ return m_axe[axe]; }
+	int GetAxeValue( int axe )						{ return m_axe[axe].m_value; }
+	int GetAxeDelta( int axe )						{ return m_axe[axe].m_delta; }
+	void SetAxeClip( int axe, int min, int max )	{ m_axe[axe].m_min = min; m_axe[axe].m_max = max; }
+	void SetAxeSpeed( int axe, int speed )			{ m_axe[axe].m_speed = speed; }
 
 public:
-	HWND m_hwnd;											// hwnd
-	HINSTANCE m_hinstance;									// hinstance
-	int m_frm;												// crt input frame (refresh count)
-	float m_time;											// crt input time
-	i9Key m_key[I9_KEYS];											// keys map
-	i9Axe m_axe[I9_AXES];											// axes map
-	dword m_keyq[I9_QUEUESIZE];										// que buffer
+	HWND m_hwnd;					// hwnd
+	HINSTANCE m_hinstance;			// hinstance
+	int m_frm;						// crt input frame (refresh count)
+	float m_time;					// crt input time
+	i9Key m_key[I9_KEYS];			// keys map
+	i9Axe m_axe[I9_AXES];			// axes map
+	dword m_keyq[I9_QUEUESIZE];		// que buffer
 
 private:
 	static i9KeyName m_keyname[I9_KEYS];					// key names
@@ -131,40 +117,41 @@ private:
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 extern	i9Input*	i9_input;		// global instance, created by platform
 
-		BOOL	I9_Init( HWND hwnd, HINSTANCE hinstance, int api=I9_API_DEFAULT );					// init depending on the platform api
-		void	I9_Done();																			// done
-inline	BOOL	I9_IsReady()									{ return (i9_input!=NULL); }							
-inline	void	I9_Update( float dtime )						{ assert(i9_input); i9_input->Update(dtime); }
-//inline	void	I9_Clear()										{ assert(i9_input); i9_input->Clear(); }
-inline	void	I9_Acquire()									{ assert(i9_input); i9_input->Acquire(); }
-inline	void	I9_Unacquire()									{ assert(i9_input); i9_input->Unacquire(); }
-inline	BOOL	I9_DeviceInit( int device )						{ assert(i9_input); return i9_input->DeviceInit(device); }
-//inline	void	I9_DeviceDone( int device )						{ assert(i9_input); i9_input->DeviceDone(device); }
-inline	BOOL	I9_DeviceIsPresent( int device )				{ assert(i9_input); return i9_input->DeviceIsPresent(device); }
-inline	BOOL	I9_DeviceFFInit( int device	)					{ assert(i9_input); return i9_input->DeviceFFInit(device); }
-inline	void	I9_DeviceFFSet( int device, int mag, int per )	{ assert(i9_input); i9_input->DeviceFFSet(device,mag,per); }
-inline	void	I9_DeviceFFPlay( int device )					{ assert(i9_input); i9_input->DeviceFFPlay(device); }
-inline	void	I9_DeviceFFStop( int device )					{ assert(i9_input); i9_input->DeviceFFStop(device); }
-inline	BOOL	I9_DeviceFFIsPlaying( int device )				{ assert(i9_input); return i9_input->DeviceFFIsPlaying(device); }
+BOOL I9_Init( HWND hwnd, HINSTANCE hinstance, int api=I9_API_DEFAULT );					// init depending on the platform api
+void I9_Done();																			// done
 
-//inline	BOOL	I9_IsKeyPressed()								{ assert(i9_input); for(int i=I9_KEYBOARD_FIRSTKEY; i<I9_KEYBOARD_FIRSTKEY+I9_KEYBOARD_KEYS; i++) if( i9_input->GetKeyDown(i) ) return i; return 0; }
-inline	BOOL	I9_GetKeyValue( int key )						{ assert(i9_input); return i9_input->GetKeyValue(key); }
-inline	BOOL	I9_GetKeyDown( int key )						{ assert(i9_input); return i9_input->GetKeyDown(key); }
-inline	BOOL	I9_GetKeyUp( int key )							{ assert(i9_input); return i9_input->GetKeyUp(key); }
+inline BOOL	I9_IsReady()				{ return (i9_input!=NULL); }							
+inline void	I9_Update( float dtime )	{ assert(i9_input); i9_input->Update(dtime); }
+//inline void I9_Clear()										{ assert(i9_input); i9_input->Clear(); }
+inline void I9_Acquire()				{ assert(i9_input); i9_input->Acquire(); }
+inline void I9_Unacquire()				{ assert(i9_input); i9_input->Unacquire(); }
+inline BOOL I9_DeviceInit( int device ) { assert(i9_input); return i9_input->DeviceInit(device); }
+//inline void I9_DeviceDone( int device )						{ assert(i9_input); i9_input->DeviceDone(device); }
+inline BOOL	I9_DeviceIsPresent( int device )				{ assert(i9_input); return i9_input->DeviceIsPresent(device); }
+inline BOOL	I9_DeviceFFInit( int device	)					{ assert(i9_input); return i9_input->DeviceFFInit(device); }
+inline void	I9_DeviceFFSet( int device, int mag, int per )	{ assert(i9_input); i9_input->DeviceFFSet(device,mag,per); }
+inline void	I9_DeviceFFPlay( int device )					{ assert(i9_input); i9_input->DeviceFFPlay(device); }
+inline void	I9_DeviceFFStop( int device )					{ assert(i9_input); i9_input->DeviceFFStop(device); }
+inline BOOL	I9_DeviceFFIsPlaying( int device )				{ assert(i9_input); return i9_input->DeviceFFIsPlaying(device); }
 
-inline	int		I9_GetKeyQCount()								{ assert(i9_input); return i9_input->GetKeyQCount(); }
-inline	int		I9_GetKeyQCode( int e=0 )						{ assert(i9_input); return i9_input->GetKeyQCode(e); }
-inline	BOOL	I9_GetKeyQValue( int e=0 )						{ assert(i9_input); return i9_input->GetKeyQValue(e); }
-//inline	void	I9_ClearKeyQ()									{ assert(i9_input); i9_input->ClearKeyQ(); }
+//inline BOOL I9_IsKeyPressed()								{ assert(i9_input); for(int i=I9_KEYBOARD_FIRSTKEY; i<I9_KEYBOARD_FIRSTKEY+I9_KEYBOARD_KEYS; i++) if( i9_input->GetKeyDown(i) ) return i; return 0; }
+inline BOOL I9_GetKeyValue( int key )						{ assert(i9_input); return i9_input->GetKeyValue(key); }
+inline BOOL I9_GetKeyDown( int key )						{ assert(i9_input); return i9_input->GetKeyDown(key); }
+inline BOOL I9_GetKeyUp( int key )							{ assert(i9_input); return i9_input->GetKeyUp(key); }
 
-inline	char		I9_GetKeyAscii( int key )					{ assert(i9_input); return i9_input->GetKeyAscii(key); }
-inline	char		I9_GetKeyShifted( int key )					{ assert(i9_input); return i9_input->GetKeyShifted(key); }
-//inline	const char*	I9_GetKeyName( int key )					{ assert(i9_input); return i9_input->GetKeyName(key); }
-inline	int			I9_FindKeyByAscii( char ascii )				{ assert(i9_input); return i9_input->FindKeyByAscii(ascii); }
-//inline	int			I9_FindKeyByName( const char* name )		{ assert(i9_input); return i9_input->FindKeyByName(name); }
+inline int I9_GetKeyQCount()								{ assert(i9_input); return i9_input->GetKeyQCount(); }
+inline int I9_GetKeyQCode( int e=0 )						{ assert(i9_input); return i9_input->GetKeyQCode(e); }
+inline BOOL I9_GetKeyQValue( int e=0 )						{ assert(i9_input); return i9_input->GetKeyQValue(e); }
+//inline void I9_ClearKeyQ()									{ assert(i9_input); i9_input->ClearKeyQ(); }
 
-inline	int		I9_GetAxeValue( int axe )						{ assert(i9_input); return i9_input->GetAxeValue(axe); }
-inline	int		I9_GetAxeDelta( int axe )						{ assert(i9_input); return i9_input->GetAxeDelta(axe); }
+inline char I9_GetKeyAscii( int key )					{ assert(i9_input); return i9_input->GetKeyAscii(key); }
+inline char I9_GetKeyShifted( int key )					{ assert(i9_input); return i9_input->GetKeyShifted(key); }
+//inline const char*	I9_GetKeyName( int key )					{ assert(i9_input); return i9_input->GetKeyName(key); }
+inline int I9_FindKeyByAscii( char ascii )				{ assert(i9_input); return i9_input->FindKeyByAscii(ascii); }
+//inline int I9_FindKeyByName( const char* name )		{ assert(i9_input); return i9_input->FindKeyByName(name); }
+
+inline int I9_GetAxeValue( int axe )						{ assert(i9_input); return i9_input->GetAxeValue(axe); }
+inline int I9_GetAxeDelta( int axe )						{ assert(i9_input); return i9_input->GetAxeDelta(axe); }
 //inline	void	I9_SetAxeClip( int axe, int min, int max )		{ assert(i9_input); i9_input->SetAxeClip(axe,min,max); }
 //inline	void	I9_SetAxeSpeed( int axe, int speed )			{ assert(i9_input); i9_input->SetAxeSpeed(axe,speed); }
 
@@ -187,7 +174,7 @@ inline	int		I9_GetAxeDelta( int axe )						{ assert(i9_input); return i9_input->
 //inline	int		I9_GetJoystickB2( int joy )						{ assert(i9_input); return i9_input->GetKeyValue( I9_JOY_B2(joy) ); }
 //inline	int		I9_GetJoystickB3( int joy )						{ assert(i9_input); return i9_input->GetKeyValue( I9_JOY_B3(joy) ); }
 //inline	int		I9_GetJoystickB4( int joy )						{ assert(i9_input); return i9_input->GetKeyValue( I9_JOY_B4(joy) ); }
-inline	int		I9_GetJoystickHAT( int joy, int hatdir )		{ assert(i9_input); return i9_input->GetKeyValue( I9_JOY_H1(joy)+hatdir ); }
+inline int I9_GetJoystickHAT( int joy, int hatdir )		{ assert(i9_input); return i9_input->GetKeyValue( I9_JOY_H1(joy)+hatdir ); }
 
 #endif
 ///////////////////////////////////////////////////////////////////////////////////////////////////

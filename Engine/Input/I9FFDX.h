@@ -18,21 +18,20 @@
 
 class i9FFDX
 {
+	IDirectInputEffect * m_dieffect;
 public:
-					i9FFDX	();
-virtual				~i9FFDX	();
+	i9FFDX() : m_dieffect() {}
+	virtual ~i9FFDX() {}
 
-virtual	BOOL		Init			( IDirectInputDevice8* didevice, int type=-1 );
-virtual void		Done			();
-virtual void		Play			();
-virtual void		Stop			();
-virtual	void		Set				( int magnitude, int period ); // magnitude=[0,FFFX_MAXFORCE], period=miliseconds
-virtual BOOL		IsPlaying		();
+	virtual BOOL Init(IDirectInputDevice8 * didevice, int type = -1);
+	virtual void Done();
+	virtual void Play();
+	virtual void Stop();
+	virtual	void Set(int magnitude, int period); // magnitude=[0,FFFX_MAXFORCE], period=miliseconds
+	virtual BOOL IsPlaying();
 
-static	BOOL CALLBACK EnumEffectsProc( LPCDIEFFECTINFO pei, LPVOID pv );
-static	BOOL CALLBACK EnumAxesCallback( const DIDEVICEOBJECTINSTANCE* pdidoi, VOID* pContext );
-
-		IDirectInputEffect*			m_dieffect;
+	static BOOL CALLBACK EnumEffectsProc(LPCDIEFFECTINFO pei, LPVOID pv);
+	static BOOL CALLBACK EnumAxesCallback(const DIDEVICEOBJECTINSTANCE * pdidoi, VOID * pContext);
 };
 
 #endif

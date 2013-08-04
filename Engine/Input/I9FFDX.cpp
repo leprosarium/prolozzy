@@ -7,16 +7,7 @@
 
 #define I9_FF_MAXFORCE		DI_FFNOMINALMAX // 10000
 
-i9FFDX::i9FFDX()
-{
-	m_dieffect = NULL;
-}
-
-i9FFDX::~i9FFDX()
-{
-}
-
-BOOL i9FFDX::Init( IDirectInputDevice8* didevice, int type )
+BOOL i9FFDX::Init(IDirectInputDevice8 * didevice, int type)
 {
 	assert(didevice);
 	HRESULT hr;
@@ -27,13 +18,13 @@ BOOL i9FFDX::Init( IDirectInputDevice8* didevice, int type )
 	DWORD axes = 0;
 	hr = didevice->EnumObjects( EnumAxesCallback, (VOID*)&axes, DIDFT_AXIS );
 	if(FAILED(hr)) goto error;
-	if(axes==0) goto error;
-	if(axes>2) axes=2;
+	if(axes == 0) goto error;
+	if(axes > 2) axes=2;
 
 	GUID guidEffect;
-	if(0<=type && type<I9_FFTYPES) // specific
+	if(type >=0 && type < I9_FFTYPES) // specific
 	{
-		const GUID* guids[I9_FFTYPES] = { &GUID_RampForce, &GUID_Square, &GUID_Sine, &GUID_Triangle, &GUID_SawtoothUp, &GUID_SawtoothDown };
+		const GUID * guids[I9_FFTYPES] = { &GUID_RampForce, &GUID_Square, &GUID_Sine, &GUID_Triangle, &GUID_SawtoothUp, &GUID_SawtoothDown };
 		guidEffect = *guids[type];
 	}
 	else // autodetect
@@ -84,17 +75,17 @@ void i9FFDX::Done()
 
 void i9FFDX::Play()
 {
-	if(!m_dieffect) return;
-	HRESULT hr = m_dieffect->Start(1, 0);
+	if(m_dieffect)
+		m_dieffect->Start(1, 0);
 }
 
 void i9FFDX::Stop()
 {
-	if(!m_dieffect) return;
-	HRESULT hr = m_dieffect->Stop();
+	if(m_dieffect)
+		m_dieffect->Stop();
 }
 
-void i9FFDX::Set( int magnitude, int period )
+void i9FFDX::Set(int magnitude, int period)
 {
 	if(!m_dieffect) return;
 

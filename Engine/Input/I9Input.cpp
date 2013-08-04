@@ -1,12 +1,9 @@
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// I9Input.cpp
-///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
 #include "I9Input.h"
 #include "I9InputDX.h"
 #include "D9Log.h"
 
-i9Input* i9_input = nullptr;
+i9Input * i9_input = nullptr;
 
 i9Input::i9Input() : 
 	m_hwnd(),
@@ -46,12 +43,12 @@ void i9Input::Update( float dtime )
 	m_time += dtime;
 
 	ClearKeyQ(); // clear que buffer
-	
+
 	for(int i=0;i<I9_DEVICES;i++)
 		if(DeviceIsPresent(i))
 			DeviceUpdate(i);
 
-	if( dtime > 4.0f ) // to long since last refresh - ignore data
+	if(dtime > 4.0f) // to long since last refresh - ignore data
 	{
 		// dlog(LOGINP, "INPUT: Too much time without refresh:\n" );
 		Clear();
@@ -63,7 +60,6 @@ void i9Input::Clear()
 	for(int i=0;i<I9_DEVICES;i++)
 		if(DeviceIsPresent(i))
 			DeviceClear(i);
-
 	ClearKeyQ();
 	m_time = 0.0f;
 }
@@ -94,51 +90,47 @@ BOOL i9Input::DeviceFFIsPlaying( int device )				{ return FALSE; }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void i9Input::PushKey( int key, BOOL value )
 {
-
 	m_key[key].m_value	= value;
 	m_key[key].m_frm	= m_frm;		
 	
 	// que buffer
-	if( m_nkq >= I9_QUEUESIZE )
+	if(m_nkq >= I9_QUEUESIZE)
 	{
 		dlog(LOGINP, L"INPUT: Key que full - input lost.\n" );
 		return;
 	}
-
-	m_keyq[ m_nkq ] = key | ( value ? I9_KEYMASK_VALUE : 0 );
+	m_keyq[m_nkq] = key | (value ? I9_KEYMASK_VALUE : 0);
 	m_nkq++;
-	
 }
 
 dword i9Input::PopKey()
 {
-	if( m_nkq == 0 ) return 0;
+	if(m_nkq == 0) return 0;
 	int key = m_keyq[0];
 	m_nkq--;
-	if(m_nkq>0) memcpy( &m_keyq[0], &m_keyq[1], m_nkq * sizeof(int) );
+	if(m_nkq > 0) memcpy(&m_keyq[0], &m_keyq[1], m_nkq * sizeof(int));
 	return key;
 }
 
 dword i9Input::PeekKey()
 {
-	if( m_nkq == 0 ) return 0;
-	return m_keyq[0];
+	return m_nkq ? m_keyq[0] : 0;
 }
 
-int i9Input::FindKeyByAscii( char ascii )
+int i9Input::FindKeyByAscii(char ascii)
 {
 	ascii = ascii | 32; // lower
-	for(int i=0;i<I9_KEYS;i++)
+	for(int i = 0; i < I9_KEYS; i++)
 		if(m_keyname[i].m_ascii == ascii)
 			return i;
 	return 0;
 }
 
-int	i9Input::FindKeyByName( const char* name )
+int	i9Input::FindKeyByName(const char * name)
 {
-	if(name==NULL) return 0;
-	for(int i=0;i<I9_KEYS;i++)
-		if( 0==stricmp(name, m_keyname[i].m_name) )
+	if(!name) return 0;
+	for(int i = 0; i < I9_KEYS; i++)
+		if(0 == stricmp(name, m_keyname[i].m_name))
 			return i;
 	return 0;
 }
@@ -459,13 +451,13 @@ i9KeyName i9Input::m_keyname[I9_KEYS] =
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // INTERFACE
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL I9_Init( HWND hwnd, HINSTANCE hinstance, int api )
+BOOL I9_Init(HWND hwnd, HINSTANCE hinstance, int api)
 {
 	if(i9_input) return TRUE;
-	dlog(LOGINP, L"Input init (api=%i).\n",api);
+	dlog(LOGINP, L"Input init (api=%i).\n", api);
 	// test api here if more platformes
 	i9_input = new i9InputDX();
-	BOOL ok = i9_input->Init( hwnd, hinstance );
+	BOOL ok = i9_input->Init(hwnd, hinstance);
 	if(!ok)
 		I9_Done();
 	return ok;

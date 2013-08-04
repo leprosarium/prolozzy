@@ -14,7 +14,6 @@ class i9InputDX : public i9Input
 {
 public:
 						i9InputDX();
-virtual					~i9InputDX();
 
 virtual	BOOL			Init( HWND hwnd, HINSTANCE hinstance );
 virtual	void			Done();

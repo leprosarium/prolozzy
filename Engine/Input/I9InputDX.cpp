@@ -17,10 +17,6 @@ i9InputDX::i9InputDX()
 		m_device[i] = NULL;
 }
 
-i9InputDX::~i9InputDX()
-{
-}
-
 BOOL i9InputDX::Init( HWND hwnd, HINSTANCE hinstance )
 {
 	i9Input::Init( hwnd, hinstance );
@@ -71,9 +67,7 @@ BOOL i9InputDX::DeviceInit( int device )
 		if(!ok)
 		{
 			dlog(LOGINP, L"Keyboard failed.\n");
-			m_device[device]->Done();
-			delete m_device[device];
-			m_device[device]=NULL;
+			DeviceDone(device);
 			return FALSE;
 		}
 		else
@@ -88,9 +82,7 @@ BOOL i9InputDX::DeviceInit( int device )
 		if(!ok)
 		{
 			dlog(LOGINP, L"Mouse failed.\n");
-			m_device[device]->Done();
-			delete m_device[device];
-			m_device[device]=NULL;
+			DeviceDone(device);
 			return FALSE;
 		}
 		else

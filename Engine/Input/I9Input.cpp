@@ -6,18 +6,15 @@
 #include "I9InputDX.h"
 #include "D9Log.h"
 
-i9Input* i9_input = NULL;
+i9Input* i9_input = nullptr;
 
-i9Input::i9Input()
+i9Input::i9Input() : 
+	m_hwnd(),
+	m_hinstance(),
+	m_frm(),
+	m_time(),
+	m_nkq()
 {
-	m_hwnd		= NULL;
-	m_hinstance = NULL;
-	m_frm		= 0;
-	m_time		= 0.0f;
-	m_nkq		= 0;
-	m_key		= NULL;
-	m_axe		= NULL;
-	m_keyq		= NULL;
 }
 
 i9Input::~i9Input()
@@ -29,12 +26,9 @@ BOOL i9Input::Init( HWND hwnd, HINSTANCE hinstance )
 	m_hwnd = hwnd;
 	m_hinstance = hinstance;
 
-	m_key	= new i9Key[I9_KEYS];
-	m_axe	= new i9Axe[I9_AXES];
-	m_keyq	= new dword[I9_QUEUESIZE];
-	memset( m_key, 0, I9_KEYS * sizeof(i9Key) );
-	memset( m_axe, 0, I9_AXES * sizeof(i9Axe) );
-	memset( m_keyq, 0, I9_QUEUESIZE * sizeof(dword) );
+	memset(m_key, 0, sizeof(m_key));
+	memset(m_axe, 0, sizeof(m_axe));
+	memset(m_keyq, 0, sizeof(m_keyq));
 
 	return TRUE;
 }
@@ -44,10 +38,6 @@ void i9Input::Done()
 	for(int i=0;i<I9_DEVICES;i++)
 		if(DeviceIsPresent(i))	
 			DeviceDone(i);
-
-	delete [] m_key; m_key=NULL;
-	delete [] m_axe; m_axe=NULL;
-	delete [] m_keyq; m_keyq=NULL;
 }
 
 void i9Input::Update( float dtime )
@@ -154,7 +144,7 @@ int	i9Input::FindKeyByName( const char* name )
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-i9KeyName i9Input::m_keyname[ I9_KEYS ] = 
+i9KeyName i9Input::m_keyname[I9_KEYS] = 
 {
 	{0,		0		,I9_KEYUNKNOWN},		// 0x00
 	{0, 	0		,"escape"},				// 0x01	escape
@@ -477,11 +467,7 @@ BOOL I9_Init( HWND hwnd, HINSTANCE hinstance, int api )
 	i9_input = new i9InputDX();
 	BOOL ok = i9_input->Init( hwnd, hinstance );
 	if(!ok)
-	{
-		i9_input->Done();
-		delete i9_input;
-		i9_input = NULL;
-	}
+		I9_Done();
 	return ok;
 }
 

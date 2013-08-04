@@ -191,7 +191,7 @@ bool cDizGame::Update()
 	if(g_player.m_debug) ks=0;
 
 	keys = ks;
-	keysHit = (ks ^ oldkeys) & ks;
+	keysHit = ks & ~oldkeys;
 	oldkeys = ks;
 
 	// game update

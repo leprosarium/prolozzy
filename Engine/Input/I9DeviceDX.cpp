@@ -15,34 +15,28 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // DEVICE
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-i9DeviceDX::i9DeviceDX()
+i9DeviceDX::i9DeviceDX() : 	
+	m_acquired(),
+	m_idx(),
+	m_ff(),
+	m_didevice()
 {
-	m_acquired	= FALSE;
-	m_idx		= 0;
-	m_ff		= NULL;
-	m_didevice	= NULL;
 }
 
 i9DeviceDX::~i9DeviceDX()
 {
 }
 
-BOOL i9DeviceDX::Init( int idx, const GUID* guid )
-{
-	return TRUE;
-}
-
 void i9DeviceDX::Done()
 {
-	if( m_ff ) { m_ff->Done(); delete m_ff; m_ff=NULL; }
-	if( m_didevice ) { m_didevice->Release(); m_didevice = NULL; }
+	if(m_ff) { m_ff->Done(); delete m_ff; m_ff = nullptr; }
+	if( m_didevice ) { m_didevice->Release(); m_didevice = nullptr; }
 }
 
 BOOL i9DeviceDX::Acquire()
 {
 	assert(m_didevice);
 	int err = m_didevice->Acquire();
-//	if(FAILED(err))	{ I9_LOGERROR( "InputDevice acquire failed" ); return FALSE; }
 	Clear();
 	m_acquired = TRUE;
 	return TRUE;
@@ -58,26 +52,9 @@ BOOL i9DeviceDX::Unacquire()
 	return TRUE;
 }
 
-/*
-void i9DeviceDX::DestroyFFFX( cFFFX* fffx )
-{
-	if(!fffx) return; 
-	fffx->Done(); 
-	delete fffx; 
-}
-*/
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // KEYBOARD
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-i9DeviceDXKeyboard::i9DeviceDXKeyboard()
-{
-	i9DeviceDX::i9DeviceDX();
-}
-
-i9DeviceDXKeyboard::~i9DeviceDXKeyboard()
-{
-}
 
 BOOL i9DeviceDXKeyboard::Init( int idx, const GUID* guid )
 {
@@ -154,14 +131,7 @@ void i9DeviceDXKeyboard::Clear()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // i9DeviceDXMouse
 //////////////////////////////////////////////////////////////////////////////////////////////////
-i9DeviceDXMouse::i9DeviceDXMouse()
-{
-	i9DeviceDX::i9DeviceDX();
-}
 
-i9DeviceDXMouse::~i9DeviceDXMouse()
-{
-}
 
 BOOL i9DeviceDXMouse::Init( int idx, const GUID* guid )
 {
@@ -318,17 +288,12 @@ void i9DeviceDXMouse::Clear()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL CALLBACK EnumJoystickObjectsCallback( LPCDIDEVICEOBJECTINSTANCE dideviceoi, LPVOID pvRef );
 
-i9DeviceDXJoystick::i9DeviceDXJoystick()
+i9DeviceDXJoystick::i9DeviceDXJoystick() : 
+	m_hat(),
+	m_needpolling()
 {
-	i9DeviceDX::i9DeviceDX();
-	m_hat = 0;
-	m_needpolling = 0;
 	memset(m_axeavail,0,sizeof(m_axeavail));
 	memset(m_keyavail,0,sizeof(m_keyavail));
-}
-
-i9DeviceDXJoystick::~i9DeviceDXJoystick()
-{
 }
 
 BOOL i9DeviceDXJoystick::Init( int idx, const GUID* guid )

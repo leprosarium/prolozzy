@@ -93,6 +93,7 @@ ssize_t Prolog::Read(char *buffer, size_t size)
 			}
 		}
 		App.UpdateClocks();
+		eInput::Update(App.DeltaTime() / 1000.0f);
 		if(I9_IsReady()) { I9_Update(App.DeltaTime() / 1000.0f); }
 		con.Update();
 		if(!single) input.Update();

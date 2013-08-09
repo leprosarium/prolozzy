@@ -144,7 +144,7 @@ damageLife(Damage) :-
 	setLife(L).
 
 hurt(Damage) :-
-	%doRumble(6),
+	util:doRumble(6),
 	util:doShake(2),
 	sample:play(hurt),
 	damageLife(Damage),

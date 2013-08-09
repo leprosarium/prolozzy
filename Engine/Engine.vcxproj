@@ -104,6 +104,7 @@
     <ClInclude Include="Input\I9FFDX.h" />
     <ClInclude Include="Input\I9Input.h" />
     <ClInclude Include="Input\I9InputDX.h" />
+    <ClInclude Include="Input\eInput.h" />
     <ClInclude Include="Sound\A9Audio.h" />
     <ClInclude Include="Sound\A9AudioDX.h" />
     <ClInclude Include="Sound\A9Codec.h" />
@@ -142,6 +143,7 @@
     <ClCompile Include="Input\I9FFDX.cpp" />
     <ClCompile Include="Input\I9Input.cpp" />
     <ClCompile Include="Input\I9InputDX.cpp" />
+    <ClCompile Include="Input\eInput.cpp" />
     <ClCompile Include="Sound\A9Audio.cpp" />
     <ClCompile Include="Sound\A9AudioDX.cpp" />
     <ClCompile Include="Sound\A9Codec.cpp" />

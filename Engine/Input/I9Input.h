@@ -5,6 +5,7 @@
 #include "E9Engine.h"
 #include "I9Def.h"
 #include <assert.h>
+#include <vector>
 
 #define I9_API_DEFAULT			0				// default api
 
@@ -123,11 +124,15 @@ void I9_Done();																			// done
 inline BOOL	I9_IsReady()				{ return (i9_input!=NULL); }							
 inline void	I9_Update( float dtime )	{ assert(i9_input); i9_input->Update(dtime); }
 //inline void I9_Clear()										{ assert(i9_input); i9_input->Clear(); }
+
 inline void I9_Acquire()				{ assert(i9_input); i9_input->Acquire(); }
 inline void I9_Unacquire()				{ assert(i9_input); i9_input->Unacquire(); }
 inline BOOL I9_DeviceInit( int device ) { assert(i9_input); return i9_input->DeviceInit(device); }
 //inline void I9_DeviceDone( int device )						{ assert(i9_input); i9_input->DeviceDone(device); }
 inline BOOL	I9_DeviceIsPresent( int device )				{ assert(i9_input); return i9_input->DeviceIsPresent(device); }
+
+// -----------------------------
+
 inline BOOL	I9_DeviceFFInit( int device	)					{ assert(i9_input); return i9_input->DeviceFFInit(device); }
 inline void	I9_DeviceFFSet( int device, int mag, int per )	{ assert(i9_input); i9_input->DeviceFFSet(device,mag,per); }
 inline void	I9_DeviceFFPlay( int device )					{ assert(i9_input); i9_input->DeviceFFPlay(device); }

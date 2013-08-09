@@ -91,7 +91,9 @@ bool cDizApp::InitInput()
 	int input_enabled = 1;
 	ini_get(inifile, "INPUT", "enabled") >> input_enabled;
 	if(!input_enabled) return true; // no input
-	
+
+	if(!eInput::Init(E9_GetHWND(),E9_GetHINSTANCE())) return false;
+
 	BOOL ok = I9_Init(E9_GetHWND(),E9_GetHINSTANCE(),I9_API_DEFAULT);
 	if(!ok) return false;
 
@@ -102,6 +104,13 @@ bool cDizApp::InitInput()
 	ini_get(inifile, "INPUT", "keyboard") >> keyboard;
 	ini_get(inifile, "INPUT", "mouse") >> mouse;
 	ini_get(inifile, "INPUT", "joystick") >> joystick;
+
+	if(keyboard)	ok = eInput::Init<Devices::Keyboard>();
+	if(mouse)		ok = eInput::Init<Devices::Mouse>();
+	if(joystick)	ok = eInput::Init<Devices::Joystick>();
+
+
+
 	if(keyboard)	ok = I9_DeviceInit(I9_DEVICE_KEYBOARD);
 	if(mouse)		ok = I9_DeviceInit(I9_DEVICE_MOUSE);
 	if(joystick)	ok = I9_DeviceInit(I9_DEVICE_JOYSTICK1);
@@ -162,6 +171,8 @@ void cDizApp::Done()
 	A9_Done();
 	I9_Done();
 	F9_Done();
+	eInput::Done();
+
 
 	dlog(LOGAPP, L"App done.\n");
 }
@@ -171,11 +182,13 @@ void cDizApp::Activate( bool active )
 	if(active)
 	{
 		if(I9_IsReady()) I9_Acquire();
+		eInput::Acquire();
 		g_game.fffx.Update();
 	}
 	else
 	{
 		if(I9_IsReady()) I9_Unacquire();
+		eInput::Unacquire();
 		musicwaspaused = g_sound.music.paused();
 	}
 	if(!musicwaspaused) g_sound.music.Pause(!active);
@@ -247,6 +260,7 @@ bool cDizApp::Update()
 	// input
 	float dtime = App.DeltaTime() / 1000.0f;
 	if(I9_IsReady()) I9_Update(dtime);
+	eInput::Update(dtime);
 
 	g_sound.Update(); // update sounds
 

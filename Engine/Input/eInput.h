@@ -14,12 +14,15 @@ struct Axe
 	int	min;			// min clipping value
 	int	max;			// max clipping value
 	int	speed;			// speed multiplier factor
+	Axe() : value(), delta(), min(), max(), speed() {}
+	void Clear() { value = 0; delta = 0; }
 };
 
 struct Key
 {
 	bool value;
 	int	frm;			// frame ( refresh ) count
+	Key(bool value = false, int frm = 0) : value(value), frm(frm) {}
 };
 
 class Device
@@ -40,6 +43,15 @@ public:
 	Key b[8];
 	Key WheelUp;
 	Key WheelDown;
+};
+
+class KeyboardDevice : public Device
+{
+public:
+	HKL layout;
+	KeyboardDevice();
+	void UpdateLayout();
+
 };
 
 class eInput;
@@ -127,8 +139,19 @@ public:
 	DeviceDXMouse();
 	virtual void Update(int frm);
 	virtual void Clear();
-	virtual void Acquire() { DeviceDX::Acquire(); }
-	virtual void Deacquire() { DeviceDX::Unacquire(); }
+	virtual void Acquire() { DeviceDX::Acquire(); Clear(); }
+	virtual void Deacquire() { DeviceDX::Unacquire(); Clear(); }
 };
+
+class DeviceDXKeyboard : private DeviceDX, public KeyboardDevice
+{
+	static const dword BufferSize = 64;
+public:
+	DeviceDXKeyboard();
+	virtual void Update(int frm);
+	virtual void Clear();
+	virtual void Acquire() { DeviceDX::Acquire(); Clear(); }
+	virtual void Deacquire() { DeviceDX::Unacquire(); Clear(); }
+}
 
 #endif

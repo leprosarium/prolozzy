@@ -3,7 +3,7 @@
 
 eInput * einput = nullptr;
 
-eInput::eInput(HWND hwnd, HINSTANCE hinstance) : hwnd(hwnd), hinstance(hinstance), frm(), time(), nkq(), mouse(), keyboard(), joystick()
+eInput::eInput(HWND hwnd, HINSTANCE hinstance) : hwnd(hwnd), hinstance(hinstance), frm(), time(), mouse(), keyboard(), joystick()
 {
 }
 
@@ -33,21 +33,18 @@ void eInput::_Update(float dtime)
 {
 	frm++;
 	time += dtime;
-	ClearKeyQ();
-	for(Device *d: devices) d->Update();
+	for(Device *d: devices) d->Update(static_cast<int>(dtime));
 	if(dtime > 4.0f) Clear();
 }
 
 void eInput::_Acquire()
 {
-	ClearKeyQ();
 	for(Device *d: devices)
 		d->Acquire();
 }
 
 void eInput::_Unacquire()
 {
-	ClearKeyQ();
 	for(Device *d: devices)
 		d->Unacquire();
 }
@@ -57,19 +54,36 @@ void eInput::Clear()
 {	
 	for(Device *d: devices)
 		d->Clear();
-	ClearKeyQ();
 	time = 0.0f;
 }
 
 template<>
 bool eInput::_Init<Devices::Mouse>()
 {
+	try
+	{
+		devices.push_back(mouse = new DeviceDXMouse());
+	}
+	catch(const std::exception & e)
+	{
+		dlog(L"Mouse ini error: %S", e.what());
+		return false;
+	}
 	return true;
 }
 
 template<> 
 bool eInput::_Init<Devices::Keyboard>()
 {
+	try
+	{
+		devices.push_back(keyboard = new DeviceDXKeyboard());
+	}
+	catch(const std::exception & e)
+	{
+		dlog(L"Keyboak ini error: %S", e.what());
+		return false;
+	}
 	return true;
 }
 template<> 
@@ -87,22 +101,17 @@ std::shared_ptr<IDirectInput8> InputDX::Instance()
 	IDirectInput8 * di;
 	int err = DirectInput8Create( E9_GetHINSTANCE(), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&di, NULL);
 	if(FAILED(err)) throw std::exception("DirectInput creation failed"); 
-
-	inst = std::shared_ptr<IDirectInput8>(di, [](IDirectInput8 * di) { di->Release(); } );
-	return Instance();
+	std::shared_ptr<IDirectInput8> p = std::shared_ptr<IDirectInput8>(di, [](IDirectInput8 * di) { di->Release(); } );
+	inst = p;
+	return p;
 }
 
 DeviceDX::DeviceDX(std::shared_ptr<IDirectInput8> input, const GUID & guid) : 	
 	acquired(),
 	input(input)
 {
-	int err = input->CreateDevice(GUID_SysMouse, &device, NULL);
+	int err = input->CreateDevice(guid, &device, NULL);
 	if(FAILED(err))  throw std::exception("DX device CreateDevice failed");
-}
-
-DeviceDX::~DeviceDX()
-{
-	device->Release();
 }
 
 bool DeviceDX::Acquire()
@@ -119,6 +128,16 @@ bool DeviceDX::Unacquire()
 	if(FAILED(err)) return false;
 	acquired = false;
 	return true;
+}
+
+void MouseDevice::Clear()
+{
+	for(Key & k: b)
+		k = Key();
+	WheelUp = WheelDown = Key();
+	x.Clear();
+	y.Clear();
+	z.Clear();
 }
 
 DeviceDXMouse::DeviceDXMouse() : DeviceDX(InputDX::Instance(), GUID_SysMouse)
@@ -163,7 +182,6 @@ void DeviceDXMouse::Update(int frm)
 
 	for(unsigned long i = 0; i < elements; i++)
 	{
-		int key;
 		switch(didod[i].dwOfs)
 		{
 		
@@ -213,16 +231,6 @@ void DeviceDXMouse::Update(int frm)
 	z.value = std::min(std::max(z.value, z.min), z.max);
 }
 
-void DeviceDXMouse::Clear()
-{
-	for(Key & k: b)
-		k = Key();
-	WheelUp = WheelDown = Key();
-	x.Clear();
-	y.Clear();
-	z.Clear();
-}
-
 DeviceDXKeyboard::DeviceDXKeyboard() : DeviceDX(InputDX::Instance(), GUID_SysKeyboard)
 {
 	int err = device->SetDataFormat( &c_dfDIKeyboard );
@@ -246,6 +254,7 @@ DeviceDXKeyboard::DeviceDXKeyboard() : DeviceDX(InputDX::Instance(), GUID_SysKey
 KeyboardDevice::KeyboardDevice()
 {
 	UpdateLayout();
+	UpdateState();
 }
 
 void KeyboardDevice::UpdateLayout()
@@ -253,9 +262,15 @@ void KeyboardDevice::UpdateLayout()
 	layout = GetKeyboardLayout(0);
 }
 
+void KeyboardDevice::UpdateState()
+{
+	GetKeyboardState(state);
+}
+
 void DeviceDXKeyboard::Update(int frm)
 {
 	if(! acquired) return;
+	Clear();
 
 	DIDEVICEOBJECTDATA didod[BufferSize];
 	unsigned long elements = BufferSize;
@@ -271,19 +286,15 @@ void DeviceDXKeyboard::Update(int frm)
 		dlog(LOGINP, L"KEYBOARD GetDeviceData failed");
 		return;
 	}
-
+	WCHAR c[10];
 	for(int i=0; i<(int)elements; i++)
 	{
-		WORD c;
-		UINT sc = didod[i].dwOfs; // Scan code
+		UINT sc = didod[i].dwOfs;
 		UINT vkey = MapVirtualKeyEx(sc, 1, layout);
-
-		if(ToAsciiEx( vkey, sc, state, &c, 0, layout))
-			printf( "KEY %3u %c\n", sc, char(c) );
-
-
-
-		if( didod[i].dwData & 0x80 )	i9_input->PushKey( m_dxcode[didod[i].dwOfs], TRUE );
-		else							i9_input->PushKey( m_dxcode[didod[i].dwOfs], FALSE );
+		int nm = ToUnicodeEx( vkey, sc, state, c, sizeof(c) / sizeof(WCHAR), 0, layout);
+		state[vkey] = static_cast<BYTE>(didod[i].dwData);
+		if(nm > 0 && !state[vkey])
+			push(c, nm);
+		 
 	}
 }

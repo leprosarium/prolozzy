@@ -43,14 +43,22 @@ public:
 	Key b[8];
 	Key WheelUp;
 	Key WheelDown;
+
+	virtual void Clear();
 };
 
 class KeyboardDevice : public Device
 {
-public:
-	HKL layout;
-	KeyboardDevice();
 	void UpdateLayout();
+	void UpdateState();
+protected:
+	BYTE state[256];
+	HKL layout;
+public:
+	std::wstring buf;
+	void push(LPCWSTR b, int n) { buf += std::wstring(b, n); }
+	KeyboardDevice();
+	virtual void Clear() { buf.clear(); }
 
 };
 
@@ -64,15 +72,12 @@ enum class Devices
 	Joystick
 };
 
-
-
 class eInput
 {
 	HWND hwnd;
 	HINSTANCE hinstance;
 	int frm;
 	float time;
-	int nkq;
 	std::vector<Device *> devices;
 	Device * mouse;
 	Device * keyboard;
@@ -82,7 +87,6 @@ class eInput
 	void _Update(float dtime);
 	void _Acquire();
 	void _Unacquire();
-	void ClearKeyQ() { nkq = 0; }
 	void Clear();
 
 	template<Devices D>
@@ -126,6 +130,7 @@ protected:
 	IDirectInputDevice8 * device;		// direct input device object
 public:
 	DeviceDX(std::shared_ptr<IDirectInput8> input, const GUID & guid);
+	~DeviceDX() { device->Release(); }
 
 	bool Acquire();
 	bool Unacquire();
@@ -138,9 +143,9 @@ class DeviceDXMouse : private DeviceDX, public MouseDevice
 public:
 	DeviceDXMouse();
 	virtual void Update(int frm);
-	virtual void Clear();
+
 	virtual void Acquire() { DeviceDX::Acquire(); Clear(); }
-	virtual void Deacquire() { DeviceDX::Unacquire(); Clear(); }
+	virtual void Unacquire() { DeviceDX::Unacquire(); Clear(); }
 };
 
 class DeviceDXKeyboard : private DeviceDX, public KeyboardDevice
@@ -149,9 +154,8 @@ class DeviceDXKeyboard : private DeviceDX, public KeyboardDevice
 public:
 	DeviceDXKeyboard();
 	virtual void Update(int frm);
-	virtual void Clear();
 	virtual void Acquire() { DeviceDX::Acquire(); Clear(); }
-	virtual void Deacquire() { DeviceDX::Unacquire(); Clear(); }
-}
+	virtual void Unacquire() { DeviceDX::Unacquire(); Clear(); }
+};
 
 #endif

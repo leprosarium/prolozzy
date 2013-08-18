@@ -11,6 +11,8 @@
 #include "DizGame.h"
 #include "DizSound.h"
 
+#include "eInput.h"
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL CALLBACK DialogProcInfo( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam ) 
 {
@@ -111,9 +113,9 @@ bool cDizApp::InitInput()
 
 
 
-	if(keyboard)	ok = I9_DeviceInit(I9_DEVICE_KEYBOARD);
-	if(mouse)		ok = I9_DeviceInit(I9_DEVICE_MOUSE);
-	if(joystick)	ok = I9_DeviceInit(I9_DEVICE_JOYSTICK1);
+//	if(keyboard)	ok = I9_DeviceInit(I9_DEVICE_KEYBOARD);
+//	if(mouse)		ok = I9_DeviceInit(I9_DEVICE_MOUSE);
+//	if(joystick)	ok = I9_DeviceInit(I9_DEVICE_JOYSTICK1);
 
 	// rumble support
 	if(I9_DeviceIsPresent(I9_DEVICE_JOYSTICK1))

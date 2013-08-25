@@ -139,7 +139,7 @@ int e9App::InitWindow()
 	BOOL ok;
 	
 	// register window
-	WNDCLASSEX wcex;
+	WNDCLASSEXW wcex;
 	ZeroMemory(&wcex, sizeof(wcex));
 	wcex.cbSize			= sizeof(WNDCLASSEX);
 	wcex.style			= CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
@@ -153,7 +153,7 @@ int e9App::InitWindow()
 	wcex.lpszMenuName	= NULL;
 	wcex.lpszClassName	= E9_APP_CLASSNAME;
 	wcex.hIconSm		= NULL;	// use small icon from default icon
-	ok = RegisterClassEx(&wcex);
+	ok = RegisterClassExW(&wcex);
 	if(!ok) { dlog(LOGERR, L"APP: failed to register main window class.\n"); return FALSE; }
 
 	// create window
@@ -164,9 +164,9 @@ int e9App::InitWindow()
 	int cy = (sys_desktopheight()-height) / 2;
 	RECT rec = {cx,cy,cx+width,cy+height};
 	AdjustWindowRectEx( &rec, style, FALSE, 0 );
-	m_hwnd = CreateWindowEx(	0, 
+	m_hwnd = CreateWindowExW(	0, 
 								E9_APP_CLASSNAME, 
-								"E9APP", 
+								L"E9APP", 
 								style,
 								rec.left, rec.top, rec.right-rec.left, rec.bottom-rec.top, 
 								NULL, NULL, m_hinstance, 
@@ -271,6 +271,10 @@ LRESULT	CALLBACK e9App::WndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 
 		case WM_CONTEXTMENU:	// ignore sysmen when rclick
 			return 0;
+		case WM_CHAR: 
+			WCHAR ch = wParam;
+			break;
+
 	}
 	return DefWindowProc( hwnd, msg, wParam, lParam );
 }

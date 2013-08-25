@@ -667,7 +667,7 @@ BOOL r9RenderGL::CreateRenderWindow()
 	GetClientRect(hwnd_parent,&rect_parent);
 
 	// register child window
-	WNDCLASSEX wcex;
+	WNDCLASSEXW wcex;
 	ZeroMemory(&wcex, sizeof(wcex));
 	wcex.cbSize			= sizeof(WNDCLASSEX);
 	wcex.style			= CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
@@ -679,9 +679,9 @@ BOOL r9RenderGL::CreateRenderWindow()
 	wcex.hCursor		= NULL; // LoadCursor(NULL, IDC_ARROW);
 	wcex.hbrBackground	= NULL;
 	wcex.lpszMenuName	= NULL;
-	wcex.lpszClassName	= "E9_RNDCLASS";
+	wcex.lpszClassName	= L"E9_RNDCLASS";
 	wcex.hIconSm		= NULL;	// use small icon from default icon
-	BOOL ok = RegisterClassEx(&wcex);
+	BOOL ok = RegisterClassExW(&wcex);
 	if(!ok) { dlog(LOGERR, L"APP: failed to register render window class (%i).\n",GetLastError()); return FALSE; }
 
 	// create child window
@@ -690,9 +690,9 @@ BOOL r9RenderGL::CreateRenderWindow()
 	int height= rect_parent.bottom-rect_parent.top;
 	RECT rec = {0,0,width,height};
 	AdjustWindowRectEx( &rec, style, FALSE, 0 );
-	m_hwnd = CreateWindowEx(	0, 
-								"E9_RNDCLASS", 
-								"", 
+	m_hwnd = CreateWindowExW(	0, 
+								L"E9_RNDCLASS", 
+								L"", 
 								style,
 								rec.left, rec.top, rec.right-rec.left, rec.bottom-rec.top, 
 								hwnd_parent, NULL, E9_GetHINSTANCE(), 

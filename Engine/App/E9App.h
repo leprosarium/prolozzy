@@ -30,7 +30,7 @@ enum class Cursor
 	Default = Arrow
 };
 
-#define E9_APP_CLASSNAME		"E9_APPCLASS"
+#define E9_APP_CLASSNAME		L"E9_APPCLASS"
 
 
 class e9App

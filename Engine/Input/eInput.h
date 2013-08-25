@@ -49,16 +49,10 @@ public:
 
 class KeyboardDevice : public Device
 {
-	void UpdateLayout();
-	void UpdateState();
 protected:
-	BYTE state[256];
-	HKL layout;
+	Key keys[256];
 public:
-	std::wstring buf;
-	void push(LPCWSTR b, int n) { buf += std::wstring(b, n); }
-	KeyboardDevice();
-	virtual void Clear() { buf.clear(); }
+	virtual void Clear();
 
 };
 

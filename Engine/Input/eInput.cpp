@@ -207,7 +207,7 @@ void DeviceDXMouse::Update(int frm)
 		case DIMOFS_BUTTON5:
 		case DIMOFS_BUTTON6:
 		case DIMOFS_BUTTON7:
-			b[didod[i].dwOfs - DIMOFS_BUTTON0] = Key(didod[i].dwData & 0x80, frm); 
+			b[didod[i].dwOfs - DIMOFS_BUTTON0] = Key(didod[i].dwData & 0x80 != 0, frm); 
 		}
 	}
 
@@ -251,27 +251,15 @@ DeviceDXKeyboard::DeviceDXKeyboard() : DeviceDX(InputDX::Instance(), GUID_SysKey
 	if(!DeviceDX::Acquire()) throw std::exception("KEYBOARD can't aquire");
 }
 
-KeyboardDevice::KeyboardDevice()
+void KeyboardDevice::Clear()
 {
-	UpdateLayout();
-	UpdateState();
-}
-
-void KeyboardDevice::UpdateLayout()
-{
-	layout = GetKeyboardLayout(0);
-}
-
-void KeyboardDevice::UpdateState()
-{
-	GetKeyboardState(state);
+	for(Key & k: keys)
+		k = Key();
 }
 
 void DeviceDXKeyboard::Update(int frm)
 {
 	if(! acquired) return;
-	Clear();
-
 	DIDEVICEOBJECTDATA didod[BufferSize];
 	unsigned long elements = BufferSize;
 	int err = device->GetDeviceData(sizeof(DIDEVICEOBJECTDATA), didod, &elements, 0);
@@ -286,15 +274,7 @@ void DeviceDXKeyboard::Update(int frm)
 		dlog(LOGINP, L"KEYBOARD GetDeviceData failed");
 		return;
 	}
-	WCHAR c[10];
 	for(int i=0; i<(int)elements; i++)
-	{
-		UINT sc = didod[i].dwOfs;
-		UINT vkey = MapVirtualKeyEx(sc, 1, layout);
-		int nm = ToUnicodeEx( vkey, sc, state, c, sizeof(c) / sizeof(WCHAR), 0, layout);
-		state[vkey] = static_cast<BYTE>(didod[i].dwData);
-		if(nm > 0 && !state[vkey])
-			push(c, nm);
-		 
-	}
+		keys[static_cast<BYTE>(didod[i].dwOfs)] = Key(didod[i].dwData & 0x80 != 0, frm); 
 }
+

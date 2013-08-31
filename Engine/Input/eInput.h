@@ -28,6 +28,13 @@ struct Key
 class Device
 {
 public:
+	class State
+	{
+	public:
+		bool active;
+		operator bool() const { return active; }
+		State() : active() {}
+	};
 	virtual ~Device() {};
 	virtual void Update(int frm) = 0;
 	virtual void Clear() = 0;
@@ -36,23 +43,34 @@ public:
 
 };
 
+
 class MouseDevice : public Device
 {
 public:
-	Axe x, y, z;
-	Key b[8];
-	Key WheelUp;
-	Key WheelDown;
-
-	virtual void Clear();
+	class State : public Device::State
+	{
+	public:
+		Axe x, y, z;
+		Key b[8];
+		Key WheelUp;
+		Key WheelDown;
+		void clear();
+	}  & state;
+	MouseDevice(State & state) : state(state) {}
+	virtual void Clear() { state.clear(); }
 };
 
 class KeyboardDevice : public Device
 {
-protected:
-	Key keys[256];
 public:
-	virtual void Clear();
+	class State : public Device::State
+	{
+	public:
+		Key keys[256];
+		void clear();
+	} & state;
+	KeyboardDevice(State & state) : state(state) {}
+	virtual void Clear() { state.clear(); }
 
 };
 
@@ -73,8 +91,8 @@ class eInput
 	int frm;
 	float time;
 	std::vector<Device *> devices;
-	Device * mouse;
-	Device * keyboard;
+	MouseDevice::State mouse;
+	KeyboardDevice::State keyboard;
 	Device * joystick;
 
 	eInput(HWND hwnd, HINSTANCE hinstance);
@@ -122,6 +140,8 @@ class DeviceDX
 protected:
 	bool acquired;
 	IDirectInputDevice8 * device;		// direct input device object
+	template<class Data, int BufferSize>
+	unsigned long GetDeviceData(Data (&data)[BufferSize]);
 public:
 	DeviceDX(std::shared_ptr<IDirectInput8> input, const GUID & guid);
 	~DeviceDX() { device->Release(); }
@@ -130,12 +150,28 @@ public:
 	bool Unacquire();
 };
 
+template<class Data, int BufferSize>
+unsigned long DeviceDX::GetDeviceData(Data (&data)[BufferSize])
+{
+	unsigned long elements = BufferSize;
+	int err = device->GetDeviceData(sizeof(Data), data, &elements, 0);
+	if(!FAILED(err))
+		return elements;
+	if(err == DIERR_INPUTLOST)
+	{
+		dlog(LOGINP, L"Input lost\n");
+		Acquire();
+	} else
+		dlog(LOGINP, L"GetDeviceData failed");
+	return 0;
+}
+
 
 class DeviceDXMouse : private DeviceDX, public MouseDevice
 {
 	static const dword BufferSize = 64;
 public:
-	DeviceDXMouse();
+	DeviceDXMouse(MouseDevice::State & state);
 	virtual void Update(int frm);
 
 	virtual void Acquire() { DeviceDX::Acquire(); Clear(); }
@@ -146,7 +182,7 @@ class DeviceDXKeyboard : private DeviceDX, public KeyboardDevice
 {
 	static const dword BufferSize = 64;
 public:
-	DeviceDXKeyboard();
+	DeviceDXKeyboard(KeyboardDevice::State & state);
 	virtual void Update(int frm);
 	virtual void Acquire() { DeviceDX::Acquire(); Clear(); }
 	virtual void Unacquire() { DeviceDX::Unacquire(); Clear(); }

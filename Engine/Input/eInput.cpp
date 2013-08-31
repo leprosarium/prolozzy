@@ -3,7 +3,7 @@
 
 eInput * einput = nullptr;
 
-eInput::eInput(HWND hwnd, HINSTANCE hinstance) : hwnd(hwnd), hinstance(hinstance), frm(), time(), mouse(), keyboard(), joystick()
+eInput::eInput(HWND hwnd, HINSTANCE hinstance) : hwnd(hwnd), hinstance(hinstance), frm(), time(), keyboard(), joystick()
 {
 }
 
@@ -62,7 +62,7 @@ bool eInput::_Init<Devices::Mouse>()
 {
 	try
 	{
-		devices.push_back(mouse = new DeviceDXMouse());
+		devices.push_back(new DeviceDXMouse(mouse));
 	}
 	catch(const std::exception & e)
 	{
@@ -77,7 +77,7 @@ bool eInput::_Init<Devices::Keyboard>()
 {
 	try
 	{
-		devices.push_back(keyboard = new DeviceDXKeyboard());
+		devices.push_back(new DeviceDXKeyboard(keyboard));
 	}
 	catch(const std::exception & e)
 	{
@@ -130,7 +130,7 @@ bool DeviceDX::Unacquire()
 	return true;
 }
 
-void MouseDevice::Clear()
+void MouseDevice::State::clear()
 {
 	for(Key & k: b)
 		k = Key();
@@ -140,7 +140,7 @@ void MouseDevice::Clear()
 	z.Clear();
 }
 
-DeviceDXMouse::DeviceDXMouse() : DeviceDX(InputDX::Instance(), GUID_SysMouse)
+DeviceDXMouse::DeviceDXMouse(MouseDevice::State & state) : DeviceDX(InputDX::Instance(), GUID_SysMouse), MouseDevice(state)
 {
 	int err = device->SetDataFormat(& c_dfDIMouse2);
 	if(FAILED(err)) throw std::exception("MOUSE SetDataFormat failed");
@@ -162,23 +162,11 @@ void DeviceDXMouse::Update(int frm)
 {
 	if(! acquired) return;
 
-	x.delta = y.delta = z.delta = 0;
-	
-	// get data
+	state.x.delta = state.y.delta = state.z.delta = 0;
 	DIDEVICEOBJECTDATA didod[BufferSize];
-	unsigned long elements = BufferSize;
-	int err = device->GetDeviceData( sizeof(DIDEVICEOBJECTDATA), didod, &elements, 0 );
-	if(FAILED(err))
-	{
-		if( err==DIERR_INPUTLOST )
-		{
-			dlog(LOGINP, L"Input lost\n");
-			Acquire();
-			return;
-		}
-		dlog(LOGINP, L"INPUT: MOUSE GetDeviceData failed");
+	unsigned long elements = GetDeviceData(didod);
+	if(!elements)
 		return;
-	}
 
 	for(unsigned long i = 0; i < elements; i++)
 	{
@@ -187,15 +175,15 @@ void DeviceDXMouse::Update(int frm)
 		
 		// axes
 		case DIMOFS_X:
-			x.delta	+= *((int*)&didod[i].dwData);
+			state.x.delta	+= *((int*)&didod[i].dwData);
 			break;
 		
 		case DIMOFS_Y:
-			y.delta += *((int*)&didod[i].dwData);
+			state.y.delta += *((int*)&didod[i].dwData);
 			break;
 		
 		case DIMOFS_Z:
-			z.delta += *((int*)&didod[i].dwData);
+			state.z.delta += *((int*)&didod[i].dwData);
 			break;
 
 		// keys
@@ -207,31 +195,31 @@ void DeviceDXMouse::Update(int frm)
 		case DIMOFS_BUTTON5:
 		case DIMOFS_BUTTON6:
 		case DIMOFS_BUTTON7:
-			b[didod[i].dwOfs - DIMOFS_BUTTON0] = Key(didod[i].dwData & 0x80 != 0, frm); 
+			state.b[didod[i].dwOfs - DIMOFS_BUTTON0] = Key((didod[i].dwData & 0x80) != 0, frm); 
 		}
 	}
 
 	// fake wheel - not qued
-	if (z.delta > 0)
-		WheelUp = Key(true, frm);		
-	else if(WheelUp.value)
-		WheelUp = Key(false, frm);	
-	if(z.delta < 0)
-		WheelDown = Key(true, frm);
-	else if(WheelDown.value)
-		WheelDown = Key(false, frm);
+	if (state.z.delta > 0)
+		state.WheelUp = Key(true, frm);		
+	else if(state.WheelUp.value)
+		state.WheelUp = Key(false, frm);	
+	if(state.z.delta < 0)
+		state.WheelDown = Key(true, frm);
+	else if(state.WheelDown.value)
+		state.WheelDown = Key(false, frm);
 
 	// set axes values and clip
-	x.value += x.delta * x.speed;
-	y.value += y.delta * y.speed;
-	z.value += z.delta * z.speed;
+	state.x.value += state.x.delta * state.x.speed;
+	state.y.value += state.y.delta * state.y.speed;
+	state.z.value += state.z.delta * state.z.speed;
 	
-	x.value = std::min(std::max(x.value, x.min), x.max);
-	y.value = std::min(std::max(y.value, y.min), y.max);
-	z.value = std::min(std::max(z.value, z.min), z.max);
+	state.x.value = std::min(std::max(state.x.value, state.x.min), state.x.max);
+	state.y.value = std::min(std::max(state.y.value, state.y.min), state.y.max);
+	state.z.value = std::min(std::max(state.z.value, state.z.min), state.z.max);
 }
 
-DeviceDXKeyboard::DeviceDXKeyboard() : DeviceDX(InputDX::Instance(), GUID_SysKeyboard)
+DeviceDXKeyboard::DeviceDXKeyboard(KeyboardDevice::State & state) : DeviceDX(InputDX::Instance(), GUID_SysKeyboard), KeyboardDevice(state)
 {
 	int err = device->SetDataFormat( &c_dfDIKeyboard );
 	if(FAILED(err))	throw std::exception("KEYBOARD SetDataFormat failed");
@@ -251,7 +239,7 @@ DeviceDXKeyboard::DeviceDXKeyboard() : DeviceDX(InputDX::Instance(), GUID_SysKey
 	if(!DeviceDX::Acquire()) throw std::exception("KEYBOARD can't aquire");
 }
 
-void KeyboardDevice::Clear()
+void KeyboardDevice::State::clear()
 {
 	for(Key & k: keys)
 		k = Key();
@@ -261,20 +249,8 @@ void DeviceDXKeyboard::Update(int frm)
 {
 	if(! acquired) return;
 	DIDEVICEOBJECTDATA didod[BufferSize];
-	unsigned long elements = BufferSize;
-	int err = device->GetDeviceData(sizeof(DIDEVICEOBJECTDATA), didod, &elements, 0);
-	if(FAILED(err))
-	{
-		if( err==DIERR_INPUTLOST )
-		{
-			dlog(LOGINP, L"Input lost\n");
-			Acquire();
-			return;
-		}
-		dlog(LOGINP, L"KEYBOARD GetDeviceData failed");
-		return;
-	}
-	for(int i=0; i<(int)elements; i++)
-		keys[static_cast<BYTE>(didod[i].dwOfs)] = Key(didod[i].dwData & 0x80 != 0, frm); 
+	if(unsigned long elements = GetDeviceData(didod))
+		for(int i=0; i<(int)elements; i++)
+			state.keys[static_cast<BYTE>(didod[i].dwOfs)] = Key((didod[i].dwData & 0x80) != 0, frm); 
 }
 

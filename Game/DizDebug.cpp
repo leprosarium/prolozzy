@@ -99,7 +99,7 @@ ssize_t Prolog::Read(char *buffer, size_t size)
 		con.Update();
 		if(!single) input.Update();
 		Draw();
-		bool shift = I9_GetKeyValue(I9K_LSHIFT) || I9_GetKeyValue(I9K_RSHIFT);
+		bool shift = einput->keyValue(DIK_LSHIFT) || einput->keyValue(DIK_RSHIFT);
 		if(single)
 		{
 			for(int i=0;i<I9_GetKeyQCount();i++)
@@ -187,7 +187,7 @@ bool cDizDebug::Update()
 	}
 
 	// console
-	if(I9_GetKeyDown(I9K_GRAVE) || I9_GetKeyDown(I9K_F2)) // show-hide
+	if(einput->isKeyDown(DIK_GRAVE) || einput->isKeyDown(DIK_F2)) // show-hide
 	{
 		_visible=!_visible;
 		g_paint.Layout();
@@ -201,20 +201,19 @@ bool cDizDebug::Update()
 	NavigationUpdate();
 
 	// draw mode
-	if(I9_GetKeyDown(I9K_F4))
+	if(einput->isKeyDown(DIK_F4))
 		g_game.NextDrawMode();
 
 	// map reload full WARNING: all items are reloaded too, so your inventory...
-	if(I9_GetKeyDown(I9K_F6))
+	if(einput->isKeyDown(DIK_F6))
 	{
 		g_map.Reload();
 		g_game.ObjGather();
 	}
 	
 	// resize
-	bool ctrl  = I9_GetKeyValue(I9K_LCONTROL) || I9_GetKeyValue(I9K_RCONTROL);
-	bool shift = I9_GetKeyValue(I9K_LSHIFT) || I9_GetKeyValue(I9K_RSHIFT);
-	if(ctrl && I9_GetKeyDown(I9K_MINUS)) // -
+	if(einput->ctrl())
+	if(einput->isKeyDown(DIK_MINUS))
 	{
 		if(g_cfg.m_scale==0) g_cfg.m_scale = g_paint.scale;
 		g_cfg.m_scale--;
@@ -222,7 +221,7 @@ bool cDizDebug::Update()
 		g_paint.Layout();
 	}
 	else
-	if(ctrl && I9_GetKeyDown(I9K_EQUALS)) // +
+	if(einput->isKeyDown(DIK_EQUALS))
 	{
 		g_cfg.m_scale++;
 		iV2 size = g_game.screenSizeBorder * g_cfg.m_scale;
@@ -315,24 +314,24 @@ void Info::Draw()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void cDizDebug::NavigationUpdate()
 {
-	bool ctrl  = I9_GetKeyValue(I9K_LCONTROL) || I9_GetKeyValue(I9K_RCONTROL);
-	bool shift = I9_GetKeyValue(I9K_LSHIFT) || I9_GetKeyValue(I9K_RSHIFT);
+	bool ctrl  = einput->ctrl();
+	bool shift = einput->shift();
 
 	iV2 p = g_player.pos;
 	if(ctrl)
 	{
-		if(I9_GetKeyDown(I9K_LEFT))		p.x-=Room::Size.x;
-		if(I9_GetKeyDown(I9K_RIGHT))	p.x+=Room::Size.x;
-		if(I9_GetKeyDown(I9K_UP))		p.y-=Room::Size.y;
-		if(I9_GetKeyDown(I9K_DOWN))		p.y+=Room::Size.y;
+		if(einput->isKeyDown(DIK_LEFT))		p.x-=Room::Size.x;
+		if(einput->isKeyDown(DIK_RIGHT))	p.x+=Room::Size.x;
+		if(einput->isKeyDown(DIK_UP))		p.y-=Room::Size.y;
+		if(einput->isKeyDown(DIK_DOWN))		p.y+=Room::Size.y;
 	}
 	else
 	if(shift)
 	{
-		if(I9_GetKeyDown(I9K_LEFT))		p.x-=4;
-		if(I9_GetKeyDown(I9K_RIGHT))	p.x+=4;
-		if(I9_GetKeyDown(I9K_UP))		p.y-=4;
-		if(I9_GetKeyDown(I9K_DOWN))		p.y+=4;
+		if(einput->isKeyDown(DIK_LEFT))		p.x-=4;
+		if(einput->isKeyDown(DIK_RIGHT))	p.x+=4;
+		if(einput->isKeyDown(DIK_UP))		p.y-=4;
+		if(einput->isKeyDown(DIK_DOWN))		p.y+=4;
 	}
 	
 	iV2 sz = g_map.size() * Room::Size;
@@ -363,11 +362,11 @@ void cDizDebug::Call(const std::string & cmd)
 
 void Console::Update()
 {
-	int step = (I9_GetKeyValue(I9K_LSHIFT) || I9_GetKeyValue(I9K_RSHIFT)) ? 1 : lines;
-	if(I9_GetKeyDown(I9K_PGUP))		PageUp(step); else
-	if(I9_GetKeyDown(I9K_PGDN))		PageDown(step); else
-	if(I9_GetKeyDown(I9K_HOME))		PageBegin = 0; else
-	if(I9_GetKeyDown(I9K_END))		End();
+	int step = einput->shift() ? 1 : lines;
+	if(einput->isKeyDown(DIK_PGUP))		PageUp(step); else
+	if(einput->isKeyDown(DIK_PGDN))		PageDown(step); else
+	if(einput->isKeyDown(DIK_HOME))		PageBegin = 0; else
+	if(einput->isKeyDown(DIK_END))		End();
 }
 
 void Console::Draw()
@@ -448,7 +447,7 @@ void cDizDebug::SlotSet( size_t slot, LPCWSTR text )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void Input::Update()
 {
-	if(I9_GetKeyDown(I9K_INSERT) && !open) 
+	if(einput->isKeyDown(DIK_INSERT) && !open) 
 	{ 
 		open = true; 
 		complete = 0; 
@@ -458,43 +457,43 @@ void Input::Update()
 	if(!open) return;
 
 	// action keys
-	bool ctrl = I9_GetKeyValue(I9K_LCONTROL) || I9_GetKeyValue(I9K_RCONTROL);
-	bool shift = I9_GetKeyValue(I9K_LSHIFT) || I9_GetKeyValue(I9K_RSHIFT);
+	bool ctrl = einput->ctrl();
+	bool shift = einput->shift();
 
-	if(I9_GetKeyUp(I9K_ESCAPE) || I9_GetKeyDown(I9K_INSERT))
+	if(einput->isKeyUp(DIK_ESCAPE) || einput->isKeyDown(DIK_INSERT))
 	{	
 		open = false; 
 		complete = 0; 
 		return; 
 	}
-	if(I9_GetKeyUp(I9K_RETURN)) 
+	if(einput->isKeyUp(DIK_RETURN)) 
 	{ 
 		open = false; 
 		complete = 0; 
 		Execute(); 
 		return; 
 	}
-	if(I9_GetKeyDown(I9K_LEFT) && crt > cmd.begin())	
+	if(einput->isKeyDown(DIK_LEFT) && crt > cmd.begin())	
 	{
 		if(!ctrl || !SkipWordLeft())
 			crt--;
 		complete = 0;
 	}
 	else
-	if(I9_GetKeyDown(I9K_RIGHT) && crt < cmd.end())
+	if(einput->isKeyDown(DIK_RIGHT) && crt < cmd.end())
 	{
 		if(!ctrl || !SkipWordRight()) 
 			crt++;
 		complete = 0;
 	}
 	else
-	if(I9_GetKeyDown(I9K_BACKSPACE) && crt > cmd.begin()) // delete back - shift left
+	if(einput->isKeyDown(DIK_BACKSPACE) && crt > cmd.begin()) // delete back - shift left
 	{
 		crt = cmd.erase(--crt);
 		complete = 0;
 	}
 	else
-	if(I9_GetKeyDown(I9K_DELETE) && crt < cmd.end()) // delete - shift left
+	if(einput->isKeyDown(DIK_DELETE) && crt < cmd.end()) // delete - shift left
 	{
 		auto c = crt - cmd.begin();
 		if(ctrl)
@@ -505,13 +504,13 @@ void Input::Update()
 		complete = 0;
 	}
 	else
-	if(I9_GetKeyDown(I9K_HOME)) { crt = cmd.begin(); complete = 0; }
+	if(einput->isKeyDown(DIK_HOME)) { crt = cmd.begin(); complete = 0; }
 	else
-	if(I9_GetKeyDown(I9K_END)) { crt = cmd.end(); complete = 0; }
+	if(einput->isKeyDown(DIK_END)) { crt = cmd.end(); complete = 0; }
 	else
-	if(I9_GetKeyDown(I9K_TAB) )	{ AutoComplete(); }
+	if(einput->isKeyDown(DIK_TAB) )	{ AutoComplete(); }
 	else
-	if(I9_GetKeyDown(I9K_DOWN))
+	if(einput->isKeyDown(DIK_DOWN))
 	{
 		if(histcrt < hist.end()) ++histcrt;
 		if(histcrt != hist.end())
@@ -522,7 +521,7 @@ void Input::Update()
 		complete = 0;
 	}
 	else
-	if(I9_GetKeyDown(I9K_UP))
+	if(einput->isKeyDown(DIK_UP))
 	{
 		if(histcrt > hist.begin()) --histcrt;
 		if(histcrt != hist.end())

@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "DizCfg.h"
 #include "DizDef.h"
+#include "dinput.h"
 
 cDizCfg g_cfg;
 
@@ -44,21 +45,21 @@ cDizCfg::cDizCfg()
 	m_volfx					= 100;
 	m_volmusic				= 100;
 	
-	m_key[key::left][0]		= I9K_LEFT;
-	m_key[key::right][0]	= I9K_RIGHT;
-	m_key[key::up][0]		= I9K_UP;
-	m_key[key::down][0]		= I9K_DOWN;
-	m_key[key::jump][0]		= I9K_SPACE;
-	m_key[key::action][0]	= I9K_RETURN;
-	m_key[key::menu][0]		= I9K_ESCAPE;
+	m_key[key::left][0]		= DIK_LEFT;
+	m_key[key::right][0]	= DIK_RIGHT;
+	m_key[key::up][0]		= DIK_UP;
+	m_key[key::down][0]		= DIK_DOWN;
+	m_key[key::jump][0]		= DIK_SPACE;
+	m_key[key::action][0]	= DIK_RETURN;
+	m_key[key::menu][0]		= DIK_ESCAPE;
 	
-	m_key[key::left][1]		= I9K_Z;
-	m_key[key::right][1]	= I9K_X;
-	m_key[key::up][1]		= I9K_K;
-	m_key[key::down][1]		= I9K_M;
-	m_key[key::jump][1]		= I9K_SPACE;
-	m_key[key::action][1]	= I9K_RETURN;
-	m_key[key::menu][1]		= I9K_Q;
+	m_key[key::left][1]		= DIK_Z;
+	m_key[key::right][1]	= DIK_X;
+	m_key[key::up][1]		= DIK_K;
+	m_key[key::down][1]		= DIK_M;
+	m_key[key::jump][1]		= DIK_SPACE;
+	m_key[key::action][1]	= DIK_RETURN;
+	m_key[key::menu][1]		= DIK_Q;
 
 	m_rumble				= true;
 	m_deadzone[0]			= 500;

@@ -3,7 +3,7 @@
 
 eInput * einput = nullptr;
 
-eInput::eInput(HWND hwnd, HINSTANCE hinstance) : hwnd(hwnd), hinstance(hinstance), frm(), time(), keyboard(), joystick()
+eInput::eInput(HWND hwnd, HINSTANCE hinstance) : hwnd(hwnd), hinstance(hinstance), frm(), time(), joystick()
 {
 }
 
@@ -33,7 +33,7 @@ void eInput::_Update(float dtime)
 {
 	frm++;
 	time += dtime;
-	for(Device *d: devices) d->Update(static_cast<int>(dtime));
+	for(Device *d: devices) d->Update(frm);
 	if(dtime > 4.0f) Clear();
 }
 

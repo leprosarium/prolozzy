@@ -5,6 +5,7 @@
 #include "DizGame.h"
 #include "DizApp.h"	// for error msg
 #include "E9App.h"
+#include "eInput.h"
 #include <algorithm>
 
 #define GAME_PROP(Prop, Get, Set) \
@@ -165,8 +166,8 @@ bool cDizGame::Update()
 	if(I9_IsReady())
 	{
 		for(int i=0; i < cDizCfg::key::max; i++)
-			if( I9_GetKeyValue(g_cfg.m_key[i][0]) ||
-				I9_GetKeyValue(g_cfg.m_key[i][1]) )	
+			if( einput->keyValue(g_cfg.m_key[i][0]) ||
+				einput->keyValue(g_cfg.m_key[i][1]) )	
 				ks |= (1<<i);
 		
 		// joystick bogus values are higher on y because up can be used as jump...

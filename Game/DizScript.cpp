@@ -9,6 +9,7 @@
 #include "DizSound.h"
 #include "DizApp.h"
 #include "DizDebug.h"
+#include "eInput.h"
 
 #include <SWI-Stream.h>
 
@@ -325,8 +326,8 @@ PREDICATE_M(core, keyboardStatus, 1)
 {
 	if(!I9_IsReady()) return false;
 	int key = A1;
-	if( key < 0 || key >= I9_KEYBOARD_KEYS ) return false;
-	return I9_GetKeyValue(key);
+	if( key < 0 || key >= 0xFF ) return false;
+	return einput->keyValue(key);
 }
 
 PREDICATE_M(core, keyboardCodeToChar, 2)

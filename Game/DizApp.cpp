@@ -287,11 +287,10 @@ bool cDizApp::Update()
 	// functional keys
 	if( I9_IsReady() )
 	{
-		bool ctrl = I9_GetKeyValue(I9K_LCONTROL) || I9_GetKeyValue(I9K_RCONTROL);
-		if(I9_GetKeyDown(I9K_F1) && App.Windowed()) DialogBox(E9_GetHINSTANCE(), MAKEINTRESOURCE(IDD_INFO), E9_GetHWND(), DialogProcInfo);
-		if(I9_GetKeyDown(I9K_F10) && !ToggleVideo()) return false;
-		if(I9_GetKeyDown(I9K_F11) ) drawstats = !drawstats;
-		if(I9_GetKeyDown(I9K_F9) && A9_IsReady())	// toggle volume
+		if(einput->isKeyDown(DIK_F1) && App.Windowed()) DialogBox(E9_GetHINSTANCE(), MAKEINTRESOURCE(IDD_INFO), E9_GetHWND(), DialogProcInfo);
+		if(einput->isKeyDown(DIK_F10) && !ToggleVideo()) return false;
+		if(einput->isKeyDown(DIK_F11)) drawstats = !drawstats;
+		if(einput->isKeyDown(DIK_F9) && A9_IsReady())	// toggle volume
 		{
 			static int volume = -1;
 			int vol;
@@ -309,10 +308,10 @@ bool cDizApp::Update()
 			}
 			A9_Set(A9_MASTERVOLUME, A9_VolumePercentToDecibel(vol));
 		}
-		if(I9_GetKeyDown(I9K_SYSRQ)) // print screen
+		if(einput->isKeyDown(DIK_SYSRQ)) // print screen
 		{
 			fRect r(0,0,R9_GetWidth(),R9_GetHeight());
-			R9_SaveScreenShot(&r, !ctrl);
+			R9_SaveScreenShot(&r, !einput->ctrl());
 		}
 	}
 	return true;

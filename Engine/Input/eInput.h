@@ -23,6 +23,10 @@ struct Key
 	bool value;
 	int	frm;			// frame ( refresh ) count
 	Key(bool value = false, int frm = 0) : value(value), frm(frm) {}
+
+	bool isDown(int frame) const { return value && frm == frame; }
+	bool isUp(int frame) const { return !value && frm == frame; }
+
 };
 
 class Device
@@ -40,7 +44,6 @@ public:
 	virtual void Clear() = 0;
 	virtual void Acquire() = 0;
 	virtual void Unacquire() = 0;
-
 };
 
 
@@ -55,7 +58,7 @@ public:
 		Key WheelUp;
 		Key WheelDown;
 		void clear();
-	}  & state;
+	} & state;
 	MouseDevice(State & state) : state(state) {}
 	virtual void Clear() { state.clear(); }
 };
@@ -91,8 +94,7 @@ class eInput
 	int frm;
 	float time;
 	std::vector<Device *> devices;
-	MouseDevice::State mouse;
-	KeyboardDevice::State keyboard;
+
 	Device * joystick;
 
 	eInput(HWND hwnd, HINSTANCE hinstance);
@@ -108,6 +110,15 @@ class eInput
 	bool _Present() { return false; }
 
 public:
+	bool keyValue(int k) const { return keyboard.keys[k].value; } 
+	bool isKeyDown(int k) const { return keyboard.keys[k].isDown(frm); }
+	bool isKeyUp(int k) const { return keyboard.keys[k].isUp(frm); }
+	bool ctrl() const { return keyValue(DIK_LCONTROL) || keyValue(DIK_RCONTROL); }
+	bool shift() const { return keyValue(DIK_LSHIFT) || keyValue(DIK_RSHIFT); }
+
+	MouseDevice::State mouse;
+	KeyboardDevice::State keyboard;
+
 	~eInput();
 	static bool Init(HWND hwnd, HINSTANCE hinstance);
 	static void Done();

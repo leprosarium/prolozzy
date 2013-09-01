@@ -271,8 +271,9 @@ LRESULT	CALLBACK e9App::WndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 
 		case WM_CONTEXTMENU:	// ignore sysmen when rclick
 			return 0;
-		case WM_CHAR: 
+		case WM_CHAR:
 			WCHAR ch = wParam;
+			einput->keyQueue += ch;
 			break;
 
 	}

@@ -41,12 +41,14 @@ void eInput::_Acquire()
 {
 	for(Device *d: devices)
 		d->Acquire();
+	keyQueue.clear();
 }
 
 void eInput::_Unacquire()
 {
 	for(Device *d: devices)
 		d->Unacquire();
+	keyQueue.clear();
 }
 
 
@@ -55,6 +57,7 @@ void eInput::Clear()
 	for(Device *d: devices)
 		d->Clear();
 	time = 0.0f;
+	keyQueue.clear();
 }
 
 template<>

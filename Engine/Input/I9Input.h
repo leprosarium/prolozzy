@@ -131,14 +131,6 @@ inline BOOL I9_DeviceInit( int device ) { assert(i9_input); return i9_input->Dev
 //inline void I9_DeviceDone( int device )						{ assert(i9_input); i9_input->DeviceDone(device); }
 inline BOOL	I9_DeviceIsPresent( int device )				{ assert(i9_input); return i9_input->DeviceIsPresent(device); }
 
-// -----------------------------
-
-inline BOOL	I9_DeviceFFInit( int device	)					{ assert(i9_input); return i9_input->DeviceFFInit(device); }
-inline void	I9_DeviceFFSet( int device, int mag, int per )	{ assert(i9_input); i9_input->DeviceFFSet(device,mag,per); }
-inline void	I9_DeviceFFPlay( int device )					{ assert(i9_input); i9_input->DeviceFFPlay(device); }
-inline void	I9_DeviceFFStop( int device )					{ assert(i9_input); i9_input->DeviceFFStop(device); }
-inline BOOL	I9_DeviceFFIsPlaying( int device )				{ assert(i9_input); return i9_input->DeviceFFIsPlaying(device); }
-
 //inline BOOL I9_IsKeyPressed()								{ assert(i9_input); for(int i=I9_KEYBOARD_FIRSTKEY; i<I9_KEYBOARD_FIRSTKEY+I9_KEYBOARD_KEYS; i++) if( i9_input->GetKeyDown(i) ) return i; return 0; }
 inline BOOL I9_GetKeyValue( int key )						{ assert(i9_input); return i9_input->GetKeyValue(key); }
 inline BOOL I9_GetKeyDown( int key )						{ assert(i9_input); return i9_input->GetKeyDown(key); }
@@ -148,6 +140,19 @@ inline int I9_GetKeyQCount()								{ assert(i9_input); return i9_input->GetKeyQ
 inline int I9_GetKeyQCode( int e=0 )						{ assert(i9_input); return i9_input->GetKeyQCode(e); }
 inline BOOL I9_GetKeyQValue( int e=0 )						{ assert(i9_input); return i9_input->GetKeyQValue(e); }
 //inline void I9_ClearKeyQ()									{ assert(i9_input); i9_input->ClearKeyQ(); }
+
+// -----------------------------
+
+inline BOOL	I9_DeviceFFInit( int device	)					{ assert(i9_input); return i9_input->DeviceFFInit(device); }
+inline void	I9_DeviceFFSet( int device, int mag, int per )	{ assert(i9_input); i9_input->DeviceFFSet(device,mag,per); }
+inline void	I9_DeviceFFPlay( int device )					{ assert(i9_input); i9_input->DeviceFFPlay(device); }
+inline void	I9_DeviceFFStop( int device )					{ assert(i9_input); i9_input->DeviceFFStop(device); }
+inline BOOL	I9_DeviceFFIsPlaying( int device )				{ assert(i9_input); return i9_input->DeviceFFIsPlaying(device); }
+
+
+
+
+
 
 inline char I9_GetKeyAscii( int key )					{ assert(i9_input); return i9_input->GetKeyAscii(key); }
 inline char I9_GetKeyShifted( int key )					{ assert(i9_input); return i9_input->GetKeyShifted(key); }

@@ -4,6 +4,7 @@
 #include "StdAfx.h"
 
 #include <sstream>
+#include <cctype>
 
 #include "DizDebug.h"
 #include "DizGame.h"
@@ -99,21 +100,21 @@ ssize_t Prolog::Read(char *buffer, size_t size)
 		con.Update();
 		if(!single) input.Update();
 		Draw();
-		bool shift = einput->keyValue(DIK_LSHIFT) || einput->keyValue(DIK_RSHIFT);
 		if(single)
 		{
-			for(int i=0;i<I9_GetKeyQCount();i++)
+			if(!einput->keyQueue.empty())
 			{
-				if(!I9_GetKeyQValue(i))
-					continue;
-				int key = I9_GetKeyQCode(i);
-				char ascii = shift ? I9_GetKeyShifted(key) : I9_GetKeyAscii(key);
-				if(key == I9K_RETURN)
-					ascii = '\n';
-				if(!ascii) 
-					continue;
-				buffer[0]=ascii;
-				return 1;
+				std::string str = WideStringToMultiByte(einput->keyQueue.c_str());
+				einput->keyQueue = einput->keyQueue.substr(1);
+				if(!str.empty())
+				{
+					char ch = str[0];
+					if(std::isprint(ch))
+					{
+						buffer[0] = ch;
+						return 1;
+					}
+				}
 			}
 		}
 		else
@@ -264,16 +265,10 @@ void cDizDebug::Layout()
 bool Developer::Update()
 {
 	// quick type D E V E L O P E R to toggle
-	if( I9_GetKeyQCount() )
+	if(!einput->keyQueue.empty())
 	{
-		for(int i=0;i<I9_GetKeyQCount();i++)
-			if(!I9_GetKeyQValue(i)) // up
-			{
-				char chr = I9_GetKeyAscii(I9_GetKeyQCode(i));
-				if(chr<=0) chr=32;
-				buf+=chr;
-			}
-		if(buf.find("developer") != std::string::npos)
+		buf += einput->keyQueue;
+		if(buf.find(L"developer") != std::wstring::npos)
 		{
 			buf.clear();
 			return true;
@@ -449,6 +444,7 @@ void Input::Update()
 {
 	if(einput->isKeyDown(DIK_INSERT) && !open) 
 	{ 
+		einput->keyQueue.clear();
 		open = true; 
 		complete = 0; 
 		histcrt = hist.end();
@@ -533,16 +529,17 @@ void Input::Update()
 	}
 	else
 	{
-		// char keys
-		for(int i=0;i<I9_GetKeyQCount();i++)
+		if(!einput->keyQueue.empty())
 		{
-			if(!I9_GetKeyQValue(i)) continue;
-			int key = I9_GetKeyQCode(i);
-			char ascii = shift ? I9_GetKeyShifted(key) : I9_GetKeyAscii(key);
-			if(!ascii) continue;
-			crt = cmd.insert(crt, ascii);
-			crt++;
-			complete = 0;
+			std::string str = WideStringToMultiByte(einput->keyQueue.c_str());
+			for(auto ch: str)
+			{
+				if(!std::isprint(ch)) continue;
+				crt = cmd.insert(crt, ch);
+				crt ++;
+				complete = 0;
+			}
+			einput->keyQueue.clear();
 		}
 	}
 

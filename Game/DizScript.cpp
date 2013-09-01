@@ -317,32 +317,12 @@ PREDICATE_M(core, colliderSnapDistance, 5)
 // KEYBOARD
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-PREDICATE_M(core, keyboardRead, 1)
-{
-	return A1 = I9_IsReady() ? (I9_GetKeyQCount() ? I9_GetKeyQValue(0) : 0) : 0;
-}
-
 PREDICATE_M(core, keyboardStatus, 1)
 {
 	if(!I9_IsReady()) return false;
 	int key = A1;
 	if( key < 0 || key >= 0xFF ) return false;
 	return einput->keyValue(key);
-}
-
-PREDICATE_M(core, keyboardCodeToChar, 2)
-{
-	if(!I9_IsReady()) return false;
-	int key = A1;
-	if( key<0 || key>=I9_KEYBOARD_KEYS ) return false;
-	return A2 = I9_GetKeyAscii(key);
-}
-
-PREDICATE_M(core, keyboardCharToCode, 2)
-{
-	if(!I9_IsReady()) return false;
-	int chr = A1;
-	return A2 = I9_FindKeyByAscii(chr);
 }
 
 PREDICATE_M(core, joystickStatus, 1)

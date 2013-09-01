@@ -120,7 +120,7 @@ public:
 class Developer
 {
 	int tickold;
-	std::string buf;
+	std::wstring buf;
 public:
 	Developer() : tickold() {}
 	bool Update();

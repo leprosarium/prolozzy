@@ -110,6 +110,8 @@ class eInput
 	bool _Present() { return false; }
 
 public:
+	std::wstring keyQueue;
+
 	bool keyValue(int k) const { return keyboard.keys[k].value; } 
 	bool isKeyDown(int k) const { return keyboard.keys[k].isDown(frm); }
 	bool isKeyUp(int k) const { return keyboard.keys[k].isUp(frm); }

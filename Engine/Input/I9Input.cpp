@@ -449,27 +449,3 @@ i9KeyName i9Input::m_keyname[I9_KEYS] =
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// INTERFACE
-///////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL I9_Init(HWND hwnd, HINSTANCE hinstance, int api)
-{
-	if(i9_input) return TRUE;
-	dlog(LOGINP, L"Input init (api=%i).\n", api);
-	// test api here if more platformes
-	i9_input = new i9InputDX();
-	BOOL ok = i9_input->Init(hwnd, hinstance);
-	if(!ok)
-		I9_Done();
-	return ok;
-}
-
-void I9_Done()
-{
-	if(!i9_input) return;
-	i9_input->Done();
-	delete i9_input;
-	i9_input = NULL;
-	dlog(LOGINP, L"Input done.\n");
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////

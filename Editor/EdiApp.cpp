@@ -16,6 +16,8 @@
 #include "Gui.h"
 #include "GuiTile.h"
 
+#include "eInput.h"
+
 cEdiApp* cEdiApp::m_app = NULL;
 
 PREDICATE_M(core, dl, 1)
@@ -101,6 +103,7 @@ BOOL cEdiApp::Init()
 	if(!InitInput()) { ErrorMessage(L"Init input device error."); return FALSE; }
 	if(!InitVideo()) { ErrorMessage(L"Init video device error."); return FALSE; }
 
+
 	// editor
 	g_paint.Init();
 	g_map.Init();
@@ -149,15 +152,7 @@ BOOL cEdiApp::InitFiles()
 
 BOOL cEdiApp::InitInput()
 {
-	BOOL ok = I9_Init(E9_GetHWND(),E9_GetHINSTANCE(),I9_API_DEFAULT);
-	if(!ok) return FALSE;
-
-	// init devices
-	ok &= I9_DeviceInit(I9_DEVICE_KEYBOARD);
-	ok &= I9_DeviceInit(I9_DEVICE_MOUSE);
-	if(!ok) return FALSE;
-	
-	return TRUE;
+	return eInput::Init(E9_GetHWND(),E9_GetHINSTANCE()) && eInput::Init<Devices::Keyboard>() && eInput::Init<Devices::Mouse>();
 }
 
 BOOL cEdiApp::InitVideo()
@@ -230,22 +225,17 @@ void cEdiApp::Done()
 	// engine
 	R9_Done();
 	R9_DoneInterface();
-	I9_Done();
 	F9_Done();
-
+	eInput::Done();
 	dlog(LOGAPP, L"App done.\n");
 }
 
 void cEdiApp::Activate(bool active)
 {
 	if(active)
-	{
-		if(I9_IsReady()) I9_Acquire();
-	}
+		eInput::Acquire();
 	else
-	{
-		if(I9_IsReady()) I9_Unacquire();
-	}
+		eInput::Unacquire();
 	m_tool[m_toolcrt]->Reset();
 	if(g_gui) g_gui->ToolTip.clear();
 	if(g_map.m_scrolling)
@@ -307,8 +297,7 @@ bool cEdiApp::Update()
 	float dtime = (float)App.DeltaTime() / 1000.0f;
 
 	// input
-	if(!I9_IsReady()) return true;
-	I9_Update(dtime);
+	eInput::Update(dtime);
 
 	// map
 	if(!g_gui->m_isbusy)
@@ -344,14 +333,13 @@ bool cEdiApp::Update()
 		g_gui->Update();
 
 	// toggle info
-	if(I9_GetKeyDown(I9K_F11)) m_drawstats = !m_drawstats;
+	if(einput->isKeyDown(DIK_F11)) m_drawstats = !m_drawstats;
 
 	// print screen
-	if(I9_GetKeyDown(I9K_SYSRQ)) 
+	if(einput->isKeyDown(DIK_SYSRQ)) 
 	{
-		bool ctrl = I9_GetKeyValue(I9K_LCONTROL) || I9_GetKeyValue(I9K_RCONTROL);
 		fRect r(0,0,R9_GetWidth(),R9_GetHeight());
-		R9_SaveScreenShot(&r,!ctrl);
+		R9_SaveScreenShot(&r,!einput->ctrl());
 	}
 
 	if(m_exit) return false;

@@ -5,6 +5,7 @@
 #include "GUIItem.h"
 #include "GUI.h"
 #include "E9String.h"
+#include "eInput.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cGUIItem
@@ -43,8 +44,8 @@ void cGUIItem::OnUpdate()
 {
 	if(m_mousein)
 	{
-		if(I9_GetKeyDown(I9_MOUSE_B1))	Action(1);
-		if(I9_GetKeyDown(I9_MOUSE_B2))	Action(2);
+		if(einput->isMouseDown(0))	Action(1);
+		if(einput->isMouseDown(1))	Action(2);
 	}
 }
 
@@ -88,6 +89,7 @@ void cGUIItem::Capture( bool on )
 {
 	if(on)
 	{
+		einput->keyQueue.clear();
 		if(!g_gui->m_capture) 
 			g_gui->m_capture = this;	
 	}
@@ -131,7 +133,7 @@ void cGUITitle::OnUpdate()
 {
 	iRect rc = scrRect();
 
-	if(I9_GetKeyDown(I9_MOUSE_B1))
+	if(einput->isMouseDown(0))
 	{
 		if(m_mousein)
 		{
@@ -140,7 +142,7 @@ void cGUITitle::OnUpdate()
 		}
 	}
 	else
-	if(!I9_GetKeyValue(I9_MOUSE_B1))
+	if(!einput->mouseValue(0))
 		if(IsCaptured()) 
 			Capture(false);
 

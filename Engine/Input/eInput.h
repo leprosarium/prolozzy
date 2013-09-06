@@ -117,6 +117,12 @@ public:
 	bool isKeyUp(int k) const { return keyboard.keys[k].isUp(frm); }
 	bool ctrl() const { return keyValue(DIK_LCONTROL) || keyValue(DIK_RCONTROL); }
 	bool shift() const { return keyValue(DIK_LSHIFT) || keyValue(DIK_RSHIFT); }
+	bool alt() const { return keyValue(DIK_LALT) || keyValue(DIK_RALT); }
+
+	bool mouseValue(int k) const { return mouse.b[k].value; } 
+	bool isMouseDown(int k) const { return mouse.b[k].isDown(frm); }
+	bool isMouseUp(int k) const { return mouse.b[k].isUp(frm); }
+
 
 	MouseDevice::State mouse;
 	KeyboardDevice::State keyboard;

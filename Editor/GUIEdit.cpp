@@ -3,9 +3,15 @@
 // Action param (while editing): 0=click out, 1=enter, 2=right click, 3=tab
 //////////////////////////////////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
+
+#include <cctype>
+
 #include "GUIEdit.h"
 #include "GUI.h"
 #include "E9App.h"
+#include "eInput.h"
+
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cGUIEdit
@@ -18,9 +24,9 @@ void cGUIEdit::OnUpdate()
 {
 	iRect rc = scrRect();
 	int mx = g_gui->m_mouse.x - rc.p1.x;
-	BOOL shift = I9_GetKeyValue(I9K_LSHIFT) || I9_GetKeyValue(I9K_RSHIFT);
-	BOOL ctrl = I9_GetKeyValue(I9K_LCONTROL) || I9_GetKeyValue(I9K_RCONTROL);
-	BOOL enter = I9_GetKeyDown(I9K_RETURN) || I9_GetKeyDown(I9K_NUMPADENTER);
+	bool shift = einput->shift();
+	bool ctrl = einput->ctrl();
+	bool enter = einput->isKeyDown(DIK_RETURN) || einput->isKeyDown(DIK_NUMPADENTER);
 	
 	int width = rect.Width();
 	int height = rect.Height();
@@ -29,7 +35,7 @@ void cGUIEdit::OnUpdate()
 	if(cursorx>width-height/2) deltax = -(cursorx-(width-height/2));
 
 	BOOL captured = (g_gui->m_capture == this);
-	BOOL clicked = (I9_GetKeyDown(I9_MOUSE_B1));
+	BOOL clicked = einput->isMouseDown(0);
 	BOOL clickedin = clicked && m_mousein;
 
 	if(clicked)
@@ -65,7 +71,7 @@ void cGUIEdit::OnUpdate()
 	if(captured)
 	{
 		m_sel2 = Pos2Chr(mx-deltax);
-		if( !I9_GetKeyValue(I9_MOUSE_B1) ) // for selections
+		if( !einput->mouseValue(0) ) // for selections
 		{
 			Capture(false);
 		}
@@ -75,7 +81,7 @@ void cGUIEdit::OnUpdate()
 
 	if(m_edit)
 	{
-		if(I9_GetKeyDown(I9K_ESCAPE))
+		if(einput->isKeyDown(DIK_ESCAPE))
 		{
 			if(!m_bktxt.empty()) txt = m_bktxt; // restore
 			m_edit = false;
@@ -83,7 +89,7 @@ void cGUIEdit::OnUpdate()
 			return;
 		}
 
-		if(enter || I9_GetKeyDown(I9K_TAB))
+		if(enter || einput->isKeyDown(DIK_TAB))
 		{
 			Action(enter ? 1 : 3);
 			m_edit = false;
@@ -91,7 +97,7 @@ void cGUIEdit::OnUpdate()
 			return;
 		}
 
-		if(I9_GetKeyDown(I9K_DELETE))
+		if(einput->isKeyDown(DIK_DELETE))
 		{
 			if(s1!=s2)
 				ShiftLeft(s2,s2-s1); // selection cut
@@ -101,7 +107,7 @@ void cGUIEdit::OnUpdate()
 			return;
 		}	
 
-		if(I9_GetKeyDown(I9K_BACK))
+		if(einput->isKeyDown(DIK_BACK))
 		{
 			if(s1!=s2)
 				ShiftLeft(s2,s2-s1); // selection cut
@@ -113,21 +119,21 @@ void cGUIEdit::OnUpdate()
 			return;
 		}	
 		
-		if(I9_GetKeyDown(I9K_HOME))
+		if(einput->isKeyDown(DIK_HOME))
 		{
 			m_sel2 = 0;
 			if(!shift) m_sel1 = m_sel2;
 			return;
 		}
 		
-		if(I9_GetKeyDown(I9K_END))
+		if(einput->isKeyDown(DIK_END))
 		{
 			m_sel2 = txt.size();
 			if(!shift) m_sel1 = m_sel2;
 			return;
 		}
 		
-		if(I9_GetKeyDown(I9K_LEFT))
+		if(einput->isKeyDown(DIK_LEFT))
 		{
 			if(m_sel1==m_sel2 || shift)
 			{
@@ -145,7 +151,7 @@ void cGUIEdit::OnUpdate()
 			return;
 		}
 		
-		if(I9_GetKeyDown(I9K_RIGHT))
+		if(einput->isKeyDown(DIK_RIGHT))
 		{
 			if(m_sel1==m_sel2 || shift)
 			{
@@ -163,32 +169,31 @@ void cGUIEdit::OnUpdate()
 			return;
 		}
 
-		if(ctrl && I9_GetKeyDown(I9K_C))
+		if(ctrl && einput->isKeyDown(DIK_C))
 		{
 			ClipboardCopy();
 			return;
 		}
 		
-		if(ctrl && I9_GetKeyDown(I9K_V))
+		if(ctrl && einput->isKeyDown(DIK_V))
 		{
 			ClipboardPaste();
 			return;
 		}
 
-		if(ctrl && I9_GetKeyDown(I9K_X))
+		if(ctrl && einput->isKeyDown(DIK_X))
 		{
 			ClipboardCopy();
 			SelectionCut();
 			return;
 		}
 
-		for(int i=0;i<I9_GetKeyQCount();i++)
+		if(!einput->keyQueue.empty())
 		{
-			if(I9_GetKeyQValue(i))  
+			std::string str = WideStringToMultiByte(einput->keyQueue.c_str());
+			for(char ch: str)
 			{
-				int key = I9_GetKeyQCode(i);
-				char ch = shift ? I9_GetKeyShifted(key) : I9_GetKeyAscii(key); 
-				if(ch>=32 && ch<128)
+				if(std::isprint(ch))
 				{
 					if(s1!=s2)
 						ShiftLeft(s2,s2-s1); // selection cut
@@ -197,13 +202,13 @@ void cGUIEdit::OnUpdate()
 					m_sel1++;
 					s1 = s2 = m_sel2 = m_sel1;
 				}
-
 			}
+			einput->keyQueue.clear();
 		}
 	}
 
 	// right click action
-	if(!IsCaptured() && m_mousein && I9_GetKeyDown(I9_MOUSE_B2))
+	if(!IsCaptured() && m_mousein && einput->isMouseDown(1))
 		Action(2);
 }
 

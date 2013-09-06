@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include <algorithm>
 
-#include "I9Input.h"
+#include "eInput.h"
 
 #include "EdiMap.h"
 #include "EdiApp.h"
@@ -390,10 +390,10 @@ void cEdiMap::Update( float dtime )
 	int stepy = EdiApp()->m_gridsize;
 	int mx = EdiApp()->GetMouseX() - VIEWX;
 	int my = EdiApp()->GetMouseY() - VIEWY;
-	int mz = I9_GetAxeDelta(I9_MOUSE_Z);
-	BOOL shift	= (I9_GetKeyValue(I9K_LSHIFT))	 || (I9_GetKeyValue(I9K_RSHIFT));
-	BOOL alt	= (I9_GetKeyValue(I9K_LALT))	 || (I9_GetKeyValue(I9K_RALT)) || (I9_GetKeyValue(I9_MOUSE_B3));
-	BOOL ctrl	= (I9_GetKeyValue(I9K_LCONTROL)) || (I9_GetKeyValue(I9K_RCONTROL));
+	int mz = einput->mouse.z.delta;
+	bool shift	= einput->shift();
+	bool alt	= einput->alt() || einput->mouseValue(2);
+	bool ctrl	= einput->ctrl();
 
 	// navigation
 	int dx = 0;
@@ -405,10 +405,10 @@ void cEdiMap::Update( float dtime )
 		stepx=m_roomw;
 		stepy=m_roomh;
 	}
-	if( I9_GetKeyValue(I9K_RIGHT) )	dx = stepx;
-	if( I9_GetKeyValue(I9K_LEFT) )	dx =-stepx;
-	if( I9_GetKeyValue(I9K_DOWN) )	dy = stepy;
-	if( I9_GetKeyValue(I9K_UP) )	dy =-stepy;
+	if( einput->keyValue(DIK_RIGHT) )	dx = stepx;
+	if( einput->keyValue(DIK_LEFT) )	dx =-stepx;
+	if( einput->keyValue(DIK_DOWN) )	dy = stepy;
+	if( einput->keyValue(DIK_UP) )	dy =-stepy;
 
 	// smart key hit delaying system
 	static int keycnt=0; // key delay counter
@@ -458,7 +458,7 @@ void cEdiMap::Update( float dtime )
 	iRect rc;
 	mx = EdiApp()->GetMouseX();
 	my = EdiApp()->GetMouseY();
-	if(!m_scrolling && I9_GetKeyDown(I9_MOUSE_B1))
+	if(!m_scrolling && einput->isMouseDown(0))
 	{
 		rc = GetHScrollRect();
 		if(rc.IsInside(fV2(mx,my))) 
@@ -479,7 +479,7 @@ void cEdiMap::Update( float dtime )
 		}
 	}
 	else
-	if(m_scrolling && !I9_GetKeyValue(I9_MOUSE_B1))
+	if(m_scrolling && !einput->mouseValue(0))
 	{
 		m_scrolling = 0;
 		App.SetCursor(Cursor::Arrow);
@@ -511,9 +511,9 @@ void cEdiMap::Update( float dtime )
 	// others
 	if(!alt && !shift && !ctrl)
 	{
-		if(I9_GetKeyDown(I9K_A))			{ EdiApp()->m_axes = !EdiApp()->m_axes; }
-		if(I9_GetKeyDown(I9K_S))			{ EdiApp()->m_snap = !EdiApp()->m_snap; }
-		if(I9_GetKeyDown(I9K_G))			{ EdiApp()->m_grid = !EdiApp()->m_grid; m_refresh=TRUE; }
+		if(einput->isKeyDown(DIK_A))			{ EdiApp()->m_axes = !EdiApp()->m_axes; }
+		if(einput->isKeyDown(DIK_S))			{ EdiApp()->m_snap = !EdiApp()->m_snap; }
+		if(einput->isKeyDown(DIK_G))			{ EdiApp()->m_grid = !EdiApp()->m_grid; m_refresh=TRUE; }
 	}
 
 	// bounds

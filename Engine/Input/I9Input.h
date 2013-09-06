@@ -118,28 +118,7 @@ private:
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 extern	i9Input*	i9_input;		// global instance, created by platform
 
-BOOL I9_Init( HWND hwnd, HINSTANCE hinstance, int api=I9_API_DEFAULT );					// init depending on the platform api
-void I9_Done();																			// done
-
-inline BOOL	I9_IsReady()				{ return (i9_input!=NULL); }							
-inline void	I9_Update( float dtime )	{ assert(i9_input); i9_input->Update(dtime); }
-//inline void I9_Clear()										{ assert(i9_input); i9_input->Clear(); }
-
-inline void I9_Acquire()				{ assert(i9_input); i9_input->Acquire(); }
-inline void I9_Unacquire()				{ assert(i9_input); i9_input->Unacquire(); }
-inline BOOL I9_DeviceInit( int device ) { assert(i9_input); return i9_input->DeviceInit(device); }
-//inline void I9_DeviceDone( int device )						{ assert(i9_input); i9_input->DeviceDone(device); }
-inline BOOL	I9_DeviceIsPresent( int device )				{ assert(i9_input); return i9_input->DeviceIsPresent(device); }
-
-//inline BOOL I9_IsKeyPressed()								{ assert(i9_input); for(int i=I9_KEYBOARD_FIRSTKEY; i<I9_KEYBOARD_FIRSTKEY+I9_KEYBOARD_KEYS; i++) if( i9_input->GetKeyDown(i) ) return i; return 0; }
-inline BOOL I9_GetKeyValue( int key )						{ assert(i9_input); return i9_input->GetKeyValue(key); }
-inline BOOL I9_GetKeyDown( int key )						{ assert(i9_input); return i9_input->GetKeyDown(key); }
-inline BOOL I9_GetKeyUp( int key )							{ assert(i9_input); return i9_input->GetKeyUp(key); }
-
-inline int I9_GetKeyQCount()								{ assert(i9_input); return i9_input->GetKeyQCount(); }
-inline int I9_GetKeyQCode( int e=0 )						{ assert(i9_input); return i9_input->GetKeyQCode(e); }
-inline BOOL I9_GetKeyQValue( int e=0 )						{ assert(i9_input); return i9_input->GetKeyQValue(e); }
-//inline void I9_ClearKeyQ()									{ assert(i9_input); i9_input->ClearKeyQ(); }
+inline BOOL	I9_DeviceIsPresent( int device )				{ return false;}//assert(i9_input); return i9_input->DeviceIsPresent(device); }
 
 // -----------------------------
 
@@ -149,42 +128,11 @@ inline void	I9_DeviceFFPlay( int device )					{ assert(i9_input); i9_input->Devi
 inline void	I9_DeviceFFStop( int device )					{ assert(i9_input); i9_input->DeviceFFStop(device); }
 inline BOOL	I9_DeviceFFIsPlaying( int device )				{ assert(i9_input); return i9_input->DeviceFFIsPlaying(device); }
 
+inline bool I9_GetKeyValue(int) { return false;}
 
+inline int I9_GetAxeValue( int axe )						{ return 0;}//assert(i9_input); return i9_input->GetAxeValue(axe); }
 
-
-
-
-inline char I9_GetKeyAscii( int key )					{ assert(i9_input); return i9_input->GetKeyAscii(key); }
-inline char I9_GetKeyShifted( int key )					{ assert(i9_input); return i9_input->GetKeyShifted(key); }
-//inline const char*	I9_GetKeyName( int key )					{ assert(i9_input); return i9_input->GetKeyName(key); }
-inline int I9_FindKeyByAscii( char ascii )				{ assert(i9_input); return i9_input->FindKeyByAscii(ascii); }
-//inline int I9_FindKeyByName( const char* name )		{ assert(i9_input); return i9_input->FindKeyByName(name); }
-
-inline int I9_GetAxeValue( int axe )						{ assert(i9_input); return i9_input->GetAxeValue(axe); }
-inline int I9_GetAxeDelta( int axe )						{ assert(i9_input); return i9_input->GetAxeDelta(axe); }
-//inline	void	I9_SetAxeClip( int axe, int min, int max )		{ assert(i9_input); i9_input->SetAxeClip(axe,min,max); }
-//inline	void	I9_SetAxeSpeed( int axe, int speed )			{ assert(i9_input); i9_input->SetAxeSpeed(axe,speed); }
-
-//inline	int		I9_GetMouseX()									{ assert(i9_input); return i9_input->GetAxeValue( I9_MOUSE_X ); }
-//inline	int		I9_GetMouseY()									{ assert(i9_input); return i9_input->GetAxeValue( I9_MOUSE_Y ); }
-//inline	int		I9_GetMouseDX()									{ assert(i9_input); return i9_input->GetAxeDelta( I9_MOUSE_X ); }
-//inline	int		I9_GetMouseDY()									{ assert(i9_input); return i9_input->GetAxeDelta( I9_MOUSE_Y ); }
-//inline	int		I9_GetMouseLB()									{ assert(i9_input); return i9_input->GetKeyValue( I9_MOUSE_B1 ); }
-//inline	int		I9_GetMouseRB()									{ assert(i9_input); return i9_input->GetKeyValue( I9_MOUSE_B2 ); }
-//inline	int		I9_GetMouseClick()								{ assert(i9_input); return i9_input->GetKeyDown( I9_MOUSE_B1 ); }
-//inline	void	I9_SetMouseX( int x )							{ assert(i9_input); i9_input->GetAxe( I9_MOUSE_X ).m_value = x; }
-//inline	void	I9_SetMouseY( int y )							{ assert(i9_input); i9_input->GetAxe( I9_MOUSE_Y ).m_value = y; }
-//inline	void	I9_ClipMouse( int x0, int y0, int x1, int y1 )	{ assert(i9_input); i9_input->SetAxeClip( I9_MOUSE_X, x0, x1 ); i9_input->SetAxeClip( I9_MOUSE_Y, y0, y1 ); }
-//inline	BOOL	I9_MouseMoved()									{ assert(i9_input); return i9_input->GetAxeDelta( I9_MOUSE_X ) || i9_input->GetAxeDelta( I9_MOUSE_Y ); }
-//inline	BOOL	I9_MousePressed()								{ assert(i9_input); for(int i=I9_MOUSE_B1; i<I9_MOUSE_B8; i++) if( i9_input->GetKeyDown(i) ) return i; return 0; }
-
-//inline	int		I9_GetJoystickX( int joy )						{ assert(i9_input); return i9_input->GetAxeValue( I9_JOY_X(joy) ); }
-//inline	int		I9_GetJoystickY( int joy )						{ assert(i9_input); return i9_input->GetAxeValue( I9_JOY_Y(joy) ); }
-//inline	int		I9_GetJoystickB1( int joy )						{ assert(i9_input); return i9_input->GetKeyValue( I9_JOY_B1(joy) ); }
-//inline	int		I9_GetJoystickB2( int joy )						{ assert(i9_input); return i9_input->GetKeyValue( I9_JOY_B2(joy) ); }
-//inline	int		I9_GetJoystickB3( int joy )						{ assert(i9_input); return i9_input->GetKeyValue( I9_JOY_B3(joy) ); }
-//inline	int		I9_GetJoystickB4( int joy )						{ assert(i9_input); return i9_input->GetKeyValue( I9_JOY_B4(joy) ); }
-inline int I9_GetJoystickHAT( int joy, int hatdir )		{ assert(i9_input); return i9_input->GetKeyValue( I9_JOY_H1(joy)+hatdir ); }
+inline int I9_GetJoystickHAT( int joy, int hatdir )		{ return 0;}//assert(i9_input); return i9_input->GetKeyValue( I9_JOY_H1(joy)+hatdir ); }
 
 #endif
 ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -5,6 +5,7 @@
 #include <algorithm>
 #include "GUIDlg.h"
 #include "E9String.h"
+#include "eInput.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cGUIDlg
@@ -26,7 +27,7 @@ void cGUIDlg::Update()
 	Keys.Test(this, m_mousein);
 
 	// test click
-	if( closeOut && I9_GetKeyDown(I9_MOUSE_B1) && !m_mousein )
+	if( closeOut && einput->isMouseDown(0) && !m_mousein )
 		Close(-1);
 
 }
@@ -46,12 +47,12 @@ void cGUIDlg::Close(int ret)
 
 bool DlgKey::Active() const
 {
-	if(!I9_GetKeyDown(m_key))
+	if(!einput->isKeyDown(m_key))
 		return false;
 	int flags = 0;
-	if( I9_GetKeyValue(I9K_LSHIFT) || I9_GetKeyValue(I9K_RSHIFT) )		flags |= GUIKEYFLAG_SHIFT;
-	if( I9_GetKeyValue(I9K_LCONTROL) || I9_GetKeyValue(I9K_RCONTROL) )	flags |= GUIKEYFLAG_CTRL;
-	if( I9_GetKeyValue(I9K_LALT) || I9_GetKeyValue(I9K_RALT) )			flags |= GUIKEYFLAG_ALT;
+	if(einput->shift()) flags |= GUIKEYFLAG_SHIFT;
+	if(einput->ctrl()) flags |= GUIKEYFLAG_CTRL;
+	if(einput->alt()) flags |= GUIKEYFLAG_ALT;
 	return m_flags == flags;
 }
 

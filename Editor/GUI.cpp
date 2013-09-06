@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "GUI.h"
 #include "E9App.h"
-#include "I9Input.h"
+#include "eInput.h"
 
 #include "GUIItem.h"
 #include "GUIButton.h"
@@ -122,12 +122,12 @@ void cGUI::ReadInput()
 {
 	GetMousePos();
 
-	m_key[GUIKEY_MB1]	= I9_GetKeyValue(I9_MOUSE_B1); 
-	m_key[GUIKEY_MB2]	= I9_GetKeyValue(I9_MOUSE_B2);
-	m_key[GUIKEY_MB3]	= I9_GetKeyValue(I9_MOUSE_B3);
-	m_key[GUIKEY_CTRL]	= I9_GetKeyValue(I9K_LCONTROL) || I9_GetKeyValue(I9K_RCONTROL);
-	m_key[GUIKEY_SHIFT]	= I9_GetKeyValue(I9K_LSHIFT) || I9_GetKeyValue(I9K_RSHIFT);
-	m_key[GUIKEY_ALT]	= I9_GetKeyValue(I9K_LALT) || I9_GetKeyValue(I9K_RALT);
+	m_key[GUIKEY_MB1]	= einput->mouseValue(0); 
+	m_key[GUIKEY_MB2]	= einput->mouseValue(1);
+	m_key[GUIKEY_MB3]	= einput->mouseValue(2);
+	m_key[GUIKEY_CTRL]	= einput->ctrl();
+	m_key[GUIKEY_SHIFT]	= einput->shift();
+	m_key[GUIKEY_ALT]	= einput->alt();
 }
 
 void cGUI::GetMousePos()

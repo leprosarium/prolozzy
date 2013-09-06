@@ -7,6 +7,7 @@
 #include "EdiPaint.h"
 #include "EdiApp.h"
 #include "EdiMap.h"
+#include "eInput.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cGUITile
@@ -111,19 +112,19 @@ void cGUITileMap::OnUpdate()
 	iV2 sels = map.Size();
 
 	// additional keys for snap and grid
-	bool shift	= (I9_GetKeyValue(I9K_LSHIFT)) || (I9_GetKeyValue(I9K_RSHIFT));
-	if(I9_GetKeyDown(I9K_S))	snap = !snap;
-	if(I9_GetKeyDown(I9K_G))	grid = !grid;
-	if(I9_GetKeyDown(I9K_A))	axes = !axes;
-	if(I9_GetKeyDown(I9K_LEFT))	if(shift) sels.x--; else sel.x--;
-	if(I9_GetKeyDown(I9K_RIGHT))	if(shift) sels.x++; else sel.x++;
-	if(I9_GetKeyDown(I9K_UP))		if(shift) sels.y--; else sel.y--;
-	if(I9_GetKeyDown(I9K_DOWN))	if(shift) sels.y++; else sel.y++;
+	bool shift	= einput->shift();
+	if(einput->isKeyDown(DIK_S))	snap = !snap;
+	if(einput->isKeyDown(DIK_G))	grid = !grid;
+	if(einput->isKeyDown(DIK_A))	axes = !axes;
+	if(einput->isKeyDown(DIK_LEFT))	if(shift) sels.x--; else sel.x--;
+	if(einput->isKeyDown(DIK_RIGHT))	if(shift) sels.x++; else sel.x++;
+	if(einput->isKeyDown(DIK_UP))		if(shift) sels.y--; else sel.y--;
+	if(einput->isKeyDown(DIK_DOWN))	if(shift) sels.y++; else sel.y++;
 
 	// mouse down
 	if(state == State::none)
 	{
-		if(m_mousein && I9_GetKeyDown(I9_MOUSE_B1))
+		if(m_mousein && einput->isMouseDown(0))
 		{ 
 			// start new selection
 			state = State::select;
@@ -132,7 +133,7 @@ void cGUITileMap::OnUpdate()
 			sels = 0;
 			Capture(true);
 		}
-		if(mouseinsel && I9_GetKeyDown(I9_MOUSE_B2))
+		if(mouseinsel && einput->isMouseDown(1))
 		{ 
 			// start moving selection
 			state = State::move;
@@ -164,8 +165,8 @@ void cGUITileMap::OnUpdate()
 	}
 
 	// loosing captures
-	if( state == State::select && !I9_GetKeyValue(I9_MOUSE_B1) || 
-		state == State::move && !I9_GetKeyValue(I9_MOUSE_B2))
+	if( state == State::select && !einput->mouseValue(0) || 
+		state == State::move && !einput->mouseValue(1))
 	{
 		state = State::none;
 		Capture(false);

@@ -319,7 +319,6 @@ PREDICATE_M(core, colliderSnapDistance, 5)
 
 PREDICATE_M(core, keyboardStatus, 1)
 {
-	if(!I9_IsReady()) return false;
 	int key = A1;
 	if( key < 0 || key >= 0xFF ) return false;
 	return einput->keyValue(key);
@@ -327,7 +326,6 @@ PREDICATE_M(core, keyboardStatus, 1)
 
 PREDICATE_M(core, joystickStatus, 1)
 {
-	if(!I9_IsReady()) return false;
 	int key = A1;
 	if( key < 0 || key >= I9_JOY_KEYS ) return false;
 	return I9_GetKeyValue(I9_JOY_FIRSTKEY(0) + key);
@@ -335,7 +333,6 @@ PREDICATE_M(core, joystickStatus, 1)
 
 PREDICATE_M(core, joystickAxe, 1)
 {
-	if(!I9_IsReady()) return false;
 	int axe = A1;
 	if( axe < 0 || axe >= I9_JOY_AXES ) return false;
 	return A2 = I9_GetAxeValue(I9_JOY_FIRSTAXE(0)+axe);

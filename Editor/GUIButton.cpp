@@ -5,6 +5,7 @@
 #include "GUIButton.h"
 #include "GUI.h"
 #include "E9App.h"
+#include "eInput.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cGUIButton
@@ -12,13 +13,13 @@
 
 void cGUIButton::OnUpdate()
 {
-	if(I9_GetKeyDown(I9_MOUSE_B1))
+	if(einput->isMouseDown(0))
 	{
 		if(m_mousein)
 			Capture(true);
 	}
 	else
-	if(!I9_GetKeyValue(I9_MOUSE_B1))
+	if(!einput->mouseValue(0))
 	{
 		if(IsCaptured()) 
 		{ 
@@ -28,7 +29,7 @@ void cGUIButton::OnUpdate()
 		}
 	}
 
-	if(!IsCaptured() && m_mousein && I9_GetKeyDown(I9_MOUSE_B2))
+	if(!IsCaptured() && m_mousein && einput->isMouseDown(1))
 		Action(2);
 
 	if( g_gui->m_capture == this ) 

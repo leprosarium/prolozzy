@@ -2,6 +2,7 @@
 #include "GUIColor.h"
 #include "GUI.h"
 #include "R9ImgLoader.h"
+#include "eInput.h"
 
 void cGUIColorPick::OnUpdate()
 {
@@ -12,10 +13,10 @@ void cGUIColorPick::OnUpdate()
 	iV2 p = (g_gui->m_mouse - rc.p1) * iV2(m_img.m_width, m_img.m_height) / rc.Size();
 	color[0] = m_img.getColor(p.x, p.y);
 
-	if(I9_GetKeyUp(I9_MOUSE_B1))
+	if(einput->isMouseUp(0))
 		Action(1);
 	else
-	if(I9_GetKeyUp(I9_MOUSE_B2))
+	if(einput->isMouseUp(1))
 		Action(2);
 	else
 	{

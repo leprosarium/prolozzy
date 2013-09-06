@@ -96,9 +96,6 @@ bool cDizApp::InitInput()
 
 	if(!eInput::Init(E9_GetHWND(),E9_GetHINSTANCE())) return false;
 
-	BOOL ok = I9_Init(E9_GetHWND(),E9_GetHINSTANCE(),I9_API_DEFAULT);
-	if(!ok) return false;
-
 	// init devices
 	int keyboard	= 1;
 	int mouse		= 0;
@@ -107,15 +104,11 @@ bool cDizApp::InitInput()
 	ini_get(inifile, "INPUT", "mouse") >> mouse;
 	ini_get(inifile, "INPUT", "joystick") >> joystick;
 
+	bool ok = false;
 	if(keyboard)	ok = eInput::Init<Devices::Keyboard>();
 	if(mouse)		ok = eInput::Init<Devices::Mouse>();
 	if(joystick)	ok = eInput::Init<Devices::Joystick>();
 
-
-
-//	if(keyboard)	ok = I9_DeviceInit(I9_DEVICE_KEYBOARD);
-//	if(mouse)		ok = I9_DeviceInit(I9_DEVICE_MOUSE);
-//	if(joystick)	ok = I9_DeviceInit(I9_DEVICE_JOYSTICK1);
 
 	// rumble support
 	if(I9_DeviceIsPresent(I9_DEVICE_JOYSTICK1))
@@ -171,7 +164,6 @@ void cDizApp::Done()
 	R9_Done();
 	R9_DoneInterface();
 	A9_Done();
-	I9_Done();
 	F9_Done();
 	eInput::Done();
 
@@ -183,13 +175,11 @@ void cDizApp::Activate( bool active )
 {
 	if(active)
 	{
-		if(I9_IsReady()) I9_Acquire();
 		eInput::Acquire();
 		g_game.fffx.Update();
 	}
 	else
 	{
-		if(I9_IsReady()) I9_Unacquire();
 		eInput::Unacquire();
 		musicwaspaused = g_sound.music.paused();
 	}
@@ -261,7 +251,6 @@ bool cDizApp::Update()
 
 	// input
 	float dtime = App.DeltaTime() / 1000.0f;
-	if(I9_IsReady()) I9_Update(dtime);
 	eInput::Update(dtime);
 
 	g_sound.Update(); // update sounds
@@ -285,34 +274,31 @@ bool cDizApp::Update()
 	if(!g_dizdebug.Update()) return false;
 
 	// functional keys
-	if( I9_IsReady() )
+	if(einput->isKeyDown(DIK_F1) && App.Windowed()) DialogBox(E9_GetHINSTANCE(), MAKEINTRESOURCE(IDD_INFO), E9_GetHWND(), DialogProcInfo);
+	if(einput->isKeyDown(DIK_F10) && !ToggleVideo()) return false;
+	if(einput->isKeyDown(DIK_F11)) drawstats = !drawstats;
+	if(einput->isKeyDown(DIK_F9) && A9_IsReady())	// toggle volume
 	{
-		if(einput->isKeyDown(DIK_F1) && App.Windowed()) DialogBox(E9_GetHINSTANCE(), MAKEINTRESOURCE(IDD_INFO), E9_GetHWND(), DialogProcInfo);
-		if(einput->isKeyDown(DIK_F10) && !ToggleVideo()) return false;
-		if(einput->isKeyDown(DIK_F11)) drawstats = !drawstats;
-		if(einput->isKeyDown(DIK_F9) && A9_IsReady())	// toggle volume
+		static int volume = -1;
+		int vol;
+		if(volume == -1)
 		{
-			static int volume = -1;
-			int vol;
-			if(volume == -1)
-			{
-				volume = A9_VolumeDecibelToPercent(A9_Get(A9_MASTERVOLUME));
-				vol = 0;
-				dlog(LOGAPP, L"sound off\n");
-			}
-			else
-			{
-				vol = volume;
-				volume = -1;
-				dlog(LOGAPP, L"sound on\n");
-			}
-			A9_Set(A9_MASTERVOLUME, A9_VolumePercentToDecibel(vol));
+			volume = A9_VolumeDecibelToPercent(A9_Get(A9_MASTERVOLUME));
+			vol = 0;
+			dlog(LOGAPP, L"sound off\n");
 		}
-		if(einput->isKeyDown(DIK_SYSRQ)) // print screen
+		else
 		{
-			fRect r(0,0,R9_GetWidth(),R9_GetHeight());
-			R9_SaveScreenShot(&r, !einput->ctrl());
+			vol = volume;
+			volume = -1;
+			dlog(LOGAPP, L"sound on\n");
 		}
+		A9_Set(A9_MASTERVOLUME, A9_VolumePercentToDecibel(vol));
+	}
+	if(einput->isKeyDown(DIK_SYSRQ)) // print screen
+	{
+		fRect r(0,0,R9_GetWidth(),R9_GetHeight());
+		R9_SaveScreenShot(&r, !einput->ctrl());
 	}
 	return true;
 }

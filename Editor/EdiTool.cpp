@@ -9,6 +9,8 @@
 
 #include <algorithm>
 
+#include "eInput.h"
+
 
 #define SNAP(x,grid)	( ((x)/(grid))*(grid) + ((x)%(grid)>=(grid)/2)*(grid) )
 
@@ -53,8 +55,8 @@ void cEdiToolPaint::Update( float dtime )
 	BOOL inview = INVIEW(mx,my);
 	if(!inview && !m_isbusy) return;
 
-	BOOL alt = (I9_GetKeyValue(I9K_LALT)) || (I9_GetKeyValue(I9K_RALT));
-	BOOL ctrl	= (I9_GetKeyValue(I9K_LCONTROL)) || (I9_GetKeyValue(I9K_RCONTROL));
+	bool alt = einput->alt();
+	bool ctrl = einput->ctrl();
 
 	picked = nullptr; // clear picked brush
 	tBrush * brush = & EdiApp()->m_brush;
@@ -77,11 +79,11 @@ void cEdiToolPaint::Update( float dtime )
 		brush->pos = iV2(mx, my);
 		brush->size = iV2(bw, bh);
 
-		if(I9_GetKeyDown(I9_MOUSE_B1)) m_mode=1;
+		if(einput->mouseValue(0)) m_mode=1;
 		else
-		if(I9_GetKeyValue(I9_MOUSE_B2)) m_mode=2;
+		if(einput->mouseValue(1)) m_mode=2;
 		else
-		if(I9_GetKeyValue(I9_MOUSE_B3) || alt) m_mode=3;
+		if(einput->mouseValue(2) || alt) m_mode=3;
 		else
 //		if(ctrl && I9_GetKeyDown(I9K_Z)) EdiApp()->Undo();
 
@@ -101,7 +103,7 @@ void cEdiToolPaint::Update( float dtime )
 		if(bw<0) bw=0;
 		if(bh<0) bh=0;
 		
-		if(I9_GetKeyValue(I9K_LSHIFT))
+		if(einput->keyValue(DIK_LSHIFT))
 		{
 			int mw = static_cast<int>(brush->mapWith()); // brush.m_data[BRUSH_MAP+2]-brush.m_data[BRUSH_MAP+0];
 			int mh = static_cast<int>(brush->mapHeight()); // brush.m_data[BRUSH_MAP+3]-brush.m_data[BRUSH_MAP+1];
@@ -117,7 +119,7 @@ void cEdiToolPaint::Update( float dtime )
 		m_ax = brush->pos.x + bw;
 		m_ay = brush->pos.y + bh;
 
-		if(!I9_GetKeyValue(I9_MOUSE_B1)) 
+		if(!einput->mouseValue(0)) 
 		{
 			// add brush !
 			if( brush->size.x>0 && brush->size.y>0 && inview)
@@ -152,7 +154,7 @@ void cEdiToolPaint::Update( float dtime )
 
 		picked = g_map.BrushPick(mx,my);
 	
-		if(m_mode==2 && !I9_GetKeyValue(I9_MOUSE_B2))
+		if(m_mode==2 && !einput->mouseValue(1))
 		{
 			if(picked)
 			{
@@ -163,7 +165,7 @@ void cEdiToolPaint::Update( float dtime )
 			m_mode=-1; // draw trick
 		}
 		else
-		if(m_mode==3 && !I9_GetKeyValue(I9_MOUSE_B3) && !alt)
+		if(m_mode==3 && !einput->mouseValue(2) && !alt)
 		{
 			if(picked)
 			{
@@ -316,9 +318,9 @@ void cEdiToolEdit::Update( float dtime )
 	SNAP2GRID(mx,my); // grid snap
 
 	// additional keys
-	BOOL shift	= (I9_GetKeyValue(I9K_LSHIFT)) || (I9_GetKeyValue(I9K_RSHIFT));
-	BOOL alt	= (I9_GetKeyValue(I9K_LALT)) || (I9_GetKeyValue(I9K_RALT)) || (I9_GetKeyValue(I9_MOUSE_B3));
-	BOOL ctrl	= (I9_GetKeyValue(I9K_LCONTROL)) || (I9_GetKeyValue(I9K_RCONTROL));
+	bool shift	= einput->shift();;
+	bool alt	= einput->alt() || einput->mouseValue(2);
+	bool ctrl	= einput->ctrl();
 	
 	m_selop = 0;
 	if( shift )	m_selop++;
@@ -326,14 +328,14 @@ void cEdiToolEdit::Update( float dtime )
 
 	if( m_mode==0 && inview )
 	{
-		if(I9_GetKeyDown(I9_MOUSE_B1))
+		if(einput->isMouseDown(0))
 		{
 			if(m_selop==0) BrushDeselect();
 			m_rect.p1 = m_rect.p2 = iV2(mx, my);
 			m_mode=1;
 		}
 		else
-		if(I9_GetKeyDown(I9_MOUSE_B2))
+		if(einput->isMouseDown(1))
 		{
 			m_move = iV2(mx, my);
 			m_moved = 0;
@@ -342,13 +344,13 @@ void cEdiToolEdit::Update( float dtime )
 			App.SetCursor(Cursor::Hand);
 		}
 		else
-		if(I9_GetKeyDown(I9K_DELETE))	BrushDeleteSelected();
+		if(einput->isKeyDown(DIK_DELETE))	BrushDeleteSelected();
 		else
-		if(ctrl && I9_GetKeyDown(I9K_C)) BrushCopy();
+		if(ctrl && einput->isKeyDown(DIK_C)) BrushCopy();
 		else
-		if(ctrl && I9_GetKeyDown(I9K_V)) { BrushPaste(); g_map.SelectionGoto(); }
+		if(ctrl && einput->isKeyDown(DIK_V)) { BrushPaste(); g_map.SelectionGoto(); }
 		else
-		if(ctrl && I9_GetKeyDown(I9K_X)) { BrushCopy(); BrushDeleteSelected(); }
+		if(ctrl && einput->isKeyDown(DIK_X)) { BrushCopy(); BrushDeleteSelected(); }
 	}	
 	else
 	if( m_mode==1 )
@@ -357,7 +359,7 @@ void cEdiToolEdit::Update( float dtime )
 		m_rect.p2.y = my;
 		m_rect.p2.x = std::max(m_rect.p2.x, m_rect.p1.x+1);
 		m_rect.p2.y = std::max(m_rect.p2.y, m_rect.p1.y+1);
-		if(!I9_GetKeyValue(I9_MOUSE_B1))
+		if(!einput->mouseValue(0))
 		{
 			BrushSelect();
 			m_mode=0;
@@ -368,7 +370,7 @@ void cEdiToolEdit::Update( float dtime )
 	{
 		m_moved = iV2(mx, my) - m_move;
 
-		if(!I9_GetKeyValue(I9_MOUSE_B2))
+		if(!einput->mouseValue(1))
 		{
 			BrushMove();
 			m_mode=0;

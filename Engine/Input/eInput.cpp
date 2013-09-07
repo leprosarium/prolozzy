@@ -84,7 +84,7 @@ bool eInput::_Init<Devices::Keyboard>()
 	}
 	catch(const std::exception & e)
 	{
-		dlog(L"Keyboak ini error: %S", e.what());
+		dlog(L"Keyboard ini error: %S", e.what());
 		return false;
 	}
 	return true;
@@ -92,6 +92,15 @@ bool eInput::_Init<Devices::Keyboard>()
 template<> 
 bool eInput::_Init<Devices::Joystick>()
 {
+	try
+	{
+		devices.push_back(new DeviceDXJoystick(joystick));
+	}
+	catch(const std::exception & e)
+	{
+		dlog(L"Joystick ini error: %S", e.what());
+		return false;
+	}
 	return true;
 }
 
@@ -257,3 +266,103 @@ void DeviceDXKeyboard::Update(int frm)
 			state.keys[static_cast<BYTE>(didod[i].dwOfs)] = Key((didod[i].dwData & 0x80) != 0, frm); 
 }
 
+void JoystickDevice::State::clear()
+{
+	for(Axe & ax: a)
+		ax.Clear();
+	for(Key & k: b)
+		k = Key();
+	//pov[0] = pov[1] = pov[2] = pov[3] = Key();
+}
+
+DeviceDXJoystick::DeviceDXJoystick(JoystickDevice::State & state) : DeviceDX(InputDX::Instance(), GUID_Joystick), JoystickDevice(state)
+{
+	int err = device->SetDataFormat(& c_dfDIJoystick);
+	if(FAILED(err)) throw std::exception("JOYSTICK SetDataFormat failed");
+	err = device->SetCooperativeLevel(E9_GetHWND(), DISCL_EXCLUSIVE | DISCL_FOREGROUND );
+	if(FAILED(err))	throw std::exception("JOYSTICK SetCooperativeLevel failed");
+
+	DIPROPDWORD	dip;
+	dip.diph.dwSize			= sizeof(DIPROPDWORD);
+	dip.diph.dwHeaderSize	= sizeof(DIPROPHEADER);
+	dip.diph.dwObj			= 0;
+	dip.diph.dwHow			= DIPH_DEVICE;
+	dip.dwData				= BufferSize;
+	err = device->SetProperty( DIPROP_BUFFERSIZE, &dip.diph );
+	if(FAILED(err)) throw std::exception("JOYSTICK SetProperty failed");
+}
+
+void DeviceDXJoystick::Update(int frm)
+{
+	if(FAILED(device->Poll()))
+	    while(device->Acquire() == DIERR_INPUTLOST);
+	DIDEVICEOBJECTDATA didod[BufferSize];
+	unsigned long elements = GetDeviceData(didod);
+	if(!elements)
+		return;
+
+	for(int i=0; i<(int)elements; i++)
+	{
+		if(didod[i].dwOfs >= DIJOFS_BUTTON0 && didod[i].dwOfs <= DIJOFS_BUTTON31)
+		{
+			state.b[static_cast<BYTE>(didod[i].dwOfs - DIJOFS_BUTTON0)] = Key((didod[i].dwData & 0x80) != 0, frm);
+		}
+		else
+		if(didod[i].dwOfs==DIJOFS_POV(0)) // more hats can be supported here...
+		{
+			//int pov; // -1=none, 0=up, 1=up-right, ... 7=left-up
+			//int povmask[9] = { 0, 1, 1+2, 2, 2+4, 4, 4+8, 8, 8+1 }; // direction bits for each pov value
+			//if(*((int*)&(didod[i].dwData))>=0)
+			//	pov = didod[i].dwData / 4500;
+			//else
+			//	pov = -1;
+			//
+			//int hat = povmask[pov+1]; // current hat direction bits
+
+			//for(int d=0;d<4;d++) // check each direction: if was set push false, 
+			//{
+			//	key = I9_JOY_H1(m_idx) + d;
+			//	if( (m_hat & (1<<d)) != (hat & (1<<d)) ) // direction has changed
+			//	{
+			//		if(m_hat & (1<<d))	i9_input->PushKey(key, FALSE);
+			//		if(  hat & (1<<d))	i9_input->PushKey(key, TRUE);
+			//	}
+			//}
+			//m_hat = hat; // remember setting
+		}
+		else
+		{
+			int axe = -1;
+			switch(didod[i].dwOfs)
+			{
+				case DIJOFS_X:			axe = 0; break;
+				case DIJOFS_Y:			axe = 1; break;
+				case DIJOFS_Z:			axe = 2; break;
+				case DIJOFS_RX:			axe = 3; break;
+				case DIJOFS_RY:			axe = 4; break;
+				case DIJOFS_RZ:			axe = 5; break;
+				case DIJOFS_SLIDER(0):	axe = 6; break;
+				case DIJOFS_SLIDER(1):	axe = 7; break;
+			};
+			if(axe != -1)
+				state.a[axe].value = Filter(didod[i].dwData);
+		}
+	}
+
+}
+
+const float DeviceDXJoystick::threshold = 0.18f;
+
+int DeviceDXJoystick::Filter(int value)
+{
+	value = (value - 32767) * 1000 / 32768;
+	const int th = static_cast<int>(threshold * 1000.f);
+	
+	if( value < th && -value < th ) return 0;
+	if( value > 0 )		{ value -= th; if(value < 0) return 0; }
+	if( value < 0 )		{ value += th; if(value > 0) return 0; }
+	if( value < -1000 )	value = -1000;
+	if( value > 1000 )	value = 1000;
+	value = value * 1000 / (1000 - th);
+	return value;
+}

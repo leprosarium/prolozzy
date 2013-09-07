@@ -128,11 +128,5 @@ inline void	I9_DeviceFFPlay( int device )					{ assert(i9_input); i9_input->Devi
 inline void	I9_DeviceFFStop( int device )					{ assert(i9_input); i9_input->DeviceFFStop(device); }
 inline BOOL	I9_DeviceFFIsPlaying( int device )				{ assert(i9_input); return i9_input->DeviceFFIsPlaying(device); }
 
-inline bool I9_GetKeyValue(int) { return false;}
-
-inline int I9_GetAxeValue( int axe )						{ return 0;}//assert(i9_input); return i9_input->GetAxeValue(axe); }
-
-inline int I9_GetJoystickHAT( int joy, int hatdir )		{ return 0;}//assert(i9_input); return i9_input->GetKeyValue( I9_JOY_H1(joy)+hatdir ); }
-
 #endif
 ///////////////////////////////////////////////////////////////////////////////////////////////////

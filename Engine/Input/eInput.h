@@ -77,6 +77,22 @@ public:
 
 };
 
+class JoystickDevice : public Device
+{
+public:
+	class State : public Device::State
+	{
+	public:
+		Axe a[8];
+		Key b[32];
+		//Key pov[4];
+		void clear();
+	} & state;
+	JoystickDevice(State & state) : state(state) {}
+	virtual void Clear() { state.clear(); }
+};
+
+
 class eInput;
 extern eInput * einput;
 
@@ -94,8 +110,6 @@ class eInput
 	int frm;
 	float time;
 	std::vector<Device *> devices;
-
-	Device * joystick;
 
 	eInput(HWND hwnd, HINSTANCE hinstance);
 	void _Update(float dtime);
@@ -123,9 +137,12 @@ public:
 	bool isMouseDown(int k) const { return mouse.b[k].isDown(frm); }
 	bool isMouseUp(int k) const { return mouse.b[k].isUp(frm); }
 
+	int joystickAxeValue(int ax) const { return joystick.a[ax].value; }
+	bool joystickButtonValue(int bt) const { return joystick.b[bt].value; }
 
 	MouseDevice::State mouse;
 	KeyboardDevice::State keyboard;
+	JoystickDevice::State joystick;
 
 	~eInput();
 	static bool Init(HWND hwnd, HINSTANCE hinstance);
@@ -206,5 +223,18 @@ public:
 	virtual void Acquire() { DeviceDX::Acquire(); Clear(); }
 	virtual void Unacquire() { DeviceDX::Unacquire(); Clear(); }
 };
+
+class DeviceDXJoystick : private DeviceDX, public JoystickDevice
+{
+	static const dword BufferSize = 64;
+	static const float threshold;
+	static int Filter(int);
+public:
+	DeviceDXJoystick(JoystickDevice::State & state);
+	virtual void Update(int frm);
+	virtual void Acquire() { DeviceDX::Acquire(); Clear(); }
+	virtual void Unacquire() { DeviceDX::Unacquire(); Clear(); }
+};
+
 
 #endif

@@ -171,19 +171,19 @@ bool cDizGame::Update()
 	// joystick bogus values are higher on y because up can be used as jump...
 	int dzx = g_cfg.m_deadzone[0];
 	int dzy = g_cfg.m_deadzone[1];
-	int jax = I9_JOY_FIRSTAXE(0)+g_cfg.m_joy[4];
-	int jay = I9_JOY_FIRSTAXE(0)+g_cfg.m_joy[5];
-	int	jb0 = I9_JOY_FIRSTKEY(0)+g_cfg.m_joy[0];
-	int	jb1 = I9_JOY_FIRSTKEY(0)+g_cfg.m_joy[1];
-	int	jb2 = I9_JOY_FIRSTKEY(0)+g_cfg.m_joy[2];
+	int jax = g_cfg.m_joy[4];
+	int jay = g_cfg.m_joy[5];
+	int	jb0 = g_cfg.m_joy[0];
+	int	jb1 = g_cfg.m_joy[1];
+	int	jb2 = +g_cfg.m_joy[2];
 
-	if( I9_GetAxeValue(jax)<-dzx || I9_GetJoystickHAT(0,I9_HUT_LEFT)  )	ks |= (1<<cDizCfg::key::left);
-	if( I9_GetAxeValue(jax)> dzx || I9_GetJoystickHAT(0,I9_HUT_RIGHT) )	ks |= (1<<cDizCfg::key::right);
-	if( I9_GetAxeValue(jay)<-dzy || I9_GetJoystickHAT(0,I9_HUT_UP)    ) ks |= (1<<cDizCfg::key::up);
-	if( I9_GetAxeValue(jay)> dzy || I9_GetJoystickHAT(0,I9_HUT_DOWN)  )	ks |= (1<<cDizCfg::key::down);
-	if( I9_GetKeyValue(jb1) )											ks |= (1<<cDizCfg::key::jump);		// xbox360 B
-	if( I9_GetKeyValue(jb0) )											ks |= (1<<cDizCfg::key::action);	// xbox360 A
-	if( I9_GetKeyValue(jb2) )											ks |= (1<<cDizCfg::key::menu);		// xbox360 X
+	if(einput->joystickAxeValue(jax) < -dzx) ks |= (1<<cDizCfg::key::left);
+	if(einput->joystickAxeValue(jax) >  dzx) ks |= (1<<cDizCfg::key::right);
+	if(einput->joystickAxeValue(jay) < -dzy) ks |= (1<<cDizCfg::key::up);
+	if(einput->joystickAxeValue(jay) >  dzy) ks |= (1<<cDizCfg::key::down);
+	if(einput->joystickButtonValue(jb1)) ks |= (1<<cDizCfg::key::jump);		// xbox360 B
+	if(einput->joystickButtonValue(jb0)) ks |= (1<<cDizCfg::key::action);	// xbox360 A
+	if(einput->joystickButtonValue(jb2)) ks |= (1<<cDizCfg::key::menu);		// xbox360 X
 
 
 	// avoid keys during debug

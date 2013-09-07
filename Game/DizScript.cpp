@@ -327,15 +327,15 @@ PREDICATE_M(core, keyboardStatus, 1)
 PREDICATE_M(core, joystickStatus, 1)
 {
 	int key = A1;
-	if( key < 0 || key >= I9_JOY_KEYS ) return false;
-	return I9_GetKeyValue(I9_JOY_FIRSTKEY(0) + key);
+	if( key < 0 || key >= 32 ) return false;
+	return einput->joystickButtonValue(key);
 }
 
 PREDICATE_M(core, joystickAxe, 1)
 {
 	int axe = A1;
-	if( axe < 0 || axe >= I9_JOY_AXES ) return false;
-	return A2 = I9_GetAxeValue(I9_JOY_FIRSTAXE(0)+axe);
+	if( axe < 0 || axe >= 8) return false;
+	return A2 = einput->joystickAxeValue(axe);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

@@ -75,12 +75,11 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	{
 		App.OnInit = AppOnInit;
 		App.OnDone = AppOnDone;
-
+		App.OnActivate = AppOnActivate;
 		// init and run application
 		if(App.Init(hInstance, lpCmdLine)) {
 			App.OnRun = AppOnRun;
 			App.OnPaint = AppOnPaint;
-			App.OnActivate = AppOnActivate;
 			App.Run();
 		}
 		App.Done(); // done application destroys partial init if needed

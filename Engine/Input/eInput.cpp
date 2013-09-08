@@ -61,7 +61,7 @@ void eInput::Clear()
 }
 
 template<>
-bool eInput::_Init<Devices::Mouse>()
+bool eInput::_Init<Mouse>()
 {
 	try
 	{
@@ -76,7 +76,7 @@ bool eInput::_Init<Devices::Mouse>()
 }
 
 template<> 
-bool eInput::_Init<Devices::Keyboard>()
+bool eInput::_Init<Keyboard>()
 {
 	try
 	{
@@ -90,7 +90,7 @@ bool eInput::_Init<Devices::Keyboard>()
 	return true;
 }
 template<> 
-bool eInput::_Init<Devices::Joystick>()
+bool eInput::_Init<Joystick>()
 {
 	try
 	{
@@ -118,17 +118,47 @@ std::shared_ptr<IDirectInput8> InputDX::Instance()
 	return p;
 }
 
-DeviceDX::DeviceDX(std::shared_ptr<IDirectInput8> input, const GUID & guid) : 	
+DeviceDX::DeviceDX(std::shared_ptr<IDirectInput8> input,
+				   const std::string & name,
+				   const GUID & guid,
+				   LPCDIDATAFORMAT dataFormat,
+				   DWORD cooperativeLevel,
+				   DWORD BufferSize) : 	
+	name(name),
 	acquired(),
 	input(input)
 {
-	int err = input->CreateDevice(guid, &device, NULL);
-	if(FAILED(err))  throw std::exception("DX device CreateDevice failed");
+	HRESULT hr = input->CreateDevice(guid, &device, NULL);
+	if(FAILED(hr)) Throw("CreateDevice failed");
+
+	hr = device->SetDataFormat(dataFormat);
+	if(FAILED(hr)) Throw("SetDataFormat failed");
+
+	hr = device->SetCooperativeLevel(E9_GetHWND(), cooperativeLevel);
+	if(FAILED(hr)) Throw("SetCooperativeLevel failed");
+
+	needPolling = GetPolling();
+
+	if(!SetBufferSize(BufferSize)) Throw("Set BufferSize failed");
+}
+
+bool DeviceDX::GetPolling() const
+{
+	DIDEVCAPS dicaps;
+	memset(&dicaps, 0, sizeof(DIDEVCAPS));
+	dicaps.dwSize = sizeof(DIDEVCAPS);
+	device->GetCapabilities(&dicaps);
+	return (dicaps.dwFlags & DIDC_POLLEDDEVICE) != 0;
+}
+
+void DeviceDX::Throw(const std::string & msg) const
+{
+	throw std::exception((name + ": " + msg).c_str());
 }
 
 bool DeviceDX::Acquire()
 {
-	int err = device->Acquire();
+	HRESULT err = device->Acquire();
 	if(FAILED(err)) return false;
 	acquired = true;
 	return true;
@@ -136,13 +166,25 @@ bool DeviceDX::Acquire()
 
 bool DeviceDX::Unacquire()
 {
-	int err = device->Unacquire();
+	HRESULT err = device->Unacquire();
 	if(FAILED(err)) return false;
 	acquired = false;
 	return true;
 }
 
-void MouseDevice::State::clear()
+bool DeviceDX::SetBufferSize(DWORD BufferSize)
+{
+	DIPROPDWORD	dip;
+	dip.diph.dwSize			= sizeof(DIPROPDWORD);
+	dip.diph.dwHeaderSize	= sizeof(DIPROPHEADER);
+	dip.diph.dwObj			= 0;
+	dip.diph.dwHow			= DIPH_DEVICE;
+	dip.dwData				= BufferSize;
+	HRESULT hr = device->SetProperty( DIPROP_BUFFERSIZE, &dip.diph );
+	return SUCCEEDED(hr);
+}
+
+void Mouse::State::clear()
 {
 	for(Key & k: b)
 		k = Key();
@@ -152,22 +194,14 @@ void MouseDevice::State::clear()
 	z.Clear();
 }
 
-DeviceDXMouse::DeviceDXMouse(MouseDevice::State & state) : DeviceDX(InputDX::Instance(), GUID_SysMouse), MouseDevice(state)
+DeviceDXMouse::DeviceDXMouse(Mouse::State & state) :
+	DeviceDX(InputDX::Instance(),
+		"MOUSE",
+		GUID_SysMouse,
+		& c_dfDIMouse2,
+		DISCL_NONEXCLUSIVE | DISCL_BACKGROUND),
+	Mouse(state)
 {
-	int err = device->SetDataFormat(& c_dfDIMouse2);
-	if(FAILED(err)) throw std::exception("MOUSE SetDataFormat failed");
-	err = device->SetCooperativeLevel(E9_GetHWND(), DISCL_NONEXCLUSIVE | DISCL_BACKGROUND );
-	if(FAILED(err))	throw std::exception("MOUSE SetCooperativeLevel failed");
-
-	DIPROPDWORD	dip;
-	dip.diph.dwSize			= sizeof(DIPROPDWORD);
-	dip.diph.dwHeaderSize	= sizeof(DIPROPHEADER);
-	dip.diph.dwObj			= 0;
-	dip.diph.dwHow			= DIPH_DEVICE;
-	dip.dwData				= BufferSize;
-	err = device->SetProperty( DIPROP_BUFFERSIZE, &dip.diph );
-	if(FAILED(err)) throw std::exception("MOUSE SetProperty failed");
-	if(!DeviceDX::Acquire()) throw std::exception("MOUSE can't aquire" );
 }
 
 void DeviceDXMouse::Update(int frm)
@@ -231,27 +265,17 @@ void DeviceDXMouse::Update(int frm)
 	state.z.value = std::min(std::max(state.z.value, state.z.min), state.z.max);
 }
 
-DeviceDXKeyboard::DeviceDXKeyboard(KeyboardDevice::State & state) : DeviceDX(InputDX::Instance(), GUID_SysKeyboard), KeyboardDevice(state)
+DeviceDXKeyboard::DeviceDXKeyboard(Keyboard::State & state) :
+	DeviceDX(InputDX::Instance(),
+		"KEYBOARD",
+		GUID_SysKeyboard,
+		& c_dfDIKeyboard,
+		DISCL_NONEXCLUSIVE | DISCL_BACKGROUND),
+	Keyboard(state)
 {
-	int err = device->SetDataFormat( &c_dfDIKeyboard );
-	if(FAILED(err))	throw std::exception("KEYBOARD SetDataFormat failed");
-
-	err = device->SetCooperativeLevel(E9_GetHWND(), DISCL_NONEXCLUSIVE | DISCL_BACKGROUND );
-	if(FAILED(err)) throw std::exception("KEYBOARD SetCooperativeLevel");
-
-	DIPROPDWORD	dip;
-	dip.diph.dwSize			= sizeof(DIPROPDWORD);
-	dip.diph.dwHeaderSize	= sizeof(DIPROPHEADER);
-	dip.diph.dwObj			= 0;
-	dip.diph.dwHow			= DIPH_DEVICE;
-	dip.dwData				= BufferSize;
-	err = device->SetProperty(DIPROP_BUFFERSIZE, &dip.diph);
-	if(FAILED(err)) throw std::exception("KEYBOARD SetProperty failed");
-
-	if(!DeviceDX::Acquire()) throw std::exception("KEYBOARD can't aquire");
 }
 
-void KeyboardDevice::State::clear()
+void Keyboard::State::clear()
 {
 	for(Key & k: keys)
 		k = Key();
@@ -266,7 +290,7 @@ void DeviceDXKeyboard::Update(int frm)
 			state.keys[static_cast<BYTE>(didod[i].dwOfs)] = Key((didod[i].dwData & 0x80) != 0, frm); 
 }
 
-void JoystickDevice::State::clear()
+void Joystick::State::clear()
 {
 	for(Axe & ax: a)
 		ax.Clear();
@@ -275,27 +299,21 @@ void JoystickDevice::State::clear()
 	//pov[0] = pov[1] = pov[2] = pov[3] = Key();
 }
 
-DeviceDXJoystick::DeviceDXJoystick(JoystickDevice::State & state) : DeviceDX(InputDX::Instance(), GUID_Joystick), JoystickDevice(state)
+DeviceDXJoystick::DeviceDXJoystick(Joystick::State & state) : 
+	DeviceDX(InputDX::Instance(), 
+		"JOYSTICK",
+		GUID_Joystick,
+		& c_dfDIJoystick,
+		DISCL_EXCLUSIVE | DISCL_FOREGROUND),
+	Joystick(state)
 {
-	int err = device->SetDataFormat(& c_dfDIJoystick);
-	if(FAILED(err)) throw std::exception("JOYSTICK SetDataFormat failed");
-	err = device->SetCooperativeLevel(E9_GetHWND(), DISCL_EXCLUSIVE | DISCL_FOREGROUND );
-	if(FAILED(err))	throw std::exception("JOYSTICK SetCooperativeLevel failed");
-
-	DIPROPDWORD	dip;
-	dip.diph.dwSize			= sizeof(DIPROPDWORD);
-	dip.diph.dwHeaderSize	= sizeof(DIPROPHEADER);
-	dip.diph.dwObj			= 0;
-	dip.diph.dwHow			= DIPH_DEVICE;
-	dip.dwData				= BufferSize;
-	err = device->SetProperty( DIPROP_BUFFERSIZE, &dip.diph );
-	if(FAILED(err)) throw std::exception("JOYSTICK SetProperty failed");
 }
 
 void DeviceDXJoystick::Update(int frm)
 {
-	if(FAILED(device->Poll()))
-	    while(device->Acquire() == DIERR_INPUTLOST);
+	if(!acquired) return;
+	if(needPolling)
+		device->Poll();
 	DIDEVICEOBJECTDATA didod[BufferSize];
 	unsigned long elements = GetDeviceData(didod);
 	if(!elements)
@@ -310,6 +328,16 @@ void DeviceDXJoystick::Update(int frm)
 		else
 		if(didod[i].dwOfs==DIJOFS_POV(0)) // more hats can be supported here...
 		{
+			//The rgdwPOV member contains the position of up to four point-of-view controllers in hundredths of a degree clockwise from north (or forward). The center (neutral) position is reported as -1.
+			//- 1 
+			//0 
+			//90 * DI_DEGREES 
+			//180 * DI_DEGREES 
+			//270 * DI_DEGREES.
+
+
+			//BOOL POVCentered = (LOWORD(dwPOV) == 0xFFFF);
+
 			//int pov; // -1=none, 0=up, 1=up-right, ... 7=left-up
 			//int povmask[9] = { 0, 1, 1+2, 2, 2+4, 4, 4+8, 8, 8+1 }; // direction bits for each pov value
 			//if(*((int*)&(didod[i].dwData))>=0)

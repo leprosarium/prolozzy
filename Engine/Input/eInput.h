@@ -47,7 +47,7 @@ public:
 };
 
 
-class MouseDevice : public Device
+class Mouse : public Device
 {
 public:
 	class State : public Device::State
@@ -59,11 +59,11 @@ public:
 		Key WheelDown;
 		void clear();
 	} & state;
-	MouseDevice(State & state) : state(state) {}
+	Mouse(State & state) : state(state) {}
 	virtual void Clear() { state.clear(); }
 };
 
-class KeyboardDevice : public Device
+class Keyboard : public Device
 {
 public:
 	class State : public Device::State
@@ -72,12 +72,12 @@ public:
 		Key keys[256];
 		void clear();
 	} & state;
-	KeyboardDevice(State & state) : state(state) {}
+	Keyboard(State & state) : state(state) {}
 	virtual void Clear() { state.clear(); }
 
 };
 
-class JoystickDevice : public Device
+class Joystick : public Device
 {
 public:
 	class State : public Device::State
@@ -88,20 +88,13 @@ public:
 		//Key pov[4];
 		void clear();
 	} & state;
-	JoystickDevice(State & state) : state(state) {}
+	Joystick(State & state) : state(state) {}
 	virtual void Clear() { state.clear(); }
 };
 
 
 class eInput;
 extern eInput * einput;
-
-enum class Devices
-{
-	Mouse,
-	Keyboard,
-	Joystick
-};
 
 class eInput
 {
@@ -117,10 +110,10 @@ class eInput
 	void _Unacquire();
 	void Clear();
 
-	template<Devices D>
+	template<class Dev>
 	bool _Init() { return false; }
 
-	template<Devices D>
+	template<class D>
 	bool _Present() { return false; }
 
 public:
@@ -140,9 +133,9 @@ public:
 	int joystickAxeValue(int ax) const { return joystick.a[ax].value; }
 	bool joystickButtonValue(int bt) const { return joystick.b[bt].value; }
 
-	MouseDevice::State mouse;
-	KeyboardDevice::State keyboard;
-	JoystickDevice::State joystick;
+	Mouse::State mouse;
+	Keyboard::State keyboard;
+	Joystick::State joystick;
 
 	~eInput();
 	static bool Init(HWND hwnd, HINSTANCE hinstance);
@@ -152,17 +145,17 @@ public:
 	static void Acquire() { if(Ready())  einput->_Acquire(); }
 	static void Unacquire() { if(Ready())  einput->_Unacquire(); }
 
-	template<Devices D>
+	template<class D>
 	static bool Init() { return Ready() ? einput->_Init<D>() : false; }
 
-	template<Devices D>
+	template<class D>
 	static bool Present() { return Ready() ? einput->_Present<D> : false; }
 
 };
 
-template<> bool eInput::_Init<Devices::Mouse>();
-template<> bool eInput::_Init<Devices::Keyboard>();
-template<> bool eInput::_Init<Devices::Joystick>();
+template<> bool eInput::_Init<Mouse>();
+template<> bool eInput::_Init<Keyboard>();
+template<> bool eInput::_Init<Joystick>();
 
 class InputDX
 {
@@ -174,22 +167,28 @@ class DeviceDX
 {
 	std::shared_ptr<IDirectInput8> input;
 protected:
+	static const dword BufferSize = 64;
+	const std::string name;
 	bool acquired;
+	bool needPolling;
 	IDirectInputDevice8 * device;		// direct input device object
-	template<class Data, int BufferSize>
-	unsigned long GetDeviceData(Data (&data)[BufferSize]);
+	template<class Data, int bufferSize>
+	unsigned long GetDeviceData(Data (&data)[bufferSize]);
+	bool SetBufferSize(unsigned long);
+	bool GetPolling() const;
+	void Throw(const std::string & msg) const;
 public:
-	DeviceDX(std::shared_ptr<IDirectInput8> input, const GUID & guid);
+	DeviceDX(std::shared_ptr<IDirectInput8> input, const std::string & name, const GUID & guid, LPCDIDATAFORMAT dataFormat, DWORD cooperativeLevel, DWORD bufferSize = BufferSize);
 	~DeviceDX() { device->Release(); }
 
 	bool Acquire();
 	bool Unacquire();
 };
 
-template<class Data, int BufferSize>
-unsigned long DeviceDX::GetDeviceData(Data (&data)[BufferSize])
+template<class Data, int bufferSize>
+unsigned long DeviceDX::GetDeviceData(Data (&data)[bufferSize])
 {
-	unsigned long elements = BufferSize;
+	unsigned long elements = bufferSize;
 	int err = device->GetDeviceData(sizeof(Data), data, &elements, 0);
 	if(!FAILED(err))
 		return elements;
@@ -202,35 +201,30 @@ unsigned long DeviceDX::GetDeviceData(Data (&data)[BufferSize])
 	return 0;
 }
 
-
-class DeviceDXMouse : private DeviceDX, public MouseDevice
+class DeviceDXMouse : private DeviceDX, public Mouse
 {
-	static const dword BufferSize = 64;
 public:
-	DeviceDXMouse(MouseDevice::State & state);
-	virtual void Update(int frm);
-
-	virtual void Acquire() { DeviceDX::Acquire(); Clear(); }
-	virtual void Unacquire() { DeviceDX::Unacquire(); Clear(); }
-};
-
-class DeviceDXKeyboard : private DeviceDX, public KeyboardDevice
-{
-	static const dword BufferSize = 64;
-public:
-	DeviceDXKeyboard(KeyboardDevice::State & state);
+	DeviceDXMouse(Mouse::State & state);
 	virtual void Update(int frm);
 	virtual void Acquire() { DeviceDX::Acquire(); Clear(); }
 	virtual void Unacquire() { DeviceDX::Unacquire(); Clear(); }
 };
 
-class DeviceDXJoystick : private DeviceDX, public JoystickDevice
+class DeviceDXKeyboard : private DeviceDX, public Keyboard
 {
-	static const dword BufferSize = 64;
+public:
+	DeviceDXKeyboard(Keyboard::State & state);
+	virtual void Update(int frm);
+	virtual void Acquire() { DeviceDX::Acquire(); Clear(); }
+	virtual void Unacquire() { DeviceDX::Unacquire(); Clear(); }
+};
+
+class DeviceDXJoystick : private DeviceDX, public Joystick
+{
 	static const float threshold;
 	static int Filter(int);
 public:
-	DeviceDXJoystick(JoystickDevice::State & state);
+	DeviceDXJoystick(Joystick::State & state);
 	virtual void Update(int frm);
 	virtual void Acquire() { DeviceDX::Acquire(); Clear(); }
 	virtual void Unacquire() { DeviceDX::Unacquire(); Clear(); }

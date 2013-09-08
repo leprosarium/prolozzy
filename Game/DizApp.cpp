@@ -105,9 +105,9 @@ bool cDizApp::InitInput()
 	ini_get(inifile, "INPUT", "joystick") >> joystick;
 
 	bool ok = false;
-	if(keyboard)	ok = eInput::Init<Devices::Keyboard>();
-	if(mouse)		ok = eInput::Init<Devices::Mouse>();
-	if(joystick)	ok = eInput::Init<Devices::Joystick>();
+	if(keyboard)	ok = eInput::Init<Keyboard>();
+	if(mouse)		ok = eInput::Init<Mouse>();
+	if(joystick)	ok = eInput::Init<Joystick>();
 
 
 	// rumble support

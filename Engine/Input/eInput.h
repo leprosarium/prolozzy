@@ -231,4 +231,14 @@ public:
 };
 
 
+class XBox360 : public Joystick
+{
+	int num;
+public:
+	XBox360(int num, Joystick::State & state);
+	virtual void Update(int frm);
+	virtual void Acquire() { Clear(); }
+	virtual void Unacquire() { Clear(); }
+};
+
 #endif

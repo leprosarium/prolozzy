@@ -1,6 +1,10 @@
 #include "stdafx.h"
 #include "D9Log.h"
 
+#include <XInput.h>  
+
+#pragma comment(lib, "XInput.lib")
+
 eInput * einput = nullptr;
 
 eInput::eInput(HWND hwnd, HINSTANCE hinstance) : hwnd(hwnd), hinstance(hinstance), frm(), time(), joystick()
@@ -94,7 +98,8 @@ bool eInput::_Init<Joystick>()
 {
 	try
 	{
-		devices.push_back(new DeviceDXJoystick(joystick));
+		devices.push_back(new XBox360(0, joystick));
+//		devices.push_back(new DeviceDXJoystick(joystick));
 	}
 	catch(const std::exception & e)
 	{
@@ -103,7 +108,6 @@ bool eInput::_Init<Joystick>()
 	}
 	return true;
 }
-
 
 std::shared_ptr<IDirectInput8> InputDX::Instance()
 {
@@ -323,7 +327,8 @@ void DeviceDXJoystick::Update(int frm)
 	{
 		if(didod[i].dwOfs >= DIJOFS_BUTTON0 && didod[i].dwOfs <= DIJOFS_BUTTON31)
 		{
-			state.b[static_cast<BYTE>(didod[i].dwOfs - DIJOFS_BUTTON0)] = Key((didod[i].dwData & 0x80) != 0, frm);
+			int bt = didod[i].dwOfs - DIJOFS_BUTTON0;
+			state.b[static_cast<BYTE>(bt)] = Key((didod[i].dwData & 0x80) != 0, frm);
 		}
 		else
 		if(didod[i].dwOfs==DIJOFS_POV(0)) // more hats can be supported here...
@@ -393,4 +398,33 @@ int DeviceDXJoystick::Filter(int value)
 	if( value > 1000 )	value = 1000;
 	value = value * 1000 / (1000 - th);
 	return value;
+}
+
+XBox360::XBox360(int num, Joystick::State & state) : Joystick(state), num(num)
+{
+
+}
+
+void XBox360::Update(int frm)
+{
+	XINPUT_STATE st;
+	ZeroMemory(& st, sizeof(XINPUT_STATE));
+
+    DWORD dwResult = XInputGetState(num, & st);
+
+    if(dwResult != ERROR_SUCCESS)
+		return;
+	if(st.Gamepad.wButtons)
+	{
+	state.b[0] = Key((st.Gamepad.wButtons & XINPUT_GAMEPAD_A) != 0, frm);
+	state.b[1] = Key((st.Gamepad.wButtons & XINPUT_GAMEPAD_B) != 0, frm);
+	state.b[2] = Key((st.Gamepad.wButtons & XINPUT_GAMEPAD_X) != 0, frm);
+	state.b[3] = Key((st.Gamepad.wButtons & XINPUT_GAMEPAD_Y) != 0, frm);
+	state.b[4] = Key((st.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER) != 0, frm);
+	state.b[5] = Key((st.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER) != 0, frm);
+
+
+	state.b[8] = Key((st.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB) != 0, frm);
+	state.b[9] = Key((st.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB) != 0, frm);
+	}
 }

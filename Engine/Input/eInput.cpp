@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "D9Log.h"
+#include "E9Math.h"
+
 
 #include <XInput.h>  
 
@@ -98,8 +100,11 @@ bool eInput::_Init<Joystick>()
 {
 	try
 	{
-		devices.push_back(new XBox360(0, joystick));
-//		devices.push_back(new DeviceDXJoystick(joystick));
+		if(XBox360::isConnected(0))
+			joy = new XBox360(0, joystick);
+		else
+			joy = new DeviceDXJoystick(joystick);			
+		devices.push_back(joy);
 	}
 	catch(const std::exception & e)
 	{
@@ -300,7 +305,7 @@ void Joystick::State::clear()
 		ax.Clear();
 	for(Key & k: b)
 		k = Key();
-	//pov[0] = pov[1] = pov[2] = pov[3] = Key();
+	left = right = up = down = Key();
 }
 
 DeviceDXJoystick::DeviceDXJoystick(Joystick::State & state) : 
@@ -414,17 +419,52 @@ void XBox360::Update(int frm)
 
     if(dwResult != ERROR_SUCCESS)
 		return;
-	if(st.Gamepad.wButtons)
-	{
-	state.b[0] = Key((st.Gamepad.wButtons & XINPUT_GAMEPAD_A) != 0, frm);
-	state.b[1] = Key((st.Gamepad.wButtons & XINPUT_GAMEPAD_B) != 0, frm);
-	state.b[2] = Key((st.Gamepad.wButtons & XINPUT_GAMEPAD_X) != 0, frm);
-	state.b[3] = Key((st.Gamepad.wButtons & XINPUT_GAMEPAD_Y) != 0, frm);
-	state.b[4] = Key((st.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER) != 0, frm);
-	state.b[5] = Key((st.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER) != 0, frm);
+	const WORD msk[] = { XINPUT_GAMEPAD_A, XINPUT_GAMEPAD_B,
+						XINPUT_GAMEPAD_X, XINPUT_GAMEPAD_Y,
+						XINPUT_GAMEPAD_LEFT_SHOULDER, XINPUT_GAMEPAD_RIGHT_SHOULDER,
+						XINPUT_GAMEPAD_BACK, XINPUT_GAMEPAD_START,
+						XINPUT_GAMEPAD_LEFT_THUMB, XINPUT_GAMEPAD_RIGHT_THUMB };
+	for(int i = 0; i < 10; ++i)
+		state.b[i].Set((st.Gamepad.wButtons & msk[i]) != 0, frm);
+	
+	state.a[0].value = Filter(st.Gamepad.sThumbLX, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);
+	state.a[1].value = Filter(-st.Gamepad.sThumbLY, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);
+	state.a[2].value = Filter(st.Gamepad.sThumbRX, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE);
+	state.a[3].value = Filter(-st.Gamepad.sThumbRY, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE);
 
+	state.left.Set((st.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT) != 0, frm);
+	state.right.Set((st.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT) != 0, frm);
+	state.up.Set((st.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP) != 0, frm);
+	state.down.Set((st.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN) != 0, frm);
+}
 
-	state.b[8] = Key((st.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB) != 0, frm);
-	state.b[9] = Key((st.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB) != 0, frm);
-	}
+int XBox360::Filter(int v, int th)
+{
+	v = v * 1000 / 32768;
+	th = th * 1000 / 32768;
+	
+	if( v < th && -v < th ) return 0;
+	if( v > 0 )		{ v -= th; if(v < 0) return 0; }
+	if( v < 0 )		{ v += th; if(v > 0) return 0; }
+	if( v < -1000 )	v = -1000;
+	if( v > 1000 )	v = 1000;
+	v = v * 1000 / (1000 - th);
+	return v;
+}
+
+void XBox360::Vibrate(int speed1, int speed2)
+{
+	XINPUT_VIBRATION vibration;
+	ZeroMemory( & vibration, sizeof(XINPUT_VIBRATION) );
+	vibration.wLeftMotorSpeed = speed1; // use any value between 0-65535 here
+	vibration.wRightMotorSpeed = speed2; // use any value between 0-65535 here
+	XInputSetState(num, & vibration );
+}
+
+bool XBox360::isConnected(int num)
+{
+	XINPUT_STATE state;
+	ZeroMemory( &state, sizeof(XINPUT_STATE) );
+	DWORD dwResult = XInputGetState(num, & state);
+    return dwResult == ERROR_SUCCESS;
 }

@@ -177,10 +177,10 @@ bool cDizGame::Update()
 	int	jb1 = g_cfg.m_joy[1];
 	int	jb2 = +g_cfg.m_joy[2];
 
-	if(einput->joystickAxeValue(jax) < -dzx) ks |= (1<<cDizCfg::key::left);
-	if(einput->joystickAxeValue(jax) >  dzx) ks |= (1<<cDizCfg::key::right);
-	if(einput->joystickAxeValue(jay) < -dzy) ks |= (1<<cDizCfg::key::up);
-	if(einput->joystickAxeValue(jay) >  dzy) ks |= (1<<cDizCfg::key::down);
+	if(einput->joystickAxeValue(jax) < -dzx || einput->joystick.left.value) ks |= (1<<cDizCfg::key::left);
+	if(einput->joystickAxeValue(jax) >  dzx || einput->joystick.right.value) ks |= (1<<cDizCfg::key::right);
+	if(einput->joystickAxeValue(jay) < -dzy || einput->joystick.up.value) ks |= (1<<cDizCfg::key::up);
+	if(einput->joystickAxeValue(jay) >  dzy || einput->joystick.down.value) ks |= (1<<cDizCfg::key::down);
 	if(einput->joystickButtonValue(jb1)) ks |= (1<<cDizCfg::key::jump);		// xbox360 B
 	if(einput->joystickButtonValue(jb0)) ks |= (1<<cDizCfg::key::action);	// xbox360 A
 	if(einput->joystickButtonValue(jb2)) ks |= (1<<cDizCfg::key::menu);		// xbox360 X

@@ -26,7 +26,7 @@ struct Key
 
 	bool isDown(int frame) const { return value && frm == frame; }
 	bool isUp(int frame) const { return !value && frm == frame; }
-
+	void Set(bool v, int f) { if(v != value) { value = v; frm = f; } }
 };
 
 class Device
@@ -85,11 +85,13 @@ public:
 	public:
 		Axe a[8];
 		Key b[32];
-		//Key pov[4];
+		Key left, right, up, down;
 		void clear();
 	} & state;
 	Joystick(State & state) : state(state) {}
+	virtual ~Joystick() { Vibrate(0, 0); }
 	virtual void Clear() { state.clear(); }
+	virtual void Vibrate(int, int) {}
 };
 
 
@@ -104,6 +106,7 @@ class eInput
 	float time;
 	std::vector<Device *> devices;
 
+	Joystick * joy;
 	eInput(HWND hwnd, HINSTANCE hinstance);
 	void _Update(float dtime);
 	void _Acquire();
@@ -133,10 +136,13 @@ public:
 	int joystickAxeValue(int ax) const { return joystick.a[ax].value; }
 	bool joystickButtonValue(int bt) const { return joystick.b[bt].value; }
 
+	void Vibrate(int s1, int s2) { if (joy) joy->Vibrate(s1, s2); }
+
 	Mouse::State mouse;
 	Keyboard::State keyboard;
 	Joystick::State joystick;
 
+	eInput() : joy() {}
 	~eInput();
 	static bool Init(HWND hwnd, HINSTANCE hinstance);
 	static void Done();
@@ -234,11 +240,16 @@ public:
 class XBox360 : public Joystick
 {
 	int num;
+	int Filter(int v, int th);
 public:
 	XBox360(int num, Joystick::State & state);
+
+	static bool isConnected(int num);
+
 	virtual void Update(int frm);
 	virtual void Acquire() { Clear(); }
 	virtual void Unacquire() { Clear(); }
+	virtual void Vibrate(int speed1, int speed2);
 };
 
 #endif

@@ -71,16 +71,10 @@ updateShake :-
 	game:shake(NewShake).
 updateShake.
 
-rumbleMagnitude(Rumble, 100) :- Rumble > 0.
-rumbleMagnitude(_, 0).
-
 updateRumble :-
 	game:rumble(Rumble),
 	Rumble > 0,
 	NewRumble is Rumble - 1,
-	game:setFFPeriod(100),
-	rumbleMagnitude(NewRumble, Magnitude),
-	game:setFFMagnitude(Magnitude),
 	game:rumble(NewRumble).
 updateRumble.
 

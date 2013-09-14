@@ -50,14 +50,18 @@ GAME_PROP(shake.y, shakeY, setShakeY)
 GAME_BOOL_PROP(pause, paused, pause)
 GAME_COLOR_PROP(mapColor, mapColor, setMapColor)
 GAME_COLOR_PROP(borderColor, borderColor, setBorderColor)
-GAME_PROP(fffx.magnitude, ffMagnitude, setFFMagnitude)
-GAME_PROP(fffx.period, ffPeriod, setFFPeriod)
 GAME_BOOL_PROP(viewportMode, viewportMode, setViewportMode)
 GAME_PROP(viewport.x, viewportX, setViewportX)
 GAME_PROP(viewport.y, viewportY, setViewportY)
 GAME_BOOL_PROP(viewportFlipX, viewportFlipX, setViewportFlipX)
 GAME_BOOL_PROP(viewportFlipY, viewportFlipY, setViewportFlipY)
 GAME_BOOL_PROP(fullMaterialMap, fullMaterialMap, setFullMaterialMap)
+
+PREDICATE_M(game, vibrate, 3)
+{
+	g_game.Vibrate(A1, A2, A3);
+	return true;
+}
 
 cDizGame g_game;
 
@@ -108,8 +112,7 @@ bool cDizGame::Start()
 	g_player.pos = 0;
 	g_player.disable = true;
 
-//	if(I9_IsReady()) { fffx.magnitude = 0; }
-
+	einput->vibra.Stop();
 	SetRoom(0);
 
 	g_script.Start();
@@ -134,6 +137,11 @@ bool cDizGame::CheckVersion()
 	msg  << "\nYou are running it with DizzyAGE v" << engv;
 	ERRORMESSAGE(MultiByteToWideString(msg.str().c_str()).c_str());
 	return false;
+}
+
+void cDizGame::Vibrate(int left, int right, int interval) const 
+{ 
+	einput->vibra.Vibrate(left * 655, right * 655, m_gameframe + interval); 
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -193,6 +201,10 @@ bool cDizGame::Update()
 	keysHit = ks & ~oldkeys;
 	oldkeys = ks;
 
+
+	if(einput->vibra)
+		einput->vibra.Update(m_gameframe);
+
 	// game update
 	g_script.gameUpdate();
 
@@ -233,7 +245,6 @@ bool cDizGame::Update()
 	if(KeyHit(cDizCfg::key::action) && !pause && g_player.life > 0 && !g_player.disable)
 		g_script.action();
 
-	fffx.Update();
 	g_script.gameAfterUpdate();
 
 	return true;
@@ -460,30 +471,3 @@ void cDizGame::ObjDraw( const tBrush & brush )
 	int frame = tile->ComputeFrame(brush.frame,brush.anim);
 	g_paint.DrawBrush( brush, viewShift + brush.pos - roomPos * Room::Size, frame );
 }
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// FFFX Rumble
-//////////////////////////////////////////////////////////////////////////////////////////////////
-void FFFX::Update()
-{
-	if(_magnitude == magnitude && _period == period) return;
-	_magnitude = magnitude;
-	_period = period;
-//	if(!I9_IsReady()) return;
-	if(!I9_DeviceIsPresent(I9_DEVICE_JOYSTICK1)) return; // no joystick
-	BOOL isrunning = I9_DeviceFFIsPlaying(I9_DEVICE_JOYSTICK1);
-	if(g_cfg.m_rumble)
-	{
-		I9_DeviceFFSet(I9_DEVICE_JOYSTICK1, _magnitude * 100, _period);
-		if(!_magnitude && isrunning) I9_DeviceFFStop(I9_DEVICE_JOYSTICK1);
-		else if(_magnitude && !isrunning) I9_DeviceFFPlay(I9_DEVICE_JOYSTICK1);
-	}
-	else
-	{
-		I9_DeviceFFSet(I9_DEVICE_JOYSTICK1, 0, 0);
-		if(isrunning) I9_DeviceFFStop(I9_DEVICE_JOYSTICK1);
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////

@@ -8,7 +8,7 @@
 		   live/0,
 		   safe/0, safe/1, xSafe/1, ySafe/1, posSafe/2,
 		   stable/0,
-		   playStun/0,
+		   stun/0,
 		   stopStun/0,
 		   inStun/0,
 		   enterIdle/0,
@@ -146,6 +146,8 @@ damageLife(Damage) :-
 hurt(Damage) :-
 	util:doRumble(6),
 	util:doShake(2),
+	game:vibrate(100, 100, 2),
+	game:vibrate(0, 100, 4),
 	sample:play(hurt),
 	damageLife(Damage),
 	safe(0).
@@ -206,14 +208,15 @@ inStun :-
 	def:maxStunLevel(SL),
 	S >= SL.
 
-playStun :-
+stun :-
 	stable,
 	live,
 	util:doShake(20),
+	game:vibrate(100, 0, 20),
 	sample:play(stun),
 	update:register(player, player:enterIdle),
 	playAnimFrames(stun, [0,1,0,1,0,1,0,1,2,3,2,3,2,3,2,3,4,4,4,4], true), !.
-playStun.
+stun.
 
 % +tile id
 % Player plays all frames from the tile's animation.

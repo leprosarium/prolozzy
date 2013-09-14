@@ -176,7 +176,6 @@ void cDizApp::Activate( bool active )
 	if(active)
 	{
 		eInput::Acquire();
-		g_game.fffx.Update();
 	}
 	else
 	{

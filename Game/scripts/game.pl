@@ -42,8 +42,6 @@ property(shakeY, setShakeY, 0).
 property(isPaused, setPaused, true).
 property(mapColor, setMapColor, 0xff000000).
 property(borderColor, setBorderColor, 0xff000000).
-property(ffMagnitude, setFFMagnitude, 0).
-property(ffPeriod, setFFPeriod, 50).
 property(isViewportMode, setViewportMode, false).
 property(viewportX, setViewportX, 0).
 property(viewportY, setViewportY, 0).
@@ -116,7 +114,7 @@ outRoom(X, Y) :-
 	core:debugData(8, our(X, Y)).
 
 collideObject(collide_handler, 1) :-
-	update:register(player, player:playStun),
+	update:register(player, player:stun),
 	core:debugData(9, coll(ch, 1)).
 
 

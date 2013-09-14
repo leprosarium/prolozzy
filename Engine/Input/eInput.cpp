@@ -15,6 +15,7 @@ eInput::eInput(HWND hwnd, HINSTANCE hinstance) : hwnd(hwnd), hinstance(hinstance
 
 eInput::~eInput()
 {
+	vibra.Stop();
 	for(Device *d: devices)
 		delete d;
 }
@@ -48,6 +49,7 @@ void eInput::_Acquire()
 	for(Device *d: devices)
 		d->Acquire();
 	keyQueue.clear();
+	vibra.Pause(false);
 }
 
 void eInput::_Unacquire()
@@ -55,6 +57,7 @@ void eInput::_Unacquire()
 	for(Device *d: devices)
 		d->Unacquire();
 	keyQueue.clear();
+	vibra.Pause(true);
 }
 
 
@@ -100,10 +103,12 @@ bool eInput::_Init<Joystick>()
 {
 	try
 	{
+		Joystick * joy;
 		if(XBox360::isConnected(0))
 			joy = new XBox360(0, joystick);
 		else
-			joy = new DeviceDXJoystick(joystick);			
+			joy = new DeviceDXJoystick(joystick);
+		vibra.Init(joy);
 		devices.push_back(joy);
 	}
 	catch(const std::exception & e)
@@ -467,4 +472,43 @@ bool XBox360::isConnected(int num)
 	ZeroMemory( &state, sizeof(XINPUT_STATE) );
 	DWORD dwResult = XInputGetState(num, & state);
     return dwResult == ERROR_SUCCESS;
+}
+
+void Vibrator::Vibrate(int left, int right, int time)
+{ 
+	Cmd cmd(left, right, time);
+	if(queue.empty())
+		Vibrate(cmd);
+	queue.push_back(cmd);
+}
+
+void Vibrator::Update(int frm)
+{
+	if(!joystick) return;
+	while(!queue.empty())
+	{
+		Cmd & cmd = queue.front();
+		if(paused)
+		{
+			++cmd.time;
+			return;
+		}
+		if(cmd.time > frm)
+			return;
+		queue.pop_front();
+		if(queue.empty())
+			return Vibrate(Cmd());
+		Vibrate(queue.front());
+	}
+}
+
+void Vibrator::Pause(bool p) 
+{
+	if(paused == p)
+		return;
+	paused = p;
+	if(paused)
+		Vibrate(Cmd());
+	else if(!queue.empty())
+		Vibrate(queue.front());
 }

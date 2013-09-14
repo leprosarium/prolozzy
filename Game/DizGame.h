@@ -57,20 +57,6 @@ public:
 // cDizGame
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-// FFFX Rumble
-class FFFX
-{
-	int _magnitude;						// force magnitude [0,100] (0=stopped)
-	int	_period;						// force period in miliseconds (50=default)
-public:
-	int magnitude;
-	int period;
-
-	FFFX() : _magnitude(), _period(50), magnitude(_magnitude), period(_period) {}
-	void Update();
-};
-
-
 class cDizGame
 {
 	PlAtom none;				// nothing to do
@@ -114,6 +100,7 @@ public:
 	bool Update();					// update game (called periodical to match the game fps) return false to exit game
 	void Draw();
 
+	void Vibrate(int left, int right, int interval) const;
 	
 	void NextDrawMode();
 		// settings
@@ -149,8 +136,6 @@ inline	void			ObjAdd				(tBrush *);		// add object to present lists (objects and
 		std::vector<tBrush *> m_obj;									// objects list with objects indexes (present in current room)
 		std::vector<tBrush *> m_collider;							// colliders list with objects indexes (present in current room)
 
-
-		FFFX fffx;
 
 
 		// stats

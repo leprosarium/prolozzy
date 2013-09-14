@@ -6,6 +6,7 @@
 #include "dinput.h"
 #include <vector>
 #include <memory>
+#include <deque>
 
 struct Axe
 {
@@ -98,15 +99,37 @@ public:
 class eInput;
 extern eInput * einput;
 
+class Vibrator
+{
+	Joystick * joystick;
+	struct Cmd 
+	{ 
+		int left, right, time;
+		Cmd() : left(), right(), time() {}
+		Cmd(int left, int right, int time) : left(left), right(right), time(time) {}
+	};
+	typedef std::deque<Cmd> CmdQueue;
+	CmdQueue queue;
+	bool paused;
+	void Vibrate(const Cmd & cmd) { if(joystick) joystick->Vibrate(cmd.left, cmd.right); }
+public:
+	Vibrator() : joystick(), paused(true) {}
+	void Init(Joystick * j) { joystick = j; }
+	operator bool() const { return joystick != nullptr; }
+	void Update(int frm);
+	void Pause(bool p);
+	void Stop() { Vibrate(Cmd()); queue.clear(); }
+	void Vibrate(int left, int right, int time);
+};
+
 class eInput
 {
 	HWND hwnd;
 	HINSTANCE hinstance;
 	int frm;
 	float time;
-	std::vector<Device *> devices;
 
-	Joystick * joy;
+	std::vector<Device *> devices;
 	eInput(HWND hwnd, HINSTANCE hinstance);
 	void _Update(float dtime);
 	void _Acquire();
@@ -120,6 +143,7 @@ class eInput
 	bool _Present() { return false; }
 
 public:
+	Vibrator vibra;
 	std::wstring keyQueue;
 
 	bool keyValue(int k) const { return keyboard.keys[k].value; } 
@@ -136,19 +160,18 @@ public:
 	int joystickAxeValue(int ax) const { return joystick.a[ax].value; }
 	bool joystickButtonValue(int bt) const { return joystick.b[bt].value; }
 
-	void Vibrate(int s1, int s2) { if (joy) joy->Vibrate(s1, s2); }
+	void Vibrate(int left, int right, int time) { if(vibra) vibra.Vibrate(left, right, time); }
 
 	Mouse::State mouse;
 	Keyboard::State keyboard;
 	Joystick::State joystick;
 
-	eInput() : joy() {}
 	~eInput();
 	static bool Init(HWND hwnd, HINSTANCE hinstance);
 	static void Done();
 	static bool Ready() { return einput != nullptr; }
 	static void Update(float dtime) { if(Ready()) einput->_Update(dtime); } 
-	static void Acquire() { if(Ready())  einput->_Acquire(); }
+	static void Acquire() { if(!Ready()) return; einput->_Acquire(); }
 	static void Unacquire() { if(Ready())  einput->_Unacquire(); }
 
 	template<class D>

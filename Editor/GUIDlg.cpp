@@ -45,21 +45,26 @@ void cGUIDlg::Close(int ret)
 	// from here the dialog should not be used anymore (it will be destroyed asp)
 }
 
-bool DlgKey::Active() const
+namespace Dlg
 {
-	if(!einput->isKeyDown(m_key))
-		return false;
-	int flags = 0;
-	if(einput->shift()) flags |= GUIKEYFLAG_SHIFT;
-	if(einput->ctrl()) flags |= GUIKEYFLAG_CTRL;
-	if(einput->alt()) flags |= GUIKEYFLAG_ALT;
-	return m_flags == flags;
+
+void Cmd::KeyboardKey(int key) { push_back([key](){ return einput->isKeyDown(key); }); }
+void Cmd::MouseKey(int key) { push_back([key](){ return einput->isMouseDown(key); }); }
+void Cmd::Shift() { push_back([]() { return einput->shift(); }); }
+void Cmd::Ctrl() { push_back([]() { return einput->ctrl(); }); }
+void Cmd::Alt() { push_back([]() { return einput->alt(); }); }
+void Cmd::WheelUp() { push_back([](){ return einput->mouse.axe[2].delta < -25; }); }
+void Cmd::WheelDown() { push_back([](){ return einput->mouse.axe[2].delta > 25; }); }
+
+bool Cmd::Active() const
+{
+	for(auto f: *this) if(!f()) return false;
+	return true;
 }
 
-
-void DlgKeys::Test(cGUIDlg * dlg)
+void Keys::Test(cGUIDlg * dlg)
 {
-	auto k = std::find_if(begin(), end(), [](const DlgKey & k) { return k.Active(); });
+	auto k = std::find_if(begin(), end(), [](const Dlg::Cmd & k) { return k.Active(); });
 	if(k != end())
 	{
 		g_gui->SetLast(dlg);
@@ -68,6 +73,9 @@ void DlgKeys::Test(cGUIDlg * dlg)
 
 
 }
+
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////

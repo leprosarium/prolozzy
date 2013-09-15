@@ -1,5 +1,5 @@
 :-module(keys, [key/2,
-	       flag/2]).
+	       mouse/2]).
 
 % Direct Input Keys
 
@@ -170,18 +170,10 @@ key(pgdn, 0xD1).            % PgDn on arrow keypad
 
 % Mouse related, specific for our input only
 
-key(mouse_button1, 256).
-key(mouse_button2, 257).
-key(mouse_button3, 258).
-key(mouse_button4, 259).
-key(mouse_wheelup, 264).				% fake wheel button up
-key(mouse_wheeldn, 265).				% fake wheel button down
-
-
-
-flag(shift, 1).
-flag(ctrl, 2).
-flag(alt, 4).
+mouse(button1, 0).
+mouse(button2, 1).
+mouse(button3, 2).
+mouse(button4, 3).
 
 
 

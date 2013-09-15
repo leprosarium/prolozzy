@@ -390,7 +390,7 @@ void cEdiMap::Update( float dtime )
 	int stepy = EdiApp()->m_gridsize;
 	int mx = EdiApp()->GetMouseX() - VIEWX;
 	int my = EdiApp()->GetMouseY() - VIEWY;
-	int mz = einput->mouse.z.delta;
+	int mz = einput->mouse.axe[2].delta;
 	bool shift	= einput->shift();
 	bool alt	= einput->alt() || einput->mouseValue(2);
 	bool ctrl	= einput->ctrl();

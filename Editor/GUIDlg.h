@@ -9,28 +9,40 @@
 
 #include <algorithm>
 
-struct  DlgKey
+class cGUIDlg;
+
+namespace Dlg
 {
-	DlgKey()	{};
-	DlgKey(int key, int flags, const std::string & cmd) : m_key(key), m_flags(flags), cmd(cmd) {}
-	int		m_key;
-	byte	m_flags;			// bit 0 = shift, bit 1 = ctrl, bit 2 = alt etc
+
+class Cmd : std::vector<std::function<bool()>>
+{
+public:
 	std::string cmd;
+	Cmd(const std::string & cmd) : cmd(cmd) {}
+	void KeyboardKey(int key);
+	void MouseKey(int key);
+	void Shift();	
+	void Ctrl();	
+	void Alt();	
+	void WheelUp();
+	void WheelDown();
 	bool Active() const;
 };
 
-class cGUIDlg;
-
-class DlgKeys : std::vector<DlgKey>
+class Keys : std::vector<Cmd>
 {
 	void Test(cGUIDlg *);
 public:
 	enum class Mode { none, always, mousein } mode;
 
-	DlgKeys() : mode(Mode::always) {}
-	void Add(int key, int flags, const std::string & cmd) { push_back(DlgKey(key, flags, cmd)); }
+	Keys() : mode(Mode::always) {}
 	void Test(cGUIDlg * dlg, bool mousein) { if( mode == Mode::always || mode == Mode::mousein && mousein) Test(dlg); }
+
+	void AddCmd(const std::string & cmd) { push_back(Cmd(cmd)); }
+	Cmd & Last() { return back(); }
 };
+
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cGUIDlg
@@ -80,7 +92,7 @@ public:
 		return i;
 	}
 	DlgItems Items;
-	DlgKeys Keys;
+	Dlg::Keys Keys;
 };
 
 #endif

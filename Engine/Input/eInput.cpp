@@ -234,7 +234,7 @@ void DeviceDXMouse::Update(int frm)
 		case DIMOFS_X:
 		case DIMOFS_Y:
 		case DIMOFS_Z:
-			state.axe[ofs - DIMOFS_X].delta	+= *((int*)&didod[i].dwData);
+			state.axe[(ofs - DIMOFS_X) / sizeof(LONG)].delta += *((int*)&didod[i].dwData);
 			break;
 
 		// keys

@@ -282,21 +282,31 @@ dlgAddKeys([Key|Keys]) :-
 
 
 addKey(KeyOp > Cmd) :-
-	parceKeyOp(KeyOp, Key, Flags),
-	dlg:addKey(Key, Flags, Cmd).
+	dlg:addCmd(Cmd),
+	parceKeyOp(KeyOp).
+
+parceKeyOp(A + B):-
+	parceKeyOp(A),
+	parceKeyOp(B).
 
 
-parceKeyOp(Key, K, 0) :-
-	keys:key(Key, K).
+parceKeyOp(shift) :- dlg:addShift.
+parceKeyOp(ctrl) :- dlg:addCtrl.
+parceKeyOp(alt) :- dlg:addAlt.
 
-parceKeyOp(Flag, 0, F) :-
-	keys:flag(Flag, F).
+parceKeyOp(mouse_wheeldn) :- dlg:addWheelUp.
+parceKeyOp(mouse_wheelup) :- dlg:addWheelDown.
 
 
-parceKeyOp(A+B, K, F):-
-	(   parceKeyOp(A, 0, F1), parceKeyOp(B, K, F2)
-	;   parceKeyOp(A, K, F1), parceKeyOp(B, 0, F2)),
-	F is F1 + F2.
+
+parceKeyOp(Op) :-
+	keys:mouse(Op, Key),
+	dlg:addMouseKey(Key).
+
+parceKeyOp(Op) :-
+	keys:key(Op, Key),
+	dlg:addKey(Key).
+
 
 
 

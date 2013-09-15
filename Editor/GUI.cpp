@@ -359,13 +359,13 @@ PREDICATE_M(dlg, setID, 1)
 
 PREDICATE_M(dlg, setTestKey, 0)
 {
-	g_gui->GetLastDlg()->Keys.mode = DlgKeys::Mode::always;
+	g_gui->GetLastDlg()->Keys.mode = Dlg::Keys::Mode::always;
 	return true;
 }
 
 PREDICATE_M(dlg, resetTestKey, 0)
 {
-	g_gui->GetLastDlg()->Keys.mode = DlgKeys::Mode::none;
+	g_gui->GetLastDlg()->Keys.mode = Dlg::Keys::Mode::none;
 	return true;
 }
 
@@ -394,9 +394,51 @@ PREDICATE_M(dlg, setRect, 4)
 	return true;
 }
 
-PREDICATE_M(dlg, addKey, 3)
+PREDICATE_M(dlg, addCmd, 1)
 {
-	g_gui->GetLastDlg()->Keys.Add(A1, A2, A3);
+	g_gui->GetLastDlg()->Keys.AddCmd(A1);
+	return true;
+}
+
+PREDICATE_M(dlg, addKey, 1)
+{
+	g_gui->GetLastDlg()->Keys.Last().KeyboardKey(A1);
+	return true;
+}
+
+PREDICATE_M(dlg, addMouseKey, 1)
+{
+	g_gui->GetLastDlg()->Keys.Last().MouseKey(A1);
+	return true;
+}
+
+PREDICATE_M(dlg, addShift, 0)
+{
+	g_gui->GetLastDlg()->Keys.Last().Shift();
+	return true;
+}
+
+PREDICATE_M(dlg, addCtrl, 0)
+{
+	g_gui->GetLastDlg()->Keys.Last().Ctrl();
+	return true;
+}
+
+PREDICATE_M(dlg, addAlt, 0)
+{
+	g_gui->GetLastDlg()->Keys.Last().Alt();
+	return true;
+}
+
+PREDICATE_M(dlg, addWheelUp, 0)
+{
+	g_gui->GetLastDlg()->Keys.Last().WheelUp();
+	return true;
+}
+
+PREDICATE_M(dlg, addWheelDown, 0)
+{
+	g_gui->GetLastDlg()->Keys.Last().WheelDown();
 	return true;
 }
 

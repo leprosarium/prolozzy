@@ -114,9 +114,10 @@ public:
 	Vibrator() : joystick(), paused(true) {}
 	void Init(Joystick * j) { joystick = j; }
 	operator bool() const { return joystick != nullptr; }
-	void Update(int frm);
+	void Update();
 	void Pause(bool p);
-	void Stop() { Vibrate(Cmd()); queue.clear(); }
+	void Stop() { Vibrate(Cmd()); Clear(); }
+	void Clear() { queue.clear(); }
 	void Vibrate(int left, int right, int time);
 };
 
@@ -157,8 +158,6 @@ public:
 
 	int joystickAxeValue(int ax) const { return joystick.a[ax].value; }
 	bool joystickButtonValue(int bt) const { return joystick.b[bt].value; }
-
-	void Vibrate(int left, int right, int time) { if(vibra) vibra.Vibrate(left, right, time); }
 
 	Mouse::State mouse;
 	Keyboard::State keyboard;

@@ -100,8 +100,6 @@ public:
 	bool Update();					// update game (called periodical to match the game fps) return false to exit game
 	void Draw();
 
-	void Vibrate(int left, int right, int interval) const;
-	
 	void NextDrawMode();
 		// settings
 		iV2				screenSize;								// game resolution (256x192 - Z80 res)
@@ -132,8 +130,8 @@ public:
 inline	void			ObjAdd				(tBrush *);		// add object to present lists (objects and coliders)
 		void			ObjGather			();					// gather objects present in current room
 		void			ObjPresent			(tBrush *);		// add object to present list if not in it already
-		void			ObjDraw				( const tBrush & brush	);	// draw one object
-		std::vector<tBrush *> m_obj;									// objects list with objects indexes (present in current room)
+		void			ObjDraw				(const tBrush & brush);	// draw one object
+		std::vector<tBrush *> m_obj;								// objects list with objects indexes (present in current room)
 		std::vector<tBrush *> m_collider;							// colliders list with objects indexes (present in current room)
 
 

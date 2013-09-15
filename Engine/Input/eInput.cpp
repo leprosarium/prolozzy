@@ -15,7 +15,6 @@ eInput::eInput(HWND hwnd, HINSTANCE hinstance) : hwnd(hwnd), hinstance(hinstance
 
 eInput::~eInput()
 {
-	vibra.Stop();
 	for(Device *d: devices)
 		delete d;
 }
@@ -471,24 +470,13 @@ void Vibrator::Vibrate(int left, int right, int time)
 	queue.push_back(cmd);
 }
 
-void Vibrator::Update(int frm)
+void Vibrator::Update()
 {
-	if(!joystick) return;
-	while(!queue.empty())
-	{
-		Cmd & cmd = queue.front();
-		if(paused)
-		{
-			++cmd.time;
-			return;
-		}
-		if(cmd.time > frm)
-			return;
-		queue.pop_front();
-		if(queue.empty())
-			return Vibrate(Cmd());
-		Vibrate(queue.front());
-	}
+	if(!joystick || paused || queue.empty()) return;
+	if(--queue.front().time > 0)
+		return;
+	queue.pop_front();
+	Vibrate(queue.empty() ? Cmd() : queue.front());
 }
 
 void Vibrator::Pause(bool p) 

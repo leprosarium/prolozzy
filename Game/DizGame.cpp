@@ -57,9 +57,15 @@ GAME_BOOL_PROP(viewportFlipX, viewportFlipX, setViewportFlipX)
 GAME_BOOL_PROP(viewportFlipY, viewportFlipY, setViewportFlipY)
 GAME_BOOL_PROP(fullMaterialMap, fullMaterialMap, setFullMaterialMap)
 
+
+PREDICATE_M(game, clearVibrate, 0)
+{
+	einput->vibra.Clear();
+	return true;
+}
 PREDICATE_M(game, vibrate, 3)
 {
-	g_game.Vibrate(A1, A2, A3);
+	einput->vibra.Vibrate(static_cast<int>(A1) * 655, static_cast<int>(A2) * 655, A3);
 	return true;
 }
 
@@ -139,11 +145,6 @@ bool cDizGame::CheckVersion()
 	return false;
 }
 
-void cDizGame::Vibrate(int left, int right, int interval) const 
-{ 
-	einput->vibra.Vibrate(left * 655, right * 655, m_gameframe + interval); 
-}
-
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // UPDATE
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -176,7 +177,6 @@ bool cDizGame::Update()
 			einput->keyValue(g_cfg.m_key[i][1]) )	
 			ks |= (1<<i);
 		
-	// joystick bogus values are higher on y because up can be used as jump...
 	int dzx = g_cfg.m_deadzone[0];
 	int dzy = g_cfg.m_deadzone[1];
 	int jax = g_cfg.m_joy[4];
@@ -201,9 +201,7 @@ bool cDizGame::Update()
 	keysHit = ks & ~oldkeys;
 	oldkeys = ks;
 
-
-	if(einput->vibra)
-		einput->vibra.Update(m_gameframe);
+	einput->vibra.Update();
 
 	// game update
 	g_script.gameUpdate();
@@ -331,14 +329,7 @@ void cDizGame::Draw()
 	R9_DrawBar( fRect( 0.0f, rect.p1.y, rect.p1.x, rect.p2.y ),						borderColor|0xff000000);
 	R9_DrawBar( fRect( rect.p2.x, rect.p1.y, (float)R9_GetWidth(),rect.p2.y ),		borderColor|0xff000000);
 
-/*	// clip
-	rect.x1 = g_paint.m_scrx;
-	rect.x2 = g_paint.m_scrx+g_game.m_screen_w*g_paint.m_scale;
-	rect.y1 = g_paint.m_scry;
-	rect.y2 = g_paint.m_scry+g_game.m_screen_h*g_paint.m_scale;
-	R9_SetClipping(rect);
-*/
-	// HUD (cover, dialogs, menus, etc)
+	// HUD
 	R9_ResetClipping();
 	g_paint.hud.visible = true;
 	g_script.drawHud();
@@ -388,10 +379,7 @@ void MatMap::Resize(const iV2 & size)
 
 void MatMap::Update(const iV2 & room, bool full)
 {
-	// clear
 	memset(map, 0, Cap);
-	
-	// prepare for software rendering
 	g_paint.BeginSoftwareRendering(Size3, Cap, map);
 
 	// draw room
@@ -442,9 +430,6 @@ int MatMap::Get(int x1, int x2, int y) const
 	return mat;
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// OBJECTS
-//////////////////////////////////////////////////////////////////////////////////////////////////
 void cDizGame::ObjPresent(tBrush * b)
 {
 	if(std::find(m_obj.begin(), m_obj.end(), b) == m_obj.end())
@@ -463,11 +448,8 @@ void cDizGame::ObjGather()
 			ObjAdd(b); // object is present in current bordered room
 }
 
-void cDizGame::ObjDraw( const tBrush & brush )
+void cDizGame::ObjDraw(const tBrush & brush)
 {
-	// draw current tile frame
-	int idx = g_paint.tiles.Find(brush.tile);
-	cTile* tile = g_paint.tiles.Get(idx); if(!tile) return;
-	int frame = tile->ComputeFrame(brush.frame,brush.anim);
-	g_paint.DrawBrush( brush, viewShift + brush.pos - roomPos * Room::Size, frame );
+	if(cTile * tile = g_paint.tiles.Get(g_paint.tiles.Find(brush.tile)))
+		g_paint.DrawBrush( brush, viewShift + brush.pos - roomPos * Room::Size, tile->ComputeFrame(brush.frame, brush.anim));
 }

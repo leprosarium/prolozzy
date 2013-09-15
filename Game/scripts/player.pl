@@ -146,6 +146,7 @@ damageLife(Damage) :-
 hurt(Damage) :-
 	util:doRumble(6),
 	util:doShake(2),
+	game:clearVibrate,
 	game:vibrate(100, 100, 2),
 	game:vibrate(0, 100, 4),
 	sample:play(hurt),

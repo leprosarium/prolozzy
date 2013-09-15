@@ -201,9 +201,7 @@ void Mouse::State::clear()
 {
 	for(Key & k: b)
 		k = Key();
-	x.Clear();
-	y.Clear();
-	z.Clear();
+	for(Axe & a: axe) a.Clear();
 }
 
 DeviceDXMouse::DeviceDXMouse(Mouse::State & state) :
@@ -220,7 +218,7 @@ void DeviceDXMouse::Update(int frm)
 {
 	if(! acquired) return;
 
-	state.x.delta = state.y.delta = state.z.delta = 0;
+	state.axe[0].delta = state.axe[1].delta = state.axe[2].delta = 0;
 	DIDEVICEOBJECTDATA didod[BufferSize];
 	unsigned long elements = GetDeviceData(didod);
 	if(!elements)
@@ -228,20 +226,15 @@ void DeviceDXMouse::Update(int frm)
 
 	for(unsigned long i = 0; i < elements; i++)
 	{
-		switch(didod[i].dwOfs)
+		DWORD ofs = didod[i].dwOfs;
+		switch(ofs)
 		{
 		
 		// axes
 		case DIMOFS_X:
-			state.x.delta	+= *((int*)&didod[i].dwData);
-			break;
-		
 		case DIMOFS_Y:
-			state.y.delta += *((int*)&didod[i].dwData);
-			break;
-		
 		case DIMOFS_Z:
-			state.z.delta += *((int*)&didod[i].dwData);
+			state.axe[ofs - DIMOFS_X].delta	+= *((int*)&didod[i].dwData);
 			break;
 
 		// keys
@@ -253,18 +246,15 @@ void DeviceDXMouse::Update(int frm)
 		case DIMOFS_BUTTON5:
 		case DIMOFS_BUTTON6:
 		case DIMOFS_BUTTON7:
-			state.b[didod[i].dwOfs - DIMOFS_BUTTON0] = Key((didod[i].dwData & 0x80) != 0, frm); 
+			state.b[ofs - DIMOFS_BUTTON0] = Key((didod[i].dwData & 0x80) != 0, frm); 
 		}
 	}
 
-	// set axes values and clip
-	state.x.value += state.x.delta * state.x.speed;
-	state.y.value += state.y.delta * state.y.speed;
-	state.z.value += state.z.delta * state.z.speed;
-	
-	state.x.value = std::min(std::max(state.x.value, state.x.min), state.x.max);
-	state.y.value = std::min(std::max(state.y.value, state.y.min), state.y.max);
-	state.z.value = std::min(std::max(state.z.value, state.z.min), state.z.max);
+	for(Axe & a: state.axe)
+	{
+		a.value += a.delta * a.speed;
+		a.value = std::min(std::max(a.value, a.min), a.max);
+	}
 }
 
 DeviceDXKeyboard::DeviceDXKeyboard(Keyboard::State & state) :

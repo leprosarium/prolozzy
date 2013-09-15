@@ -54,7 +54,7 @@ public:
 	class State : public Device::State
 	{
 	public:
-		Axe x, y, z;
+		Axe axe[3];
 		Key b[8];
 		void clear();
 	} & state;

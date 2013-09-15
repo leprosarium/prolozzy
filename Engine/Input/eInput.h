@@ -56,8 +56,6 @@ public:
 	public:
 		Axe x, y, z;
 		Key b[8];
-		Key WheelUp;
-		Key WheelDown;
 		void clear();
 	} & state;
 	Mouse(State & state) : state(state) {}

@@ -6,7 +6,6 @@
 
 #include "E9System.h"
 #include "E9Math.h"
-#include "I9Input.h"
 #include "R9Font.h"
 #include "R9TexturePool.h"
 #include "GUIDef.h"

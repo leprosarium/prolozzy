@@ -152,7 +152,7 @@ BOOL cEdiApp::InitFiles()
 
 BOOL cEdiApp::InitInput()
 {
-	return eInput::Init(E9_GetHWND(),E9_GetHINSTANCE()) && eInput::Init<Devices::Keyboard>() && eInput::Init<Devices::Mouse>();
+	return eInput::Init(E9_GetHWND(),E9_GetHINSTANCE()) && eInput::Init<Keyboard>() && eInput::Init<Mouse>();
 }
 
 BOOL cEdiApp::InitVideo()

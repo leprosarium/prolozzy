@@ -99,11 +99,6 @@
     <ClInclude Include="Files\F9Files.h" />
     <ClInclude Include="Files\F9FileZip.h" />
     <ClInclude Include="Brush.h" />
-    <ClInclude Include="Input\I9Def.h" />
-    <ClInclude Include="Input\I9DeviceDX.h" />
-    <ClInclude Include="Input\I9FFDX.h" />
-    <ClInclude Include="Input\I9Input.h" />
-    <ClInclude Include="Input\I9InputDX.h" />
     <ClInclude Include="Input\eInput.h" />
     <ClInclude Include="Sound\A9Audio.h" />
     <ClInclude Include="Sound\A9AudioDX.h" />
@@ -139,10 +134,6 @@
     <ClCompile Include="Files\F9FileRes.cpp" />
     <ClCompile Include="Files\F9Files.cpp" />
     <ClCompile Include="Files\F9FileZip.cpp" />
-    <ClCompile Include="Input\I9DeviceDX.cpp" />
-    <ClCompile Include="Input\I9FFDX.cpp" />
-    <ClCompile Include="Input\I9Input.cpp" />
-    <ClCompile Include="Input\I9InputDX.cpp" />
     <ClCompile Include="Input\eInput.cpp" />
     <ClCompile Include="Sound\A9Audio.cpp" />
     <ClCompile Include="Sound\A9AudioDX.cpp" />

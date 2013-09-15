@@ -109,11 +109,6 @@ bool cDizApp::InitInput()
 	if(mouse)		ok = eInput::Init<Mouse>();
 	if(joystick)	ok = eInput::Init<Joystick>();
 
-
-	// rumble support
-	if(I9_DeviceIsPresent(I9_DEVICE_JOYSTICK1))
-		I9_DeviceFFInit(I9_DEVICE_JOYSTICK1);
-	
 	return true;
 }
 

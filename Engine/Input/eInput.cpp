@@ -202,7 +202,6 @@ void Mouse::State::clear()
 {
 	for(Key & k: b)
 		k = Key();
-	WheelUp = WheelDown = Key();
 	x.Clear();
 	y.Clear();
 	z.Clear();
@@ -258,16 +257,6 @@ void DeviceDXMouse::Update(int frm)
 			state.b[didod[i].dwOfs - DIMOFS_BUTTON0] = Key((didod[i].dwData & 0x80) != 0, frm); 
 		}
 	}
-
-	// fake wheel - not qued
-	if (state.z.delta > 0)
-		state.WheelUp = Key(true, frm);		
-	else if(state.WheelUp.value)
-		state.WheelUp = Key(false, frm);	
-	if(state.z.delta < 0)
-		state.WheelDown = Key(true, frm);
-	else if(state.WheelDown.value)
-		state.WheelDown = Key(false, frm);
 
 	// set axes values and clip
 	state.x.value += state.x.delta * state.x.speed;

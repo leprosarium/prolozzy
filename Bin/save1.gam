@@ -10,8 +10,6 @@ game:setShakeY(0).
 game:setPaused(true).
 game:setMapColor(-16777216).
 game:setBorderColor(-16777216).
-game:setFFMagnitude(0).
-game:setFFPeriod(50).
 game:setViewportMode(false).
 game:setViewportX(-104).
 game:setViewportY(-42).

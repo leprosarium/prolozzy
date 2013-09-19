@@ -29,19 +29,19 @@
 class cTile
 {
 public:
-		int			m_id;						// unique id >=0
-		int			m_frames;					// number of frames
-		int         fx;
-		int			fy;
-		R9TEXTURE	m_tex;						// texture
-		char*		m_name;						// tile name
+	int id;						// unique id >=0
+	int frames;					// number of frames
+	int fx;
+	int	fy;
+	R9TEXTURE tex;				// texture
+	std::string name;			// tile name
 						
-				cTile		()					{ m_id=0; m_frames=1; fx = 1; fy = 1; m_tex=NULL; m_name=NULL; }
-		int         GetFx(int frame) const { return frame % fx; }
-		int         GetFy(int frame) const { return frame / fx; }
-	int GetWidth () const					{ return fx > 0 ? m_tex->width / fx : m_tex->width; }
-	int	GetHeight () const					{ return fy > 0 ? m_tex->height / fy : m_tex->height; }
-		void Destroy() { R9_TextureDestroy(m_tex); delete [] m_name; }
+	cTile(): id(), frames(1), fx(1), fy(1), tex() {}
+	int GetFx(int frame) const { return frame % fx; }
+	int GetFy(int frame) const { return frame / fx; }
+	int GetWidth() const { return fx > 0 ? tex->width / fx : tex->width; }
+	int	GetHeight() const { return fy > 0 ? tex->height / fy : tex->height; }
+	void Destroy() { R9_TextureDestroy(tex); }
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

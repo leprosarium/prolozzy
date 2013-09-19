@@ -460,7 +460,7 @@ cTile *TileGet(PlTerm idx)
 
 PREDICATE_M(edi, tileGetID, 2) 
 {
-	return A2 = TileGet(A1)->m_id; 
+	return A2 = TileGet(A1)->id; 
 }
 
 PREDICATE_M(edi, tileGetW, 2) 
@@ -475,13 +475,12 @@ PREDICATE_M(edi, tileGetH, 2)
 
 PREDICATE_M(edi, tileGetFrames, 2) 
 {
-	return A2 = TileGet(A1)->m_frames; 
+	return A2 = TileGet(A1)->frames; 
 }
 
 PREDICATE_M(edi, tileGetName, 2) 
 {
-	cTile * t = TileGet(A1);
-	return A2 = t->m_name ? t->m_name : ""; 
+	return A2 = TileGet(A1)->name;
 }
 
 PREDICATE_M(edi, tileReload, 0)

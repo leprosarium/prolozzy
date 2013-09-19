@@ -153,8 +153,11 @@ countRoomsMarkAdd(X, Y, params(C, RW, RH)) :-
 	H is RH - C - C,
 	def:shader(blend, Shader),
 	map:brushNew(B),
-	brush:set(B, [layer=7, x=XX, y=YY, w=W, h=H, tile=0, x2=8, y2=8, color=0x8000ff00, shader=Shader, id=1234567]),
+	brush:setProps(B, [layer=7, x=XX, y=YY, w=W, h=H, tile=0, x2=8, y2=8, color=0x8000ff00, shader=Shader, id=1234567]),
 	brush:setSelect(B, 1).
+
+
+
 
 
 

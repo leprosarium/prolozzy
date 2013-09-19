@@ -52,7 +52,7 @@ void cGUITile::OnDraw()
 
 	// frame anim (1 game frame = 25ms); don't know brush delay !
 	int frame = GetTickCount() / (25*3);
-	frame = frame % tile->m_frames;
+	frame = frame % tile->frames;
 	int fx = tile->GetFx(frame);
 	int fy = tile->GetFy(frame);
 	fV2 ss(fx * w, fy * h);
@@ -79,7 +79,7 @@ void cGUITile::OnDraw()
 	GUIDrawBar(rect, color[1]); 
 		
 	// sprite
-	R9_DrawSprite( fV2(x,y), src, tile->m_tex, 0xffffffff, 0, scale );
+	R9_DrawSprite( fV2(x,y), src, tile->tex, 0xffffffff, 0, scale );
 	
 	// clipping off
 	R9_SetClipping(oldclip);

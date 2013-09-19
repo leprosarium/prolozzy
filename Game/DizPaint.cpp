@@ -269,7 +269,7 @@ bool Tiles::LoadFile( const std::string & filepath, size_t & total, size_t & fai
 	if(frames % fpl)
 		tile.fy += 1;
 	tile.img = std::move(imga);
-	tile.name = sstrdup(filepath.c_str());
+	tile.name = filepath;
 
 	Add(id, std::move(tile));
 

@@ -47,7 +47,6 @@ public:
 	virtual void Unacquire() = 0;
 };
 
-
 class Mouse : public Device
 {
 public:
@@ -113,7 +112,6 @@ class Vibrator
 public:
 	Vibrator() : joystick(), paused(true) {}
 	void Init(Joystick * j) { joystick = j; }
-	operator bool() const { return joystick != nullptr; }
 	void Update();
 	void Pause(bool p);
 	void Stop() { Vibrate(Cmd()); Clear(); }

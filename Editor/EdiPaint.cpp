@@ -86,13 +86,13 @@ bool cEdiPaint::TileLoadFile( const std::string & filepath, size_t & total, size
 		return false;
 	}
 	cTile* tile = TileGet(TileAdd(id));
-	tile->m_tex = tex;
-	tile->m_frames	= frames;
+	tile->tex = tex;
+	tile->frames	= frames;
 	tile->fx = fpl;
 	tile->fy = frames / fpl;
 	if(frames % fpl)
 		tile->fy += 1;
-	tile->m_name = sstrdup(filepath.c_str());
+	tile->name = filepath;
 
 	R9_ImgDestroy(&img);
 	
@@ -117,14 +117,14 @@ bool cEdiPaint::TileLoad( const std::string & path )
 	dlog(LOGAPP, L"Tiles report: total=%u, failed=%u (duplicates=%u)\n", total, fail, duplicates );
 
 	// sort by id
-	std::sort(m_tile.begin(), m_tile.end(), [](cTile * t1, cTile * t2) { return t1->m_id < t2->m_id; });
+	std::sort(m_tile.begin(), m_tile.end(), [](cTile * t1, cTile * t2) { return t1->id < t2->id; });
 
 	// rehash after reordering
 	index.clear();
 	for(int i=0;i<TileCount();i++)
 	{
 		cTile* tile = g_paint.TileGet(i); assert(tile!=NULL);
-		index.insert(Hash::value_type(tile->m_id, i));
+		index.insert(Hash::value_type(tile->id, i));
 	}
 
 	return true;
@@ -147,19 +147,19 @@ int cEdiPaint::TileAdd( int id )
 	
 	// add new tile to list
 	cTile* tile = new cTile();
-	tile->m_id = id;
+	tile->id = id;
 	int idx = m_tile.size();
 	m_tile.push_back(tile);
 
 	// add tracker to hash
-	index.insert(Hash::value_type(tile->m_id, idx));
+	index.insert(Hash::value_type(tile->id, idx));
 	return idx;
 }
 
 void cEdiPaint::TileDel( int idx )
 {
 	if(cTile* tile = TileGet(idx)) {
-		index.erase(tile->m_id);
+		index.erase(tile->id);
 		delete tile;
 		m_tile.erase(m_tile.begin() + idx);
 	}
@@ -177,13 +177,13 @@ void cEdiPaint::DrawTile( int idx, int x, int y, const iRect & map, dword color,
 	int w = tile->GetWidth();
 	int h = tile->GetHeight();
 	if(frame<0) frame=0;
-	frame = frame % tile->m_frames;
+	frame = frame % tile->frames;
 	int fx = tile->GetFx(frame);
 	int fy = tile->GetFy(frame);
 	fRect src = map;
 	src.Offset(fV2(fx * w, fy *h));
 	R9_SetBlend(blend);
-	R9_DrawSprite( fV2(x, y), src, tile->m_tex, color, flip, (float)scale );
+	R9_DrawSprite( fV2(x, y), src, tile->tex, color, flip, (float)scale );
 
 }
 	
@@ -195,12 +195,12 @@ void cEdiPaint::DrawTile( int idx, int x, int y, dword color, int flip, int fram
 	int w = tile->GetWidth();
 	int h = tile->GetHeight();
 	if(frame<0) frame=0;
-	frame = frame % tile->m_frames;
+	frame = frame % tile->frames;
 	int fx = tile->GetFx(frame);
 	int fy = tile->GetFy(frame);
 	fRect src(fx * w, fy * h, (fx+1) * w, (fy + 1) * h);
 	R9_SetBlend(blend);
-	R9_DrawSprite( fV2(x, y), src, tile->m_tex, color, flip, scale );
+	R9_DrawSprite( fV2(x, y), src, tile->tex, color, flip, scale );
 
 }
 

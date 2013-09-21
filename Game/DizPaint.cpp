@@ -365,7 +365,7 @@ void cDizPaint::DrawBrush( const tBrush & brush, const iV2 & p0, int frame ) con
 	R9_AddClipping(fRect(p1, p1 + scale * sz));
 	if(R9_IsClipping())
 	{
-		g_game.m_visible_brushes++;
+		g_game.visible_brushes++;
 		iV2 c = (sz - 1) / msz;
 		iV2 p = p0;
 		auto draw = selectDrawMethod(brush, idx, frame);

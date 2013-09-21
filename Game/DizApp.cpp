@@ -316,7 +316,7 @@ void cDizApp::DrawStats()
 {
 	std::ostringstream o;
 	o << "obj:"<<g_game.m_obj.size() << ", "
-		 "brs:"<< g_game.m_visible_brushes << ", "
+		 "brs:"<< g_game.visible_brushes << ", "
 		 "fps:"<< gamefps<< "/" << App.FPS();
 
 	std::string str = o.str();

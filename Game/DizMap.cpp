@@ -289,11 +289,7 @@ void cDizMap::DrawRoom( const iV2 & rp, int layer, int mode, const iV2 & ofs)
 		else
 		{
 			if(brush.anim==2) // only if looping
-			{
-				int gameframe = g_game.m_gameframe;
-				if(brush.delay>0) gameframe /= brush.delay;
-				frame += gameframe;
-			}
+				frame += brush.delay > 0 ? g_game.frame / brush.delay : g_game.frame;
 			g_paint.DrawBrush( brush, p, frame );
 		}
 	}

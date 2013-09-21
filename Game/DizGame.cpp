@@ -23,7 +23,7 @@ PREDICATE_M(game, Set, 1) { g_game.Prop = static_cast<dword>(static_cast<int64>(
 
 PREDICATE_M(game, frame, 1)
 {
-	return A1 = g_game.m_gameframe;
+	return A1 = g_game.frame;
 }
 
 PREDICATE_M(game, command, 1)
@@ -87,8 +87,8 @@ cDizGame::cDizGame() : 	drawmode(DRAWMODE_NORMAL),
 						viewportMode(),
 						viewportFlipX(), viewportFlipY(),
 						fullMaterialMap(),
-						m_gameframe(),
-						m_visible_brushes(0)
+						frame(),
+						visible_brushes(0)
 {
 }
 
@@ -111,7 +111,7 @@ bool cDizGame::Start()
 {
 	g_map.Reset();
 
-	m_gameframe = 0;
+	frame = 0;
 	m_collider.clear();
 
 	g_player.Reset();
@@ -166,7 +166,7 @@ bool cDizGame::Update()
 	command = none;
 
 	// game frame
-	m_gameframe++;
+	frame++;
 
 	// key input
 	int ks = 0;
@@ -282,10 +282,8 @@ void cDizGame::Draw()
 	if( flip )
 		R9_SetView( vv, flip );
 
-	m_visible_brushes = 0;
-
-
-
+	visible_brushes = 0;
+	
 	// for each layer
 	for(int layer=0;layer<GAME_LAYERS;layer++)
 	{

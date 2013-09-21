@@ -90,9 +90,6 @@ public:
 	bool viewportFlipY;							// viewport flip Y options
 	bool fullMaterialMap;						// material map size: false=normal (current room with small border), true=extended to 3x3 rooms for scrolling
 
-
-
-
 	cDizGame();
 
 	bool Init();
@@ -101,43 +98,36 @@ public:
 	void Draw();
 
 	void NextDrawMode();
-		// settings
-		iV2				screenSize;								// game resolution (256x192 - Z80 res)
-		iV2				screenSizeBorder;						// game resolution border (320x200)
-		// game
+	iV2 screenSize;					// game resolution (256x192 - Z80 res)
+	iV2 screenSizeBorder;			// game resolution border (320x200)
 
-		void Resize();
+	void Resize();
 
-		int				m_gameframe;							// game frame index
+	int frame;
 
-	bool IsUpdate(int delay) { return (delay==0 || (m_gameframe%delay==0)); }
-	bool Key(int key) { return (keys & (1<<key)) ? 1 : 0; }				// test a key
-	bool KeyHit(int key) { return (keysHit & (1<<key)) ? 1 : 0; }			// test a key hit
+	bool IsUpdate(int delay) { return delay==0 || (frame % delay == 0); }
+	bool Key(int key) { return (keys & (1 << key)) != 0; }
+	bool KeyHit(int key) { return (keysHit & (1 << key)) != 0; }
 
-		Material		materials[MAT_MAX];
-		byte			MatMap ( const iV2 & p) { return matMap.Get(p); }
-		int				MatMap (int x1, int x2, int y) { return matMap.Get(x1, x2, y); }
-		PlAtom			DensMap	( const iV2 & p) { return materials[MatMap(p)].density; }
+	Material materials[MAT_MAX];
+	byte MatMap(const iV2 & p) { return matMap.Get(p); }
+	int MatMap(int x1, int x2, int y) { return matMap.Get(x1, x2, y); }
+	PlAtom 	DensMap(const iV2 & p) { return materials[MatMap(p)].density; }
 
-		// map room
 	void SetRoom(const iV2 & v);	// set current room (load)
 	iRect RoomBorderRect(const iV2 & border) { return g_map.RoomBorderRect(roomPos, border); }
 
-		iV2				viewShift;								// view position (used in draw, set from G_VIEW, G_SHAKE, and G_VIEWPORT)
+	iV2 viewShift;					// view position (used in draw, set from G_VIEW, G_SHAKE, and G_VIEWPORT)
 
 			
-		// objects
-inline	void			ObjAdd				(tBrush *);		// add object to present lists (objects and coliders)
-		void			ObjGather			();					// gather objects present in current room
-		void			ObjPresent			(tBrush *);		// add object to present list if not in it already
-		void			ObjDraw				(const tBrush & brush);	// draw one object
-		std::vector<tBrush *> m_obj;								// objects list with objects indexes (present in current room)
-		std::vector<tBrush *> m_collider;							// colliders list with objects indexes (present in current room)
+	inline void ObjAdd(tBrush *);		// add object to present lists (objects and coliders)
+	void ObjGather();					// gather objects present in current room
+	void ObjPresent(tBrush *);			// add object to present list if not in it already
+	void ObjDraw(const tBrush & brush);	// draw one object
+	std::vector<tBrush *> m_obj;		// objects list with objects indexes (present in current room)
+	std::vector<tBrush *> m_collider;	// colliders list with objects indexes (present in current room)
 
-
-
-		// stats
-		int				m_visible_brushes;
+	int visible_brushes;
 };
 
 inline void cDizGame::ObjAdd(tBrush *b)

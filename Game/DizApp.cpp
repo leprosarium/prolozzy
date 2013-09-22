@@ -147,7 +147,7 @@ bool cDizApp::InitVideo()
 	return true;
 }
 
-void cDizApp::Done()
+cDizApp::~cDizApp()
 {
 	// must be able to destroy partial init too, in case Init has failed
 
@@ -161,8 +161,6 @@ void cDizApp::Done()
 	A9_Done();
 	F9_Done();
 	eInput::Done();
-
-
 	dlog(LOGAPP, L"App done.\n");
 }
 

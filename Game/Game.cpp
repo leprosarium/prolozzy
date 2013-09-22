@@ -11,36 +11,30 @@
 
 #include "SWI-cpp-m.h"
 
-static cDizApp* g_dizapp = NULL;
+static cDizApp* g_dizapp = nullptr;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Init
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 int AppOnInit()
 {
-	assert(g_dizapp==NULL);
-	g_dizapp = new cDizApp();
-	return g_dizapp->Init();
+	return (g_dizapp = new cDizApp())->Init();
 }
 
 int AppOnDone()
 {
-	assert(g_dizapp!=NULL);
-	g_dizapp->Done();
 	delete g_dizapp;
 	return 0;
 }
 
 int AppOnActivate()
 {
-	assert(g_dizapp!=NULL);
 	g_dizapp->Activate(App.Active());
 	return 0;
 }
 
 int AppOnRun()
 {
-	assert(g_dizapp!=NULL);
 	if(!g_dizapp->Update()) return 0; // exit
 	g_dizapp->Draw();
 	return 1;
@@ -48,7 +42,6 @@ int AppOnRun()
 
 int AppOnPaint()
 {
-	assert(g_dizapp!=NULL);
 	g_dizapp->Draw();
 	return 0;
 }
@@ -56,7 +49,7 @@ int AppOnPaint()
 
 int APIENTRY WinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
-                     LPSTR     lpCmdLine,
+                     LPCTSTR   lpCmdLine,
                      int       nCmdShow)
 {
     PL_action(PL_ACTION_GUIAPP, TRUE);
@@ -67,7 +60,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	bool open = false;
 	ini_get(file_getfullpath(GetIniFile()), "ADVANCED", "log") >> open;
 
-	d9Log::Init(GetLogFile());													\
+	d9Log::Init(GetLogFile());
 	E9_OpenChannels(open);	
 
 	// init engine

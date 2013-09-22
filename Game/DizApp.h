@@ -24,9 +24,9 @@ class cDizApp
 	void DrawStats();
 public:
 	cDizApp();
+	~cDizApp();
 
 	bool Init();
-	void Done();
 	void Activate(bool active);
 	bool ToggleVideo();  
 

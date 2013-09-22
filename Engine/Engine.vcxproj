@@ -81,6 +81,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="App.h" />
     <ClInclude Include="Common\E9Config.h" />
     <ClInclude Include="Common\E9Engine.h" />
     <ClInclude Include="Common\E9Math.h" />
@@ -120,6 +121,7 @@
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="App.cpp" />
     <ClCompile Include="Common\E9Engine.cpp" />
     <ClCompile Include="Common\E9String.cpp" />
     <ClCompile Include="Common\E9System.cpp" />

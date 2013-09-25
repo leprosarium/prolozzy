@@ -1,9 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// DizApp.cpp
-///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
 #include "Resource.h"
-#include "E9App.h"
 #include "DizApp.h"
 #include "DizDebug.h"
 
@@ -39,54 +36,48 @@ BOOL CALLBACK DialogProcInfo( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-cDizApp::cDizApp() : gamefps(), drawstats(), musicwaspaused()
-{
-}
-
-bool cDizApp::Init()
+DizApp::DizApp(HINSTANCE hinstance, LPCTSTR cmdline) : App(hinstance, cmdline), gamefps(), drawstats(), musicwaspaused()
 {
 	dlog(LOGAPP, L"App init.\n");
-	
+
 	// engine
-	if(!InitApp())	 { ERRORMESSAGE(L"Init app error.");   return false; }
-	if(!InitFiles()) { ERRORMESSAGE(L"Init files error."); return false; }
-	if(!InitInput()) { ERRORMESSAGE(L"Init input device error."); return false; }
-	if(!InitAudio()) { ERRORMESSAGE(L"Init audio device error."); } // allow to run without audio
-	if(!InitVideo()) { ERRORMESSAGE(L"Init video device error."); return false; }
+	if(!InitApp()) throw std::exception("Init app error.");
+	if(!InitFiles()) throw std::exception("Init files error.");
+	if(!InitInput()) throw std::exception("Init input device error.");
+	if(!InitAudio()) { App::ErrorMessage("Init audio device error."); } // allow to run without audio
+	if(!InitVideo()) throw std::exception("Init video device error.");
 
 	// game init
 	g_cfg.Init();
 	g_dizdebug.Init();
 	g_paint.Init();
-	if(!g_game.Init()) { return false; }
-	if(!g_script.Init()) { ERRORMESSAGE(L"Script compiling error."); return false; }
+	if(!g_game.Init()) throw std::exception("Game init error");
+	if(!g_script.Init()) throw std::exception("Script compiling error.");
 
 	// game start
 	g_game.Start();
-
-	return true;
 }
 
-bool cDizApp::InitApp()
+bool DizApp::InitApp()
 {
-	App.Name(GAME_NAME);
-	App.Icon(MAKEINTRESOURCE(IDI_ICON));
+	Name(GAME_NAME);
+	Icon(IDI_ICON);
 
 	bool cool = true;
 	ini_get( file_getfullpath(GetIniFile()), "ADVANCED", "cool") >> cool;
-	App.Cool(cool);
+	Cool(cool);
 	
 	return true;
 }
 
-bool cDizApp::InitFiles()
+bool DizApp::InitFiles()
 {
 	if(!F9_Init()) return false;
 	files->MakeIndex("data\\");
 	return true;
 }
 
-bool cDizApp::InitInput()
+bool DizApp::InitInput()
 {
 	std::string inifile = file_getfullpath(GetIniFile());
 
@@ -94,7 +85,7 @@ bool cDizApp::InitInput()
 	ini_get(inifile, "INPUT", "enabled") >> input_enabled;
 	if(!input_enabled) return true; // no input
 
-	if(!eInput::Init(E9_GetHWND(),E9_GetHINSTANCE())) return false;
+	if(!eInput::Init(Wnd(), Instance())) return false;
 
 	// init devices
 	int keyboard	= 1;
@@ -105,24 +96,24 @@ bool cDizApp::InitInput()
 	ini_get(inifile, "INPUT", "joystick") >> joystick;
 
 	bool ok = false;
-	if(keyboard)	ok = eInput::Init<Keyboard>();
-	if(mouse)		ok = eInput::Init<Mouse>();
-	if(joystick)	ok = eInput::Init<Joystick>();
+	if(keyboard)	ok = eInput::Init<Keyboard>() || ok;
+	if(mouse)		ok = eInput::Init<Mouse>() || ok;
+	if(joystick)	ok = eInput::Init<Joystick>() || ok;
 
-	return true;
+	return ok;
 }
 
-bool cDizApp::InitAudio()
+bool DizApp::InitAudio()
 {
 	int audio_enabled = 1;
 	ini_get(file_getfullpath(GetIniFile()), "AUDIO", "enabled") >> audio_enabled;
 	if(!audio_enabled) return true; // no audio
 	
-	if(!A9_Init(E9_GetHWND(),A9_API_DEFAULT)) return false;
+	if(!A9_Init(Wnd(), A9_API_DEFAULT)) return false;
 	return true;	
 }
 
-bool cDizApp::InitVideo()
+bool DizApp::InitVideo()
 {
 	// load config
 	Api api;
@@ -132,22 +123,22 @@ bool cDizApp::InitVideo()
 	// init interface
 	if(!R9_InitInterface(api)) return false;
 
-	BOOL ok = R9_Init(E9_GetHWND(),&cfg,api);
+	BOOL ok = R9_Init(Wnd(), &cfg, api);
 	if(!ok) // try the other api
 	{
 		dlog(LOGERR, L"RENDER: init %S failed, try the other api.\n", api == Api::OpenGL ? "OpenGL":"DirectX9");
 		api = api == Api::DirectX ? Api::OpenGL : Api::DirectX;
-		ok = R9_Init(E9_GetHWND(),&cfg, api);
+		ok = R9_Init(Wnd(), &cfg, api);
 		if(!ok)	return false;
 	}
 
 	R9_SetFilter(Filter::Point);
-	App.Windowed(cfg.windowed);
+	Windowed(cfg.windowed);
 
 	return true;
 }
 
-cDizApp::~cDizApp()
+DizApp::~DizApp()
 {
 	// must be able to destroy partial init too, in case Init has failed
 
@@ -164,7 +155,7 @@ cDizApp::~cDizApp()
 	dlog(LOGAPP, L"App done.\n");
 }
 
-void cDizApp::Activate( bool active )
+void DizApp::OnActivate( bool active )
 {
 	if(active)
 	{
@@ -178,7 +169,14 @@ void cDizApp::Activate( bool active )
 	if(!musicwaspaused) g_sound.music.Pause(!active);
 }
 
-bool cDizApp::ToggleVideo()
+bool DizApp::OnRun()
+{
+	if(!Update()) return false; // exit
+	Draw();
+	return true;
+}
+
+bool DizApp::ToggleVideo()
 {
 	if(!R9_GetCfg().windowed) return false; // toggle only in windowed mode (not a hw restriction though)
 
@@ -205,20 +203,20 @@ bool cDizApp::ToggleVideo()
 	R9_Done();
 	
 	// re-init render
-	BOOL ok = R9_Init(E9_GetHWND(), &cfg, api);
+	BOOL ok = R9_Init(Wnd(), &cfg, api);
 	if(!ok) // try to go back
 	{
 		dlog(LOGERR, L"RENDER: re-init failed; trying to restore original cfg.\n");
 		g_cfg.LoadRenderCfg(cfg, api);
-		if(!R9_Init(E9_GetHWND(), &cfg, api))	{ dlog(LOGERR, L"RENDER: critical error!\n"); return false; }
+		if(!R9_Init(Wnd(), &cfg, api))	{ dlog(LOGERR, L"RENDER: critical error!\n"); return false; }
 	}
 
 	g_cfg.m_scale = 0; // full scale
 
 	// reacquire
 	R9_SetFilter(Filter::Point);
-	App.Windowed(R9_GetCfg().windowed);
-	App.SetCursor(R9_GetCfg().windowed ? Cursor::Arrow : Cursor::None);
+	Windowed(R9_GetCfg().windowed);
+	SetCursor(R9_GetCfg().windowed ? Cursor::Arrow : Cursor::None);
 	g_dizdebug.Layout();
 	g_paint.Reacquire();
 	g_paint.Layout();
@@ -226,14 +224,14 @@ bool cDizApp::ToggleVideo()
 	return true;
 }
 
-bool cDizApp::Update()
+bool DizApp::Update()
 {
 	// timing
 	static int timergame = 0;	// timer for game
 	static int timersec = 0;		// timer for one sec
 	static int gameframecount = 0;
 	
-	timersec += App.DeltaTime();
+	timersec += DeltaTime();
 	if(timersec >= 1000)
 	{
 		timersec %= 1000;
@@ -242,12 +240,12 @@ bool cDizApp::Update()
 	}
 
 	// input
-	float dtime = App.DeltaTime() / 1000.0f;
+	float dtime = DeltaTime() / 1000.0f;
 	eInput::Update(dtime);
 
-	g_sound.Update(); // update sounds
+	g_sound.Update(dtime); // update sounds
 
-	timergame += App.DeltaTime();
+	timergame += DeltaTime();
 	int gamefps = g_game.fps;
 	if(gamefps < 1) gamefps = 1;
 	int gameframetime = 1000 / gamefps;
@@ -266,7 +264,7 @@ bool cDizApp::Update()
 	if(!g_dizdebug.Update()) return false;
 
 	// functional keys
-	if(einput->isKeyDown(DIK_F1) && App.Windowed()) DialogBox(E9_GetHINSTANCE(), MAKEINTRESOURCE(IDD_INFO), E9_GetHWND(), DialogProcInfo);
+	if(einput->isKeyDown(DIK_F1) && Windowed()) DialogBox(Instance(), MAKEINTRESOURCE(IDD_INFO), Wnd(), DialogProcInfo);
 	if(einput->isKeyDown(DIK_F10) && !ToggleVideo()) return false;
 	if(einput->isKeyDown(DIK_F11)) drawstats = !drawstats;
 	if(einput->isKeyDown(DIK_F9) && A9_IsReady())	// toggle volume
@@ -295,7 +293,7 @@ bool cDizApp::Update()
 	return true;
 }
 
-void cDizApp::Draw()
+void DizApp::Draw()
 {
 	if(!R9_IsReady()) return; // avoid painting if render is not ready
 	R9_CheckDevice(); // check for lost device
@@ -310,12 +308,12 @@ void cDizApp::Draw()
 	}
 }
 
-void cDizApp::DrawStats()
+void DizApp::DrawStats()
 {
 	std::ostringstream o;
 	o << "obj:"<<g_game.m_obj.size() << ", "
 		 "brs:"<< g_game.visible_brushes << ", "
-		 "fps:"<< gamefps<< "/" << App.FPS();
+		 "fps:"<< gamefps<< "/" << FPS();
 
 	std::string str = o.str();
 	fV2 sz = fV2(ChrW * str.size(), ChrH) + 4;
@@ -324,12 +322,6 @@ void cDizApp::DrawStats()
 	R9_DrawBar(fRect(p, p + sz), 0xa0000000);
 	R9_DrawText(p + 2, str, 0xffffff80);
 	R9_Flush();
-}
-
-void cDizApp::ErrorMessage(LPCWSTR msg)
-{
-	dlog(LOGERR, L"DizzyAGE ERROR:\n%s\n", msg);
-	sys_msgbox( E9_GetHWND(), msg, L"DizzyAGE ERROR", MB_OK );
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

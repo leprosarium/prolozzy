@@ -4,8 +4,11 @@
 
 LPCWSTR App::ClassName = L"APP_CLASS";
 
+HINSTANCE App::instance;
+HWND App::wnd;
+
 App::App(HINSTANCE hinstance, LPCTSTR cmdline) : 
-	instance(hinstance), cmdLine(cmdline),
+	cmdLine(cmdline),
 	active(),
 	minimized(),
 	windowed(true),
@@ -18,6 +21,7 @@ App::App(HINSTANCE hinstance, LPCTSTR cmdline) :
 	fpstick(),
 	fpscount()
 {
+	instance = hinstance;
 	if(FAILED(CoInitialize(NULL))) 
 		throw std::exception("Failed to initialize COM.");
 	TCHAR p[MAX_PATH];
@@ -71,7 +75,7 @@ void App::InitWindow()
 						rec.left, rec.top, rec.right-rec.left, rec.bottom-rec.top, 
 						NULL, NULL, instance, 
 						this);
-	if(wnd)
+	if(!wnd)
 		throw std::exception("Failed to create main window.");
 }
 
@@ -107,7 +111,7 @@ LRESULT	App::WndProc(UINT msg, WPARAM wParam, LPARAM lParam )
 				dlog(LOGAPP, L"Activate %S\n", active ? "on" : "off");
 				OnActivate(active);
 			}
-			return 0;
+			break;
 		}
 
 		case WM_ACTIVATE:
@@ -121,7 +125,7 @@ LRESULT	App::WndProc(UINT msg, WPARAM wParam, LPARAM lParam )
 				dlog(LOGAPP, L"Activate %S\n", active ? "on" : "off");
 				OnActivate(active);
 			}
-			return 0;
+			break;
 		}
 
 		case WM_CLOSE:
@@ -129,13 +133,11 @@ LRESULT	App::WndProc(UINT msg, WPARAM wParam, LPARAM lParam )
 			break;
 		case WM_DESTROY:
 			PostQuitMessage(0); 
-			return 0;
-
+			break;
 		case WM_PAINT:				
 			if(windowed && !minimized)
 				OnPaint();
-			return 0;
-
+			break;
 		case WM_SETCURSOR:			
 			SetCursor(windowed ? cursor : Cursor::None);
 			return 0;
@@ -146,13 +148,11 @@ LRESULT	App::WndProc(UINT msg, WPARAM wParam, LPARAM lParam )
 			if(cmd!=SC_RESTORE && cmd!=SC_MINIMIZE && cmd!=SC_CLOSE && cmd!=SC_MOVE )
 				return 0;
 			break;
-
 		case WM_CONTEXTMENU:	// ignore sysmen when rclick
 			return 0;
 		case WM_CHAR:
 			WCHAR ch = wParam;
 			einput->keyQueue += ch;
-			return 0;
 
 	}
 	return DefWindowProc(wnd, msg, wParam, lParam);
@@ -219,4 +219,30 @@ void App::UpdateClocks()
 		fpstick = tick;
 	}
 	fpscount++;
+}
+
+void App::Name(const std::string & name) 
+{ 
+	if(wnd) 
+		SetWindowText(wnd, name.c_str()); 
+}
+
+void App::Icon(const std::string & name) 
+{ 
+	if(wnd)
+		if(HICON hIcon = LoadIcon(instance, name.c_str()))
+			PostMessage(wnd, WM_SETICON, ICON_BIG,(LPARAM)(HICON)hIcon);
+}
+
+void App::Icon(int res) 
+{ 
+	if(wnd)
+		if(HICON hIcon = LoadIcon(instance, MAKEINTRESOURCE(res)))
+			PostMessage(wnd, WM_SETICON, ICON_BIG,(LPARAM)(HICON)hIcon);
+}
+
+void App::ErrorMessage(LPCSTR msg)
+{
+	dlog(LOGERR, L"DizzyAGE ERROR:\n%S\n", msg);
+	sys_msgbox( Wnd(), msg, "DizzyAGE ERROR", MB_OK );
 }

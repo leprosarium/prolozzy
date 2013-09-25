@@ -1,10 +1,3 @@
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// E9Engine.h
-// Engine config and initialization
-// Interface:
-// LOGNUL, LOGSYS
-// E9_Init, E9_Done, E9_GetHWND, E9_SetHWND, E9_GetHINSTANCE, E9_SetHINSTANCE, E9_GetFlag, E9_SetFlag
-///////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef __E9ENGINE_H__
 #define __E9ENGINE_H__
 
@@ -17,16 +10,6 @@
 #pragma comment( lib, "..\\Engine\\engine.lib" )
 #endif
 
-class e9Engine
-{
-public:
-static	HWND		m_hwnd;				// main hwnd
-static	HINSTANCE	m_hinstance;		// main hinstance
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// INTERFACE
-///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Engine log channels
 #define LOGNUL				0			// default
@@ -42,13 +25,7 @@ static	HINSTANCE	m_hinstance;		// main hinstance
 #define LOGAPP				10			// application
 //		...
 
-		void		E9_OpenChannels(bool open = true);		// open debug channels; called by debug init
-		BOOL		E9_Init();								// init engine general stuff
-		void		E9_Done();								// done engine
-inline	HWND		E9_GetHWND()							{ return e9Engine::m_hwnd; }
-inline	void		E9_SetHWND( HWND hwnd )					{ e9Engine::m_hwnd = hwnd; }
-inline	HINSTANCE	E9_GetHINSTANCE()						{ return e9Engine::m_hinstance; }
-inline	void		E9_SetHINSTANCE( HINSTANCE hinstance )	{ e9Engine::m_hinstance = hinstance; }
+void E9_OpenChannels(bool open = true);		// open debug channels; called by debug init
 
 #endif
-///////////////////////////////////////////////////////////////////////////////////////////////////
+

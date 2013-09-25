@@ -13,7 +13,6 @@
 
 #include "SWI-Stream.h"
 
-#include "E9App.h"
 #include "eInput.h"
 
 cDizDebug g_dizdebug;

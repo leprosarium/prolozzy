@@ -17,7 +17,9 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include <cctype>
 #include <sstream>
+#include <iostream>
 #include <iomanip> 
 
 

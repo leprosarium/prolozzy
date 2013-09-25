@@ -7,7 +7,6 @@
 #include "DizDef.h"
 #include "DizScript.h"
 #include "DizDebug.h"
-#include "E9App.h"
 #include "A9Codec.h"
 
 PlAtom Samples::all("all");
@@ -146,12 +145,12 @@ PREDICATE_M(music, volume, 1)
 }
 
 
-void cDizSound::Update()
+void cDizSound::Update(float dtime)
 {
 	if(A9_IsReady())
 	{
 		samples.Update();	
-		music.Update( App.DeltaTime() / 1000.f);
+		music.Update(dtime);
 		A9_Update();
 	}
 }

@@ -5,7 +5,7 @@
 #define __EDIAPP_H__
 
 #include "E9System.h"
-#include "E9App.h"
+#include "App.h"
 #include "EdiDef.h"
 #include "EdiPaint.h"
 #include "EdiTool.h"
@@ -64,50 +64,51 @@
 #define UNDOOP_ADD		1
 #define UNDOOP_DEL		2
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// cEdiApp
-//////////////////////////////////////////////////////////////////////////////////////////////////
-class cEdiApp
+class Editor : public App
 {
+	void Init();
+	bool InitApp();
+	bool InitFiles();
+	bool InitInput();
+	bool InitVideo();
+	bool Update();
+	void Draw();
+	void Done();
+
 public:
-					cEdiApp();
-					~cEdiApp();
+	int	m_mscrollx;								// must scroll x msg (0=no)
+	int m_mscrolly;								// must scroll y msg (0=no)
 
-		BOOL		Init();
-		BOOL		InitApp();
-		BOOL		InitFiles();
-		BOOL		InitInput();
-		BOOL		InitVideo();
+	Editor(HINSTANCE hinstance, LPCTSTR cmdline);
+	~Editor();
 
-		void		Done();
-		void		Activate(bool active);					// called when application is activated or deactivated
-		void		Close();								// called when application wants to close
-		void		DropFile( LPCWSTR filepath );				// called when file is dropped
-		void		Scroll( int dx, int dy );				// called on scroll messages
-static	void		HandleReset();							// handle render device reset; used to repaint map's render target
-		bool		Update();
-		void		Draw();
-static	void		ErrorMessage( LPCWSTR msg );				// error message box
+	virtual void OnActivate(bool);
+	virtual bool OnClose();
+	virtual void OnPaint() { Draw(); }
+	virtual bool OnRun();
+	virtual void OnMsg(UINT msg, WPARAM wparam, LPARAM lparam);
 
-		// utils
-		int			GetMouseX();
-		int			GetMouseY();
-inline	int			GetScrW()								{ return R9_GetWidth(); }
-inline	int			GetScrH()								{ return R9_GetHeight(); }
-		int			GetAxeX()								{ return m_tool[m_toolcrt]->m_ax; }
-		int			GetAxeY()								{ return m_tool[m_toolcrt]->m_ay; }
-		int			m_mscrollx;								// must scroll x msg (0=no)
-		int			m_mscrolly;								// must scroll y msg (0=no)
+	void DropFile( LPCWSTR filepath );				// called when file is dropped
+	void Scroll( int dx, int dy );				// called on scroll messages
+	static void HandleReset();							// handle render device reset; used to repaint map's render target
 
-		// settings
-		int			m_exit;									// exit app!
-		int			m_axes;									// draw axes
-		int			m_snap;									// snap mode to tile grid
-		int			m_grid;									// grid visible
-		int			m_gridsize;								// grid size
-		dword		m_color[EDI_COLORMAX-EDI_COLOR];		// editor colors
-inline	dword		GetColor( int idx )						{ return m_color[idx-EDI_COLOR]; }
-		void		WaitCursor( BOOL on );					// set cursor wait on/off
+	// utils
+	int GetMouseX();
+	int	GetMouseY();
+	int GetScrW() const { return R9_GetWidth(); }
+	int GetScrH() const { return R9_GetHeight(); }
+	int GetAxeX() const { return m_tool[m_toolcrt]->m_ax; }
+	int GetAxeY() const { return m_tool[m_toolcrt]->m_ay; }
+
+	// settings
+	int			m_exit;									// exit app!
+	int			m_axes;									// draw axes
+	int			m_snap;									// snap mode to tile grid
+	int			m_grid;									// grid visible
+	int			m_gridsize;								// grid size
+	dword		m_color[EDI_COLORMAX-EDI_COLOR];		// editor colors
+	dword		GetColor( int idx )						{ return m_color[idx-EDI_COLOR]; }
+	void		WaitCursor( BOOL on );					// set cursor wait on/off
 
 
 		// tools
@@ -117,20 +118,18 @@ inline	dword		GetColor( int idx )						{ return m_color[idx-EDI_COLOR]; }
 		tBrush		m_brush;								// current tool brush
 
 		// layers
-inline	int			LayerGet			( int layer )				{ return m_layer[layer]; }
-inline	void		LayerSet			( int layer, int status )	{ m_layer[layer]=status; }
-inline	int			LayerActive			()							{ for(int i=LAYER_MAX-1;i>=0;i--) if(m_layer[i]==2) return i; return -1; }
-		int			m_layer[LAYER_MAX];						// layers states 0=invisible, 1=visibil, 2=active)
+	int			LayerGet			( int layer )				{ return m_layer[layer]; }
+	void		LayerSet			( int layer, int status )	{ m_layer[layer]=status; }
+	int			LayerActive			()							{ for(int i=LAYER_MAX-1;i>=0;i--) if(m_layer[i]==2) return i; return -1; }
+	int			m_layer[LAYER_MAX];						// layers states 0=invisible, 1=visibil, 2=active)
 
 protected:
 		void		DrawStats			();					// draw stats info
 		BOOL		m_drawstats;
 
 public: // access
-static	cEdiApp*	m_app;
+	static	Editor * app;
 };				
-
-inline cEdiApp* EdiApp() { return cEdiApp::m_app; }
 
 #endif
 //////////////////////////////////////////////////////////////////////////////////////////////////

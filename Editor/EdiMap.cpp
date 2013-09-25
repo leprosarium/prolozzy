@@ -359,7 +359,7 @@ BOOL cEdiMap::Init()
 	// clear the target
 	if(R9_BeginScene(m_target))
 	{
-		R9_Clear(EdiApp()->GetColor(EDI_COLORMAP));
+		R9_Clear(Editor::app->GetColor(EDI_COLORMAP));
 		R9_EndScene();
 	}
 
@@ -386,10 +386,10 @@ void cEdiMap::Done()
 void cEdiMap::Update( float dtime )
 {
 
-	int stepx = EdiApp()->m_gridsize;
-	int stepy = EdiApp()->m_gridsize;
-	int mx = EdiApp()->GetMouseX() - VIEWX;
-	int my = EdiApp()->GetMouseY() - VIEWY;
+	int stepx = Editor::app->m_gridsize;
+	int stepy = Editor::app->m_gridsize;
+	int mx = Editor::app->GetMouseX() - VIEWX;
+	int my = Editor::app->GetMouseY() - VIEWY;
 	int mz = einput->mouse.axe[2].delta;
 	bool shift	= einput->shift();
 	bool alt	= einput->alt() || einput->mouseValue(2);
@@ -437,8 +437,8 @@ void cEdiMap::Update( float dtime )
 	{
 		if(mz<0) dy = stepy;
 		if(mz>0) dy =-stepy;
-		EdiApp()->m_mscrolly = 0;
-		EdiApp()->m_mscrollx = 0;
+		Editor::app->m_mscrolly = 0;
+		Editor::app->m_mscrollx = 0;
 	}
 	
 	// horizontal scroll
@@ -446,18 +446,18 @@ void cEdiMap::Update( float dtime )
 	{
 		if(mz<0) dx = stepx;
 		if(mz>0) dx =-stepx;
-		EdiApp()->m_mscrolly = 0;
-		EdiApp()->m_mscrollx = 0;
+		Editor::app->m_mscrolly = 0;
+		Editor::app->m_mscrollx = 0;
 	}
 
 	// scroll with the Scroll function (from WM_MOUSEWHEEL)
-	if(EdiApp()->m_mscrolly!=0) { dy = EdiApp()->m_mscrolly * stepy; EdiApp()->m_mscrolly = 0; }
-	if(EdiApp()->m_mscrollx!=0) { dx = EdiApp()->m_mscrollx * stepx; EdiApp()->m_mscrollx = 0; }
+	if(Editor::app->m_mscrolly!=0) { dy = Editor::app->m_mscrolly * stepy; Editor::app->m_mscrolly = 0; }
+	if(Editor::app->m_mscrollx!=0) { dx = Editor::app->m_mscrollx * stepx; Editor::app->m_mscrollx = 0; }
 
 	// scrolling
 	iRect rc;
-	mx = EdiApp()->GetMouseX();
-	my = EdiApp()->GetMouseY();
+	mx = Editor::app->GetMouseX();
+	my = Editor::app->GetMouseY();
 	if(!m_scrolling && einput->isMouseDown(0))
 	{
 		rc = GetHScrollRect();
@@ -465,7 +465,7 @@ void cEdiMap::Update( float dtime )
 		{
 			m_scrolling = 1;
 			m_scrollofs = mx-rc.p1.x;
-			App.SetCursor(Cursor::Hand);
+			Editor::app->SetCursor(App::Cursor::Hand);
 		}
 		else
 		{
@@ -474,7 +474,7 @@ void cEdiMap::Update( float dtime )
 			{
 				m_scrolling = 2;
 				m_scrollofs = my-rc.p1.y;
-				App.SetCursor(Cursor::Hand);
+				Editor::app->SetCursor(App::Cursor::Hand);
 			}
 		}
 	}
@@ -482,21 +482,21 @@ void cEdiMap::Update( float dtime )
 	if(m_scrolling && !einput->mouseValue(0))
 	{
 		m_scrolling = 0;
-		App.SetCursor(Cursor::Arrow);
+		Editor::app->SetCursor(App::Cursor::Arrow);
 	}
 
 	if(m_scrolling==1) // scroll horizontal
 	{
 		rc = GetHScrollRect();
 		dx = (mx-m_scrollofs)-rc.p1.x;
-		dx = (dx/EdiApp()->m_gridsize)*EdiApp()->m_gridsize;
+		dx = (dx/Editor::app->m_gridsize)*Editor::app->m_gridsize;
 	}
 	else
 	if(m_scrolling==2) // scroll vertical
 	{
 		rc = GetVScrollRect();
 		dy = (my-m_scrollofs)-rc.p1.y;
-		dy = (dy/EdiApp()->m_gridsize)*EdiApp()->m_gridsize;
+		dy = (dy/Editor::app->m_gridsize)*Editor::app->m_gridsize;
 	}
 
 
@@ -511,9 +511,9 @@ void cEdiMap::Update( float dtime )
 	// others
 	if(!alt && !shift && !ctrl)
 	{
-		if(einput->isKeyDown(DIK_A))			{ EdiApp()->m_axes = !EdiApp()->m_axes; }
-		if(einput->isKeyDown(DIK_S))			{ EdiApp()->m_snap = !EdiApp()->m_snap; }
-		if(einput->isKeyDown(DIK_G))			{ EdiApp()->m_grid = !EdiApp()->m_grid; m_refresh=TRUE; }
+		if(einput->isKeyDown(DIK_A))			{ Editor::app->m_axes = !Editor::app->m_axes; }
+		if(einput->isKeyDown(DIK_S))			{ Editor::app->m_snap = !Editor::app->m_snap; }
+		if(einput->isKeyDown(DIK_G))			{ Editor::app->m_grid = !Editor::app->m_grid; m_refresh=TRUE; }
 	}
 
 	// bounds
@@ -563,7 +563,7 @@ void cEdiMap::Refresh()
 	// draw in render target
 	if(R9_BeginScene(m_target))
 	{
-		R9_Clear(EdiApp()->GetColor(EDI_COLORMAP));
+		R9_Clear(Editor::app->GetColor(EDI_COLORMAP));
 		iV2 cam(m_camx, m_camy);
 		iRect view(cam, cam);
 		view.Deflate((iV2(m_vieww, m_viewh) / m_camz) /2);
@@ -693,7 +693,7 @@ void cEdiMap::BrushDrawExtra( iRect& view )
 
 			int layer = brush->layer;
 			if(layer<0 || layer>=LAYER_MAX) continue;
-			if(EdiApp()->LayerGet(layer)==0) continue; // hidden
+			if(Editor::app->LayerGet(layer)==0) continue; // hidden
 
 			if(!view.Intersects(brush->rect())) continue;
 
@@ -729,7 +729,7 @@ tBrush * cEdiMap::BrushPick( int x, int y )
 		[x,y](tBrush *brush) -> bool
 	{ 
 		int layer = brush->layer;
-		return layer >= 0 && layer < LAYER_MAX && EdiApp()->LayerGet(layer) != 0 && brush->rect().IsInside(iV2(x,y));
+		return layer >= 0 && layer < LAYER_MAX && Editor::app->LayerGet(layer) != 0 && brush->rect().IsInside(iV2(x,y));
 	});
 	return it == m_brush.rend() ? nullptr : *it;
 }
@@ -942,8 +942,8 @@ void cEdiMap::DrawGrid( iRect &view )
 	R9_SetBlend(Blend::Alpha);
 
 	// TILE GRID
-	int grid = EdiApp()->m_gridsize;
-	if( EdiApp()->m_grid && grid!=0 ) 
+	int grid = Editor::app->m_gridsize;
+	if( Editor::app->m_grid && grid!=0 ) 
 	{
 		// snap view
 		view2 = view; 
@@ -954,14 +954,14 @@ void cEdiMap::DrawGrid( iRect &view )
 		for( i=view2.p1.x; i<=view2.p2.x; i+=grid )
 		{
 			int x = m_camz * (i - (m_camx - (m_vieww/m_camz)/2));
-			R9_DrawLine( fV2(x,0), fV2(x,m_viewh), EdiApp()->GetColor(EDI_COLORGRID1) );
+			R9_DrawLine( fV2(x,0), fV2(x,m_viewh), Editor::app->GetColor(EDI_COLORGRID1) );
 		}
 
 		// horizontal
 		for( i=view2.p1.y; i<=view2.p2.y; i+=grid )
 		{
 			int y = m_camz * (i - (m_camy - (m_viewh/m_camz)/2));
-			R9_DrawLine( fV2(0,y), fV2(m_vieww,y), EdiApp()->GetColor(EDI_COLORGRID1) );
+			R9_DrawLine( fV2(0,y), fV2(m_vieww,y), Editor::app->GetColor(EDI_COLORGRID1) );
 		}
 	}
 
@@ -980,14 +980,14 @@ void cEdiMap::DrawGrid( iRect &view )
 		for( i=view2.p1.x; i<=view2.p2.x; i+=gridx )
 		{
 			int x = m_camz * (i - (m_camx - (m_vieww/m_camz)/2));
-			R9_DrawLine( fV2(x,0), fV2(x,m_viewh), EdiApp()->GetColor(EDI_COLORGRID2) );
+			R9_DrawLine( fV2(x,0), fV2(x,m_viewh), Editor::app->GetColor(EDI_COLORGRID2) );
 		}
 
 		// horizontal
 		for( i=view2.p1.y; i<=view2.p2.y; i+=gridy )
 		{
 			int y = m_camz * (i - (m_camy - (m_viewh/m_camz)/2));
-			R9_DrawLine( fV2(0,y), fV2(m_vieww,y), EdiApp()->GetColor(EDI_COLORGRID2));
+			R9_DrawLine( fV2(0,y), fV2(m_vieww,y), Editor::app->GetColor(EDI_COLORGRID2));
 		}
 	}
 
@@ -995,22 +995,22 @@ void cEdiMap::DrawGrid( iRect &view )
 
 void cEdiMap::DrawAxes( int x, int y )
 {
-	if(!EdiApp()->m_axes) return;
+	if(!Editor::app->m_axes) return;
 
 	CAM2VIEW(x,y);
 	x += VIEWX;
 	y += VIEWY;
-	R9_DrawLine( fV2(x,VIEWY), fV2(x,VIEWY+VIEWH), EdiApp()->GetColor(EDI_COLORGRID3) );
-	R9_DrawLine( fV2(VIEWX,y), fV2(VIEWX+VIEWW,y), EdiApp()->GetColor(EDI_COLORGRID3) );
+	R9_DrawLine( fV2(x,VIEWY), fV2(x,VIEWY+VIEWH), Editor::app->GetColor(EDI_COLORGRID3) );
+	R9_DrawLine( fV2(VIEWX,y), fV2(VIEWX+VIEWW,y), Editor::app->GetColor(EDI_COLORGRID3) );
 }
 
 void cEdiMap::DrawScrollers()
 {
 	fRect rc;
 	rc = GetHScrollRect();
-	R9_DrawBar(rc, (EdiApp()->GetColor(EDI_COLORBACK2) & 0x00ffffff) | 0x60000000 );
+	R9_DrawBar(rc, (Editor::app->GetColor(EDI_COLORBACK2) & 0x00ffffff) | 0x60000000 );
 	rc = GetVScrollRect();
-	R9_DrawBar(rc, (EdiApp()->GetColor(EDI_COLORBACK2) & 0x00ffffff) | 0x60000000);
+	R9_DrawBar(rc, (Editor::app->GetColor(EDI_COLORBACK2) & 0x00ffffff) | 0x60000000);
 }
 
 iRect cEdiMap::GetHScrollRect()
@@ -1070,7 +1070,7 @@ bool cEdiMap::SaveMapImage(const std::string & filename )
 			// draw in render target
 			if(R9_BeginScene(m_target))
 			{
-				R9_Clear(EdiApp()->GetColor(EDI_COLORMAP));
+				R9_Clear(Editor::app->GetColor(EDI_COLORMAP));
 
 				// DRAW
 				int camz = m_camz;

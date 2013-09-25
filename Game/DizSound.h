@@ -114,7 +114,7 @@ class cDizSound
 {
 public:
 	void Done() { samples.Done(); music.Done(); }
-	void Update();		// update called every frame
+	void Update(float dtime);		// update called every frame
 						
 	Samples samples;
 	Music	music;

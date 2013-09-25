@@ -3,15 +3,10 @@
 // Action param (while editing): 0=click out, 1=enter, 2=right click, 3=tab
 //////////////////////////////////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
-
-#include <cctype>
-
+#include "EdiApp.h"
 #include "GUIEdit.h"
 #include "GUI.h"
-#include "E9App.h"
 #include "eInput.h"
-
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cGUIEdit
@@ -262,7 +257,7 @@ void cGUIEdit::OnDraw()
 		if(m_edit)
 		{
 			static dword s_time = 0;
-			s_time += App.DeltaTime();
+			s_time += Editor::app->DeltaTime();
 			if(s_time<=400)
 			{
 				rc1.p1.x = (float)rc.p1.x + Chr2Pos(m_sel2) + deltax;

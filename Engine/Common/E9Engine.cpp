@@ -1,12 +1,7 @@
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// E9Engine.cpp
-////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include "stdafx.h"
 #include "E9Engine.h"
 #include "D9Log.h"
-
-HWND e9Engine::m_hwnd = NULL;
-HINSTANCE e9Engine::m_hinstance = NULL;
 
 void E9_OpenChannels(bool open)
 {
@@ -26,15 +21,3 @@ void E9_OpenChannels(bool open)
 	d9Log::setChannel( LOGAPP, "APP", logflags, 			DWORD_GREEN);
 }
 
-BOOL E9_Init()
-{
-	if(FAILED(CoInitialize(NULL))) { dlog(LOGERR, L"ENGINE: failed to initialize COM.\n"); return FALSE; }
-	return TRUE;
-}
-
-void E9_Done()
-{
-	CoUninitialize();
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////

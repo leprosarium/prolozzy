@@ -3,10 +3,9 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
 #include "DizGame.h"
-#include "DizApp.h"	// for error msg
-#include "E9App.h"
+#include "DizApp.h"
 #include "eInput.h"
-#include <algorithm>
+
 
 #define GAME_PROP(Prop, Get, Set) \
 PREDICATE_M(game, Get, 1) { return A1 = g_game.Prop; } \
@@ -141,7 +140,7 @@ bool cDizGame::CheckVersion()
 	else
 		msg << "This game doesn't specify the version of DizzyAGE it was made for.";
 	msg  << "\nYou are running it with DizzyAGE v" << engv;
-	ERRORMESSAGE(MultiByteToWideString(msg.str().c_str()).c_str());
+	App::ErrorMessage(msg.str().c_str());
 	return false;
 }
 

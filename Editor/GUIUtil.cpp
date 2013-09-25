@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "GUIUtil.h"
 #include "GUI.h"
-#include "E9App.h"
+#include "App.h"
 #include "shlobj.h"
 
 R9TEXTURE g_texdot = NULL;
@@ -204,8 +204,8 @@ BOOL WinDlgOpenFile( LPWSTR filename, LPWSTR ext, int mode )
 	OPENFILENAMEW ofn;
 	memset(&ofn,0,sizeof(ofn));
 	ofn.lStructSize			= sizeof(ofn);
-	ofn.hwndOwner			= E9_GetHWND();
-	ofn.hInstance			= E9_GetHINSTANCE();
+	ofn.hwndOwner			= App::Wnd();
+	ofn.hInstance			= App::Instance();
 	ofn.lpstrFilter			= ext ? filter : NULL;
 	ofn.lpstrCustomFilter	= NULL;
 	ofn.nMaxCustFilter		= 0;
@@ -236,7 +236,7 @@ BOOL WinDlgOpenFolder( LPWSTR foldername )
 	foldername[0]=0;
 
 	BROWSEINFOW bi;
-	bi.hwndOwner = E9_GetHWND();
+	bi.hwndOwner = App::Wnd();
 	bi.pidlRoot = NULL;
 	bi.pszDisplayName = foldername;
 	bi.lpszTitle = L"Select folder";
@@ -266,7 +266,7 @@ BOOL WinDlgOpenColor( dword* color, BOOL extended )
 	CHOOSECOLOR cc;
 	memset(&cc,0,sizeof(cc));
 	cc.lStructSize			= sizeof(cc);
-	cc.hwndOwner			= E9_GetHWND();
+	cc.hwndOwner			= App::Wnd();
 	cc.hInstance			= NULL;//App()->GetHINSTANCE();
 	cc.rgbResult			= RGB2BGR(*color) & 0x00ffffff;
 	cc.lpCustColors			= custom;

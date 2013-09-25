@@ -109,7 +109,6 @@
     <ClInclude Include="Sound\A9Codec_wav.h" />
     <ClInclude Include="Sound\A9Codec_ym.h" />
     <ClInclude Include="Sound\A9Def.h" />
-    <ClInclude Include="App\E9App.h" />
     <ClInclude Include="Render\R9Font.h" />
     <ClInclude Include="Render\R9Img.h" />
     <ClInclude Include="Render\R9ImgLoader.h" />
@@ -145,7 +144,6 @@
     <ClCompile Include="Sound\A9Codec_wav.cpp" />
     <ClCompile Include="Sound\A9Codec_ym.cpp" />
     <ClCompile Include="Sound\A9Def.cpp" />
-    <ClCompile Include="App\E9App.cpp" />
     <ClCompile Include="Render\R9Font.cpp" />
     <ClCompile Include="Render\R9Img.cpp" />
     <ClCompile Include="Render\R9ImgLoader.cpp" />

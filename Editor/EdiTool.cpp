@@ -1,6 +1,3 @@
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// EdiTool.cpp
-//////////////////////////////////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
 #include "EdiTool.h"
 #include "EdiApp.h"
@@ -16,10 +13,10 @@
 
 #define SNAP2GRID(x,y)						\
 {											\
-	if(EdiApp()->m_snap)					\
+	if(Editor::app->m_snap)					\
 	{										\
-		x=SNAP(x,EdiApp()->m_gridsize);		\
-		y=SNAP(y,EdiApp()->m_gridsize);		\
+		x=SNAP(x,Editor::app->m_gridsize);		\
+		y=SNAP(y,Editor::app->m_gridsize);		\
 	}										\
 }
 
@@ -50,8 +47,8 @@ void cEdiToolPaint::Reset()
 void cEdiToolPaint::Update( float dtime )
 {
 
-	int mx = EdiApp()->GetMouseX() - VIEWX;
-	int my = EdiApp()->GetMouseY() - VIEWY;
+	int mx = Editor::app->GetMouseX() - VIEWX;
+	int my = Editor::app->GetMouseY() - VIEWY;
 	BOOL inview = INVIEW(mx,my);
 	if(!inview && !m_isbusy) return;
 
@@ -59,7 +56,7 @@ void cEdiToolPaint::Update( float dtime )
 	bool ctrl = einput->ctrl();
 
 	picked = nullptr; // clear picked brush
-	tBrush * brush = & EdiApp()->m_brush;
+	tBrush * brush = & Editor::app->m_brush;
 
 	if( m_mode==-1 ) m_mode=0; // draw trick
 
@@ -85,7 +82,7 @@ void cEdiToolPaint::Update( float dtime )
 		else
 		if(einput->mouseValue(2) || alt) m_mode=3;
 		else
-//		if(ctrl && I9_GetKeyDown(I9K_Z)) EdiApp()->Undo();
+//		if(ctrl && I9_GetKeyDown(I9K_Z)) Editor::app->Undo();
 
 		// axes
 		m_ax = mx;
@@ -130,7 +127,7 @@ void cEdiToolPaint::Update( float dtime )
 				{
 					tBrush * b = g_map.brushPtr(a[1]);
 					b->select = false;
-					b->layer = EdiApp()->LayerActive();
+					b->layer = Editor::app->LayerActive();
 					g_map.m_refresh = TRUE;
 					g_map.PartitionAdd(b);
 				}
@@ -193,11 +190,11 @@ void cEdiToolPaint::Update( float dtime )
 
 void cEdiToolPaint::Draw()
 {
-	int mx = EdiApp()->GetMouseX() - VIEWX;
-	int my = EdiApp()->GetMouseY() - VIEWY;
+	int mx = Editor::app->GetMouseX() - VIEWX;
+	int my = Editor::app->GetMouseY() - VIEWY;
 	if(!INVIEW(mx,my)) return; // && !m_isbusy
 
-	tBrush * brush = & EdiApp()->m_brush;
+	tBrush * brush = & Editor::app->m_brush;
 
 	// axes
 	g_map.DrawAxes(m_ax,m_ay);
@@ -231,14 +228,14 @@ void cEdiToolPaint::Command( int cmd )
 	if(cmd==TOOLCMD_PICKBRUSH)
 	{
 		PlTermv t(2);
-		g_map.UnifyBrush(t[0], & EdiApp()->m_brush);
+		g_map.UnifyBrush(t[0], & Editor::app->m_brush);
 		g_map.UnifyBrush(t[1], picked);
 		g_gui->ScriptPrologDo("brush", "assign", t);
 	}
 	else
 	if(cmd==TOOLCMD_PICKCOLOR)
 	{
-		EdiApp()->m_brush.color = picked->color;
+		Editor::app->m_brush.color = picked->color;
 	}
 	else
 	if(cmd==TOOLCMD_TOFRONT)
@@ -265,7 +262,7 @@ void cEdiToolPaint::Command( int cmd )
 void cEdiToolPaint::UserUpdate()
 {
 	PlTermv br(1);
-	g_map.UnifyBrush(br[0], (m_mode==2 || m_mode==3) && picked ? picked : & EdiApp()->m_brush);
+	g_map.UnifyBrush(br[0], (m_mode==2 || m_mode==3) && picked ? picked : & Editor::app->m_brush);
 	g_gui->ScriptPrologDo("mod", "userUpdatePaint", br);
 }
 
@@ -294,7 +291,7 @@ void cEdiToolEdit::Reset()
 		m_drag.clear();
 		g_map.m_hideselected = FALSE;
 		g_map.m_refresh = TRUE;
-		App.SetCursor(Cursor::Arrow);
+		Editor::app->SetCursor(App::Cursor::Arrow);
 	}
 	m_mode = 0;
 	m_selop = 0;
@@ -304,10 +301,10 @@ void cEdiToolEdit::Reset()
 void cEdiToolEdit::Update( float dtime )
 {
 
-	tBrush& brush = EdiApp()->m_brush;
+	tBrush& brush = Editor::app->m_brush;
 
-	int mx = EdiApp()->GetMouseX() - VIEWX;
-	int my = EdiApp()->GetMouseY() - VIEWY;
+	int mx = Editor::app->GetMouseX() - VIEWX;
+	int my = Editor::app->GetMouseY() - VIEWY;
 	BOOL inview = INVIEW(mx,my);
 
 	VIEW2CAM(mx,my);
@@ -341,7 +338,7 @@ void cEdiToolEdit::Update( float dtime )
 			m_moved = 0;
 			BrushMoveStart();
 			m_mode=2;
-			App.SetCursor(Cursor::Hand);
+			Editor::app->SetCursor(App::Cursor::Hand);
 		}
 		else
 		if(einput->isKeyDown(DIK_DELETE))	BrushDeleteSelected();
@@ -374,7 +371,7 @@ void cEdiToolEdit::Update( float dtime )
 		{
 			BrushMove();
 			m_mode=0;
-			App.SetCursor(Cursor::Arrow);
+			Editor::app->SetCursor(App::Cursor::Arrow);
 		}
 	}
 
@@ -403,8 +400,8 @@ void cEdiToolEdit::Update( float dtime )
 
 void cEdiToolEdit::Draw()
 {
-	int mx = EdiApp()->GetMouseX() - VIEWX;
-	int my = EdiApp()->GetMouseY() - VIEWY;
+	int mx = Editor::app->GetMouseX() - VIEWX;
+	int my = Editor::app->GetMouseY() - VIEWY;
 	BOOL inview = INVIEW(mx,my);
 	
 	g_map.DrawAxes(m_ax,m_ay);
@@ -458,7 +455,7 @@ void cEdiToolEdit::BrushSelect()
 	{
 		int layer = brush->layer;
 		if(layer<0 || layer>=LAYER_MAX) continue;
-		if(EdiApp()->LayerGet(layer)==0) continue; // hidden
+		if(Editor::app->LayerGet(layer)==0) continue; // hidden
 
 		iRect bb = brush->rect();
 		
@@ -594,7 +591,7 @@ void cEdiToolEdit::BrushPaste()
 				if(g_gui->ScriptPrologDo("brush", "new", a))
 				{
 					tBrush * b = g_map.m_brush.back();
-					b->layer = EdiApp()->LayerActive();
+					b->layer = Editor::app->LayerActive();
 					b->select = true;
 					g_map.PartitionAdd(b);	
 				}

@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "App.h"
 #include "D9Log.h"
 #include "E9Math.h"
 
@@ -124,7 +125,7 @@ std::shared_ptr<IDirectInput8> InputDX::Instance()
 	if(auto i = inst.lock())
 		return i;
 	IDirectInput8 * di;
-	int err = DirectInput8Create( E9_GetHINSTANCE(), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&di, NULL);
+	HRESULT err = DirectInput8Create( App::Instance(), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&di, NULL);
 	if(FAILED(err)) throw std::exception("DirectInput creation failed"); 
 	std::shared_ptr<IDirectInput8> p = std::shared_ptr<IDirectInput8>(di, [](IDirectInput8 * di) { di->Release(); } );
 	inst = p;
@@ -147,7 +148,7 @@ DeviceDX::DeviceDX(std::shared_ptr<IDirectInput8> input,
 	hr = device->SetDataFormat(dataFormat);
 	if(FAILED(hr)) Throw("SetDataFormat failed");
 
-	hr = device->SetCooperativeLevel(E9_GetHWND(), cooperativeLevel);
+	hr = device->SetCooperativeLevel(App::Wnd(), cooperativeLevel);
 	if(FAILED(hr)) Throw("SetCooperativeLevel failed");
 
 	needPolling = GetPolling();

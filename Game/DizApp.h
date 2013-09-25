@@ -1,16 +1,9 @@
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// GameApp.h
-///////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef __GAMEAPP_H__
 #define __GAMEAPP_H__
+#include "StdAfx.h"
+#include "App.h"
 
-#include "E9System.h"
-#include "R9Render.h"
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// cDizApp
-///////////////////////////////////////////////////////////////////////////////////////////////////
-class cDizApp
+class DizApp : public App
 {
 	int gamefps;			// game updates per second (logic fps)
 	int drawstats;			// show stats
@@ -23,20 +16,20 @@ class cDizApp
 	bool InitVideo();
 	void DrawStats();
 public:
-	cDizApp();
-	~cDizApp();
+	DizApp(HINSTANCE hinstance, LPCTSTR cmdline);
+	~DizApp();
 
-	bool Init();
-	void Activate(bool active);
+	virtual void OnActivate(bool);
+	virtual void OnPaint() { Draw(); }
+	virtual bool OnRun();
+
 	bool ToggleVideo();  
 
 	bool Update();
 	void Draw();
-
-	static void ErrorMessage(LPCWSTR msg);	// error message box
 };
 
-inline void ERRORMESSAGE(LPCWSTR msg )	 { cDizApp::ErrorMessage( msg ); }
+
 
 
 #endif

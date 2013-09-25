@@ -1,13 +1,10 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
-// EdiApp.cpp
+// Editor::app.cpp
 //////////////////////////////////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
-
-#include <iostream>
+#include "EdiApp.h"
 
 #include "Resource.h"
-#include "E9App.h"
-#include "EdiApp.h"
 #include "Resource.h"
 
 #include "SWI-cpp-m.h"
@@ -18,7 +15,7 @@
 
 #include "eInput.h"
 
-cEdiApp* cEdiApp::m_app = NULL;
+Editor * Editor::app = nullptr;
 
 PREDICATE_M(core, dl, 1)
 {
@@ -55,7 +52,7 @@ PREDICATE_M(core, tickCount, 1)
 }
 
 
-cEdiApp::cEdiApp()
+Editor::Editor(HINSTANCE hinstance, LPCTSTR cmdline) : App(hinstance, cmdline)
 {
 
 	m_exit				= 0;
@@ -83,25 +80,28 @@ cEdiApp::cEdiApp()
 	m_mscrollx = 0;
 	m_mscrolly = 0;
 
-	m_app = this;
+	app = this;
+
+	Init();
 }
 
-cEdiApp::~cEdiApp()
+Editor::~Editor()
 {
-	m_app = NULL;
+	Done();
+	app = nullptr;
 	delete m_tool[TOOL_PAINT];
 	delete m_tool[TOOL_EDIT];
 }
 
-BOOL cEdiApp::Init()
+void Editor::Init()
 {
 	dlog(LOGAPP, L"App init.\n");
 
 	// engine
-	if(!InitApp())	 { ErrorMessage(L"Init app error.");   return FALSE; }
-	if(!InitFiles()) { ErrorMessage(L"Init files error."); return FALSE; }
-	if(!InitInput()) { ErrorMessage(L"Init input device error."); return FALSE; }
-	if(!InitVideo()) { ErrorMessage(L"Init video device error."); return FALSE; }
+	if(!InitApp()) throw std::exception("Init app error.");
+	if(!InitFiles()) throw std::exception("Init files error.");
+	if(!InitInput()) throw std::exception("Init input device error.");
+	if(!InitVideo()) throw std::exception("Init video device error.");
 
 
 	// editor
@@ -117,45 +117,43 @@ BOOL cEdiApp::Init()
 	m_tool[m_toolcrt]->Switch(TRUE);
 
 	// load param
-	if(App.CmdLine() && strstr(App.CmdLine(), "pmp"))
+	if(CmdLine().find("pmp") != std::string::npos)
 	{
 		std::ostringstream s;
-		s<< "editor:load('" << App.CmdLine() << "')";
+		s<< "editor:load('" << CmdLine() << "')";
 		g_gui->ScriptPrologDo(s.str());
 	}
 
 	// accept drop files
-	long styleex = GetWindowLong(E9_GetHWND(),GWL_EXSTYLE) | WS_EX_ACCEPTFILES;
-	SetWindowLong(E9_GetHWND(),GWL_EXSTYLE,styleex);
-
-	return TRUE;
+	long styleex = GetWindowLong(Wnd(),GWL_EXSTYLE) | WS_EX_ACCEPTFILES;
+	SetWindowLong(Wnd(),GWL_EXSTYLE,styleex);
 }
 
-BOOL cEdiApp::InitApp()
+bool Editor::InitApp()
 {
-	App.Name(EDI_NAME);
-	App.Icon(MAKEINTRESOURCE(IDI_ICON));
+	Name(EDI_NAME);
+	Icon(IDI_ICON);
 
 	bool cool = true;
 	ini_get( file_getfullpath(USER_INIFILE), "EDITOR", "options_cool") >> cool;
-	App.Cool(cool);
+	Cool(cool);
 	
-	return TRUE;
+	return true;
 }
 
-BOOL cEdiApp::InitFiles()
+bool Editor::InitFiles()
 {
-	if(!F9_Init()) return FALSE;
+	if(!F9_Init()) return false;
 	files->MakeIndex("editor\\");
-	return TRUE;
+	return true;
 }
 
-BOOL cEdiApp::InitInput()
+bool Editor::InitInput()
 {
-	return eInput::Init(E9_GetHWND(),E9_GetHINSTANCE()) && eInput::Init<Keyboard>() && eInput::Init<Mouse>();
+	return eInput::Init(Wnd(), Instance()) && eInput::Init<Keyboard>() && eInput::Init<Mouse>();
 }
 
-BOOL cEdiApp::InitVideo()
+bool Editor::InitVideo()
 {
 	std::string inifile = file_getfullpath(USER_INIFILE);
 
@@ -187,25 +185,25 @@ BOOL cEdiApp::InitVideo()
 
 
 	// init interface
-	if(!R9_InitInterface(api)) return FALSE;
+	if(!R9_InitInterface(api)) return false;
 
-	BOOL ok = R9_Init(E9_GetHWND(),&cfg,api);
+	BOOL ok = R9_Init(Wnd(), &cfg, api);
 	if(!ok) // try the other api
 	{
 		dlog(L"RENDER: init %S failed, try the other api.\n", api == Api::OpenGL ? "OpenGL" : "DirectX9");
 		api = api == Api::DirectX ? Api::OpenGL : Api::DirectX;
-		ok = R9_Init(E9_GetHWND(),&cfg,api);
-		if(!ok)	return FALSE;
+		ok = R9_Init(Wnd(), &cfg, api);
+		if(!ok)	return false;
 	}
 
 	R9_SetHandleReset(HandleReset);
 	R9_SetFilter(Filter::Point);
-	App.Windowed(cfg.windowed);
+	Windowed(cfg.windowed);
 
-	return TRUE;
+	return true;
 }
 
-void cEdiApp::Done()
+void Editor::Done()
 {
 	// must be able to destroy partial init too, in case Init has failed
 
@@ -230,7 +228,7 @@ void cEdiApp::Done()
 	dlog(LOGAPP, L"App done.\n");
 }
 
-void cEdiApp::Activate(bool active)
+void Editor::OnActivate(bool active)
 {
 	if(active)
 		eInput::Acquire();
@@ -241,23 +239,73 @@ void cEdiApp::Activate(bool active)
 	if(g_map.m_scrolling)
 	{
 		g_map.m_scrolling = 0;
-		App.SetCursor(Cursor::Arrow);
+		SetCursor(Cursor::Arrow);
 	}
-	::InvalidateRect(E9_GetHWND(),NULL,0);
+	::InvalidateRect(Wnd(),NULL,0);
 }
 
-void cEdiApp::Close()
+bool Editor::OnClose()
 {
 	//if(g_gui->m_isbusy) return; // can't close now !
 	int mode = m_tool[m_toolcrt]->m_mode;
-	if(m_toolcrt==0 && mode==1) return;
-	if(m_toolcrt==1 && (mode==1||mode==2)) return;
+	if(m_toolcrt==0 && mode==1) return false;
+	if(m_toolcrt==1 && (mode==1||mode==2)) return false;
 	m_tool[m_toolcrt]->Reset();
 	g_gui->ScriptPrologDo("editor:close");
 	g_gui->m_isbusy = TRUE; // avoid tools problems
+	return false;
 }
 
-void cEdiApp::DropFile( LPCWSTR filepath )
+bool Editor::OnRun()
+{
+	if(!Update()) return false;
+	Draw();
+	return true;
+}
+
+void Editor::OnMsg(UINT msg, WPARAM wparam, LPARAM lparam)
+{
+	switch(msg)
+	{
+	case WM_DROPFILES:
+	{
+		WCHAR filepath[MAX_PATH];
+		if(DragQueryFileW((HDROP)wparam, 0xFFFFFFFF, NULL, 0)<1) break; // count
+		if(DragQueryFileW((HDROP)wparam, 0, filepath, MAX_PATH)==0) break; // error
+		DropFile( filepath );
+		break;
+	}
+	case WM_MOUSEWHEEL: // good for laptop touch pads
+	{
+		int delta = (short int)HIWORD(wparam);
+		if(abs(delta)>100) 
+		{
+			if(GetAsyncKeyState(VK_SHIFT))
+				Scroll(delta>0?-1:1,0);
+			else
+				Scroll(0,delta>0?-1:1);
+		}
+		break;
+	}
+	case WM_VSCROLL: // good for laptop touch pads
+	{
+		int sub = LOWORD(wparam);
+		if(sub==SB_LINEUP || sub==SB_PAGEUP)		Scroll(0,-1);
+		if(sub==SB_LINEDOWN || sub==SB_PAGEDOWN)	Scroll(0, 1);
+		break;
+	}
+	case WM_HSCROLL: // good for laptop touch pads
+	{
+		int sub = LOWORD(wparam);
+		if(sub==SB_LINELEFT || sub==SB_PAGELEFT	)	Scroll(-1,0);
+		if(sub==SB_LINERIGHT || sub==SB_PAGERIGHT )	Scroll( 1,0);
+		break;
+	}
+	};
+}
+
+
+void Editor::DropFile( LPCWSTR filepath )
 {
 	if(g_gui->m_isbusy) { BEEP_ERROR(); return ; } // gui busy (modal dialog)
 	if(!wcsstr(filepath, L".pmp")) { BEEP_ERROR(); return ; } // not map
@@ -279,22 +327,22 @@ void cEdiApp::DropFile( LPCWSTR filepath )
 	Draw();
 }
 
-void cEdiApp::Scroll( int dx, int dy )
+void Editor::Scroll( int dx, int dy )
 {
 	m_mscrollx = dx;
 	m_mscrolly = dy;
 }
 
-void cEdiApp::HandleReset()
+void Editor::HandleReset()
 {
 	g_map.m_refresh = TRUE; // refresh map
 	g_map.Refresh();
-	EdiApp()->Draw();
+	Editor::app->Draw();
 }
 
-bool cEdiApp::Update()
+bool Editor::Update()
 {
-	float dtime = (float)App.DeltaTime() / 1000.0f;
+	float dtime = (float)DeltaTime() / 1000.0f;
 
 	// input
 	eInput::Update(dtime);
@@ -347,7 +395,7 @@ bool cEdiApp::Update()
 }
 
 
-void cEdiApp::Draw()
+void Editor::Draw()
 {
 	if(!R9_IsReady()) return; // avoid painting if render is not ready
 	R9_CheckDevice(); // check for lost device
@@ -379,10 +427,10 @@ void cEdiApp::Draw()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // Draw debug
 //////////////////////////////////////////////////////////////////////////////////////////////////
-void cEdiApp::DrawStats()
+void Editor::DrawStats()
 {
 	std::ostringstream o;
-	o << "fps: " << App.FPS();
+	o << "fps: " << FPS();
 	std::string str = o.str();
 	fV2 sz = fV2(ChrW * str.size(), ChrH) + 4;
 	fV2 p(R9_GetWidth() - sz.x - 2, 2.0f);
@@ -396,7 +444,7 @@ void cEdiApp::DrawStats()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // TOOLS
 //////////////////////////////////////////////////////////////////////////////////////////////////
-void cEdiApp::ToolSet( int tool )
+void Editor::ToolSet( int tool )
 {
 	if(tool<0 || tool>=TOOL_MAX) tool=0;
 	if(tool==m_toolcrt) return;
@@ -409,25 +457,25 @@ void cEdiApp::ToolSet( int tool )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // UTILS
 //////////////////////////////////////////////////////////////////////////////////////////////////
-int	cEdiApp::GetMouseX()
+int	Editor::GetMouseX()
 {
 	POINT mouse;
 	GetCursorPos(&mouse);
-	ScreenToClient(E9_GetHWND(), &mouse);
+	ScreenToClient(Wnd(), &mouse);
 	return mouse.x;
 }
 
-int cEdiApp::GetMouseY()
+int Editor::GetMouseY()
 {
 	POINT mouse;
 	GetCursorPos(&mouse);
-	ScreenToClient(E9_GetHWND(), &mouse);
+	ScreenToClient(Wnd(), &mouse);
 	return mouse.y;
 }
 
-void cEdiApp::WaitCursor( BOOL on )
+void Editor::WaitCursor( BOOL on )
 {
-	App.SetCursor( on ? Cursor::Wait : Cursor::Arrow );
+	SetCursor( on ? Cursor::Wait : Cursor::Arrow );
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -503,48 +551,48 @@ PREDICATE_M(edi, tileReload, 0)
 
 PREDICATE_M(edi, getTool, 1)
 {
-	return A1 = EdiApp()->m_toolcrt;
+	return A1 = Editor::app->m_toolcrt;
 }
 
 PREDICATE_M(edi, getAxes, 1)
 {
-	return A1 = EdiApp()->m_axes;
+	return A1 = Editor::app->m_axes;
 }
 
 PREDICATE_M(edi, getSnap, 1)
 {
-	return A1 = EdiApp()->m_snap;
+	return A1 = Editor::app->m_snap;
 }
 
 PREDICATE_M(edi, getGrid, 1)
 {
-	return A1 = EdiApp()->m_grid;
+	return A1 = Editor::app->m_grid;
 }
 
 PREDICATE_M(edi, getGridSize, 1)
 {
-	return A1 = EdiApp()->m_gridsize;
+	return A1 = Editor::app->m_gridsize;
 }
 
 PREDICATE_M(edi, getScrW, 1)
 {
-	return A1 = EdiApp()->GetScrW();
+	return A1 = Editor::app->GetScrW();
 }
 
 PREDICATE_M(edi, getScrH, 1)
 {
-	return A1 = EdiApp()->GetScrH();
+	return A1 = Editor::app->GetScrH();
 }
 
 
 PREDICATE_M(edi, getAxeX, 1)
 {
-	return A1 = EdiApp()->GetAxeX();
+	return A1 = Editor::app->GetAxeX();
 }
 
 PREDICATE_M(edi, getAxeY, 1)
 {
-	return A1 = EdiApp()->GetAxeY();
+	return A1 = Editor::app->GetAxeY();
 }
 
 PREDICATE_M(edi, getBrushRect, 1)
@@ -554,61 +602,61 @@ PREDICATE_M(edi, getBrushRect, 1)
 
 PREDICATE_M(edi, getColorBack1, 1)
 {
-	return A1 = static_cast<int64>(EdiApp()->GetColor(EDI_COLORBACK1));
+	return A1 = static_cast<int64>(Editor::app->GetColor(EDI_COLORBACK1));
 }
 
 PREDICATE_M(edi, getColorBack2, 1)
 {
-	return A1 = static_cast<int64>(EdiApp()->GetColor(EDI_COLORBACK2));
+	return A1 = static_cast<int64>(Editor::app->GetColor(EDI_COLORBACK2));
 }
 
 PREDICATE_M(edi, getColorGrid1, 1)
 {
-	return A1 = static_cast<int64>(EdiApp()->GetColor(EDI_COLORGRID1));
+	return A1 = static_cast<int64>(Editor::app->GetColor(EDI_COLORGRID1));
 }
 
 PREDICATE_M(edi, getColorGrid2, 1)
 {
-	return A1 = static_cast<int64>(EdiApp()->GetColor(EDI_COLORGRID2));
+	return A1 = static_cast<int64>(Editor::app->GetColor(EDI_COLORGRID2));
 }
 
 PREDICATE_M(edi, getColorGrid3, 1)
 {
-	return A1 = static_cast<int64>(EdiApp()->GetColor(EDI_COLORGRID3));
+	return A1 = static_cast<int64>(Editor::app->GetColor(EDI_COLORGRID3));
 }
 
 PREDICATE_M(edi, getColorMap, 1)
 {
-	return A1 = static_cast<int64>(EdiApp()->GetColor(EDI_COLORMAP));
+	return A1 = static_cast<int64>(Editor::app->GetColor(EDI_COLORMAP));
 }
 
 PREDICATE_M(edi, setTool, 1)
 {
-	EdiApp()->ToolSet(A1);
+	Editor::app->ToolSet(A1);
 	return true;
 }
 
 PREDICATE_M(edi, setAxes, 1)
 {
-	EdiApp()->m_axes = A1;
+	Editor::app->m_axes = A1;
 	return true;
 }
 
 PREDICATE_M(edi, setSnap, 1)
 {
-	EdiApp()->m_snap = A1;
+	Editor::app->m_snap = A1;
 	return true;
 }
 
 PREDICATE_M(edi, setGrid, 1)
 {
-	EdiApp()->m_grid = A1;
+	Editor::app->m_grid = A1;
 	return true;
 }
 
 PREDICATE_M(edi, setGridSize, 1)
 {
-	EdiApp()->m_gridsize = A1;
+	Editor::app->m_gridsize = A1;
 	return true;
 }
 
@@ -623,35 +671,35 @@ PREDICATE_M(edi, setBrushRect, 1)
 PREDICATE_M(edi, setColorBack1, 1)
 {
 	int64 l = A1;
-	EdiApp()->m_color[EDI_COLORBACK1-EDI_COLOR] = static_cast<dword>(l);
+	Editor::app->m_color[EDI_COLORBACK1-EDI_COLOR] = static_cast<dword>(l);
 	return true;
 }
 
 PREDICATE_M(edi, setColorBack2, 1)
 {
 	int64 l = A1;
-	EdiApp()->m_color[EDI_COLORBACK2-EDI_COLOR] = static_cast<dword>(l);
+	Editor::app->m_color[EDI_COLORBACK2-EDI_COLOR] = static_cast<dword>(l);
 	return true;
 }
 
 PREDICATE_M(edi, setColorGrid1, 1)
 {
 	int64 l = A1;
-	EdiApp()->m_color[EDI_COLORGRID1-EDI_COLOR] = static_cast<dword>(l);
+	Editor::app->m_color[EDI_COLORGRID1-EDI_COLOR] = static_cast<dword>(l);
 	return true;
 }
 
 PREDICATE_M(edi, setColorGrid2, 1)
 {
 	int64 l = A1;
-	EdiApp()->m_color[EDI_COLORGRID2-EDI_COLOR] = static_cast<dword>(l);
+	Editor::app->m_color[EDI_COLORGRID2-EDI_COLOR] = static_cast<dword>(l);
 	return true;
 }
 
 PREDICATE_M(edi, setColorGrid3, 1)
 {
 	int64 l = A1;
-	EdiApp()->m_color[EDI_COLORGRID3-EDI_COLOR] = static_cast<dword>(l);
+	Editor::app->m_color[EDI_COLORGRID3-EDI_COLOR] = static_cast<dword>(l);
 	return true;
 }
 
@@ -659,19 +707,19 @@ PREDICATE_M(edi, setColorGrid3, 1)
 PREDICATE_M(edi, setColorMap, 1)
 {
 	int64 l = A1;
-	EdiApp()->m_color[EDI_COLORMAP-EDI_COLOR] = static_cast<dword>(l);
+	Editor::app->m_color[EDI_COLORMAP-EDI_COLOR] = static_cast<dword>(l);
 	return true;
 }
 
 PREDICATE_M(edi, exit, 0)
 {
-	EdiApp()->m_exit=1;
+	Editor::app->m_exit=1;
 	return true;
 }
 
 PREDICATE_M(edi, waitCursor, 1)
 {
-	EdiApp()->WaitCursor(A1);
+	Editor::app->WaitCursor(A1);
 	return true;
 }
 
@@ -682,7 +730,7 @@ PREDICATE_M(edi, layerGet, 2)
 	int layer = A1;
 	if(layer < 0 || layer >= LAYER_MAX) 
 		throw PlDomainError ("invalid layer index", A1);
-	return A2 = EdiApp()->LayerGet(layer);
+	return A2 = Editor::app->LayerGet(layer);
 }
 
 PREDICATE_M(edi, layerSet, 2)
@@ -690,13 +738,13 @@ PREDICATE_M(edi, layerSet, 2)
 	int layer = A1;
 	if(layer < 0 || layer >= LAYER_MAX) 
 		throw PlDomainError("invalid layer index", A1);
-	EdiApp()->LayerSet(layer, A2);
+	Editor::app->LayerSet(layer, A2);
 	return true;
 }
 
 PREDICATE_M(edi, layerActive, 1)
 {
-	return A1 = EdiApp()->LayerActive();
+	return A1 = Editor::app->LayerActive();
 }
 
 // tool brush ..............................................................................
@@ -704,26 +752,21 @@ PREDICATE_M(edi, layerActive, 1)
 
 PREDICATE_M(edi, toolBrush, 1)
 {
-	return g_map.UnifyBrush(A1, & EdiApp()->m_brush);
+	return g_map.UnifyBrush(A1, & Editor::app->m_brush);
 }
 
 PREDICATE_M(edi, toolReset, 0)
 {
-	EdiApp()->m_tool[EdiApp()->m_toolcrt]->Reset(); 
+	Editor::app->m_tool[Editor::app->m_toolcrt]->Reset(); 
 	return true; 
 }
 
 PREDICATE_M(edi, toolCommand, 1)
 {
-	EdiApp()->m_tool[EdiApp()->m_toolcrt]->Command(A1); 
+	Editor::app->m_tool[Editor::app->m_toolcrt]->Command(A1); 
 	return true; 
 }
 
 
-void cEdiApp::ErrorMessage( LPCWSTR msg )
-{
-	dlog(LOGERR, L"ERROR:\n%S\n", msg);
-	sys_msgbox( E9_GetHWND(), msg, L"ERROR", MB_OK );
-}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

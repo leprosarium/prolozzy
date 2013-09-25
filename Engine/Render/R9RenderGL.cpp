@@ -2,6 +2,7 @@
 // R9RenderGL.cpp
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
+#include "App.h"
 #include "R9RenderGL.h"
 #include "R9ImgLoader.h"
 
@@ -661,7 +662,7 @@ bool r9RenderGL::CopyTargetToImage( R9TEXTURE target, r9Img* img, const iV2 &p, 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL r9RenderGL::CreateRenderWindow()
 {
-	HWND hwnd_parent = E9_GetHWND();
+	HWND hwnd_parent = App::Wnd();
 	if(!hwnd_parent) return FALSE;
 	RECT rect_parent;
 	GetClientRect(hwnd_parent,&rect_parent);
@@ -674,7 +675,7 @@ BOOL r9RenderGL::CreateRenderWindow()
 	wcex.lpfnWndProc	= (WNDPROC)WndProc;
 	wcex.cbClsExtra		= 0;
 	wcex.cbWndExtra		= 0;
-	wcex.hInstance		= E9_GetHINSTANCE();
+	wcex.hInstance		= App::Instance();
 	wcex.hIcon			= NULL;	// let the user set the icon later
 	wcex.hCursor		= NULL; // LoadCursor(NULL, IDC_ARROW);
 	wcex.hbrBackground	= NULL;
@@ -695,7 +696,7 @@ BOOL r9RenderGL::CreateRenderWindow()
 								L"", 
 								style,
 								rec.left, rec.top, rec.right-rec.left, rec.bottom-rec.top, 
-								hwnd_parent, NULL, E9_GetHINSTANCE(), 
+								hwnd_parent, NULL, App::Instance(), 
 								NULL );
 	if(m_hwnd==NULL) { dlog(LOGERR, L"RENDER: failed to create render window (%i).\n",GetLastError()); return FALSE; }
 
@@ -710,7 +711,7 @@ BOOL r9RenderGL::DestroyRenderWindow()
 		DestroyWindow(m_hwnd); 
 		m_hwnd=NULL; 
 	}
-	if(!UnregisterClass("E9_RNDCLASS",E9_GetHINSTANCE())) { dlog(LOGERR, L"RENDER: can't unregister window class."); }
+	if(!UnregisterClass("E9_RNDCLASS", App::Instance())) { dlog(LOGERR, L"RENDER: can't unregister window class."); }
 	return TRUE;
 }
 
@@ -721,7 +722,7 @@ LRESULT	CALLBACK r9RenderGL::WndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 void r9RenderGL::PrepareParentWindow()
 {
-	HWND hwnd = E9_GetHWND();
+	HWND hwnd = App::Wnd();
 	if(!hwnd) return;
 	if( m_cfg.windowed )
 	{

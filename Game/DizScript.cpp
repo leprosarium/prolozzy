@@ -3,7 +3,6 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
 #include "E9System.h"
-#include "E9App.h"
 #include "DizScript.h"
 #include "DizGame.h"
 #include "DizSound.h"

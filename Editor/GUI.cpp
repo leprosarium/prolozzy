@@ -3,7 +3,8 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
 #include "GUI.h"
-#include "E9App.h"
+#include "App.h"
+#include "EdiApp.h"
 #include "eInput.h"
 
 #include "GUIItem.h"
@@ -110,7 +111,7 @@ void cGUI::Draw()
 	}
 
 	// mouse cursor (for full screen tests)
-	if(!App.Windowed())
+	if(!Editor::app->Windowed())
 		R9_DrawLine( fV2(m_mouse), fV2(m_mouse)+10, 0xffffffff );
 
 }
@@ -134,7 +135,7 @@ void cGUI::GetMousePos()
 {
 	POINT pt;
 	GetCursorPos(&pt);
-	ScreenToClient(E9_GetHWND(), &pt); 
+	ScreenToClient(App::Wnd(), &pt); 
 	m_mouse = iV2(pt.x, pt.y);
 }
 
@@ -229,14 +230,14 @@ PREDICATE_M(gui, mouseY, 1)
 PREDICATE_M(gui, scrW, 1)
 {
 	RECT rc;
-	GetClientRect(E9_GetHWND(), &rc); 
+	GetClientRect(App::Wnd(), &rc); 
 	return A1 = rc.right - rc.left; 
 }
 
 PREDICATE_M(gui, scrH, 1)
 {
 	RECT rc;
-	GetClientRect(E9_GetHWND(), &rc); 
+	GetClientRect(App::Wnd(), &rc); 
 	return A1 = rc.bottom - rc.top; 
 }
 

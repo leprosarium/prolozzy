@@ -10,6 +10,8 @@
 
 #include "eInput.h"
 
+DizApp * DizApp::app = nullptr;
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL CALLBACK DialogProcInfo( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam ) 
 {
@@ -38,6 +40,7 @@ BOOL CALLBACK DialogProcInfo( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 DizApp::DizApp(HINSTANCE hinstance, LPCTSTR cmdline) : App(hinstance, cmdline), gamefps(), drawstats(), musicwaspaused()
 {
+	app = this;
 	dlog(LOGAPP, L"App init.\n");
 
 	// engine
@@ -153,6 +156,7 @@ DizApp::~DizApp()
 	F9_Done();
 	eInput::Done();
 	dlog(LOGAPP, L"App done.\n");
+	app = nullptr;
 }
 
 void DizApp::OnActivate( bool active )

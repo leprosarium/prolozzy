@@ -3,10 +3,8 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
 
-#include <sstream>
-#include <cctype>
-
 #include "DizDebug.h"
+#include "DizApp.h"
 #include "DizGame.h"
 #include "DizSound.h"
 #include "SWI-cpp-m.h"
@@ -64,37 +62,17 @@ void Prolog::Open(bool o) {
 
 ssize_t Prolog::Read(char *buffer, size_t size)
 {
-	struct Pnt
-	{
-		e9App::Callback tmp;
-		Pnt(e9App::Callback pnt) : tmp(App.OnPaint) { App.OnPaint = pnt; }; 
-		~Pnt() { App.OnPaint = tmp; }
-	} pnt([this]() { return this->Draw(); });
-
-	MSG	msg;
 	input.Open();
 
 	int mode = PL_ttymode(Suser_input);
 	bool single = mode == PL_RAWTTY;
 	if(auto prompt = PL_prompt_string(0))
 		input.setPrompt(prompt);
-
- 	while(true)
+	ssize_t readed = 0;
+	DizApp::app->Loop(
+	[&]() -> bool
 	{
-		while( PeekMessage( &msg, NULL, 0, 0, PM_NOREMOVE ) )
-		{
-			if( GetMessage( &msg, NULL, 0, 0) )
-			{
-				TranslateMessage( &msg );
-				DispatchMessage( &msg );
-			}
-			else
-			{
-				return 0;
-			}
-		}
-		App.UpdateClocks();
-		eInput::Update(App.DeltaTime() / 1000.0f);
+		eInput::Update(DizApp::app->DeltaTime() / 1000.0f);
 		con.Update();
 		if(!single) input.Update();
 		Draw();
@@ -110,14 +88,16 @@ ssize_t Prolog::Read(char *buffer, size_t size)
 					if(std::isprint(ch))
 					{
 						buffer[0] = ch;
-						return 1;
+						readed = 1;
+						return false;
 					}
 				}
 			}
 		}
 		else
 		{
-			if(CmdReady) {
+			if(CmdReady)
+			{
 				CmdReady = false;
 				Cmd += "\n";
 				size_t sz = std::min(Cmd.size(), size);
@@ -125,12 +105,13 @@ ssize_t Prolog::Read(char *buffer, size_t size)
 				Cmd = "";
 				PL_prompt_next(0);
 				d9Log::printBuf(LOGDBG, buffer, sz);
-				return sz;
+				readed = sz;
+				return false;
 			}
 		}
-		Sleep(10);
-	}
-	return 0;
+		return true;
+	});
+	return readed;
 }
 
 

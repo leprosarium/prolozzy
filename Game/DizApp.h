@@ -21,12 +21,13 @@ public:
 
 	virtual void OnActivate(bool);
 	virtual void OnPaint() { Draw(); }
-	virtual bool OnRun();
+	bool OnRun();
 
 	bool ToggleVideo();  
 
 	bool Update();
 	void Draw();
+	static	DizApp * app;
 };
 
 

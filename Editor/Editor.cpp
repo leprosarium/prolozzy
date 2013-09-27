@@ -26,15 +26,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	d9Log::Init("editor.log");													\
 	E9_OpenChannels( openlog );		
 
-	try
-	{
-		Editor app(hInstance, lpCmdLine);
-		app.Run();
-	}
-	catch(const std::exception & e)
-	{
-		App::ErrorMessage(e.what());	
-	}
+	App::Run<Editor>(hInstance, lpCmdLine);
 	return 0;
 }
 

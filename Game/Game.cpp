@@ -27,15 +27,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	d9Log::Init(GetLogFile());
 	E9_OpenChannels(open);	
 
-	try
-	{
-		DizApp app(hInstance, lpCmdLine);
-		app.Run();
-	}
-	catch(const std::exception & e)
-	{
-		App::ErrorMessage(e.what());
-	}
+	App::Run<DizApp>(hInstance, lpCmdLine);
 	return 0;
 }
 

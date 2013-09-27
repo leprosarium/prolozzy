@@ -163,43 +163,20 @@ void App::SetCursor(Cursor cur)
 	::SetCursor(cursors[static_cast<size_t>(cursor = cur)]);
 }
 
-void App::Run()
+bool App::ProcessMessages()
 {
-	dlog(LOGAPP, L"Main loop start.\n\n" );
-
 	MSG	msg;
-	bool finished = false;
-
-	while(true)
+	while(PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
 	{
-		while(PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
+		if(GetMessage(&msg, NULL, 0, 0))
 		{
-			if(GetMessage(&msg, NULL, 0, 0))
-			{
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
-			else
-			{
-				finished = true;
-				break;
-			}
-		}
-
-		if(finished)
-			break;
-
-		if(active && !minimized )
-		{
-			UpdateClocks();
-			if(!OnRun()) break;
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
 		}
 		else
-			Sleep(10); // do something good for the operation system
-		if(cool)
-			Sleep(1); // STUPID HARDWARE (cpu cool)
+			return true;
 	}
-	dlog(LOGAPP, L"\nMain loop finished.\n");
+	return false;
 }
 
 void App::UpdateClocks()

@@ -33,7 +33,7 @@ PREDICATE_M(game, command, 1)
 
 PREDICATE_M(game, setName, 1)
 {
-	App.Name(A1);
+	DizApp::app->Name(A1);
 	return true;
 }
 

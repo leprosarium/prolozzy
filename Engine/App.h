@@ -1,6 +1,7 @@
 #ifndef __APP__
 #define __APP__
 #include "stdafx.h"
+#include "D9Log.h"
 #include "E9System.h"
 
 class App
@@ -29,8 +30,11 @@ private:
 	void InitWindow();
 	static LRESULT CALLBACK _WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	LRESULT WndProc(UINT msg, WPARAM wParam, LPARAM lParam);
-
+	bool ProcessMessages();
 public:
+
+	template<class T>
+	static void Run(HINSTANCE hinstance, LPCTSTR cmdline);
 
 	App(HINSTANCE hinstance, LPCTSTR cmdline);
 	virtual ~App();
@@ -38,10 +42,11 @@ public:
 	virtual void OnActivate(bool) {}
 	virtual bool OnClose() { return true; }
 	virtual void OnPaint() {}
-	virtual bool OnRun() { return true; }
 	virtual void OnMsg(UINT msg, WPARAM wparam, LPARAM lparam) {}
 
-	void Run();	
+	template<class Callable>
+	void Loop(Callable OnRun);	
+
 	void SetCursor(Cursor cursor);
 
 	void Name(const std::string & name);
@@ -63,5 +68,41 @@ public:
 	static HWND Wnd() { return wnd; }
 	static void ErrorMessage(LPCSTR msg);	// error message box
 };
+
+template<class Callable>
+void App::Loop(Callable OnRun)
+{
+	while(true)
+	{
+		if(ProcessMessages())
+			break;
+
+		if(active && !minimized )
+		{
+			UpdateClocks();
+			if(!OnRun()) break;
+		}
+		else
+			Sleep(10); // do something good for the operation system
+		if(cool)
+			Sleep(1); // STUPID HARDWARE (cpu cool)
+	}
+}
+
+template<class Application>
+void App::Run(HINSTANCE hinstance, LPCTSTR cl)
+{
+	try
+	{
+		Application app(hinstance, cl);
+		app.Loop([&app](){return app.OnRun();});
+	}
+	catch(const std::exception & e)
+	{
+		ErrorMessage(e.what());
+	}
+}
+
+
 
 #endif

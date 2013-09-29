@@ -82,11 +82,10 @@ public:
 	Editor(HINSTANCE hinstance, LPCTSTR cmdline);
 	~Editor();
 
-	virtual void OnActivate(bool);
-	virtual bool OnClose();
-	virtual void OnPaint() { Draw(); }
-	virtual bool OnRun();
-	virtual void OnMsg(UINT msg, WPARAM wparam, LPARAM lparam);
+	void OnActivate(bool);
+	bool OnClose();
+
+	void OnMsg(UINT msg, WPARAM wparam, LPARAM lparam);
 
 	void DropFile( LPCWSTR filepath );				// called when file is dropped
 	void Scroll( int dx, int dy );				// called on scroll messages

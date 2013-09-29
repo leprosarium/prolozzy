@@ -19,7 +19,12 @@ App::App(HINSTANCE hinstance, LPCTSTR cmdline) :
 	ticklast(),
 	fps(),
 	fpstick(),
-	fpscount()
+	fpscount(),
+	OnActivate([](bool){}),
+	OnClose([](){return true;}),
+	OnPaint([](){}),
+	OnUpdate([](){return true;}),
+	OnMsg([](UINT,WPARAM,LPARAM){})
 {
 	instance = hinstance;
 	if(FAILED(CoInitialize(NULL))) 
@@ -180,6 +185,26 @@ bool App::ProcessMessages()
 			return true;
 	}
 	return false;
+}
+
+void App::Loop()
+{
+	while(true)
+	{
+		if(ProcessMessages())
+			break;
+
+		if(active && !minimized )
+		{
+			UpdateClocks();
+			if(!OnUpdate()) break;
+			OnPaint();
+		}
+		else
+			Sleep(10); // do something good for the operation system
+		if(cool)
+			Sleep(1); // STUPID HARDWARE (cpu cool)
+	}
 }
 
 void App::UpdateClocks()

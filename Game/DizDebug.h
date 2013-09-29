@@ -106,7 +106,7 @@ class Prolog
 	Console & con;
 	Slots & slots;
 	Input input;
-	int Draw();
+	void Draw();
 	void Ready(const std::string & cmd) { Cmd = cmd; CmdReady = true; }
 	std::string Cmd;
 	bool CmdReady;

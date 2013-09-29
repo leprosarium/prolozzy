@@ -25,9 +25,9 @@ bool IS_WORD_CHAR(char c)
 #define COLOR_BBKGR		0xa0000000
 
 
-int Prolog::Draw()
+void Prolog::Draw()
 {
-	if(!R9_IsReady()) return 0; // avoid painting if render is not ready
+	if(!R9_IsReady()) return ; // avoid painting if render is not ready
 	R9_CheckDevice(); // check for lost device
 	if(R9_BeginScene())
 	{
@@ -39,7 +39,6 @@ int Prolog::Draw()
 		R9_EndScene();
 		R9_Present();
 	}
-	return 0;
 }
 
 static ssize_t Log_read(void *handle, char *buffer, size_t size)
@@ -69,13 +68,29 @@ ssize_t Prolog::Read(char *buffer, size_t size)
 	if(auto prompt = PL_prompt_string(0))
 		input.setPrompt(prompt);
 	ssize_t readed = 0;
-	DizApp::app->Loop(
+
+	struct Events 
+	{
+		App * app;
+		std::function<bool()> OnUpdate;
+		std::function<void()> OnPaint;
+		Events() : app(DizApp::app), OnUpdate(app->OnUpdate), OnPaint(app->OnPaint) 
+		{
+		}
+		~Events() 
+		{ 
+			app->OnUpdate = OnUpdate;
+			app->OnPaint = OnPaint;
+		}
+	} events;
+
+	DizApp::app->OnPaint = [this]() { Draw(); };
+	DizApp::app->OnUpdate = 
 	[&]() -> bool
 	{
 		eInput::Update(DizApp::app->DeltaTime() / 1000.0f);
 		con.Update();
 		if(!single) input.Update();
-		Draw();
 		if(single)
 		{
 			if(!einput->keyQueue.empty())
@@ -110,7 +125,10 @@ ssize_t Prolog::Read(char *buffer, size_t size)
 			}
 		}
 		return true;
-	});
+	};
+
+	DizApp::app->Loop();
+
 	return readed;
 }
 

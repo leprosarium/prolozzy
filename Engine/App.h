@@ -31,21 +31,21 @@ private:
 	static LRESULT CALLBACK _WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	LRESULT WndProc(UINT msg, WPARAM wParam, LPARAM lParam);
 	bool ProcessMessages();
+
 public:
+	std::function<void(bool)> OnActivate;
+	std::function<bool()> OnClose;
+	std::function<void()> OnPaint;
+	std::function<bool()> OnUpdate;
+	std::function<void(UINT,WPARAM,LPARAM)> OnMsg;
 
 	template<class T>
 	static void Run(HINSTANCE hinstance, LPCTSTR cmdline);
 
 	App(HINSTANCE hinstance, LPCTSTR cmdline);
-	virtual ~App();
+	~App();
 
-	virtual void OnActivate(bool) {}
-	virtual bool OnClose() { return true; }
-	virtual void OnPaint() {}
-	virtual void OnMsg(UINT msg, WPARAM wparam, LPARAM lparam) {}
-
-	template<class Callable>
-	void Loop(Callable OnRun);	
+	void Loop();	
 
 	void SetCursor(Cursor cursor);
 
@@ -69,25 +69,7 @@ public:
 	static void ErrorMessage(LPCSTR msg);	// error message box
 };
 
-template<class Callable>
-void App::Loop(Callable OnRun)
-{
-	while(true)
-	{
-		if(ProcessMessages())
-			break;
 
-		if(active && !minimized )
-		{
-			UpdateClocks();
-			if(!OnRun()) break;
-		}
-		else
-			Sleep(10); // do something good for the operation system
-		if(cool)
-			Sleep(1); // STUPID HARDWARE (cpu cool)
-	}
-}
 
 template<class Application>
 void App::Run(HINSTANCE hinstance, LPCTSTR cl)
@@ -95,7 +77,7 @@ void App::Run(HINSTANCE hinstance, LPCTSTR cl)
 	try
 	{
 		Application app(hinstance, cl);
-		app.Loop([&app](){return app.OnRun();});
+		app.Loop();
 	}
 	catch(const std::exception & e)
 	{

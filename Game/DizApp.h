@@ -19,9 +19,7 @@ public:
 	DizApp(HINSTANCE hinstance, LPCTSTR cmdline);
 	~DizApp();
 
-	virtual void OnActivate(bool);
-	virtual void OnPaint() { Draw(); }
-	bool OnRun();
+	void OnActivate(bool);
 
 	bool ToggleVideo();  
 

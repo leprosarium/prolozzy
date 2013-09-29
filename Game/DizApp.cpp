@@ -40,6 +40,11 @@ BOOL CALLBACK DialogProcInfo( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 DizApp::DizApp(HINSTANCE hinstance, LPCTSTR cmdline) : App(hinstance, cmdline), gamefps(), drawstats(), musicwaspaused()
 {
+	App::OnActivate = [this](bool a) { OnActivate(a); };
+	App::OnPaint = [this]() { Draw(); };
+	App::OnUpdate = [this]() { return Update(); };
+
+
 	app = this;
 	dlog(LOGAPP, L"App init.\n");
 
@@ -171,13 +176,6 @@ void DizApp::OnActivate( bool active )
 		musicwaspaused = g_sound.music.paused();
 	}
 	if(!musicwaspaused) g_sound.music.Pause(!active);
-}
-
-bool DizApp::OnRun()
-{
-	if(!Update()) return false; // exit
-	Draw();
-	return true;
 }
 
 bool DizApp::ToggleVideo()

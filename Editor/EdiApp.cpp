@@ -54,6 +54,11 @@ PREDICATE_M(core, tickCount, 1)
 
 Editor::Editor(HINSTANCE hinstance, LPCTSTR cmdline) : App(hinstance, cmdline)
 {
+	App::OnActivate = [this](bool a) { OnActivate(a); }; 
+	App::OnClose = [this]() { return OnClose(); };
+	App::OnPaint = [this]() { Draw(); };
+	App::OnUpdate = [this]() { return Update(); };
+	App::OnMsg = [this](UINT msg,WPARAM wp,LPARAM lp) { OnMsg(msg, wp, lp); };
 
 	m_exit				= 0;
 	m_axes				= 0;
@@ -254,13 +259,6 @@ bool Editor::OnClose()
 	g_gui->ScriptPrologDo("editor:close");
 	g_gui->m_isbusy = TRUE; // avoid tools problems
 	return false;
-}
-
-bool Editor::OnRun()
-{
-	if(!Update()) return false;
-	Draw();
-	return true;
 }
 
 void Editor::OnMsg(UINT msg, WPARAM wparam, LPARAM lparam)

@@ -97,7 +97,7 @@ LRESULT	CALLBACK App::_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 
 LRESULT	App::WndProc(UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	int cmd;
+	OnMsg(msg, wParam, lParam);
 	switch(msg)
 	{
 		case WM_ACTIVATEAPP:
@@ -144,16 +144,19 @@ LRESULT	App::WndProc(UINT msg, WPARAM wParam, LPARAM lParam )
 		case WM_SYSKEYUP:		// ignore ALT key press; was loosing app focus 
 			return 0;				
 		case WM_SYSCOMMAND:		// ignore sysmenu and others
-			cmd = (int)wParam & 0xffff0;
+		{
+			int cmd = (int)wParam & 0xffff0;
 			if(cmd!=SC_RESTORE && cmd!=SC_MINIMIZE && cmd!=SC_CLOSE && cmd!=SC_MOVE )
 				return 0;
 			break;
+		}
 		case WM_CONTEXTMENU:	// ignore sysmen when rclick
 			return 0;
 		case WM_CHAR:
+		{
 			WCHAR ch = wParam;
 			einput->keyQueue += ch;
-
+		}
 	}
 	return DefWindowProc(wnd, msg, wParam, lParam);
 }

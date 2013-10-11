@@ -24,7 +24,7 @@ void Files::FileClose(f9File * file)
 bool F9_Init()
 {
 	if(files) return true;
-	dlog(LOGFIL, L"Files init.\n");
+	dlog(Channel::fil, L"Files init.\n");
 	files = new Files();
 	return true;
 }
@@ -34,7 +34,7 @@ void F9_Done()
 	if(!files) return;
 	delete files;
 	files = nullptr;
-	dlog(LOGFIL, L"Files done.\n");
+	dlog(Channel::fil, L"Files done.\n");
 }
 
 void Files::DoIndex(f9Archive * arc, const std::string & file) {
@@ -55,7 +55,7 @@ void Files::MakeIndex(const std::string & path)
 	file_findfiles(path, "*.*", [this](const std::string & s, bool) { Index[s] = 0; }, FILE_FINDREC);
 
 	for(Map::value_type i: Index)
-		dlog(LOGFIL, L"idx: %S %p\n", i.first.c_str(), i.second);
+		dlog(Channel::fil, L"idx: %S %p\n", i.first.c_str(), i.second);
 }
 
 f9File * Files::OpenFile(const std::string & name)

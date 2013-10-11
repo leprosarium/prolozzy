@@ -11,63 +11,63 @@
 #define __D9LOG_H__
 
 #include "E9System.h"
-#include "E9Engine.h"
 
 #include <string>
 #include <functional>
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// Defines
-///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define D9_LOG_BUFFERSIZE				1024				// size of a single log message and of the storing buffer
 
-// flags
-#define D9_LOGFLAG_OPEN					(1<<0)				// channel is opened
-#define D9_LOGFLAG_FILE					(1<<1)				// send to file
-#define D9_LOGFLAG_DEBUG				(1<<2)				// send to debug window
-#define D9_LOGFLAG_CALLBACK				(1<<3)				// send to callback
-#define D9_LOGFLAG_DEFAULT				(D9_LOGFLAG_OPEN|D9_LOGFLAG_FILE|D9_LOGFLAG_DEBUG|D9_LOGFLAG_CALLBACK)
-
 struct d9LogChannel
 {
-	d9LogChannel() : m_flags(), m_color(0xffffffff) {}
+	bool open;
+	bool file;
+	bool debug;
+	bool callback;
+	std::string name;
+	dword flags;
+	dword color;
+	d9LogChannel() : open(), file(), debug(), callback(), color(0xffffffff) {}
+	d9LogChannel(const std::string & name, dword color, bool open = true, bool file = true, bool debug = true, bool callback = true) : name(name), color(color), open(open), file(file), debug(debug), callback(callback) {}
+};
 
-	std::string m_name;	// channel name
-	dword	m_flags;	// status flags (0=closed)
-	dword	m_color;	// color option
+enum class Channel
+{
+	nul,	// default
+	sys,	// system - open on release
+	err,	// error - open on release
+	eng,	// engine
+	dbg,	// debug
+	fil,	// files
+	inp,	// input
+	rnd,	// render
+	snd,	// sound
+	scr,	// script
+	app,	// application
+	max
 };
 
 class d9Log
 {
 public:
-	static const int ChannelMax = 64;					// max number of log channels
-
-	typedef std::function<void(int,LPCWSTR)> callback;
+	typedef std::function<void(Channel,LPCWSTR)> logCallback;
 private:
-	static std::string m_logfile;				// log file
-	static d9LogChannel	m_logc[ChannelMax];		// channels
-	static bool m_store;						// if log is stored or not
-	static std::wstring	m_buffer;				// stored log
-	static callback m_callback;					// log user callback
+	static std::string logfile;				// log file
+	static d9LogChannel	logc[Channel::max];	// channels
+	static logCallback callback;					// log user callback
+	static d9LogChannel & get(Channel ch) { return logc[static_cast<size_t>(ch)]; }
 public:
 
-	static void Init(const std::string & logfile, callback c = nullptr);
+	static void Init(const std::string & logfile);
 	static void	clear();
-	static void store(bool enable);
 
-	static void printV(size_t ch, LPCWSTR fmt, va_list args);
-	static void printF(size_t ch, LPCWSTR fmt, ... ) { va_list	args; va_start(args, fmt); printV(ch, fmt, args); va_end(args); }
-	static void printF(LPCWSTR fmt, ... ) { va_list	args; va_start(args, fmt); printV(0, fmt, args); va_end(args); }
-	static void printBuf(size_t ch, LPCSTR buffer, size_t size);
+	static void printV(Channel ch, LPCWSTR fmt, va_list args);
+	static void printF(Channel ch, LPCWSTR fmt, ... ) { va_list	args; va_start(args, fmt); printV(ch, fmt, args); va_end(args); }
+	static void printF(LPCWSTR fmt, ... ) { va_list	args; va_start(args, fmt); printV(Channel::nul, fmt, args); va_end(args); }
+	static void printBuf(Channel ch, LPCSTR buffer, size_t size);
 
-
-	static void setChannel(size_t ch, const std::string & name, dword flags, dword color=0xffffffff);
-	static void	setFlag(size_t ch, dword flag, bool on) { if(on) m_logc[ch].m_flags |= flag; else m_logc[ch].m_flags &= ~flag; }
-	static dword getColor(size_t ch) { return m_logc[ch].m_color; }
-	static void setCallback(callback c) { m_callback = c; }
-
-	static void	openChannel(int ch, bool open) { setFlag(ch, D9_LOGFLAG_OPEN, open); }
-
+	static dword getColor(Channel ch) { return get(ch).color; }
+	static void setCallback(logCallback c) { callback = c; }
+	static void openChannels(bool open = true);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

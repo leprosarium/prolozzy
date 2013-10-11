@@ -6,9 +6,6 @@
 #include <sstream>
 
 #include "E9System.h"
-#include "E9Engine.h"
-
-
 
 #ifdef E9_ENABLE_ZIP
 // make sure the paths to the libs are ok

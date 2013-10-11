@@ -2,7 +2,6 @@
 #define __E_INPUT__
 
 #include "E9System.h"
-#include "E9Engine.h"
 #include "dinput.h"
 #include <vector>
 #include <memory>
@@ -218,10 +217,10 @@ unsigned long DeviceDX::GetDeviceData(Data (&data)[bufferSize])
 		return elements;
 	if(err == DIERR_INPUTLOST)
 	{
-		dlog(LOGINP, L"Input lost\n");
+		dlog(Channel::inp, L"Input lost\n");
 		Acquire();
 	} else
-		dlog(LOGINP, L"GetDeviceData failed");
+		dlog(Channel::inp, L"GetDeviceData failed");
 	return 0;
 }
 

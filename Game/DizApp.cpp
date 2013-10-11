@@ -46,7 +46,7 @@ DizApp::DizApp(HINSTANCE hinstance, LPCTSTR cmdline) : App(hinstance, cmdline), 
 
 
 	app = this;
-	dlog(LOGAPP, L"App init.\n");
+	dlog(Channel::app, L"App init.\n");
 
 	// engine
 	if(!InitApp()) throw std::exception("Init app error.");
@@ -134,7 +134,7 @@ bool DizApp::InitVideo()
 	BOOL ok = R9_Init(Wnd(), &cfg, api);
 	if(!ok) // try the other api
 	{
-		dlog(LOGERR, L"RENDER: init %S failed, try the other api.\n", api == Api::OpenGL ? "OpenGL":"DirectX9");
+		dlog(Channel::err, L"RENDER: init %S failed, try the other api.\n", api == Api::OpenGL ? "OpenGL":"DirectX9");
 		api = api == Api::DirectX ? Api::OpenGL : Api::DirectX;
 		ok = R9_Init(Wnd(), &cfg, api);
 		if(!ok)	return false;
@@ -160,7 +160,7 @@ DizApp::~DizApp()
 	A9_Done();
 	F9_Done();
 	eInput::Done();
-	dlog(LOGAPP, L"App done.\n");
+	dlog(Channel::app, L"App done.\n");
 	app = nullptr;
 }
 
@@ -182,7 +182,7 @@ bool DizApp::ToggleVideo()
 {
 	if(!R9_GetCfg().windowed) return false; // toggle only in windowed mode (not a hw restriction though)
 
-	dlog(LOGAPP, L"Toggle video.\n");
+	dlog(Channel::app, L"Toggle video.\n");
 	int scrwidth = sys_desktopwidth();
 	int scrheight = sys_desktopheight();
 	static bool maximized = false;
@@ -208,9 +208,9 @@ bool DizApp::ToggleVideo()
 	BOOL ok = R9_Init(Wnd(), &cfg, api);
 	if(!ok) // try to go back
 	{
-		dlog(LOGERR, L"RENDER: re-init failed; trying to restore original cfg.\n");
+		dlog(Channel::err, L"RENDER: re-init failed; trying to restore original cfg.\n");
 		g_cfg.LoadRenderCfg(cfg, api);
-		if(!R9_Init(Wnd(), &cfg, api))	{ dlog(LOGERR, L"RENDER: critical error!\n"); return false; }
+		if(!R9_Init(Wnd(), &cfg, api))	{ dlog(Channel::err, L"RENDER: critical error!\n"); return false; }
 	}
 
 	g_cfg.m_scale = 0; // full scale
@@ -277,13 +277,13 @@ bool DizApp::Update()
 		{
 			volume = A9_VolumeDecibelToPercent(A9_Get(A9_MASTERVOLUME));
 			vol = 0;
-			dlog(LOGAPP, L"sound off\n");
+			dlog(Channel::app, L"sound off\n");
 		}
 		else
 		{
 			vol = volume;
 			volume = -1;
-			dlog(LOGAPP, L"sound on\n");
+			dlog(Channel::app, L"sound on\n");
 		}
 		A9_Set(A9_MASTERVOLUME, A9_VolumePercentToDecibel(vol));
 	}

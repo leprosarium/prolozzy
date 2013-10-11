@@ -19,7 +19,7 @@
 
 static ssize_t Log_write(void *handle, char *buffer, size_t size)
 { 
-	size_t ch = reinterpret_cast<size_t>(handle);
+	Channel ch = static_cast<Channel>(reinterpret_cast<size_t>(handle));
 	d9Log::printBuf(ch, buffer, size);
 	return size;
 }
@@ -35,8 +35,8 @@ cDizScript::cDizScript()
 	Soutput->functions->write = &Log_write;
 	Serror->functions->write = &Log_write;
 
-	Soutput->handle = reinterpret_cast<void *>(LOGGS);
-	Serror->handle  = reinterpret_cast<void *>(LOGAPP);
+	Soutput->handle = reinterpret_cast<void *>(Channel::scr);
+	Serror->handle  = reinterpret_cast<void *>(Channel::app);
 
 }
 
@@ -344,15 +344,15 @@ PREDICATE_M(core, joystickAxe, 1)
 PREDICATE_M(core, dlog, 1)
 {
 	LPCWSTR msg = A1;
-	dlog(LOGGS, L"%s", msg);
+	dlog(Channel::scr, L"%s", msg);
 	return true;
 }
 
 PREDICATE_M(core, dl, 1)
 {
 	LPCWSTR msg = A1;
-	dlog(LOGGS, L"%s", msg);
-	dlog(LOGGS, L"\n");
+	dlog(Channel::scr, L"%s", msg);
+	dlog(Channel::scr, L"\n");
 	return true;
 }
 

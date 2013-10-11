@@ -25,7 +25,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	ini_get(file_getfullpath(GetIniFile()), "ADVANCED", "log") >> open;
 
 	d9Log::Init(GetLogFile());
-	E9_OpenChannels(open);	
+	d9Log::openChannels(open);	
 
 	App::Run<DizApp>(hInstance, lpCmdLine);
 	return 0;

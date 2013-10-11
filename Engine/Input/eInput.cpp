@@ -23,7 +23,7 @@ eInput::~eInput()
 bool eInput::Init(HWND hwnd, HINSTANCE hinstance)
 {
 	if(Ready()) return true;
-	dlog(LOGINP, L"Input init.\n");
+	dlog(Channel::inp, L"Input init.\n");
 	einput = new eInput(hwnd, hinstance);
 	return true;
 }
@@ -33,7 +33,7 @@ void eInput::Done()
 	if(!Ready()) return;
 	delete einput;
 	einput = nullptr;
-	dlog(LOGINP, L"Input done.\n");
+	dlog(Channel::inp, L"Input done.\n");
 }
 
 void eInput::_Update(float dtime)

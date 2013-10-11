@@ -345,7 +345,7 @@ void cDizGame::NextDrawMode()
 {
 	drawmode++;
 	if(drawmode == DRAWMODE_MAX) drawmode=0;
-	dlog( LOGAPP, L"draw mode %i\n", drawmode );
+	dlog( Channel::app, L"draw mode %i\n", drawmode );
 }
 
 

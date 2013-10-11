@@ -7,8 +7,6 @@
 #include "F9Files.h"
 #include "D9Log.h"
 
-#define A9_LOGERROR( prefix )	dlog( LOGSND, L"AUDIO: %S (%S)\n", prefix, ErrorDesc(hr) );
-
 a9StreamDX::a9StreamDX()
 {
 	m_buffer		= NULL; 
@@ -60,14 +58,14 @@ int	a9AudioDX::Init( HWND hwnd )
 	// create DirectSound
 	// hr = DirectSoundCreate8( NULL, &m_ds, NULL ); // no initialize needed, or by COM
 	hr = CoCreateInstance(CLSID_DirectSound, NULL, CLSCTX_INPROC_SERVER, IID_IDirectSound, (void**)&m_ds);
-	if(FAILED(hr)) { A9_LOGERROR("could not create DirectSound"); goto error; }
+	if(FAILED(hr)) { logError("could not create DirectSound", hr); goto error; }
 
 	hr = m_ds->Initialize(NULL);
-	if(FAILED(hr)) { A9_LOGERROR("could not initialize DirectSound"); goto error; }
+	if(FAILED(hr)) { logError("could not initialize DirectSound", hr); goto error; }
 
 	// set cooperative level
 	hr = m_ds->SetCooperativeLevel(m_hwnd, DSSCL_PRIORITY);
-	if(FAILED(hr)) { A9_LOGERROR("could not set the cooperative level"); goto error; }
+	if(FAILED(hr)) { logError("could not set the cooperative level", hr); goto error; }
 
 	// create primary buffer
 	memset(&dsbd, 0, sizeof(dsbd));
@@ -75,7 +73,7 @@ int	a9AudioDX::Init( HWND hwnd )
 	dsbd.dwBufferBytes = 0;
 	dsbd.dwFlags = DSBCAPS_PRIMARYBUFFER | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRL3D;
 	hr = m_ds->CreateSoundBuffer(&dsbd, &m_dsbuffer, NULL);
-	if(FAILED(hr)) { A9_LOGERROR("could not create primary sound buffer"); goto error; }
+	if(FAILED(hr)) { logError("could not create primary sound buffer", hr); goto error; }
 
 	// volume default
 	m_dsbuffer->GetVolume(&m_volumedefault);
@@ -85,7 +83,7 @@ int	a9AudioDX::Init( HWND hwnd )
 
 	// query listener
 	hr = m_dsbuffer->QueryInterface(IID_IDirectSound3DListener, (void**)&m_dslistener);
-	if(FAILED(hr)) { A9_LOGERROR("could not create 3d listener"); goto error; }
+	if(FAILED(hr)) { logError("could not create 3d listener", hr); goto error; }
 
 	// get caps
 	DSCAPS dscaps;

@@ -191,7 +191,7 @@ bool Samples::LoadFile(const std::string & filepath, size_t & total, size_t & fa
 	if(!(fname >> nm))
 	{ 
 		fail++; 
-		dlog(LOGAPP, L"! %S (bad name)\n", filepath.c_str()); 
+		dlog(Channel::app, L"! %S (bad name)\n", filepath.c_str()); 
 		return false; 
 	}
 	int instances = 1;
@@ -204,7 +204,7 @@ bool Samples::LoadFile(const std::string & filepath, size_t & total, size_t & fa
 	{
 		fail++;
 		duplicates++;
-		dlog(LOGSYS, L"! %S (duplicate id)\n", filepath.c_str());
+		dlog(Channel::sys, L"! %S (duplicate id)\n", filepath.c_str());
 		return false;
 	}
 
@@ -213,7 +213,7 @@ bool Samples::LoadFile(const std::string & filepath, size_t & total, size_t & fa
 	if(!bufferproto)
 	{
 		fail++;
-		dlog(LOGSYS, L"! %S (failed to load)\n", filepath.c_str());
+		dlog(Channel::sys, L"! %S (failed to load)\n", filepath.c_str());
 		return false;
 	}
 
@@ -221,20 +221,20 @@ bool Samples::LoadFile(const std::string & filepath, size_t & total, size_t & fa
 	push_back(tSoundProto(id, group, instances, bufferproto));
 
 	if(g_dizdebug.active()) // log for developers
-		dlog(LOGAPP, L"  %S [%i]\n", filepath.c_str(), instances );
+		dlog(Channel::app, L"  %S [%i]\n", filepath.c_str(), instances );
 
 	return true;
 }
 
 bool Samples::Load(const std::string & path, int group)
 {
-	if(!A9_IsReady()) { dlog(LOGAPP, L"Sound disabled - no samples are loaded.\n"); return false; }
-	dlog(LOGAPP, L"Loading samples from \"%S\" (group=%i)\n", path.c_str(), group);
+	if(!A9_IsReady()) { dlog(Channel::app, L"Sound disabled - no samples are loaded.\n"); return false; }
+	dlog(Channel::app, L"Loading samples from \"%S\" (group=%i)\n", path.c_str(), group);
 	size_t total = 0;
 	size_t fail = 0;
 	size_t duplicates = 0;
 	files->FindFiles(path, [this, &total, &fail, &duplicates, group](const std::string & filepath) { LoadFile(filepath, total, fail, duplicates, group); } );
-	dlog(LOGAPP, L"Samples report: total=%u, failed=%u (duplicates=%u)\n\n", total, fail, duplicates);
+	dlog(Channel::app, L"Samples report: total=%u, failed=%u (duplicates=%u)\n\n", total, fail, duplicates);
 	return true;
 }
 
@@ -349,7 +349,7 @@ bool Music::LoadFile( const std::string & filepath, size_t & total, size_t & fai
 	{
 		fail++;
 		duplicates++;
-		dlog(LOGSYS, L"! %S (duplicate id)\n", filepath.c_str());
+		dlog(Channel::sys, L"! %S (duplicate id)\n", filepath.c_str());
 		return false;
 	}
 
@@ -358,7 +358,7 @@ bool Music::LoadFile( const std::string & filepath, size_t & total, size_t & fai
 	if(!stream)
 	{
 		fail++;
-		dlog(LOGSYS, L"! %S (failed to load)\n", filepath.c_str());
+		dlog(Channel::sys, L"! %S (failed to load)\n", filepath.c_str());
 		return false;
 	}
 
@@ -366,20 +366,20 @@ bool Music::LoadFile( const std::string & filepath, size_t & total, size_t & fai
 	push_back(tMusicProto(id, group, stream));
 
 	if(g_dizdebug.active()) // log for developers
-		dlog(LOGAPP, L"  %S\n", filepath.c_str());
+		dlog(Channel::app, L"  %S\n", filepath.c_str());
 
 	return true;
 }
 
 bool Music::Load(const std::string & path, int group)
 {
-	if(!A9_IsReady()) { dlog(LOGAPP, L"Sound disabled - no musics are loaded.\n"); return false; }
-	dlog(LOGAPP, L"Loading musics from \"%S\" (group=%i)\n", path.c_str(), group);
+	if(!A9_IsReady()) { dlog(Channel::app, L"Sound disabled - no musics are loaded.\n"); return false; }
+	dlog(Channel::app, L"Loading musics from \"%S\" (group=%i)\n", path.c_str(), group);
 	size_t total = 0;
 	size_t fail	= 0;
 	size_t duplicates = 0;
 	files->FindFiles(path, [this, &total, &fail, &duplicates, group](const std::string & filepath) { LoadFile(filepath, total, fail, duplicates, group); } );
-	dlog(LOGAPP, L"Music report: total=%u, failed=%u (duplicates=%u)\n\n", total, fail, duplicates );
+	dlog(Channel::app, L"Music report: total=%u, failed=%u (duplicates=%u)\n\n", total, fail, duplicates );
 	return true;
 }
 

@@ -119,7 +119,7 @@ ssize_t Prolog::Read(char *buffer, size_t size)
 				memcpy(buffer, Cmd.c_str(), sz);
 				Cmd = "";
 				PL_prompt_next(0);
-				d9Log::printBuf(LOGDBG, buffer, sz);
+				d9Log::printBuf(Channel::dbg, buffer, sz);
 				readed = sz;
 				return false;
 			}
@@ -154,12 +154,12 @@ bool cDizDebug::Init()
 
 	// console
 	_visible = false;
-	d9Log::setCallback([this](int ch,LPCWSTR msg) {this->ConsolePush( ch, msg );});
+	d9Log::setCallback([this](Channel ch,LPCWSTR msg) {this->ConsolePush(ch, msg );});
 
 	//log
-	dlog(LOGAPP, L"%S v%S\n",GAME_NAME,GAME_VERSION);
+	dlog(Channel::app, L"%S v%S\n",GAME_NAME,GAME_VERSION);
 	R9_LogCfg(R9_GetCfg(),R9_GetApi());
-	if(_active) dlog(LOGAPP, L"Developer mode on.\n");
+	if(_active) dlog(Channel::app, L"Developer mode on.\n");
 
 	return true;
 }
@@ -371,7 +371,7 @@ void Console::Draw()
 	R9_SetClipping(oldclip);
 }
 
-void Console::Push(int ch, const std::string & str)
+void Console::Push(Channel ch, const std::string & str)
 {
 	std::string::size_type st = 0, e = 0;
 	while ((e = str.find('\n', st)) != std::string::npos) {
@@ -405,7 +405,7 @@ void Console::PushNewLine()
 }
 
 
-void cDizDebug::ConsolePush( int ch, LPCWSTR msg )
+void cDizDebug::ConsolePush(Channel ch, LPCWSTR msg)
 {
 	if(msg)
 		con.Push(ch, WideStringToMultiByte(msg));

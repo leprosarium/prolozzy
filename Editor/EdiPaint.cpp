@@ -49,7 +49,7 @@ bool cEdiPaint::TileLoadFile( const std::string & filepath, size_t & total, size
 	if(!(name >> id))
 	{ 
 		fail++; 
-		dlog(LOGSYS, L"! %S (bad name)\n", filepath.c_str()); 
+		dlog(Channel::sys, L"! %S (bad name)\n", filepath.c_str()); 
 		return false; 
 	}
 	std::string szt;
@@ -64,7 +64,7 @@ bool cEdiPaint::TileLoadFile( const std::string & filepath, size_t & total, size
 	{
 		fail++;
 		duplicates++;
-		dlog(LOGSYS, L"! %S (duplicate id)\n", filepath.c_str(), id);
+		dlog(Channel::sys, L"! %S (duplicate id)\n", filepath.c_str(), id);
 		return false;
 	}
 
@@ -73,7 +73,7 @@ bool cEdiPaint::TileLoadFile( const std::string & filepath, size_t & total, size
 	if(!R9_ImgLoadFile(filepath,&img))
 	{
 		fail++;
-		dlog(LOGSYS, L"! %S (load failed)\n", filepath.c_str());
+		dlog(Channel::sys, L"! %S (load failed)\n", filepath.c_str());
 		return false;
 	}
 
@@ -82,7 +82,7 @@ bool cEdiPaint::TileLoadFile( const std::string & filepath, size_t & total, size
 	if(!tex)
 	{
 		fail++;
-		dlog(LOGSYS, L"! %S (texture failed)\n", filepath.c_str());
+		dlog(Channel::sys, L"! %S (texture failed)\n", filepath.c_str());
 		return false;
 	}
 	cTile* tile = TileGet(TileAdd(id));
@@ -96,7 +96,7 @@ bool cEdiPaint::TileLoadFile( const std::string & filepath, size_t & total, size
 
 	R9_ImgDestroy(&img);
 	
-	dlog(LOGAPP, L"  %S [%i]\n", filepath.c_str(), frames );
+	dlog(Channel::app, L"  %S [%i]\n", filepath.c_str(), frames );
 	
 	return true;
 }
@@ -106,7 +106,7 @@ bool cEdiPaint::TileLoad( const std::string & path )
 	m_tilepath = path;
 	if(!m_tilepath.empty() && *m_tilepath.rbegin() != '\\')
 		m_tilepath += "\\";
-	dlog(LOGAPP, L"Loading tiles from \"%S\"\n", m_tilepath.c_str());
+	dlog(Channel::app, L"Loading tiles from \"%S\"\n", m_tilepath.c_str());
 
 	size_t total = 0;
 	size_t fail = 0;
@@ -114,7 +114,7 @@ bool cEdiPaint::TileLoad( const std::string & path )
 
 	file_findfiles(m_tilepath, "*.*", [this, &total, &fail, &duplicates](const std::string & filepath, bool) { TileLoadFile(filepath, total, fail, duplicates); }, FILE_FINDREC );
 
-	dlog(LOGAPP, L"Tiles report: total=%u, failed=%u (duplicates=%u)\n", total, fail, duplicates );
+	dlog(Channel::app, L"Tiles report: total=%u, failed=%u (duplicates=%u)\n", total, fail, duplicates );
 
 	// sort by id
 	std::sort(m_tile.begin(), m_tile.end(), [](cTile * t1, cTile * t2) { return t1->id < t2->id; });

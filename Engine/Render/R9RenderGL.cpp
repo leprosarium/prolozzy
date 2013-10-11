@@ -10,7 +10,7 @@
 #pragma comment( lib, "opengl32.lib" )
 #endif
 
-#define R9_LOGERROR( prefix )	dlog( LOGERR, L"RENDER: %S\n", prefix );
+#define logError( prefix )	dlog(Channel::err, L"RENDER: %S\n", prefix );
 
 r9RenderGL::twglCreateContext		r9RenderGL::m_wglCreateContext		= nullptr;
 r9RenderGL::twglMakeCurrent			r9RenderGL::m_wglMakeCurrent		= nullptr;		
@@ -53,7 +53,7 @@ r9RenderGL::r9RenderGL() :
 	m_caps.m_texture_env_combine	= FALSE;
 }
 
-#define _GETDLLPROC( name )	m_##name = (t##name)GetProcAddress(m_dll,#name); if(!m_##name) { R9_LOGERROR("bad dll version."); goto error; }
+#define _GETDLLPROC( name )	m_##name = (t##name)GetProcAddress(m_dll,#name); if(!m_##name) { logError("bad dll version."); goto error; }
 #define _SETLIBPROC( name ) m_##name = name;
 
 bool r9RenderGL::LoadDll()
@@ -61,7 +61,7 @@ bool r9RenderGL::LoadDll()
 #ifdef R9_ENABLE_DLLGL
 	if(m_dll) return true;
 	m_dll = LoadLibrary("opengl32.dll");
-	if(!m_dll) { R9_LOGERROR("can't load opengl32.dll"); return false; }
+	if(!m_dll) { logError("can't load opengl32.dll"); return false; }
 
 	_GETDLLPROC(	wglCreateContext		);
 	_GETDLLPROC(	wglMakeCurrent			);
@@ -185,14 +185,13 @@ void r9RenderGL::LogAdapterInfo() const
 		if(!EnumDisplayDevices(NULL,i,&dd,0)) break;
 		if(!(dd.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE)) continue; // ignore other devices
 
-		dlog(LOGRND, L"Video adapter #%i info:\n", i);
-		dlog(LOGRND, L"  device name = %S\n", dd.DeviceName);
-		dlog(LOGRND, L"  device string = %S\n", dd.DeviceString);
-		dlog(LOGRND, L"  device flags = %x\n", dd.StateFlags);
+		dlog(Channel::rnd, L"Video adapter #%i info:\n", i);
+		dlog(Channel::rnd, L"  device name = %S\n", dd.DeviceName);
+		dlog(Channel::rnd, L"  device string = %S\n", dd.DeviceString);
+		dlog(Channel::rnd, L"  device flags = %x\n", dd.StateFlags);
 		return;
 	}
-
-	dlog(LOGRND, L"Video adapter unknown.");
+	dlog(Channel::rnd, L"Video adapter unknown.");
 }
 
 
@@ -213,10 +212,10 @@ void r9RenderGL::GatherDisplayModes() const
 			DisplayModes.push_back(m);
 		}
 		else	
-			R9_LOGERROR("invalid current display mode format.");
+			logError("invalid current display mode format.");
 	}
 	else 
-		R9_LOGERROR("failed to get current display mode."); 
+		logError("failed to get current display mode."); 
 	
 	LogAdapterInfo();
 
@@ -237,9 +236,9 @@ void r9RenderGL::GatherDisplayModes() const
 	std::sort(DisplayModes.begin(), DisplayModes.end());
 
 	// log
-	dlog(LOGRND, L"Display modes:\n");
-	for(const r9DisplayMode &m: DisplayModes) m.log(LOGRND);
-	dlog(LOGRND, L"\n");
+	dlog(Channel::rnd, L"Display modes:\n");
+	for(const r9DisplayMode &m: DisplayModes) m.log(Channel::rnd);
+	dlog(Channel::rnd, L"\n");
 }
 
 bool r9RenderGL::Init()
@@ -494,7 +493,7 @@ void r9RenderGL::DoPresent()
 //@OBSOLETE
 bool r9RenderGL::ToggleVideoMode()
 {
-	dlog(LOGRND, L"Toggle video mode: ");
+	dlog(Channel::rnd, L"Toggle video mode: ");
 	bool ok = false;
 	if(!m_cfg.windowed) // change to windowed
 	{
@@ -518,7 +517,7 @@ bool r9RenderGL::ToggleVideoMode()
 		m_cfg.windowed = !m_cfg.windowed;
 		PrepareParentWindow();
 	}
-	dlog(LOGRND,ok? L"successful\n" : L"failed\n");
+	dlog(Channel::rnd, ok ? L"successful\n" : L"failed\n");
 	return ok;
 }
 
@@ -683,7 +682,7 @@ BOOL r9RenderGL::CreateRenderWindow()
 	wcex.lpszClassName	= L"E9_RNDCLASS";
 	wcex.hIconSm		= NULL;	// use small icon from default icon
 	BOOL ok = RegisterClassExW(&wcex);
-	if(!ok) { dlog(LOGERR, L"APP: failed to register render window class (%i).\n",GetLastError()); return FALSE; }
+	if(!ok) { dlog(Channel::err, L"failed to register render window class (%i).\n",GetLastError()); return FALSE; }
 
 	// create child window
 	int style = WS_CHILD | WS_VISIBLE;
@@ -698,7 +697,7 @@ BOOL r9RenderGL::CreateRenderWindow()
 								rec.left, rec.top, rec.right-rec.left, rec.bottom-rec.top, 
 								hwnd_parent, NULL, App::Instance(), 
 								NULL );
-	if(m_hwnd==NULL) { dlog(LOGERR, L"RENDER: failed to create render window (%i).\n",GetLastError()); return FALSE; }
+	if(m_hwnd==NULL) { dlog(Channel::err, L"RENDER: failed to create render window (%i).\n",GetLastError()); return FALSE; }
 
 	return TRUE;
 
@@ -711,7 +710,7 @@ BOOL r9RenderGL::DestroyRenderWindow()
 		DestroyWindow(m_hwnd); 
 		m_hwnd=NULL; 
 	}
-	if(!UnregisterClass("E9_RNDCLASS", App::Instance())) { dlog(LOGERR, L"RENDER: can't unregister window class."); }
+	if(!UnregisterClass("E9_RNDCLASS", App::Instance())) { dlog(Channel::err, L"can't unregister window class."); }
 	return TRUE;
 }
 
@@ -754,7 +753,7 @@ void r9RenderGL::PrepareParentWindow()
 	}
 	RECT r;
 	GetWindowRect(hwnd,&r);
-	dlog(LOGRND, L"window size %ix%i\n",r.right-r.left,r.bottom-r.top);
+	dlog(Channel::rnd, L"window size %ix%i\n",r.right-r.left,r.bottom-r.top);
 }
 
 BOOL r9RenderGL::GL_CreateDevice()
@@ -796,7 +795,7 @@ BOOL r9RenderGL::GL_CreateDevice()
 		devmode.dmFields			= DM_BITSPERPEL|DM_PELSWIDTH|DM_PELSHEIGHT|DM_DISPLAYFREQUENCY;
 		if( ChangeDisplaySettings(&devmode,CDS_FULLSCREEN)!=DISP_CHANGE_SUCCESSFUL)
 		{
-			R9_LOGERROR("fullscreen not supported for this mode."); 
+			logError("fullscreen not supported for this mode."); 
 			return FALSE; 
 		}
 	}
@@ -807,19 +806,19 @@ BOOL r9RenderGL::GL_CreateDevice()
 
 	// get hdc
 	m_hdc=GetDC(m_hwnd);
-	if(!m_hdc) { R9_LOGERROR("can't create GL device context."); goto error; }
+	if(!m_hdc) { logError("can't create GL device context."); goto error; }
 
 	// choose and set pixel format for hdc
 	pfgl = ChoosePixelFormat(m_hdc,&pfd);
-	if(!pfgl) {R9_LOGERROR("can't find a suitable pixel format."); goto error; }
-	if(!DescribePixelFormat(m_hdc,pfgl,sizeof(PIXELFORMATDESCRIPTOR),&pfd)) { R9_LOGERROR("can't describe the pixel format."); goto error; }
-	if(m_cfg.bpp != pfd.cColorBits) { R9_LOGERROR("choosed different pixel format."); goto error; }
-	if(!SetPixelFormat(m_hdc,pfgl,&pfd)) { R9_LOGERROR("can't set the pixel format."); goto error; }
+	if(!pfgl) {logError("can't find a suitable pixel format."); goto error; }
+	if(!DescribePixelFormat(m_hdc,pfgl,sizeof(PIXELFORMATDESCRIPTOR),&pfd)) { logError("can't describe the pixel format."); goto error; }
+	if(m_cfg.bpp != pfd.cColorBits) { logError("choosed different pixel format."); goto error; }
+	if(!SetPixelFormat(m_hdc,pfgl,&pfd)) { logError("can't set the pixel format."); goto error; }
 
 	// create and activate rendering context
 	m_hrc = m_wglCreateContext(m_hdc);
-	if(!m_hrc) { R9_LOGERROR("can't create a GL rendering context."); goto error; }
-	if(!m_wglMakeCurrent(m_hdc,m_hrc)) { R9_LOGERROR("can't activate the GL rendering context."); goto error; }
+	if(!m_hrc) { logError("can't create a GL rendering context."); goto error; }
+	if(!m_wglMakeCurrent(m_hdc,m_hrc)) { logError("can't activate the GL rendering context."); goto error; }
 
 	// get caps
 	glver = (char*)m_glGetString(GL_VERSION);

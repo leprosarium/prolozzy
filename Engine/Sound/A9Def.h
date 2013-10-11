@@ -7,7 +7,6 @@
 #define __A9DEF_H__
 
 #include "E9System.h"
-#include "E9Engine.h"
 #include "F9Files.h"		// use files system
 
 

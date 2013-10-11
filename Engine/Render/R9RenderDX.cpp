@@ -14,7 +14,7 @@
 #endif
 #endif
 
-#define R9_LOGERROR( prefix, hr )	dlog( LOGERR, L"RENDER: %S (%x)\n", prefix, hr )
+#define logError( prefix, hr )	dlog( Channel::err, L"RENDER: %S (%x)\n", prefix, hr )
 
 r9RenderDX::tDirect3DCreate9 r9RenderDX::m_Direct3DCreate9 = nullptr;
 
@@ -48,9 +48,9 @@ bool r9RenderDX::LoadDll()
 #ifdef R9_ENABLE_DLLDX
 	if(m_dll) return true;
 	m_dll = LoadLibrary("d3d9.dll");
-	if(!m_dll) { R9_LOGERROR("can't load d3d9.dll",0); return false; }
+	if(!m_dll) { logError("can't load d3d9.dll",0); return false; }
 	m_Direct3DCreate9 = (tDirect3DCreate9)GetProcAddress(m_dll,"Direct3DCreate9");
-	if(!m_Direct3DCreate9) { R9_LOGERROR("bad dll version.",0); UnloadDll(); return false; }
+	if(!m_Direct3DCreate9) { logError("bad dll version.",0); UnloadDll(); return false; }
 	return true;
 #else
 	m_Direct3DCreate9 = &Direct3DCreate9;
@@ -73,37 +73,37 @@ void r9RenderDX::GatherDisplayModes() const
 	HRESULT hr;
 //	LPDIRECT3D9 d3d = Direct3DCreate9(D3D_SDK_VERSION);
 	LPDIRECT3D9 d3d = m_Direct3DCreate9(D3D_SDK_VERSION);
-	if(!d3d) { R9_LOGERROR("failed to create Direct3D.",0); return; }
-	if(d3d->GetAdapterCount()==0) { R9_LOGERROR("no available adapters.",0); d3d->Release(); return; }
+	if(!d3d) { logError("failed to create Direct3D.",0); return; }
+	if(d3d->GetAdapterCount()==0) { logError("no available adapters.",0); d3d->Release(); return; }
 	
 	// adapter
 	int adapter = D3DADAPTER_DEFAULT;
 	D3DADAPTER_IDENTIFIER9 d3dadapter;
     hr = d3d->GetAdapterIdentifier( adapter, 0, &d3dadapter );
-	if(FAILED(hr)) { R9_LOGERROR("failed to get adapter.",hr); d3d->Release(); return; }
+	if(FAILED(hr)) { logError("failed to get adapter.",hr); d3d->Release(); return; }
 
 	int dvProduct		= HIWORD(d3dadapter.DriverVersion.HighPart);
 	int dvVersion		= LOWORD(d3dadapter.DriverVersion.HighPart);
 	int dvSubVersion	= HIWORD(d3dadapter.DriverVersion.LowPart);
 	int dvBuild			= LOWORD(d3dadapter.DriverVersion.LowPart);
 
-	dlog(LOGRND, L"Video adapter info:\n");
-	dlog(LOGRND, L"  driver      = %S\n", (d3dadapter.Driver)?(d3dadapter.Driver):"NONE");
-	dlog(LOGRND, L"  description = %S\n", (d3dadapter.Description)?(d3dadapter.Description):"NONE");
-	dlog(LOGRND, L"  version     = p%i v%i.%i b%i\n", dvProduct, dvVersion, dvSubVersion, dvBuild );
+	dlog(Channel::rnd, L"Video adapter info:\n");
+	dlog(Channel::rnd, L"  driver      = %S\n", (d3dadapter.Driver)?(d3dadapter.Driver):"NONE");
+	dlog(Channel::rnd, L"  description = %S\n", (d3dadapter.Description)?(d3dadapter.Description):"NONE");
+	dlog(Channel::rnd, L"  version     = p%i v%i.%i b%i\n", dvProduct, dvVersion, dvSubVersion, dvBuild );
 	
 	// caps
 	D3DCAPS9 d3dcaps;
 	D3DDEVTYPE d3ddevtype = D3DDEVTYPE_HAL;
 	hr = d3d->GetDeviceCaps( adapter, d3ddevtype, &d3dcaps );
-	if(FAILED(hr)) { R9_LOGERROR("failed to get device caps.",hr); d3d->Release(); return; }
+	if(FAILED(hr)) { logError("failed to get device caps.",hr); d3d->Release(); return; }
 
 	// current display mode (windowed)
 	D3DDISPLAYMODE d3dmode;
 	r9PFInfo* pfinfo;
     hr = d3d->GetAdapterDisplayMode( adapter, &d3dmode );
 	if(FAILED(hr)) 
-		R9_LOGERROR("failed to get current display mode.", hr);
+		logError("failed to get current display mode.", hr);
 	else
 		if(pfinfo = D3D_PFInfo(d3dmode.Format))
 		{
@@ -111,7 +111,7 @@ void r9RenderDX::GatherDisplayModes() const
 			DisplayModes.push_back(m);
 		}
 		else
-			R9_LOGERROR("invalid current display mode format.",hr);
+			logError("invalid current display mode format.",hr);
 
 	// supported display modes (fullscreen)
 	D3DFORMAT pfdx[2][2] = { {D3DFMT_R5G6B5,D3DFMT_A4R4G4B4}, {D3DFMT_X8R8G8B8,D3DFMT_A8R8G8B8} };
@@ -121,7 +121,7 @@ void r9RenderDX::GatherDisplayModes() const
 		for(int i=0; i<modecount; i++)
 		{
 			hr = d3d->EnumAdapterModes( adapter, pfdx[p][0], i, &d3dmode );
-			if(FAILED(hr)) { R9_LOGERROR("failed to enum display mode.",hr); continue; }
+			if(FAILED(hr)) { logError("failed to enum display mode.",hr); continue; }
 			pfinfo = D3D_PFInfo(d3dmode.Format);
 			if(!pfinfo) continue; // refuse format
 			// check texture formats (opaque and alpha)
@@ -142,9 +142,9 @@ void r9RenderDX::GatherDisplayModes() const
 
 
 	// log
-	dlog(LOGRND, L"Display modes:\n");
-	for(const r9DisplayMode &m: DisplayModes) m.log(LOGRND);
-	dlog(LOGRND, L"\n");
+	dlog(Channel::rnd, L"Display modes:\n");
+	for(const r9DisplayMode &m: DisplayModes) m.log(Channel::rnd);
+	dlog(Channel::rnd, L"\n");
 }
 
 bool r9RenderDX::Init()
@@ -156,7 +156,7 @@ bool r9RenderDX::Init()
 	// create d3d
 //	m_d3d = Direct3DCreate9(D3D_SDK_VERSION);
 	m_d3d = m_Direct3DCreate9(D3D_SDK_VERSION);
-	if(!m_d3d) { R9_LOGERROR("failed to create Direct3D.",0); return false; }
+	if(!m_d3d) { logError("failed to create Direct3D.",0); return false; }
 
 	// prepare window
 	PrepareWindow();
@@ -428,11 +428,11 @@ bool r9RenderDX::DoBeginScene(R9TEXTURE target)
 		if( !target->handler || !target->handlerex ) return false; // invalid target
 		// remember default target
 		HRESULT hr = m_d3dd->GetBackBuffer(0,0,D3DBACKBUFFER_TYPE_MONO,&m_d3dtarget);
-		if(FAILED(hr)) { R9_LOGERROR("can't get default render target.",hr); return false; }
+		if(FAILED(hr)) { logError("can't get default render target.",hr); return false; }
 		// set new target
 		LPDIRECT3DSURFACE9 d3dsrf = (LPDIRECT3DSURFACE9)(target->handlerex);
 		hr = m_d3dd->SetRenderTarget(0,d3dsrf);
-		if(FAILED(hr)) { R9_LOGERROR("can't set render target.",hr); if(m_d3dtarget) m_d3dtarget->Release(); return false; }
+		if(FAILED(hr)) { logError("can't set render target.",hr); if(m_d3dtarget) m_d3dtarget->Release(); return false; }
 
 		m_targetwidth = target->realwidth;
 		m_targetheight = target->realheight;
@@ -446,7 +446,7 @@ bool r9RenderDX::DoBeginScene(R9TEXTURE target)
 	HRESULT hr = m_d3dd->BeginScene();
 	if(FAILED(hr)) 
 	{ 
-		R9_LOGERROR("can't begin scene.",hr);
+		logError("can't begin scene.",hr);
 		//set back old render target
 		m_d3dd->SetRenderTarget(0,m_d3dtarget);
 		if(m_d3dtarget) m_d3dtarget->Release();
@@ -493,7 +493,7 @@ bool r9RenderDX::CheckDevice()
 bool r9RenderDX::ToggleVideoMode()
 {
 	if(m_d3dd->TestCooperativeLevel()!=D3D_OK ) return false;
-	dlog(LOGRND, L"Toggle video mode.\n");
+	dlog(Channel::rnd, L"Toggle video mode.\n");
 
 	m_cfg.windowed = !m_cfg.windowed;
 	PrepareWindow(); // prepare for setting style
@@ -593,7 +593,7 @@ bool r9RenderDX::DoTakeScreenShot( r9Img* img, fRect* rect, bool full )
 	{
 		D3DDISPLAYMODE d3dmode;
 		hr = m_d3d->GetAdapterDisplayMode( D3DADAPTER_DEFAULT, &d3dmode );
-		if(FAILED(hr)) { R9_LOGERROR("failed to get current display mode.",hr); return false; }
+		if(FAILED(hr)) { logError("failed to get current display mode.",hr); return false; }
 		r.left = 0; 
 		r.top = 0;
 		img->m_width = r.right = srfw = (word)d3dmode.Width;
@@ -754,7 +754,7 @@ void r9RenderDX::PrepareWindow()
 	}
 	RECT r;
 	GetWindowRect(m_hwnd,&r);
-	dlog(LOGRND, L"window size %ix%i\n",r.right-r.left,r.bottom-r.top);
+	dlog(Channel::rnd, L"window size %ix%i\n",r.right-r.left,r.bottom-r.top);
 }
 
 void r9RenderDX::D3D_GetPresentParams( D3DPRESENT_PARAMETERS* d3dparam )
@@ -785,7 +785,7 @@ BOOL r9RenderDX::D3D_CreateDevice()
 	// caps
 	D3DCAPS9 d3dcaps;
 	hr = m_d3d->GetDeviceCaps( D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, &d3dcaps );
-	if(FAILED(hr)) { R9_LOGERROR("GetDeviceCaps failed.",hr); return FALSE; }
+	if(FAILED(hr)) { logError("GetDeviceCaps failed.",hr); return FALSE; }
 	m_caps.m_tnl			= d3dcaps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT;
 	m_caps.m_texsquareonly	= (d3dcaps.TextureCaps & D3DPTEXTURECAPS_SQUAREONLY)!=0;
 	m_caps.m_texaspectratio	= d3dcaps.MaxTextureAspectRatio;
@@ -798,18 +798,18 @@ BOOL r9RenderDX::D3D_CreateDevice()
 	dword flags = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
 	if( m_caps.m_tnl )	flags = D3DCREATE_MIXED_VERTEXPROCESSING; // or D3DCREATE_HARDWARE_VERTEXPROCESSING;
 	hr = m_d3d->CreateDevice( D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, m_hwnd, flags, &d3dparam, &m_d3dd );
-	if(FAILED(hr)) { R9_LOGERROR("CreateDevice failed.",hr); return FALSE; }
+	if(FAILED(hr)) { logError("CreateDevice failed.",hr); return FALSE; }
 
 	return TRUE;
 }
 
 BOOL r9RenderDX::D3D_Reset()
 {
-	dlog(LOGRND, L"RENDER: reset device.\n");
+	dlog(Channel::rnd, L"reset device.\n");
 	D3DPRESENT_PARAMETERS d3dparam;
 	D3D_GetPresentParams(&d3dparam);
 	HRESULT hr = m_d3dd->Reset(&d3dparam);
-	if(FAILED(hr)) { R9_LOGERROR("reset device failure.",hr); return FALSE; }
+	if(FAILED(hr)) { logError("reset device failure.",hr); return FALSE; }
 	return TRUE;
 }
 
@@ -822,7 +822,7 @@ void r9RenderDX::D3D_HandleReset( int mode )
 	}
 	else // restore
 	{
-		if(!D3D_BatchCreate()) { dlog(LOGSYS, L"ERROREXIT: Can't recover buffer from lost device.\n"); exit(-1); } // vertex buffer
+		if(!D3D_BatchCreate()) { dlog(Channel::sys, L"Can't recover buffer from lost device.\n"); exit(-1); } // vertex buffer
 		TT_Recreate();
 
 		// restore render states
@@ -846,8 +846,8 @@ BOOL r9RenderDX::D3D_BatchCreate()
 {
 	dword fvf = D3DFVF_XYZ | D3DFVF_DIFFUSE |D3DFVF_TEX1;
 	HRESULT hr = m_d3dd->CreateVertexBuffer( R9_BATCHSIZE_DX*sizeof(r9VertexDX), D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC, fvf, D3DPOOL_DEFAULT, &m_batchd3d, NULL );
-	if(FAILED(hr)) { R9_LOGERROR("create vertex buffer failed.", hr); return FALSE; }
-	if(!D3D_BatchLock()) { R9_LOGERROR("vertex buffer lock failed.", hr); if(m_batchd3d) m_batchd3d->Release(); return FALSE; }
+	if(FAILED(hr)) { logError("create vertex buffer failed.", hr); return FALSE; }
+	if(!D3D_BatchLock()) { logError("vertex buffer lock failed.", hr); if(m_batchd3d) m_batchd3d->Release(); return FALSE; }
 	memset(m_batchbuffer,0,R9_BATCHSIZE_DX*sizeof(r9VertexDX)); // clear
 	return TRUE;
 }
@@ -928,7 +928,7 @@ void r9RenderDX::TT_Recreate()
 		// manareli...
 		// create new temporary tex (will add it in targetlist too!)
 		R9TEXTURE ttex = TextureCreateTarget(m_targetlist[i]->width,m_targetlist[i]->height);
-		if(ttex==NULL) { dlog(LOGSYS, L"ERROREXIT: Can't recover render target, from lost device.\n"); exit(-1); }
+		if(ttex==NULL) { dlog(Channel::sys, L"Can't recover render target, from lost device.\n"); exit(-1); }
 		// force content into the old tex pointer (that was cleared before reset)
 		*m_targetlist[i] = *ttex;
 		// remove last entry in targetlist (the temporary new tex)

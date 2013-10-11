@@ -4,106 +4,88 @@
 #include "stdafx.h"
 #include "D9Log.h"
 
-std::string d9Log::m_logfile;
-d9LogChannel d9Log::m_logc[ChannelMax];
-bool d9Log::m_store = false;
-std::wstring d9Log::m_buffer;
-d9Log::callback d9Log::m_callback;
+std::string d9Log::logfile;
+d9LogChannel d9Log::logc[Channel::max];
+d9Log::logCallback d9Log::callback;
 
-void d9Log::Init(const std::string & logfile, callback callback)
+void d9Log::Init(const std::string & file)
 { 
-	if(!logfile.empty())
+	if(!file.empty())
 	{
-		m_logfile = logfile;
+		logfile = file;
 		clear();
 	}
-	m_callback = callback;
 }
 
 void d9Log::clear()
 {
-	file_delete(m_logfile);
+	file_delete(logfile);
 }
 
-void d9Log::setChannel(size_t ch, const std::string & name, dword flags, dword color)
-{ 
-	if(ch >= ChannelMax) return;
-	m_logc[ch].m_name = name;
-	m_logc[ch].m_flags = flags;
-	m_logc[ch].m_color = color;
-}
-
-void d9Log::store(bool enable)
+void d9Log::printBuf(Channel ch, LPCSTR buf, size_t size)
 {
-	if( enable && !m_store ) 
-		m_buffer.clear(); // reset
-	m_store = enable;
-}
-
-void d9Log::printBuf(size_t ch, LPCSTR buffer, size_t size)
-{
-	if(ch>=ChannelMax) return;
-	int flags = m_logc[ch].m_flags;
-	if(!(flags & D9_LOGFLAG_OPEN)) return;
+	d9LogChannel & c = get(ch);
+	if(!c.open) return;
 
 	// send to file
-	if( (flags & D9_LOGFLAG_FILE) && m_logfile.size() )
-		if(FILE * f = fopen(m_logfile.c_str(), "at"))
+	if( c.file && logfile.size() )
+		if(FILE * f = fopen(logfile.c_str(), "at"))
 		{
-			fwrite(buffer, 1, size, f);
+			fwrite(buf, 1, size, f);
 			fclose(f);
 		}
 
-	std::wstring msg(buffer, buffer + size);
+	std::wstring msg(buf, buf + size);
 	LPCWSTR cmsg = msg.c_str();
 
-	// send to debug
-	if( flags & D9_LOGFLAG_DEBUG )
+	if( c.debug )
 		sys_outputdebugstring(cmsg);
 
-	// send to callback
-	if( (flags & D9_LOGFLAG_CALLBACK) && m_callback )
-		m_callback(ch, cmsg);
+	if( c.callback && callback )
+		callback(ch, cmsg);
 
-			// store
-	if(m_store)	
-		m_buffer.append(msg);
 }
 
-void d9Log::printV(size_t ch, LPCWSTR fmt, va_list args)
+
+void d9Log::printV(Channel ch, LPCWSTR fmt, va_list args)
 {
-	if(ch >= ChannelMax) return;
-	int flags = m_logc[ch].m_flags;
-	if(!(flags & D9_LOGFLAG_OPEN)) return;
+	d9LogChannel & c = get(ch);
+	if(!c.open) return;
 
 	static WCHAR msg[D9_LOG_BUFFERSIZE];
-	if( flags & (D9_LOGFLAG_DEBUG|D9_LOGFLAG_CALLBACK) )
+	if(c.debug || c.callback)
 	{
 		_vsnwprintf(msg, D9_LOG_BUFFERSIZE, fmt, args);
 		msg[D9_LOG_BUFFERSIZE-1]=0;
 	}
 	
-	// send to debug
-	if( flags & D9_LOGFLAG_DEBUG )
+	if(c.debug)
 		sys_outputdebugstring(msg);
 
-	// send to file
-	if( (flags & D9_LOGFLAG_FILE) && m_logfile.size() )
-		if(FILE * f = fopen(m_logfile.c_str(), "at"))
+	if( c.file && logfile.size() )
+		if(FILE * f = fopen(logfile.c_str(), "at"))
 		{
 			vfwprintf( f, fmt, args );
 			fclose(f);
 		}
 
-	// send to callback
-	if( (flags & D9_LOGFLAG_CALLBACK) && m_callback )
-		m_callback(ch, msg);
-
-	// store
-	if(m_store)
-		m_buffer.append(msg);
+	if( c.callback && callback )
+		callback(ch, msg);
 }
 
-
+void d9Log::openChannels(bool open)
+{
+	get(Channel::nul) = d9LogChannel("NUL", DWORD_GREY, open);
+	get(Channel::sys) = d9LogChannel("SYS", DWORD_RED);
+	get(Channel::err) = d9LogChannel("ERR", DWORD_RED);
+	get(Channel::eng) = d9LogChannel("ENG", DWORD_BLUE, open);
+	get(Channel::dbg) = d9LogChannel("DBG", DWORD_ORANGE, open);
+	get(Channel::fil) = d9LogChannel("FIL", DWORD_DGREEN, open);
+	get(Channel::inp) = d9LogChannel("INP", DWORD_GREEN, open);
+	get(Channel::rnd) = d9LogChannel("RND", DWORD_LRED, open);
+	get(Channel::snd) = d9LogChannel("SND", DWORD_LRED, open);
+	get(Channel::scr) = d9LogChannel("SCR", DWORD_LBLUE, open);
+	get(Channel::app) = d9LogChannel("APP", DWORD_GREEN, open);
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

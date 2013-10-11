@@ -137,7 +137,7 @@ a9Audio* a9_audio = NULL;
 BOOL A9_Init( HWND hwnd, int api )
 {
 	if(a9_audio) return TRUE;
-	dlog(LOGSND, L"Audio init (api=%i).\n",api);
+	dlog(Channel::snd, L"Audio init (api=%i).\n",api);
 	a9_audio = new a9AudioDX();
 	if(a9_audio->Init(hwnd)==A9_FAIL)
 	{
@@ -154,7 +154,7 @@ void A9_Done()
 	a9_audio->Done();
 	delete a9_audio;
 	a9_audio = NULL;
-	dlog(LOGSND, L"Audio done.\n");
+	dlog(Channel::snd, L"Audio done.\n");
 }
 
 int A9_VolumeDecibelToPercent( int vol )

@@ -9,7 +9,6 @@
 #include <assert.h>
 
 #include "E9System.h"
-#include "E9Engine.h"
 #include "R9Img.h"
 #include "E9Math.h"
 #include "D9Log.h"
@@ -112,7 +111,7 @@ struct r9DisplayMode
 		if(height != m.height) return height < m.height;
 		return refresh < m.refresh;
 	}
-	void log(int ch) const { dlog(ch, L"   \t%ix%i \t%ibpp \t%iHz \t%S\n", width, height, bpp, refresh, windowed ? "windowed" : ""); }
+	void log(Channel ch) const { dlog(ch, L"   \t%ix%i \t%ibpp \t%iHz \t%S\n", width, height, bpp, refresh, windowed ? "windowed" : ""); }
 };
 
 struct r9Texture

@@ -20,11 +20,8 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	char *av[] = { __argv[0], 0};
 	PlEngine e(sizeof(av) / sizeof(*av) - 1, av);
 
-	// init debug
-	bool openlog = true;
-
 	d9Log::Init("editor.log");													\
-	E9_OpenChannels( openlog );		
+	d9Log::openChannels(true);		
 
 	App::Run<Editor>(hInstance, lpCmdLine);
 	return 0;

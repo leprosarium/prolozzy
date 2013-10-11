@@ -23,9 +23,9 @@ const size_t INPUT_HISTORY = 16;// input history count
 class Line : public std::string
 {
 public:
-	Line() : Ch(0) {}
-	Line(int Ch, const std::string & str) : std::string(str), Ch(Ch) {}  
-	int Ch;
+	Line() : Ch(Channel::nul) {}
+	Line(Channel Ch, const std::string & str) : std::string(str), Ch(Ch) {}  
+	Channel Ch;
 };
 
 class Console : std::deque<Line>
@@ -47,7 +47,7 @@ public:
 	void Layout(const iRect & r) { rect = r; int h = r.Height(); lines = h < ChrH ? 0 : (h / ChrH - 1);}
 	void Update();
 	void Draw();
-	void Push(int ch, const std::string & str);
+	void Push(Channel ch, const std::string & str);
 	std::string lastLine() const { return empty() ? std::string() : back(); }
 };
 
@@ -146,7 +146,7 @@ public:
 	void Draw();
 	void Layout();					
 
-	void ConsolePush( int ch, LPCWSTR msg );
+	void ConsolePush( Channel ch, LPCWSTR msg );
 	void SlotSet( size_t slot, LPCWSTR text );
 
 	bool active() const { return _active; }

@@ -62,7 +62,7 @@
       <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
     <PostBuildEvent>
-      <Command>copy $(OutDir)$(ProjectName).lib $(ProjectName)_d.lib </Command>
+      <Command>copy $(OutDir)$(ProjectName).lib $(ProjectName).lib </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -83,7 +83,6 @@
   <ItemGroup>
     <ClInclude Include="App.h" />
     <ClInclude Include="Common\E9Config.h" />
-    <ClInclude Include="Common\E9Engine.h" />
     <ClInclude Include="Common\E9Math.h" />
     <ClInclude Include="Common\E9String.h" />
     <ClInclude Include="Common\E9System.h" />
@@ -121,7 +120,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
-    <ClCompile Include="Common\E9Engine.cpp" />
     <ClCompile Include="Common\E9String.cpp" />
     <ClCompile Include="Common\E9System.cpp" />
     <ClCompile Include="Debug\D9Log.cpp" />

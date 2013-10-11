@@ -20,8 +20,8 @@ Editor * Editor::app = nullptr;
 PREDICATE_M(core, dl, 1)
 {
 	LPWSTR msg = A1;
-	dlog(LOGGS, msg);
-	dlog(LOGGS, L"\n");
+	dlog(Channel::scr, msg);
+	dlog(Channel::scr, L"\n");
 	return true;
 }
 
@@ -100,7 +100,7 @@ Editor::~Editor()
 
 void Editor::Init()
 {
-	dlog(LOGAPP, L"App init.\n");
+	dlog(Channel::app, L"App init.\n");
 
 	// engine
 	if(!InitApp()) throw std::exception("Init app error.");
@@ -230,7 +230,7 @@ void Editor::Done()
 	R9_DoneInterface();
 	F9_Done();
 	eInput::Done();
-	dlog(LOGAPP, L"App done.\n");
+	dlog(Channel::app, L"App done.\n");
 }
 
 void Editor::OnActivate(bool active)
@@ -531,7 +531,7 @@ PREDICATE_M(edi, tileGetName, 2)
 
 PREDICATE_M(edi, tileReload, 0)
 {
-	dlog(LOGAPP, L"Reload tiles ...\n");
+	dlog(Channel::app, L"Reload tiles ...\n");
 
 	// clear old
 	g_paint.TileUnload();
@@ -542,7 +542,7 @@ PREDICATE_M(edi, tileReload, 0)
 	if(ini_get(file_getfullpath(USER_INIFILE), "editor", "options_tiledir") >> tilepath)
 		if(g_paint.TileLoad(tilepath)) loads++;
 	else 
-		dlog(LOGAPP, L"TileDir not specified in editor.ini\n");
+		dlog(Channel::app, L"TileDir not specified in editor.ini\n");
 	return loads > 0;
 }
 

@@ -3,6 +3,7 @@
 
 #include "E9System.h"
 #include "dinput.h"
+#include "D9Log.h"
 #include <vector>
 #include <memory>
 #include <deque>

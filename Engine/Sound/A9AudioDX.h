@@ -8,6 +8,7 @@
 #include "dsound.h"
 #include "A9Audio.h"
 #include "A9Codec.h"
+#include "D9Log.h"
 
 #define	A9_STREAMBUFFERSIZE		2				// size in seconds of a the streaming buffer
 #define A9_STREAMSLEEP			1				// stream sleep value (0=for no sleep but more cpu)

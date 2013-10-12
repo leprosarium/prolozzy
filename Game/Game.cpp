@@ -26,6 +26,9 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
 	d9Log::Init(GetLogFile());
 	d9Log::openChannels(open);	
+	elog::elog.init(L"test.log");
+	elog::elog.openChannels(open);
+	elog::app() << L"Test " << 124 << L" Прoверка " << 3.1415926 << std::endl;
 
 	App::Run<DizApp>(hInstance, lpCmdLine);
 	return 0;

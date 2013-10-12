@@ -15,22 +15,23 @@
 #include <math.h>
 #include <assert.h>
 
+#include <vector>
 #include <string>
 
 #include <algorithm>
+#include <functional>
 #include <numeric>
 #include <memory>
 #include <streambuf>
+#include <ostream>
+#include <fstream>
+
 
 // DirectX
 #define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>
 
 #include "E9Config.h"
-
-#include "D9Log.h"
-#include "Input/eInput.h"
-
 
 #endif
 //////////////////////////////////////////////////////////////////////////////////////////////////

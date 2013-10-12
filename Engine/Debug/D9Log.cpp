@@ -88,4 +88,23 @@ void d9Log::openChannels(bool open)
 	get(Channel::app) = d9LogChannel("APP", DWORD_GREEN, open);
 }
 
+
+namespace elog
+{
+log elog;
+
+void log::openChannels(bool open)
+{
+	if(open) 
+		for(channel & ch: channels)
+			ch.add(&file).add(&sys);
+	else
+	{
+		get(Channel::sys).add(&file).add(&sys);
+		get(Channel::err).add(&file).add(&sys);
+	}
+}
+
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////

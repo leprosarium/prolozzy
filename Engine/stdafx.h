@@ -4,17 +4,6 @@
 #pragma warning(disable:4996)	// deprecated
 #pragma warning(disable:4786)	// 'identifier' : identifier was truncated to 'number' characters in the browser information
 
-
-// Windows Header Files:
-#define NOMINMAX
-#include <windows.h>
-
-// C RunTime Header Files
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-
 #include <vector>
 #include <string>
 
@@ -25,7 +14,18 @@
 #include <streambuf>
 #include <ostream>
 #include <fstream>
+#include <deque>
 
+
+// Windows Header Files:
+#define NOMINMAX
+#include <windows.h>
+
+// C RunTime Header Files
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <assert.h>
 
 // DirectX
 #define DIRECTINPUT_VERSION 0x0800

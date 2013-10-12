@@ -98,7 +98,7 @@ volatile BOOL		m_thread_running;	// thread is running
 volatile BOOL		m_thread_kill;		// thread kill request
 #endif
 
-	void logError(LPCSTR prefix, HRESULT hr) { dlog( Channel::err, L"AUDIO: %S (%S)\n", prefix, ErrorDesc(hr) ); }
+	void logError(LPCSTR prefix, HRESULT hr) { elog::err() << "AUDIO: " << prefix << " (" << ErrorDesc(hr)  << ")" << std::endl; }
 protected:
 		std::vector<a9StreamDX*> m_playingstreams;				// streams that are playing
 };

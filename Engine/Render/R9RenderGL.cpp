@@ -10,7 +10,7 @@
 #pragma comment( lib, "opengl32.lib" )
 #endif
 
-#define logError( prefix )	dlog(Channel::err, L"RENDER: %S\n", prefix );
+#define logError( prefix )	elog::err() << "RENDER: " << prefix << std::endl
 
 r9RenderGL::twglCreateContext		r9RenderGL::m_wglCreateContext		= nullptr;
 r9RenderGL::twglMakeCurrent			r9RenderGL::m_wglMakeCurrent		= nullptr;		
@@ -185,13 +185,13 @@ void r9RenderGL::LogAdapterInfo() const
 		if(!EnumDisplayDevices(NULL,i,&dd,0)) break;
 		if(!(dd.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE)) continue; // ignore other devices
 
-		dlog(Channel::rnd, L"Video adapter #%i info:\n", i);
-		dlog(Channel::rnd, L"  device name = %S\n", dd.DeviceName);
-		dlog(Channel::rnd, L"  device string = %S\n", dd.DeviceString);
-		dlog(Channel::rnd, L"  device flags = %x\n", dd.StateFlags);
+		elog::rnd() << "Video adapter #" << i << " info:" << std::endl 
+			<< "  device name = " << dd.DeviceName << std::endl
+			<< "  device string = " << dd.DeviceString << std::endl
+			<< "  device flags = " << std::hex << dd.StateFlags << std::endl;
 		return;
 	}
-	dlog(Channel::rnd, L"Video adapter unknown.");
+	elog::rnd() << "Video adapter unknown." << std::endl;
 }
 
 
@@ -236,9 +236,9 @@ void r9RenderGL::GatherDisplayModes() const
 	std::sort(DisplayModes.begin(), DisplayModes.end());
 
 	// log
-	dlog(Channel::rnd, L"Display modes:\n");
-	for(const r9DisplayMode &m: DisplayModes) m.log(Channel::rnd);
-	dlog(Channel::rnd, L"\n");
+	elog::rnd() << "Display modes:" << std::endl;
+	for(auto m: DisplayModes) elog::rnd() << "   \t" << m << std::endl;
+	elog::rnd() << std::endl;
 }
 
 bool r9RenderGL::Init()
@@ -493,7 +493,7 @@ void r9RenderGL::DoPresent()
 //@OBSOLETE
 bool r9RenderGL::ToggleVideoMode()
 {
-	dlog(Channel::rnd, L"Toggle video mode: ");
+	elog::rnd() << "Toggle video mode: ";
 	bool ok = false;
 	if(!m_cfg.windowed) // change to windowed
 	{
@@ -517,7 +517,7 @@ bool r9RenderGL::ToggleVideoMode()
 		m_cfg.windowed = !m_cfg.windowed;
 		PrepareParentWindow();
 	}
-	dlog(Channel::rnd, ok ? L"successful\n" : L"failed\n");
+	elog::rnd() << (ok ? "successful" : "failed") << std::endl;
 	return ok;
 }
 
@@ -682,7 +682,7 @@ BOOL r9RenderGL::CreateRenderWindow()
 	wcex.lpszClassName	= L"E9_RNDCLASS";
 	wcex.hIconSm		= NULL;	// use small icon from default icon
 	BOOL ok = RegisterClassExW(&wcex);
-	if(!ok) { dlog(Channel::err, L"failed to register render window class (%i).\n",GetLastError()); return FALSE; }
+	if(!ok) { elog::err() << "failed to register render window class (" << GetLastError() << ")." << std::endl; return FALSE; }
 
 	// create child window
 	int style = WS_CHILD | WS_VISIBLE;
@@ -697,7 +697,7 @@ BOOL r9RenderGL::CreateRenderWindow()
 								rec.left, rec.top, rec.right-rec.left, rec.bottom-rec.top, 
 								hwnd_parent, NULL, App::Instance(), 
 								NULL );
-	if(m_hwnd==NULL) { dlog(Channel::err, L"RENDER: failed to create render window (%i).\n",GetLastError()); return FALSE; }
+	if(m_hwnd==NULL) { elog::err() << "RENDER: failed to create render window (" << GetLastError() << ")." << std::endl; return FALSE; }
 
 	return TRUE;
 
@@ -710,7 +710,7 @@ BOOL r9RenderGL::DestroyRenderWindow()
 		DestroyWindow(m_hwnd); 
 		m_hwnd=NULL; 
 	}
-	if(!UnregisterClass("E9_RNDCLASS", App::Instance())) { dlog(Channel::err, L"can't unregister window class."); }
+	if(!UnregisterClass("E9_RNDCLASS", App::Instance())) { elog::err() << "can't unregister window class." << std::endl; }
 	return TRUE;
 }
 
@@ -753,7 +753,7 @@ void r9RenderGL::PrepareParentWindow()
 	}
 	RECT r;
 	GetWindowRect(hwnd,&r);
-	dlog(Channel::rnd, L"window size %ix%i\n",r.right-r.left,r.bottom-r.top);
+	elog::rnd() << "window size " << r.right-r.left << "x" << r.right-r.left << std::endl;
 }
 
 BOOL r9RenderGL::GL_CreateDevice()

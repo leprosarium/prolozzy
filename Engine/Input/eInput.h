@@ -1,12 +1,9 @@
 #ifndef __E_INPUT__
 #define __E_INPUT__
-
+#include "stdafx.h"
 #include "E9System.h"
-#include "dinput.h"
 #include "D9Log.h"
-#include <vector>
-#include <memory>
-#include <deque>
+
 
 struct Axe
 {
@@ -218,10 +215,10 @@ unsigned long DeviceDX::GetDeviceData(Data (&data)[bufferSize])
 		return elements;
 	if(err == DIERR_INPUTLOST)
 	{
-		dlog(Channel::inp, L"Input lost\n");
+		elog::inp() << "Input lost" << std::endl;
 		Acquire();
 	} else
-		dlog(Channel::inp, L"GetDeviceData failed");
+		elog::inp() << "GetDeviceData failed" << std::endl;
 	return 0;
 }
 

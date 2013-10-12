@@ -245,13 +245,13 @@ static void R9_ImgPNG_Free( png_structp png_ptr, png_voidp data )
 
 static void R9_ImgPNG_FatalError( png_structp png_ptr, png_const_charp message )
 {
-	dlog(Channel::sys, L"ERROREXIT: %S\n", (char*)message);
+	elog::sys() << "ERROREXIT: " << message << std::endl;
 	exit(-1);
 }
 
 static void R9_ImgPNG_Warning( png_structp png_ptr, png_const_charp message )
 {
-	dlog(Channel::rnd, L"%S", message);
+	elog::rnd() << message;
 }
 
 bool R9_ImgReadPNG( F9FILE file, r9Img* img )
@@ -265,7 +265,7 @@ bool R9_ImgReadPNG( F9FILE file, r9Img* img )
 	if(file->Read( header, headersize) != headersize) return false;
 
 	BOOL ispng = png_check_sig(header, headersize) != 0;
-	if(!ispng) { dlog(Channel::rnd, L"png sig failed\n"); return false; }
+	if(!ispng) { elog::rnd() << "png sig failed" << std::endl; return false; }
 
 	// create png structures
 	png_structp png_ptr = png_create_read_struct_2( PNG_LIBPNG_VER_STRING,
@@ -341,7 +341,7 @@ bool R9_ImgReadPNG( F9FILE file, r9Img* img )
 	}
 	else
 	{
-		dlog(Channel::rnd, L"png wrong color format\n");
+		elog::rnd() << "png wrong color format" << std::endl;
 		png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
 		return false;
 	}
@@ -384,7 +384,7 @@ bool R9_ImgWritePNG( F9FILE file, r9Img* img )
 	
 	if(img->m_pf!=R9_PF_RGB && img->m_pf!=R9_PF_ARGB && img->m_pf!=R9_PF_BGR && img->m_pf!=R9_PF_ABGR )
 	{
-		dlog(Channel::rnd, L"png format not supported\n"); return false;
+		elog::rnd() << "png format not supported" << std::endl; return false;
 	}
 
 	png_structp png_ptr = png_create_write_struct_2( PNG_LIBPNG_VER_STRING,
@@ -474,7 +474,7 @@ bool R9_ImgReadHeaderPNG( F9FILE file, r9Img* img )
 	if(file->Read( header, headersize)!=headersize) return false;
 
 	BOOL ispng = png_check_sig(header, headersize) != 0;
-	if(!ispng) { dlog(Channel::rnd, L"png sig failed\n"); return false; }
+	if(!ispng) { elog::rnd() << "png sig failed" << std::endl; return false; }
 
 	// create png structures
 	png_structp png_ptr = png_create_read_struct_2( PNG_LIBPNG_VER_STRING,

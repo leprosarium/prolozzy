@@ -23,9 +23,9 @@ const size_t INPUT_HISTORY = 16;// input history count
 class Line : public std::string
 {
 public:
-	Line() : Ch(Channel::nul) {}
-	Line(Channel Ch, const std::string & str) : std::string(str), Ch(Ch) {}  
-	Channel Ch;
+	Line() : color(DWORD_GREY) {}
+	Line(dword color, const std::string & str) : std::string(str), color(color) {}  
+	dword color;
 };
 
 class Console : std::deque<Line>
@@ -41,13 +41,17 @@ class Console : std::deque<Line>
 	void PageUp(size_t step) { PagePosUp(PageBegin, step); } 
 	void PageDown(size_t step) { if (PageBegin + step + lines >= size()) End(); else PageBegin += step; }
 	void End() { PagePosUp(size(), lines); }
-
+	class conbuf;
+	std::vector<conbuf *> bufs;
+	conbuf * newBuf(dword color);
 public:
 	Console(size_t Cap) : Cap(Cap), PageBegin(), lines() {}
+	~Console();
+	void Init();
 	void Layout(const iRect & r) { rect = r; int h = r.Height(); lines = h < ChrH ? 0 : (h / ChrH - 1);}
 	void Update();
 	void Draw();
-	void Push(Channel ch, const std::string & str);
+	void Push(dword color, const std::string & str);
 	std::string lastLine() const { return empty() ? std::string() : back(); }
 };
 
@@ -146,7 +150,6 @@ public:
 	void Draw();
 	void Layout();					
 
-	void ConsolePush( Channel ch, LPCWSTR msg );
 	void SlotSet( size_t slot, LPCWSTR text );
 
 	bool active() const { return _active; }

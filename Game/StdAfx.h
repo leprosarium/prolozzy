@@ -23,6 +23,12 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <functional>
+#include <memory>
+#include <deque>
+
+#define DIRECTINPUT_VERSION 0x0800
+#include <dinput.h>
 
 #endif
 //////////////////////////////////////////////////////////////////////////////////////////////////

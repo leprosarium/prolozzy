@@ -160,7 +160,7 @@ bool cGUI::ScriptPrologDo(const std::string & pred)
 	}
 	catch(PlException const & e)
 	{
-		dlog(L"Exception: %s", static_cast<LPCWSTR>(e));
+		elog::err() << "Exception: " << static_cast<LPCWSTR>(e) << std::endl;
 	}
 	return false;
 }
@@ -174,7 +174,7 @@ bool cGUI::ScriptPrologDo(const char *module, const char *predicate, const PlTer
 	}
 	catch(PlException const & e)
 	{
-		dlog(L"Exception: %s", static_cast<LPCWSTR>(e));
+		elog::err() << "Exception: " << static_cast<LPCWSTR>(e) << std::endl;
 	}
 	return false;
 }

@@ -20,8 +20,15 @@
 #include <cctype>
 #include <sstream>
 #include <iostream>
-#include <iomanip> 
+#include <iomanip>
+#include <vector>
+#include <functional>
+#include <fstream>
+#include <deque>
+#include <memory>
 
+#define DIRECTINPUT_VERSION 0x0800
+#include <dinput.h>
 
 #endif
 //////////////////////////////////////////////////////////////////////////////////////////////////

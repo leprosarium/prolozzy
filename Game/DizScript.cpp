@@ -19,8 +19,7 @@
 
 static ssize_t Log_write(void *handle, char *buffer, size_t size)
 { 
-	Channel ch = static_cast<Channel>(reinterpret_cast<size_t>(handle));
-	d9Log::printBuf(ch, buffer, size);
+	*reinterpret_cast<elog::channel *>(handle) << std::wstring(buffer, buffer + size);
 	return size;
 }
 
@@ -35,8 +34,8 @@ cDizScript::cDizScript()
 	Soutput->functions->write = &Log_write;
 	Serror->functions->write = &Log_write;
 
-	Soutput->handle = reinterpret_cast<void *>(Channel::scr);
-	Serror->handle  = reinterpret_cast<void *>(Channel::app);
+	Soutput->handle = reinterpret_cast<void *>(& elog::scr());
+	Serror->handle  = reinterpret_cast<void *>(& elog::app());
 
 }
 
@@ -83,7 +82,7 @@ void cDizScript::CallHandler(functor_t handler, const PlTermv &av )
 	catch(PlException const & e)
 	{
 		PlException ee(e);
-		dlog(L"Dizzy.pl 1111 not found: %s", static_cast<LPCWSTR>(ee));
+		elog::scr() << "handler exc: " << static_cast<LPCWSTR>(ee) << std::endl;
 	}
 }
 
@@ -341,18 +340,10 @@ PREDICATE_M(core, joystickAxe, 1)
 // DEBUG
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-PREDICATE_M(core, dlog, 1)
-{
-	LPCWSTR msg = A1;
-	dlog(Channel::scr, L"%s", msg);
-	return true;
-}
-
 PREDICATE_M(core, dl, 1)
 {
 	LPCWSTR msg = A1;
-	dlog(Channel::scr, L"%s", msg);
-	dlog(Channel::scr, L"\n");
+	elog::scr() << msg << std::endl;
 	return true;
 }
 

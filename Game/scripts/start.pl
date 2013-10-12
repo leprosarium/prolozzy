@@ -4,7 +4,7 @@
 setMatProps(Mat, Idx, Dens, Color) :-
 	core:materialDensity(Idx, Dens),
 	core:materialColor(Idx, Color),
-	core:dlog(setDens(Mat, Dens, Color)),core:dlog("\n").
+	core:dl(setDens(Mat, Dens, Color)).
 
 initMaterials :-
 	forall(def:material(Mat, Idx, Dens, Color), setMatProps(Mat, Idx, Dens, Color)).

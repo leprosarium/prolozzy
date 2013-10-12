@@ -191,7 +191,7 @@ bool Samples::LoadFile(const std::string & filepath, size_t & total, size_t & fa
 	if(!(fname >> nm))
 	{ 
 		fail++; 
-		dlog(Channel::app, L"! %S (bad name)\n", filepath.c_str()); 
+		elog::app() << "! " << filepath.c_str() << " (bad name)" << std::endl; 
 		return false; 
 	}
 	int instances = 1;
@@ -204,7 +204,7 @@ bool Samples::LoadFile(const std::string & filepath, size_t & total, size_t & fa
 	{
 		fail++;
 		duplicates++;
-		dlog(Channel::sys, L"! %S (duplicate id)\n", filepath.c_str());
+		elog::sys() << "! " << filepath.c_str() << " (duplicate id)" << std::endl;
 		return false;
 	}
 
@@ -213,7 +213,7 @@ bool Samples::LoadFile(const std::string & filepath, size_t & total, size_t & fa
 	if(!bufferproto)
 	{
 		fail++;
-		dlog(Channel::sys, L"! %S (failed to load)\n", filepath.c_str());
+		elog::sys() << "! " << filepath.c_str() << " (failed to load)" << std::endl;
 		return false;
 	}
 
@@ -221,20 +221,20 @@ bool Samples::LoadFile(const std::string & filepath, size_t & total, size_t & fa
 	push_back(tSoundProto(id, group, instances, bufferproto));
 
 	if(g_dizdebug.active()) // log for developers
-		dlog(Channel::app, L"  %S [%i]\n", filepath.c_str(), instances );
+		elog::app() << "  " << filepath.c_str() << " [" << instances << "]" << std::endl;
 
 	return true;
 }
 
 bool Samples::Load(const std::string & path, int group)
 {
-	if(!A9_IsReady()) { dlog(Channel::app, L"Sound disabled - no samples are loaded.\n"); return false; }
-	dlog(Channel::app, L"Loading samples from \"%S\" (group=%i)\n", path.c_str(), group);
+	if(!A9_IsReady()) { elog::app() << "Sound disabled - no samples are loaded." << std::endl; return false; }
+	elog::app() << "Loading samples from \"" << path.c_str() << "\" (group=" << group << ")" << std::endl;
 	size_t total = 0;
 	size_t fail = 0;
 	size_t duplicates = 0;
 	files->FindFiles(path, [this, &total, &fail, &duplicates, group](const std::string & filepath) { LoadFile(filepath, total, fail, duplicates, group); } );
-	dlog(Channel::app, L"Samples report: total=%u, failed=%u (duplicates=%u)\n\n", total, fail, duplicates);
+	elog::app() << "Samples report: total=" << total << ", failed=" << fail << " (duplicates=" << duplicates << ")" << std::endl << std::endl;
 	return true;
 }
 
@@ -349,7 +349,7 @@ bool Music::LoadFile( const std::string & filepath, size_t & total, size_t & fai
 	{
 		fail++;
 		duplicates++;
-		dlog(Channel::sys, L"! %S (duplicate id)\n", filepath.c_str());
+		elog::sys() << "! " << filepath.c_str() << " (duplicate id)" << std::endl;
 		return false;
 	}
 
@@ -358,7 +358,7 @@ bool Music::LoadFile( const std::string & filepath, size_t & total, size_t & fai
 	if(!stream)
 	{
 		fail++;
-		dlog(Channel::sys, L"! %S (failed to load)\n", filepath.c_str());
+		elog::sys() << "! " << filepath.c_str() << " (failed to load)" << std::endl;
 		return false;
 	}
 
@@ -366,20 +366,20 @@ bool Music::LoadFile( const std::string & filepath, size_t & total, size_t & fai
 	push_back(tMusicProto(id, group, stream));
 
 	if(g_dizdebug.active()) // log for developers
-		dlog(Channel::app, L"  %S\n", filepath.c_str());
+		elog::app() << "  " << filepath.c_str() << std::endl;
 
 	return true;
 }
 
 bool Music::Load(const std::string & path, int group)
 {
-	if(!A9_IsReady()) { dlog(Channel::app, L"Sound disabled - no musics are loaded.\n"); return false; }
-	dlog(Channel::app, L"Loading musics from \"%S\" (group=%i)\n", path.c_str(), group);
+	if(!A9_IsReady()) { elog::app() << "Sound disabled - no musics are loaded." << std::endl; return false; }
+	elog::app() << "Loading musics from \"" << path.c_str() << "\" (group=" << group << ")" << std::endl;
 	size_t total = 0;
 	size_t fail	= 0;
 	size_t duplicates = 0;
 	files->FindFiles(path, [this, &total, &fail, &duplicates, group](const std::string & filepath) { LoadFile(filepath, total, fail, duplicates, group); } );
-	dlog(Channel::app, L"Music report: total=%u, failed=%u (duplicates=%u)\n\n", total, fail, duplicates );
+	elog::app() << "Music report: total=" << total << ", failed=" << fail << " (duplicates=" << duplicates << ")" << std::endl;
 	return true;
 }
 

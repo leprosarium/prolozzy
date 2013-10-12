@@ -344,7 +344,7 @@ BOOL cEdiMap::Init()
 	int width = R9_GetWidth();
 	int height = R9_GetHeight();
 	m_target = R9_TextureCreateTarget(width,height);
-	if(!m_target) {	dlog(Channel::app, L"can't create render target."); return FALSE; }
+	if(!m_target) {	elog::app() << "can't create render target." << std::endl; return FALSE; }
 
 	m_mapw = MAP_SIZEDEFAULT;
 	m_maph = MAP_SIZEDEFAULT;
@@ -772,7 +772,7 @@ BOOL cEdiMap::PartitionAdd( tBrush * b)
 			ok = TRUE;
 		}
 	if(!ok)
-		dlog(Channel::app, L"Brush # %p (%d, %d)-(%d, %d) out of bounds\n", b, br.p1.x, br.p1.y, br.p2.x, br.p2.y);
+		elog::app() << "Brush # " << b << " (" << br.p1.x << ", " << br.p1.y << ")-(" << br.p2.x << ", " << br.p2.y << ") out of bounds" << std::endl;
 	return ok;
 }
 
@@ -1116,21 +1116,21 @@ bool cEdiMap::SaveMapImage(const std::string & filename )
 
 bool cEdiMap::Load( const std::string & filename )
 {
-	dlog(Channel::app, L"Loading map \"%S\"\n",filename.c_str());
+	elog::app() << "Loading map \"" << filename.c_str() << "\"" << std::endl;
 
-	if(!LoadMap(filename)) { dlog(Channel::err, L"Loading map FAILED!\n\n"); return false; }
-	dlog(Channel::app, L"Loading map SUCCESSFUL!\n\n");
+	if(!LoadMap(filename)) { elog::err() << "Loading map FAILED!" << std::endl << std::endl; return false; }
+	elog::app() << "Loading map SUCCESSFUL!" << std::endl << std::endl;
 	return true;
 }
 
 
-#define ERROR_CHUNK( info )	{ files->FileClose(file); dlog(Channel::app, L"brocken chunk (%S)\n", info); return false; }
+#define ERROR_CHUNK( info )	{ files->FileClose(file); elog::app() << "brocken chunk (" << info << ")" << std::endl; return false; }
 bool cEdiMap::LoadMap(const std::string &filename)
 {
 
 	// open file
 	F9FILE file = files->OpenFile(filename);
-	if(!file) { dlog(Channel::app, L"  map file not found.\n"); return false; }
+	if(!file) { elog::app() << "  map file not found." << std::endl; return false; }
 	file->Seek(0,2);
 	int64 filesize = file->Tell();
 	file->Seek(0,0);
@@ -1159,7 +1159,7 @@ bool cEdiMap::LoadMap(const std::string &filename)
 				size += file->Read(buffer, chunksize);
 				if(size!=chunksize) { delete [] buffer;  ERROR_CHUNK("size"); }
 
-				if(memcmp(buffer,MAP_ID,chunksize)!=0) { dlog(Channel::app, L"invalid map id: '%S' (current version: '%S')\n", buffer, MAP_ID); delete [] buffer; files->FileClose(file); return false; }
+				if(memcmp(buffer,MAP_ID,chunksize)!=0) { elog::app() << "invalid map id: '" << buffer << "' (current version: '" << MAP_ID << "')" << std::endl; delete [] buffer; files->FileClose(file); return false; }
 				delete [] buffer;
 				break;
 			}
@@ -1228,7 +1228,7 @@ bool cEdiMap::LoadMap(const std::string &filename)
 			
 			default:
 			{
-				dlog(Channel::app, L"  unknown chunk: id=%x size=%i\n", chunkid, chunksize);
+				elog::app() << "  unknown chunk: id=" << std::hex << chunkid << " size=" << chunksize << std::endl;
 				if(chunksize>0) file->Seek(chunksize,1);
 			}
 		}
@@ -1237,7 +1237,7 @@ bool cEdiMap::LoadMap(const std::string &filename)
 	}
 
 	files->FileClose(file);
-	dlog(Channel::app, L"  map=%ix%i, room=%ix%i, brushes=%i, objects=%i\n", m_mapw, m_maph, g_map.m_roomw, g_map.m_roomh, count_brush, count_obj );
+	elog::app() << "  map=" << m_mapw << "x" << m_maph << ", room=" << g_map.m_roomw << "x" << g_map.m_roomh << ", brushes=" << count_brush << ", objects=" << count_obj << std::endl;
 
 	int ret=g_map.Resize(m_mapw, m_maph); 
 

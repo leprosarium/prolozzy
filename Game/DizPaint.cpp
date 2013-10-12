@@ -161,14 +161,14 @@ PREDICATE_M(hud, color, 1)
 
 bool Tiles::Reacquire()
 {
-	dlog(Channel::app, L"Paint reaquire.\n");
+	elog::app() << "Paint reaquire." << std::endl;
 	bool ok=true;
 	for(cTile & tile: *this) 
 	{
 		tile.tex = R9_TextureLoad(tile.name);
 		if(tile.tex==NULL)
 		{
-			dlog(Channel::sys, L"error reacquireing tile %S.\n",tile.name.c_str());
+			elog::sys() << "error reacquireing tile " << tile.name.c_str() << std::endl;
 			ok = false;
 		}
 	}
@@ -181,7 +181,7 @@ void Tiles::Unacquire()
 }
 void cDizPaint::Unacquire()
 {
-	dlog(Channel::app, L"Paint unaquire.\n");
+	elog::app() << "Paint unaquire." << std::endl;
 	tiles.Unacquire();
 	fonts.Unacquire();
 }
@@ -210,7 +210,7 @@ bool Tiles::LoadFile( const std::string & filepath, size_t & total, size_t & fai
 	if(!(name >> id))
 	{
 		fail++; 
-		dlog(Channel::sys, L"! %S (bad name)\n", filepath.c_str()); 
+		elog::sys() << "! " << filepath.c_str() << " (bad name)" << std::endl; 
 		return false; 
 	}
 
@@ -227,7 +227,7 @@ bool Tiles::LoadFile( const std::string & filepath, size_t & total, size_t & fai
 	{
 		fail++;
 		duplicates++;
-		dlog(Channel::sys, L"! %S (duplicate id)\n", filepath.c_str(), id);
+		elog::sys() << "! " << filepath.c_str() << " (duplicate id)" << std::endl;
 		return false;
 	}
 
@@ -236,7 +236,7 @@ bool Tiles::LoadFile( const std::string & filepath, size_t & total, size_t & fai
 	if(!R9_ImgLoadFile(filepath, &img))
 	{
 		fail++;
-		dlog(Channel::sys, L"! %S (load failed)\n", filepath.c_str());
+		elog::sys() << "! " << filepath.c_str() << " (load failed)" << std::endl;
 		return false;
 	}
 
@@ -249,7 +249,7 @@ bool Tiles::LoadFile( const std::string & filepath, size_t & total, size_t & fai
 		!R9_ImgBitBltSafe(&img,0,0,img.m_width,img.m_height,&imga,0,0) ) 
 	{
 		fail++;
-		dlog(Channel::sys, L"! %S (alpha failed)\n", filepath.c_str());
+		elog::sys() << "! " << filepath.c_str() << " (alpha failed)" << std::endl;
 		R9_ImgDestroy(&img);
 		return false;
 	}
@@ -258,7 +258,7 @@ bool Tiles::LoadFile( const std::string & filepath, size_t & total, size_t & fai
 	if(!tex)
 	{
 		fail++;
-		dlog(Channel::sys, L"! %S (texture failed)\n", filepath.c_str());
+		elog::sys() << "! " << filepath.c_str() << " (texture failed)" << std::endl;
 		return false;
 	}
 	cTile tile(id);
@@ -276,7 +276,7 @@ bool Tiles::LoadFile( const std::string & filepath, size_t & total, size_t & fai
 	R9_ImgDestroy(&img);
 
 	if(g_dizdebug.active()) // log for developers
-		dlog(Channel::app, L"  %S [%i]\n", filepath.c_str(), frames );
+		elog::app() << "  " << filepath.c_str() << " [" << frames << "]" << std::endl;
 	
 	return true;
 }
@@ -285,7 +285,7 @@ bool Tiles::LoadFile( const std::string & filepath, size_t & total, size_t & fai
 
 bool Tiles::Load(const std::string & path)
 {
-	dlog(Channel::app, L"Loading tiles from \"%S\" \n", path.c_str());
+	elog::app() << "Loading tiles from \"" << path.c_str()  << "\"" << std::endl;
 
 
 	// init
@@ -296,7 +296,7 @@ bool Tiles::Load(const std::string & path)
 	files->FindFiles(path, [this, &total, &fail, &duplicates](const std::string & filepath) { LoadFile(filepath, total, fail, duplicates); } );
 
 	// report
-	dlog(Channel::app, L"Tiles report: total=%u, failed=%u (duplicates=%u)\n\n", total, fail, duplicates );
+	elog::app() << "Tiles report: total=" << total << ", failed=" << fail << " (duplicates=" << duplicates << ")" << std::endl << std::endl;
 
 	return true;
 }
@@ -811,7 +811,7 @@ bool Fonts::LoadFile(const std::string & filepath, size_t & total, size_t & fail
 	if(!(name >> id))
 	{
 		fail++; 
-		dlog(Channel::sys, L"! %S (bad name)\n", filepath.c_str()); 
+		elog::sys() << "! " << filepath.c_str() << " (bad name)" << std::endl; 
 		return false; 
 	}
 
@@ -822,7 +822,7 @@ bool Fonts::LoadFile(const std::string & filepath, size_t & total, size_t & fail
 	{
 		fail++;
 		duplicates++;
-		dlog(Channel::sys, L"! %S (duplicate id)\n", filepath.c_str(), id);
+		elog::sys() << "! " << filepath.c_str() << " (duplicate id)" << std::endl;
 		return false;
 	}
 
@@ -832,19 +832,19 @@ bool Fonts::LoadFile(const std::string & filepath, size_t & total, size_t & fail
 	if(!font.font->Create(filepath))
 	{
 		fail++;
-		dlog(Channel::sys, L"! %S (failed to load)\n", filepath.c_str());
+		elog::sys() << "! " << filepath.c_str() << " (failed to load)" << std::endl;
 		return false;
 	}
 	Add(id, std::move(font));
 
 	if(g_dizdebug.active()) // log for developers
-		dlog(Channel::app, L"  %S\n", filepath.c_str() );
+		elog::app() << "  " << filepath.c_str() << std::endl;
 	return true;
 }
 
 bool Fonts::Load(const std::string & path)
 {
-	dlog(Channel::app, L"Loading fonts from \"%S\" \n", path.c_str());
+	elog::app() << "Loading fonts from \"" << path.c_str() << "\"" << std::endl;
 
 	size_t total = 0;
 	size_t fail = 0;
@@ -853,7 +853,7 @@ bool Fonts::Load(const std::string & path)
 	files->FindFiles(path, [this, &total, &fail, &duplicates](const std::string & filepath) { LoadFile(filepath, total, fail, duplicates); } );
 
 	// report
-	dlog(Channel::app, L"Fonts report: total=%u, failed=%u (duplicates=%u)\n\n", total, fail, duplicates );
+	elog::app() << "Fonts report: total=" << total << ", failed=" << fail << " (duplicates=" << duplicates << ")" << std::endl << std::endl;
 	return true;
 }
 

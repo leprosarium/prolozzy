@@ -14,7 +14,7 @@
 #endif
 #endif
 
-#define logError( prefix, hr )	dlog( Channel::err, L"RENDER: %S (%x)\n", prefix, hr )
+#define logError( prefix, hr )	elog::err() << "RENDER: " << prefix << " (" << std::hex << hr << ")"
 
 r9RenderDX::tDirect3DCreate9 r9RenderDX::m_Direct3DCreate9 = nullptr;
 
@@ -87,10 +87,10 @@ void r9RenderDX::GatherDisplayModes() const
 	int dvSubVersion	= HIWORD(d3dadapter.DriverVersion.LowPart);
 	int dvBuild			= LOWORD(d3dadapter.DriverVersion.LowPart);
 
-	dlog(Channel::rnd, L"Video adapter info:\n");
-	dlog(Channel::rnd, L"  driver      = %S\n", (d3dadapter.Driver)?(d3dadapter.Driver):"NONE");
-	dlog(Channel::rnd, L"  description = %S\n", (d3dadapter.Description)?(d3dadapter.Description):"NONE");
-	dlog(Channel::rnd, L"  version     = p%i v%i.%i b%i\n", dvProduct, dvVersion, dvSubVersion, dvBuild );
+	elog::rnd() << "Video adapter info:" << std::endl
+		<< "  driver      = " << (d3dadapter.Driver ? d3dadapter.Driver : "NONE") << std::endl
+		<< "  description = " << (d3dadapter.Description ? d3dadapter.Description : "NONE") << std::endl
+		<< "  version     = p" << dvProduct << " v" << dvVersion << "." << dvSubVersion <<" b" << dvBuild << std::endl;
 	
 	// caps
 	D3DCAPS9 d3dcaps;
@@ -142,9 +142,9 @@ void r9RenderDX::GatherDisplayModes() const
 
 
 	// log
-	dlog(Channel::rnd, L"Display modes:\n");
-	for(const r9DisplayMode &m: DisplayModes) m.log(Channel::rnd);
-	dlog(Channel::rnd, L"\n");
+	elog::rnd() << "Display modes:" << std::endl;
+	for(auto m: DisplayModes) elog::rnd() << "   \t" << m << std::endl;
+	elog::rnd() << std::endl;
 }
 
 bool r9RenderDX::Init()
@@ -493,7 +493,7 @@ bool r9RenderDX::CheckDevice()
 bool r9RenderDX::ToggleVideoMode()
 {
 	if(m_d3dd->TestCooperativeLevel()!=D3D_OK ) return false;
-	dlog(Channel::rnd, L"Toggle video mode.\n");
+	elog::rnd() << "Toggle video mode." << std::endl;
 
 	m_cfg.windowed = !m_cfg.windowed;
 	PrepareWindow(); // prepare for setting style
@@ -754,7 +754,7 @@ void r9RenderDX::PrepareWindow()
 	}
 	RECT r;
 	GetWindowRect(m_hwnd,&r);
-	dlog(Channel::rnd, L"window size %ix%i\n",r.right-r.left,r.bottom-r.top);
+	elog::rnd() << "window size " << r.right-r.left << "x" << r.bottom-r.top << std::endl;
 }
 
 void r9RenderDX::D3D_GetPresentParams( D3DPRESENT_PARAMETERS* d3dparam )
@@ -805,7 +805,7 @@ BOOL r9RenderDX::D3D_CreateDevice()
 
 BOOL r9RenderDX::D3D_Reset()
 {
-	dlog(Channel::rnd, L"reset device.\n");
+	elog::rnd() << "reset device." << std::endl;
 	D3DPRESENT_PARAMETERS d3dparam;
 	D3D_GetPresentParams(&d3dparam);
 	HRESULT hr = m_d3dd->Reset(&d3dparam);
@@ -822,7 +822,7 @@ void r9RenderDX::D3D_HandleReset( int mode )
 	}
 	else // restore
 	{
-		if(!D3D_BatchCreate()) { dlog(Channel::sys, L"Can't recover buffer from lost device.\n"); exit(-1); } // vertex buffer
+		if(!D3D_BatchCreate()) { elog::sys() << "Can't recover buffer from lost device." << std::endl; exit(-1); } // vertex buffer
 		TT_Recreate();
 
 		// restore render states
@@ -928,7 +928,7 @@ void r9RenderDX::TT_Recreate()
 		// manareli...
 		// create new temporary tex (will add it in targetlist too!)
 		R9TEXTURE ttex = TextureCreateTarget(m_targetlist[i]->width,m_targetlist[i]->height);
-		if(ttex==NULL) { dlog(Channel::sys, L"Can't recover render target, from lost device.\n"); exit(-1); }
+		if(ttex==NULL) { elog::sys() << "Can't recover render target, from lost device." << std::endl; exit(-1); }
 		// force content into the old tex pointer (that was cleared before reset)
 		*m_targetlist[i] = *ttex;
 		// remove last entry in targetlist (the temporary new tex)

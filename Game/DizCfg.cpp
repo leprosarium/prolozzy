@@ -82,7 +82,7 @@ void cDizCfg::Init()
 void cDizCfg::LoadInfo()
 {
 	F9FILE f = files->OpenFile("data\\dizzy.inf");
-	if(!f) { dlog(Channel::app, L"dizzy.inf not found\n"); return; }
+	if(!f) { elog::app() << "dizzy.inf not found" << std::endl; return; }
 	auto size = f->Size();
 	if(!size) { files->FileClose(f); return; }
 

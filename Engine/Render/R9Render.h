@@ -20,10 +20,8 @@ enum class Api
 	DirectX,
 	OpenGL,
 	Default = DirectX
-
 };
-
-#define	R9_STATES				5		// dummy
+inline std::wostream & operator << (std::wostream & o, Api a) { return o << (a == Api::OpenGL ? "OpenGL" : "DirectX"); }
 
 enum class Primitive
 {
@@ -92,7 +90,14 @@ struct r9Cfg
 	int height;		// resolution height
 	int refresh;		// refresh rate (0=default);
 	int vsync;			// vsync (0=off)
-	r9Cfg();				
+	r9Cfg();
+	friend std::wostream & operator <<(std::wostream & o, const r9Cfg & c) {
+		return o << (c.windowed ? "windowed" : "full-screen") << " "
+			<< c.width << "x" << c.height << " "
+			<< c.bpp << "bpp "
+			<< c.refresh << "Hz"
+			<< (c.vsync ? " vsync" : "");
+	}
 };
 
 struct r9DisplayMode
@@ -111,7 +116,7 @@ struct r9DisplayMode
 		if(height != m.height) return height < m.height;
 		return refresh < m.refresh;
 	}
-	void log(Channel ch) const { dlog(ch, L"   \t%ix%i \t%ibpp \t%iHz \t%S\n", width, height, bpp, refresh, windowed ? "windowed" : ""); }
+	friend std::wostream & operator<<(std::wostream & o, const r9DisplayMode & m) { return  o << m.width << "x" << m.height << " \t" << m.bpp << "bpp \t" << m.refresh << "Hz" << (m.windowed ? " \twindowed" : ""); }
 };
 
 struct r9Texture
@@ -373,7 +378,6 @@ extern r9Render* r9_render;
 bool R9_InitInterface(Api api = Api::Default);
 		void		R9_GetDisplayModes( r9DisplayMode* &displaymode, int& displaymodecount );		// available after init interface
 bool R9_FilterCfg(r9Cfg & cfg, Api & api);														// available after init interface
-		void		R9_LogCfg( r9Cfg& cfg, Api api );
 		void		R9_DoneInterface();
 
 		BOOL		R9_Init( HWND hwnd, r9Cfg* cfg, Api api = Api::Default);

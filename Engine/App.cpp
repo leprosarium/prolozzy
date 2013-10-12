@@ -113,7 +113,7 @@ LRESULT	App::WndProc(UINT msg, WPARAM wParam, LPARAM lParam )
 			minimized = false;
 			if(changed) 
 			{
-				dlog(Channel::app, L"Activate %S\n", active ? "on" : "off");
+				elog::app() << "Activate " << (active ? "on" : "off") << std::endl;
 				OnActivate(active);
 			}
 			break;
@@ -127,7 +127,7 @@ LRESULT	App::WndProc(UINT msg, WPARAM wParam, LPARAM lParam )
 			minimized = HIWORD(wParam) != 0;
 			if(changed) 
 			{
-				dlog(Channel::app, L"Activate %S\n", active ? "on" : "off");
+				elog::app() << "Activate " << (active ? "on" : "off") << std::endl;
 				OnActivate(active);
 			}
 			break;
@@ -248,6 +248,6 @@ void App::Icon(int res)
 
 void App::ErrorMessage(LPCSTR msg)
 {
-	dlog(Channel::err, L"DizzyAGE ERROR:\n%S\n", msg);
+	elog::err() << "DizzyAGE ERROR:" << std::endl << msg << std::endl;
 	sys_msgbox( Wnd(), msg, "DizzyAGE ERROR", MB_OK );
 }

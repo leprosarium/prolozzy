@@ -202,7 +202,7 @@ bool r9Render::SaveScreenShot( fRect* rect, bool full )
 	R9_ImgSaveFile(file,&img);
 	R9_ImgDestroy(&img);
 	
-	dlog(Channel::rnd, L"ScreenShot saved!\n");
+	elog::rnd() << "ScreenShot saved!" << std::endl;
 
 	return true;
 }
@@ -210,8 +210,8 @@ bool r9Render::SaveScreenShot( fRect* rect, bool full )
 bool r9Render::TakeScreenShot( r9Img* img, fRect* rect, bool full )
 {
 	if(img==nullptr) return false;
-	if( IsBeginEndScene() ) { dlog(Channel::rnd, L"ScreenShot can not be taken inside Begin - End frame.\n"); return false; }
-	if( m_cfg.bpp!=32 ) 	{ dlog(Channel::rnd, L"ScreenShot can be taken only in 32bit modes.\n"); return false; }
+	if( IsBeginEndScene() ) { elog::rnd() << "ScreenShot can not be taken inside Begin - End frame." << std::endl; return false; }
+	if( m_cfg.bpp!=32 ) 	{ elog::rnd() << "ScreenShot can be taken only in 32bit modes." << std::endl; return false; }
 	R9_ImgDestroy(img);
 	return DoTakeScreenShot(img, rect, full);
 }
@@ -349,7 +349,7 @@ std::vector<r9DisplayMode> r9Render::DisplayModes;
 
 bool R9_InitInterface( Api api )
 {
-	dlog(Channel::rnd, L"Render init interface (api=%i).\n",api);
+	elog::rnd() << "Render init interface (api=" << api << ")." << std::endl;
 	r9Render* render = R9_CreateRender(api);
 	if(!render) return false;
 
@@ -366,8 +366,8 @@ bool R9_FilterCfg( r9Cfg& cfg, Api & api )
 {
 	if(r9Render::DisplayModes.empty()) return false;
 
-	dlog(Channel::rnd, L"Filter config:\n");
-	dlog(Channel::rnd, L"  Requested: "); R9_LogCfg(cfg,api);
+	elog::rnd() << "Filter config:" << std::endl
+		<< "  Requested: " << api  << " " << cfg << std::endl;
 
 	bool ok = false;
 	r9Cfg cfgout = cfg;
@@ -406,37 +406,26 @@ bool R9_FilterCfg( r9Cfg& cfg, Api & api )
 		// continue search for better refresh
 	}
 	
-	cfg = cfgout;
+	elog::rnd() << "  Received:  ";
 	if(ok)
-	{ dlog(Channel::rnd, L"  Received:  "); R9_LogCfg(cfg, api); }
+		elog::rnd() << api << " " << cfgout;
 	else
-	{ dlog(Channel::rnd, L"  Received:  FAILED\n"); return FALSE; }
+		elog::rnd() << "FAILED";
+	elog::rnd() << std::endl;
 	return ok;
-}
-
-void R9_LogCfg( r9Cfg& cfg, Api api )
-{
-	dlog(Channel::rnd, L"%S %S %ix%i %ibpp %iHz%S\n", 
-		api == Api::OpenGL ? "OpenGL" : "DirectX",
-		cfg.windowed?"windowed":"full-screen",
-		cfg.width, cfg.height,
-		cfg.bpp,
-		cfg.refresh,
-		cfg.vsync?" vsync":""
-		);
 }
 
 void R9_DoneInterface()
 {
 	if(r9Render::DisplayModes.empty()) return;
 	r9Render::DisplayModes.clear();
-	dlog(Channel::rnd, L"Render done interface.\n");
+	elog::rnd() << "Render done interface." << std::endl;
 }
 
 BOOL R9_Init( HWND hwnd, r9Cfg* cfg, Api api )
 {
 	if(r9_render) return TRUE;
-	dlog(Channel::rnd, L"Render init (api=%i).\n",api);
+	elog::rnd() << "Render init (api=" << api << ")." << std::endl;
 	r9_render = R9_CreateRender(api);
 	if(!r9_render) return FALSE;
 	if(!r9_render->Init(hwnd, cfg))
@@ -456,7 +445,7 @@ void R9_Done()
 	r9_render->UnloadDll();
 	delete r9_render;
 	r9_render = NULL;
-	dlog(Channel::rnd, L"Render done.\n");
+	elog::rnd() << "Render done." << std::endl;
 }
 
 void R9_DrawText(const fV2 & pos, const std::string & text, dword color, float scale )

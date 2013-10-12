@@ -20,8 +20,7 @@ Editor * Editor::app = nullptr;
 PREDICATE_M(core, dl, 1)
 {
 	LPWSTR msg = A1;
-	dlog(Channel::scr, msg);
-	dlog(Channel::scr, L"\n");
+	elog::scr() << msg << std::endl;
 	return true;
 }
 
@@ -100,7 +99,7 @@ Editor::~Editor()
 
 void Editor::Init()
 {
-	dlog(Channel::app, L"App init.\n");
+	elog::app() << "App init." << std::endl;
 
 	// engine
 	if(!InitApp()) throw std::exception("Init app error.");
@@ -195,7 +194,7 @@ bool Editor::InitVideo()
 	BOOL ok = R9_Init(Wnd(), &cfg, api);
 	if(!ok) // try the other api
 	{
-		dlog(L"RENDER: init %S failed, try the other api.\n", api == Api::OpenGL ? "OpenGL" : "DirectX9");
+		elog::app() << "RENDER: init " << api << " failed, try the other api." << std::endl;
 		api = api == Api::DirectX ? Api::OpenGL : Api::DirectX;
 		ok = R9_Init(Wnd(), &cfg, api);
 		if(!ok)	return false;
@@ -230,7 +229,7 @@ void Editor::Done()
 	R9_DoneInterface();
 	F9_Done();
 	eInput::Done();
-	dlog(Channel::app, L"App done.\n");
+	elog::app() << "App done." << std::endl;
 }
 
 void Editor::OnActivate(bool active)
@@ -316,7 +315,7 @@ void Editor::DropFile( LPCWSTR filepath )
 	{
 		PlException ee(e);
 		LPCWSTR msg = static_cast<LPCWSTR>(ee);
-		dlog(L"Exception: %s", msg);
+		elog::err() << "Exception: " << msg << std::endl;
 	}
 
 
@@ -531,7 +530,7 @@ PREDICATE_M(edi, tileGetName, 2)
 
 PREDICATE_M(edi, tileReload, 0)
 {
-	dlog(Channel::app, L"Reload tiles ...\n");
+	elog::app() << "Reload tiles ..." << std::endl;
 
 	// clear old
 	g_paint.TileUnload();
@@ -542,7 +541,7 @@ PREDICATE_M(edi, tileReload, 0)
 	if(ini_get(file_getfullpath(USER_INIFILE), "editor", "options_tiledir") >> tilepath)
 		if(g_paint.TileLoad(tilepath)) loads++;
 	else 
-		dlog(Channel::app, L"TileDir not specified in editor.ini\n");
+		elog::app() << "TileDir not specified in editor.ini" << std::endl;
 	return loads > 0;
 }
 

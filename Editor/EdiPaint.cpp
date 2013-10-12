@@ -49,7 +49,7 @@ bool cEdiPaint::TileLoadFile( const std::string & filepath, size_t & total, size
 	if(!(name >> id))
 	{ 
 		fail++; 
-		dlog(Channel::sys, L"! %S (bad name)\n", filepath.c_str()); 
+		elog::err() << "! "<< filepath.c_str() << " (bad name)" << std::endl; 
 		return false; 
 	}
 	std::string szt;
@@ -64,7 +64,7 @@ bool cEdiPaint::TileLoadFile( const std::string & filepath, size_t & total, size
 	{
 		fail++;
 		duplicates++;
-		dlog(Channel::sys, L"! %S (duplicate id)\n", filepath.c_str(), id);
+		elog::err() << "! " << filepath.c_str() << " (duplicate id)" << std::endl;
 		return false;
 	}
 
@@ -73,7 +73,7 @@ bool cEdiPaint::TileLoadFile( const std::string & filepath, size_t & total, size
 	if(!R9_ImgLoadFile(filepath,&img))
 	{
 		fail++;
-		dlog(Channel::sys, L"! %S (load failed)\n", filepath.c_str());
+		elog::err() << "! " << filepath.c_str() << " (load failed)" << std::endl;
 		return false;
 	}
 
@@ -82,7 +82,7 @@ bool cEdiPaint::TileLoadFile( const std::string & filepath, size_t & total, size
 	if(!tex)
 	{
 		fail++;
-		dlog(Channel::sys, L"! %S (texture failed)\n", filepath.c_str());
+		elog::err() << "! " << filepath.c_str() << " (texture failed)" << std::endl;
 		return false;
 	}
 	cTile* tile = TileGet(TileAdd(id));
@@ -96,7 +96,7 @@ bool cEdiPaint::TileLoadFile( const std::string & filepath, size_t & total, size
 
 	R9_ImgDestroy(&img);
 	
-	dlog(Channel::app, L"  %S [%i]\n", filepath.c_str(), frames );
+	elog::app() << "  " << filepath.c_str() << " [" << frames << "]" << std::endl;
 	
 	return true;
 }
@@ -106,7 +106,7 @@ bool cEdiPaint::TileLoad( const std::string & path )
 	m_tilepath = path;
 	if(!m_tilepath.empty() && *m_tilepath.rbegin() != '\\')
 		m_tilepath += "\\";
-	dlog(Channel::app, L"Loading tiles from \"%S\"\n", m_tilepath.c_str());
+	elog::app() << "Loading tiles from \"" << m_tilepath.c_str() << "\"" << std::endl;
 
 	size_t total = 0;
 	size_t fail = 0;
@@ -114,7 +114,7 @@ bool cEdiPaint::TileLoad( const std::string & path )
 
 	file_findfiles(m_tilepath, "*.*", [this, &total, &fail, &duplicates](const std::string & filepath, bool) { TileLoadFile(filepath, total, fail, duplicates); }, FILE_FINDREC );
 
-	dlog(Channel::app, L"Tiles report: total=%u, failed=%u (duplicates=%u)\n", total, fail, duplicates );
+	elog::app() << "Tiles report: total=" << total << ", failed=" << fail << " (duplicates=" << duplicates << ")" << std::endl;
 
 	// sort by id
 	std::sort(m_tile.begin(), m_tile.end(), [](cTile * t1, cTile * t2) { return t1->id < t2->id; });

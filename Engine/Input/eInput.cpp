@@ -23,7 +23,7 @@ eInput::~eInput()
 bool eInput::Init(HWND hwnd, HINSTANCE hinstance)
 {
 	if(Ready()) return true;
-	dlog(Channel::inp, L"Input init.\n");
+	elog::inp() << "Input init." << std::endl;
 	einput = new eInput(hwnd, hinstance);
 	return true;
 }
@@ -33,7 +33,7 @@ void eInput::Done()
 	if(!Ready()) return;
 	delete einput;
 	einput = nullptr;
-	dlog(Channel::inp, L"Input done.\n");
+	elog::inp() << "Input done." << std::endl;
 }
 
 void eInput::_Update(float dtime)
@@ -78,7 +78,7 @@ bool eInput::_Init<Mouse>()
 	}
 	catch(const std::exception & e)
 	{
-		dlog(L"Mouse ini error: %S", e.what());
+		elog::sys() << "Mouse ini error: " << e.what() << std::endl;
 		return false;
 	}
 	return true;
@@ -93,7 +93,7 @@ bool eInput::_Init<Keyboard>()
 	}
 	catch(const std::exception & e)
 	{
-		dlog(L"Keyboard ini error: %S", e.what());
+		elog::sys() << "Keyboard ini error: " << e.what() << std::endl;
 		return false;
 	}
 	return true;
@@ -113,7 +113,7 @@ bool eInput::_Init<Joystick>()
 	}
 	catch(const std::exception & e)
 	{
-		dlog(L"Joystick ini error: %S", e.what());
+		elog::sys() << "Joystick ini error: " << e.what() << std::endl;
 		return false;
 	}
 	return true;

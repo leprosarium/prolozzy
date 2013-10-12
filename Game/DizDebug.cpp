@@ -119,7 +119,7 @@ ssize_t Prolog::Read(char *buffer, size_t size)
 				memcpy(buffer, Cmd.c_str(), sz);
 				Cmd = "";
 				PL_prompt_next(0);
-				d9Log::printBuf(Channel::dbg, buffer, sz);
+				elog::dbg() << std::wstring(buffer, buffer + sz);
 				readed = sz;
 				return false;
 			}
@@ -140,6 +140,20 @@ cDizDebug::cDizDebug() : con(CON_LINES), _visible(), _active(), prolog(con, slot
 	input.setAction(Call);
 }
 
+class Console::conbuf : public elog::outbuf
+{
+	dword color;
+	Console & con;
+public:
+	conbuf(dword color, Console & con) : color(color), con(con) {}
+	virtual ~conbuf() { sync(); }
+	virtual int flushBuffer(int num)
+	{
+		buffer[num] = 0;
+		con.Push(color, WideStringToMultiByte(buffer));
+		return num;
+	}
+};
 
 bool cDizDebug::Init()
 {
@@ -154,12 +168,12 @@ bool cDizDebug::Init()
 
 	// console
 	_visible = false;
-	d9Log::setCallback([this](Channel ch,LPCWSTR msg) {this->ConsolePush(ch, msg );});
+	con.Init();
 
 	//log
-	dlog(Channel::app, L"%S v%S\n",GAME_NAME,GAME_VERSION);
-	R9_LogCfg(R9_GetCfg(),R9_GetApi());
-	if(_active) dlog(Channel::app, L"Developer mode on.\n");
+	elog::app() << GAME_NAME << " v" << GAME_VERSION << std::endl
+		<< "api = " << R9_GetApi() << " " << R9_GetCfg() << std::endl;
+	if(_active) elog::app() << "Developer mode on." << std::endl;
 
 	return true;
 }
@@ -342,13 +356,46 @@ void cDizDebug::Call(const std::string & cmd)
 	catch(PlException const & e)
 	{
 		PlException ee(e);
-		dlog(L"PlException: %s", static_cast<LPCWSTR>(ee));
+		elog::sys() << "PlException: " << static_cast<LPCWSTR>(ee) << std::endl;
 	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // CONSOLE
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+Console::conbuf * Console::newBuf(dword color)
+{
+	conbuf * b = new conbuf(color, *this);
+	bufs.push_back(b);
+	return b;
+}
+
+void Console::Init()
+{
+	conbuf * red = newBuf(DWORD_RED);
+	elog::sys().add(red);
+	elog::err().add(red);
+	if(elog::elog.open())
+	{
+		elog::nul().add(newBuf(DWORD_GREY));
+		elog::eng().add(newBuf(DWORD_BLUE));
+		elog::dbg().add(newBuf(DWORD_ORANGE));
+		elog::fil().add(newBuf(DWORD_DGREEN));
+		conbuf * green = newBuf(DWORD_GREEN);
+		conbuf * lred = newBuf(DWORD_LRED);
+		elog::inp().add(green);
+		elog::rnd().add(lred);
+		elog::snd().add(lred);
+		elog::scr().add(newBuf(DWORD_LBLUE));
+		elog::app().add(green);
+	}
+}
+
+Console::~Console()
+{
+	for(auto b: bufs) delete b;
+}
 
 void Console::Update()
 {
@@ -367,19 +414,19 @@ void Console::Draw()
 	R9_DrawBar(rect, COLOR_BBKGR);
 	fV2 p = rect.p1 + fV2(ChrW, ChrH);
 	for(auto line = begin() + PageBegin; p.y < rect.p2.y && line != end(); ++line, p.y += static_cast<float>(ChrH)) // show as many as you can
-		R9_DrawText(p, *line, d9Log::getColor(line->Ch));
+		R9_DrawText(p, *line, line->color);
 	R9_SetClipping(oldclip);
 }
 
-void Console::Push(Channel ch, const std::string & str)
+void Console::Push(dword color, const std::string & str)
 {
 	std::string::size_type st = 0, e = 0;
 	while ((e = str.find('\n', st)) != std::string::npos) {
-		PushToken(Line(ch, str.substr(st, e - st)));
+		PushToken(Line(color, str.substr(st, e - st)));
 		PushNewLine();
 		st = e + 1;
 	}
-	PushToken(Line(ch, str.substr(st)));
+	PushToken(Line(color, str.substr(st)));
 }
 
 void Console::PushToken(const Line & line)
@@ -390,7 +437,7 @@ void Console::PushToken(const Line & line)
 	{
 		Line & last = back();
 		if(last.empty())
-			last.Ch = line.Ch;
+			last.color = line.color;
 		last += line;
 	}
 }
@@ -402,13 +449,6 @@ void Console::PushNewLine()
 		pop_front();
 	if(PageBegin + lines + 1 == size())
 		End();
-}
-
-
-void cDizDebug::ConsolePush(Channel ch, LPCWSTR msg)
-{
-	if(msg)
-		con.Push(ch, WideStringToMultiByte(msg));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

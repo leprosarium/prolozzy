@@ -19,7 +19,7 @@
 
 static ssize_t Log_write(void *handle, char *buffer, size_t size)
 { 
-	*reinterpret_cast<elog::channel *>(handle) << std::wstring(buffer, buffer + size);
+	*reinterpret_cast<elog::channel *>(handle) << std::wstring(buffer, buffer + size) << std::flush;
 	return size;
 }
 

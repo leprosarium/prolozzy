@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include <algorithm>
 #include <cctype>
 #include <sstream>
 #include <iostream>

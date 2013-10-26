@@ -90,12 +90,12 @@ LRESULT	CALLBACK App::_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 	if(msg == WM_CREATE)
 	{
 		app = reinterpret_cast<App*>(reinterpret_cast<LPCREATESTRUCT>(lParam)->lpCreateParams);
-		SetWindowLongPtr(hwnd, GWL_USERDATA, reinterpret_cast<LONG_PTR>(app));
+		SetWindowLongPtrW(hwnd, GWL_USERDATA, reinterpret_cast<LONG_PTR>(app));
 	}
 	else
 	{
-		app = reinterpret_cast<App*>(GetWindowLongPtr(hwnd, GWL_USERDATA));
-		if(!app) return DefWindowProc(hwnd, msg, wParam, lParam);
+		app = reinterpret_cast<App*>(GetWindowLongPtrW(hwnd, GWL_USERDATA));
+		if(!app) return DefWindowProcW(hwnd, msg, wParam, lParam);
 	}
 	return app->WndProc(msg, wParam, lParam);
 }
@@ -163,7 +163,7 @@ LRESULT	App::WndProc(UINT msg, WPARAM wParam, LPARAM lParam )
 			einput->keyQueue += ch;
 		}
 	}
-	return DefWindowProc(wnd, msg, wParam, lParam);
+	return DefWindowProcW(wnd, msg, wParam, lParam);
 }
 
 void App::SetCursor(Cursor cur)
@@ -174,12 +174,12 @@ void App::SetCursor(Cursor cur)
 bool App::ProcessMessages()
 {
 	MSG	msg;
-	while(PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
+	while(PeekMessageW(&msg, NULL, 0, 0, PM_NOREMOVE))
 	{
-		if(GetMessage(&msg, NULL, 0, 0))
+		if(GetMessageW(&msg, NULL, 0, 0))
 		{
 			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+			DispatchMessageW(&msg);
 		}
 		else
 			return true;
@@ -236,14 +236,14 @@ void App::Icon(const std::string & name)
 { 
 	if(wnd)
 		if(HICON hIcon = LoadIcon(instance, name.c_str()))
-			PostMessage(wnd, WM_SETICON, ICON_BIG,(LPARAM)(HICON)hIcon);
+			PostMessageW(wnd, WM_SETICON, ICON_BIG,(LPARAM)(HICON)hIcon);
 }
 
 void App::Icon(int res) 
 { 
 	if(wnd)
 		if(HICON hIcon = LoadIcon(instance, MAKEINTRESOURCE(res)))
-			PostMessage(wnd, WM_SETICON, ICON_BIG,(LPARAM)(HICON)hIcon);
+			PostMessageW(wnd, WM_SETICON, ICON_BIG,(LPARAM)(HICON)hIcon);
 }
 
 void App::ErrorMessage(LPCSTR msg)

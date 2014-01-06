@@ -2,7 +2,6 @@
 // EdiMap.cpp
 //////////////////////////////////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
-#include <algorithm>
 
 #include "eInput.h"
 
@@ -615,7 +614,7 @@ int cEdiMap::Resize( int width, int height )
 	CheckMapView();
 	
 	PartitionInit();
-	BOOL ok = PartitionRepartition();
+	bool ok = PartitionRepartition();
 
 	SelectionRefresh();
 	MarkerResize();
@@ -689,24 +688,19 @@ void cEdiMap::BrushDrawExtra( iRect& view )
 		int pidx = partition[p];
 		for(auto brush: *m_partition[pidx])
 		{
+
 			m_count_brushcheck++;
-
-			int layer = brush->layer;
-			if(layer<0 || layer>=LAYER_MAX) continue;
-			if(Editor::app->LayerGet(layer)==0) continue; // hidden
-
+			if (Editor::app->layers.IsHidden(brush->layer)) continue;
 			if(!view.Intersects(brush->rect())) continue;
 
 			brushvis.push_back(brush); // store in drawbuffer
 		}
 	}
 
-	// order drawbuffer by index // @TODO optimize
+	std::sort(brushvis.begin(), brushvis.end());
+	brushvis.erase(std::unique(brushvis.begin(), brushvis.end()), brushvis.end());
 
-	std::sort(brushvis.begin(), brushvis.end(), [](tBrush * b1, tBrush * b2) { return  b1->layer < b2->layer; } );
-
-	// remove duplicates
-	brushvis.erase( std::unique( brushvis.begin(), brushvis.end() ), brushvis.end() );
+	std::sort(brushvis.begin(), brushvis.end(), [](tBrush * b1, tBrush * b2) { return  b1->layer < b2->layer; });
 
 	// draw drawbuffer
 	tBrush brushtemp;
@@ -728,8 +722,7 @@ tBrush * cEdiMap::BrushPick( int x, int y )
 	auto it = find_if(m_brush.rbegin(), m_brush.rend(), 
 		[x,y](tBrush *brush) -> bool
 	{ 
-		int layer = brush->layer;
-		return layer >= 0 && layer < LAYER_MAX && Editor::app->LayerGet(layer) != 0 && brush->rect().IsInside(iV2(x,y));
+		return !Editor::app->layers.IsHidden(brush->layer) && brush->rect().IsInside(iV2(x, y));
 	});
 	return it == m_brush.rend() ? nullptr : *it;
 }
@@ -756,20 +749,20 @@ void cEdiMap::PartitionInit()
 
 void cEdiMap::PartitionDone()
 {
-	std::for_each(m_partition.begin(), m_partition.end(), [](cPartitionCel * c) {delete c;});
+	for(auto c: m_partition) delete c;
 	m_partition.clear(); 
 }
 
-BOOL cEdiMap::PartitionAdd( tBrush * b)
+bool cEdiMap::PartitionAdd( tBrush * b)
 {
 	int pcountw = PartitionCountW();
 	iRect br = b->rect();
-	BOOL ok=FALSE;
+	bool ok = false;
 	for(size_t i=0; i<m_partition.size(); i++)
 		if( br.Intersects(PartitionRect(i, pcountw)) )
 		{	
 			m_partition[i]->Add(b);
-			ok = TRUE;
+			ok = true;
 		}
 	if(!ok)
 		elog::app() << "Brush # " << b << " (" << br.p1.x << ", " << br.p1.y << ")-(" << br.p2.x << ", " << br.p2.y << ") out of bounds" << std::endl;
@@ -801,10 +794,10 @@ int	cEdiMap::PartitionGet( iRect& rect, int* buffer, int buffersize )
 	return count;
 }
 
-BOOL cEdiMap::PartitionRepartition()
+bool cEdiMap::PartitionRepartition()
 {
-	for(cPartitionCel *c: m_partition) c->clear();
-	BOOL ok = TRUE;
+	for(auto c: m_partition) c->clear();
+	bool ok = true;
 	for(auto b: m_brush) ok &= PartitionAdd(b);
 	return ok;
 }

@@ -127,7 +127,6 @@ void cEdiToolPaint::Update( float dtime )
 				{
 					tBrush * b = g_map.brushPtr(a[1]);
 					b->select = false;
-					b->layer = Editor::app->LayerActive();
 					g_map.m_refresh = TRUE;
 					g_map.PartitionAdd(b);
 				}
@@ -453,25 +452,16 @@ void cEdiToolEdit::BrushSelect()
 {
 	for(auto brush: g_map.brushvis)
 	{
-		int layer = brush->layer;
-		if(layer<0 || layer>=LAYER_MAX) continue;
-		if(Editor::app->LayerGet(layer)==0) continue; // hidden
-
-		iRect bb = brush->rect();
-		
-		if( m_rect.Intersects(brush->rect()) )
+		if (!m_rect.Intersects(brush->rect())) continue;
+		if(m_selop==-1 && brush->select)
 		{
-			if(m_selop==-1 && brush->select)
-			{
-				brush->select = false;
-				g_map.m_selectcount--;
-			}
-			else
-			if((m_selop==0 || m_selop==1) && !brush->select)
-			{
-				brush->select = true;
-				g_map.m_selectcount++;
-			}
+			brush->select = false;
+			g_map.m_selectcount--;
+		}
+		else if((m_selop==0 || m_selop==1) && !brush->select)
+		{
+			brush->select = true;
+			g_map.m_selectcount++;
 		}
 	}
 	g_map.m_refresh=TRUE;
@@ -588,10 +578,9 @@ void cEdiToolEdit::BrushPaste()
 				if(props.empty()) continue;
 				++count;
 				PlCompound a(props.c_str());
-				if(g_gui->ScriptPrologDo("brush", "new", a))
+				if(g_gui->ScriptPrologDo("brush", "paste", a))
 				{
 					tBrush * b = g_map.m_brush.back();
-					b->layer = Editor::app->LayerActive();
 					b->select = true;
 					g_map.PartitionAdd(b);	
 				}

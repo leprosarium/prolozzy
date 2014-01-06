@@ -116,11 +116,16 @@ public:
 		cEdiTool*	m_tool[TOOL_MAX];						// editor tools 
 		tBrush		m_brush;								// current tool brush
 
-		// layers
-	int			LayerGet			( int layer )				{ return m_layer[layer]; }
-	void		LayerSet			( int layer, int status )	{ m_layer[layer]=status; }
-	int			LayerActive			()							{ for(int i=LAYER_MAX-1;i>=0;i--) if(m_layer[i]==2) return i; return -1; }
-	int			m_layer[LAYER_MAX];						// layers states 0=invisible, 1=visibil, 2=active)
+	class Layers
+	{
+		bool layers[LAYER_MAX];
+	public:
+		Layers();
+		bool IsValid(int l) const { return l >= 0 && l < LAYER_MAX; }
+		int Get(int l) const { return  layers[l]; }
+		void Set(int l, int status) { layers[l] = status != 0; }
+		bool IsHidden(int l) const { return IsValid(l) ? !Get(l) : true; }
+	} layers;
 
 protected:
 		void		DrawStats			();					// draw stats info

@@ -48,7 +48,7 @@ create(Mode, Brush) :-
 	dlg:setID(ID),
 	gui:addKey(escape > gui:dlgClose),
 	dlg:setCloseOut,
-	dlg:setCloseCmd(dlgProps2:close),
+	dlg:setCloseCmd(dlgProps2:dlgClose(Brush)),
 	createProps(100, WMax, Mode, Brush),
 	editor:param(props_page, 0, Page),
 	X1 = 8,
@@ -184,9 +184,9 @@ updateItem(Name, Value, Type, Prop) :-
 	getPropBtName(Name, Value, Type, BtName),
 	gui:itemSetTxt(BtName).
 
-close :-
+dlgClose(Brush) :-
+	(edi:toolBrush(Brush) -> dlgMenuBar:refresh; true),
 	map:refresh.
-
 
 browsePos(XX, YY) :-
 	dlg:getPos(X, Y),

@@ -15,7 +15,7 @@
 		   flipSet/1,
 		   justFlip/0,
 		   justRotate/0,
-		   layer/1,
+		   layer/2,
 		   fileNew/0,
 		   fileNewDo/0,
 		   fileOpenMap/0,
@@ -141,25 +141,6 @@ shaderSet(Code) :-
 	edi:toolBrush(B),
 	brush:setShader(B, Code).
 
-
-%type :-
-%	edi:getTool(1);
-%	edi:toolBrush(B),
-%	brush:getID(B, Code),
-%	def:brushType(_Type, Code),
-%	mod:brushProp(type, _, _, _, select(Select)),
-%	gui:createPullDownSelect(0, 0, act(Val, actions:typeSet(Val)), Select, Code),
-%	gui:dlgMoveToMouse,
-%	gui:dlgDockUp.
-
-
-%typeSet(Code):-
-%	edi:getTool(1);
-%	def:brushType(Type, Code),
-%	edi:toolBrush(B),
-%	brush:setType(B, Code),
-%	mod:brushNew(Type).
-
 draw :-
 	edi:getTool(1);
 	edi:toolBrush(B),
@@ -194,57 +175,43 @@ materialSet(Code) :-
 	edi:toolBrush(B),
 	brush:setMaterial(B, Code).
 
-
-%class :-
-%	edi:getTool(1);
-%	edi:toolBrush(B),
-%	brush:getClass(B, Code),
-%	def:class(_Class, Code),
-%	mod:brushProp(class, _, _, _, select(Select)),
-%	gui:createPullDownSelect(0, 0, act(Val, actions:classSet(Val)), Select, Code),
-%	gui:dlgMoveToMouse,
-%	gui:dlgDockUp.
-%
-%classSet(Code) :-
-%	edi:getTool(1);
-%	def:class(_Class, Code),
-%	edi:toolBrush(B),
-%	brush:setClass(B, Code).
-
 layer(Param, Layer) :-
 	Layer >= 0,
 	def:layerMax(LayerMax),
 	Layer < LayerMax,
 	layerActivate(Param, Layer),
+	dlgMenuBar:layerUpdateButtons,
 	map:refresh.
-layer(_).
+layer(_,_).
 
 
-layerActivate(0, _).
 layerActivate(1, Layer) :-
-	edi:layerActive(Act),
-	(   Act == -1;
-	dlgMenuBar:layerSetButton(Act, 1),
-	dlgMenuBar:layerSetButton(Layer, 2)).
+	edi:toolBrush(B),
+	brush:setLayer(B, Layer).
 
 layerActivate(2, Layer) :-
-	edi:layerActive(Layer)
-	->  dlgMenuBar:layerSetButton(Layer, 2);
+	edi:toolBrush(B),
+	brush:getLayer(B, Layer);
+
 	edi:layerGet(Layer, State),
 	(   State =\= 0
 	->  NState = 0
 	;   NState = 1),
-	dlgMenuBar:layerSetButton(Layer, NState).
-
+	edi:layerSet(Layer, NState).
+layerActivate(_, _).
 
 
 fileNew :-
 	gui:msgBox("Question", "Do you want to create a new map?\n( current map will be lost if not saved )", icon_question, [btn("YES", actions:fileNewDo), btn("NO" , true)]).
 
-
-fileNewDo :-
+mapReset :-
 	map:reset,
 	roomNames:reset(false),
+	brush:eraseAll.
+
+
+fileNewDo :-
+	mapReset,
 	fileInfo.
 
 fileOpenMap :-
@@ -255,6 +222,7 @@ fileOpenMap :-
 	fileio:fixExt(ActFile, NamFile, nam),
 	fileio:fixExt(ActFile, PMPFile, pmp),
 	dlgInfo:setMapFile(PMPFile),
+	mapReset,
 	(   \+ gui:waitCall((fileio:mapLoad(ActFile), fileio:roomsLoadNames(NamFile)))
 	->  gui:msgBoxOk('Error', 'File open failed.\nFile might be incorrect or damaged.', icon_error)).
 fileOpenMap.
@@ -265,6 +233,7 @@ fileOpen :-
 	dlgInfo:mapFile(CurFile),
 	gui:winDlgOpenFile(CurFile, ActFile, pmp, 0),
 	dlgInfo:setMapFile(ActFile),
+	mapReset,
 	(   \+ gui:waitCall(fileio:mapLoad2(ActFile))
 	->  gui:msgBoxOk('Error', 'File open failed.\nFile might be incorrect or damaged.', icon_error)).
 fileOpen.

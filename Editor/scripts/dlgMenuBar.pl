@@ -1,5 +1,5 @@
 :- module(dlgMenuBar, [create/0,
-		      layerSetButton/2]).
+		      layerUpdateButtons/0]).
 
 create :-
 	edi:getScrW(BarW),
@@ -55,12 +55,11 @@ create :-
 		btn(script2,    "debug scripts", actions:script2),
 		btn(script3,	"user scripts", actScript3)],
 	foreach(member(B, Btns), addButton(B)),
-	core:dl(c1),
-	refresh,
 	Size = 16,
 	def:layerMax(LAYER_MAX),
 	X is BarW - 2 - Size * LAYER_MAX,
-	layerCreateButtons(0, LAYER_MAX, X, Size).
+	layerCreateButtons(0, LAYER_MAX, X, Size),
+	refresh.
 
 layerCreateButtons(LAYER_MAX, LAYER_MAX, _, _).
 layerCreateButtons(I, LAYER_MAX, X, Size) :-
@@ -91,6 +90,7 @@ addButton(btn(ID, Tooltip, Cmd)) :-
 
 % visibility dependences and repositioning
 refresh :-
+	layerUpdateButtons,
 	edi:getTool(Tool),
 	foreach(def:mb(t1, _, ID1), showButton(ID1, Tool)),
 	NTool is 1 - Tool,
@@ -130,25 +130,49 @@ layerCreateButton(Layer, X, Y) :-
 	gui:itemSetValue(1),
 	gui:itemSetCmdAction(actions:layer(_Params, Layer)).
 
-
-layerSetButton(Layer, Status) :-
+layerUpdateButtons :-
 	def:dlg(menuBar, MB),
 	dlg:select(MB),
-	Layer >= 0,
-	def:layerMax(LayerMax),
-	Layer < LayerMax,
-	def:mb(layer, ID_MB_LAYER),
-	ID is ID_MB_LAYER + Layer,
+	def:layerMax(Max),
+	edi:toolBrush(Br),
+	brush:getLayer(Br, Active),
+	def:mb(layer, ID),
+	layerUpdateButtons(0, Max, ID, Active),
+	edi:layerSet(Active, 1).
+
+layerUpdateButtons(L, L, _, _).
+layerUpdateButtons(L, LM, ID, Act) :-
+	layerUpdateButton(L, ID, Act),
+	L2 is L + 1,
+	layerUpdateButtons(L2, LM, ID, Act).
+
+
+layerUpdateButton(L, ID_MB_LAYER, Act) :-
+	ID is ID_MB_LAYER + L,
 	gui:itemSelect(ID),
+	edi:layerGet(L, Status),
 	gui:itemSetValue(Status),
-	layerButtonColor(Status, Color),
+	layerButtonColor(L, Act, Status, Color),
 	def:color(Color, COLOR),
-	gui:itemSetColor(0, COLOR),
-	edi:layerSet(Layer, Status).
-layerSetButton(_, _).
+	gui:itemSetColor(0, COLOR).
+
+layerButtonColor(L, L, _, layer2) :- !.
+layerButtonColor(_, _, 0, layer0).
+layerButtonColor(_, _, 1, layer1).
 
 
-layerButtonColor(0, layer0).
-layerButtonColor(1, layer1).
-layerButtonColor(2, layer2).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

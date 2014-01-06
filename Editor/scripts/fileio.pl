@@ -14,11 +14,9 @@ writet(S, T) :-
 	format(S, '.~n', []).
 
 mapLoad(File) :-
-	map:reset,
 	map:load(File).
 
 mapLoad2(File) :-
-	map:reset,
 	setup_call_cleanup(
 	    catch(open(File, read, S), Ex, (core:dl(Ex), fail)), loadTerms(S), close(S)).
 

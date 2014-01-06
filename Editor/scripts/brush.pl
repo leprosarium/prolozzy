@@ -7,7 +7,8 @@
 		 delete/1,
 		 eraseAll/0,
 		 clone/2,
-		 assign/2]).
+		 assign/2,
+		 paste/1]).
 
 
 varDef(id,	'').
@@ -130,22 +131,15 @@ set(Br, List) :-
 
 clone(Org, New) :-
 	getNonDefProps(Org, Props),
-	new(Props, New),
-	core:dl(cloned(Props)).
+	new(Props, New).
 
 assign(To, From) :-
 	getProps(From, Props),
 	delete(To),
-	core:dl(c(Props)),
-	setProps(To, Props),
-	core:dl(cloned(Props)).
+	setProps(To, Props).
 
-
-
-
-
-
-
-
-
-
+paste(Props) :-
+	new(Props, B),
+	edi:toolBrush(TB),
+	brush:getLayer(TB, L),
+	brush:setLayer(B, L).

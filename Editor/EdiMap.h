@@ -146,10 +146,10 @@ public:
 	void PartitionReset		()							{ PartitionDone(); PartitionInit(); }
 	int		PartitionCountW		()							{ return (m_mapw+PARTITION_CELSIZE-1) / PARTITION_CELSIZE; }
 	int		PartitionCountH		()							{ return (m_maph+PARTITION_CELSIZE-1) / PARTITION_CELSIZE; }
-		BOOL		PartitionAdd		(tBrush * b);			// add a brush index to partitioning; true if successful
+		bool		PartitionAdd		(tBrush * b);			// add a brush index to partitioning; true if successful
 		void		PartitionDel		(tBrush * b);			// del a brush index from partitioning; might need PartitionFix
 		int			PartitionGet		( iRect& rect, int* buffer, int buffersize );	// retrive all partitions that intersect a specified area
-		BOOL		PartitionRepartition();							// remove and reenter all brushes; ret ok (or false if some failures)
+		bool		PartitionRepartition();							// remove and reenter all brushes; ret ok (or false if some failures)
 		iRect		PartitionRect(int idx, int countw) const {  iV2 p1 = iV2(idx % countw, idx / countw) * PARTITION_CELSIZE; return iRect(p1, p1 + PARTITION_CELSIZE); }
 		
 		std::vector<cPartitionCel *> m_partition;					// partitions cels list

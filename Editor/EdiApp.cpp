@@ -50,6 +50,10 @@ PREDICATE_M(core, tickCount, 1)
 	return A1 = static_cast<int>(GetTickCount());
 }
 
+Editor::Layers::Layers()
+{
+	for (int i = 0; i<LAYER_MAX; i++) layers[i] = false;
+}
 
 Editor::Editor(HINSTANCE hinstance, LPCTSTR cmdline) : App(hinstance, cmdline)
 {
@@ -76,8 +80,7 @@ Editor::Editor(HINSTANCE hinstance, LPCTSTR cmdline) : App(hinstance, cmdline)
 	m_tool[TOOL_PAINT]	= new cEdiToolPaint();
 	m_tool[TOOL_EDIT]	= new cEdiToolEdit();
 
-	for(int i=0;i<LAYER_MAX;i++) m_layer[i]=1;
-	m_layer[0]=2;
+
 
 	m_drawstats = 0;
 
@@ -725,27 +728,21 @@ PREDICATE_M(edi, waitCursor, 1)
 PREDICATE_M(edi, layerGet, 2)
 {
 	int layer = A1;
-	if(layer < 0 || layer >= LAYER_MAX) 
+	if(!Editor::app->layers.IsValid(layer))
 		throw PlDomainError ("invalid layer index", A1);
-	return A2 = Editor::app->LayerGet(layer);
+	return A2 = Editor::app->layers.Get(layer);
 }
 
 PREDICATE_M(edi, layerSet, 2)
 {
 	int layer = A1;
-	if(layer < 0 || layer >= LAYER_MAX) 
+	if(!Editor::app->layers.IsValid(layer))
 		throw PlDomainError("invalid layer index", A1);
-	Editor::app->LayerSet(layer, A2);
+	Editor::app->layers.Set(layer, A2);
 	return true;
 }
 
-PREDICATE_M(edi, layerActive, 1)
-{
-	return A1 = Editor::app->LayerActive();
-}
-
 // tool brush ..............................................................................
-
 
 PREDICATE_M(edi, toolBrush, 1)
 {

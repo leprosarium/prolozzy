@@ -12,15 +12,6 @@
 #include "DizScript.h"
 #include <vector>
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// GLOBALS
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-#define DRAWMODE_NORMAL					0			// normal
-#define DRAWMODE_MATERIAL				1			// show materials colors
-#define DRAWMODE_DENSITY				2			// show materials densities
-#define DRAWMODE_NONE					3			// don't draw
-#define DRAWMODE_MAX					4			// dummy
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // MATERIALS
@@ -64,7 +55,7 @@ class cDizGame
 	PlAtom exit;				// must exit game
 	PlAtom refresh;				// refresh room material map
 	MatMap matMap;
-	int	drawmode;		// 0=imgmap (normal), 1=matmap, 2=densitymap, 3=none
+	DrawMode drawmode;
 
 	bool CheckVersion();
 public:

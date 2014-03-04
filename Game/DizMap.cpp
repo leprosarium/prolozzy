@@ -224,7 +224,7 @@ bool cDizMap::Reload()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // DRAW ROOM
 //////////////////////////////////////////////////////////////////////////////////////////////////
-void cDizMap::DrawRoom( const iV2 & rp, int layer, int mode, const iV2 & ofs)
+void cDizMap::DrawRoom( const iV2 & rp, int layer, DrawMode mode, const iV2 & ofs)
 {
 	Blend shader;
 	dword color;
@@ -247,16 +247,16 @@ void cDizMap::DrawRoom( const iV2 & rp, int layer, int mode, const iV2 & ofs)
 
 		tBrush & brush = * brushes.Get(brushidx);
 
-		if( mode==DRAWMODE_NORMAL	&& (brush.draw&1)==0 ) continue; // don't draw
-		if( mode==DRAWMODE_MATERIAL && (brush.draw&2)==0 ) continue; // don't write material
-		if( mode==DRAWMODE_DENSITY  && (brush.draw&2)==0 ) continue; // don't write material
+		if( mode == DrawMode::Normal   && (brush.draw&1)==0 ) continue; // don't draw
+		if( mode == DrawMode::Material && (brush.draw&2)==0 ) continue; // don't write material
+		if( mode == DrawMode::Density  && (brush.draw&2)==0 ) continue; // don't write material
 		
 		if( brush.layer != layer ) continue; // filter layer
 
 		iV2 p = brush.pos - rp * Room::Size + ofs;
 		int frame = brush.frame;
 
-		if(mode==DRAWMODE_MATERIAL)
+		if(mode == DrawMode::Material)
 		{
 			// use special color and shader
 			color	= brush.color;
@@ -269,7 +269,7 @@ void cDizMap::DrawRoom( const iV2 & rp, int layer, int mode, const iV2 & ofs)
 			brush.shader = shader;
 		}
 		else
-		if(mode==DRAWMODE_DENSITY)
+		if(mode == DrawMode::Density)
 		{
 			// use special color and shader
 //			dword matd_color[MATD_MAX] = {0xff000000,0xff606060,0xffa0a0a0,0xffffffff};
@@ -320,8 +320,8 @@ void cDizMap::PartitionMake()
 
 void cDizMap::Resize( const iV2 & sz )
 {
-	_size = iV2(std::min(std::max(sz.x, MAP_SIZEMIN), MAP_SIZEMAX),
-				std::min(std::max(sz.y, MAP_SIZEMIN), MAP_SIZEMAX)) / Room::Size;
+	_size = iV2(std::min(std::max(sz.x, SizeMin), SizeMax),
+				std::min(std::max(sz.y, SizeMin), SizeMax)) / Room::Size;
 
 	Rooms.clear();
 	Rooms.resize(size().x * size().y);

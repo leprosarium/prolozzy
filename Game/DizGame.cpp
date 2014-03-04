@@ -71,7 +71,7 @@ PREDICATE_M(game, vibrate, 3)
 cDizGame g_game;
 
 
-cDizGame::cDizGame() : 	drawmode(DRAWMODE_NORMAL),
+cDizGame::cDizGame() : 	drawmode(DrawMode::Normal),
 						_void("void"),	soft("soft"), hard("hard"), jump("jump"), none("none"), start("start"), exit("exit"), refresh("refresh"),
 						screenSize(GAME_SCRW, GAME_SCRH),
 						screenSizeBorder(GAME_SCRWB, GAME_SCRH),
@@ -253,7 +253,7 @@ bool cDizGame::Update()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cDizGame::Draw()
 {
-	if(drawmode == DRAWMODE_NONE) return;
+	if(drawmode == DrawMode::None) return;
 	// visible room area
 	fRect rect( g_paint.scrPos(viewPos), g_paint.scrPos(viewPos + Room::Size));
 
@@ -343,9 +343,15 @@ void cDizGame::Resize()
 
 void cDizGame::NextDrawMode()
 {
-	drawmode++;
-	if(drawmode == DRAWMODE_MAX) drawmode=0;
-	elog::app() << "draw mode " << drawmode << std::endl;
+	if (drawmode == DrawMode::None)
+		drawmode = DrawMode::Normal;
+	else if (drawmode == DrawMode::Normal)
+		drawmode ==DrawMode::Material;
+	else if (drawmode == DrawMode::Material)
+		drawmode = DrawMode::Density;
+	else
+		drawmode = DrawMode::None;
+	elog::app() << "draw mode " << static_cast<int>(drawmode) << std::endl;
 }
 
 
@@ -395,7 +401,7 @@ void MatMap::Update(const iV2 & room, bool full)
 					// clip here to avoid duplicate draw (brushes shared in neighbour rooms)
 					R9_SetClipping(fRect(rxW, ryH, rxW + Size.x, ryH + Size.y));
 					iV2 rr = r - 1;
-					g_map.DrawRoom(room + rr, layer, DRAWMODE_MATERIAL, iV2(rxW, ryH));
+					g_map.DrawRoom(room + rr, layer, DrawMode::Material, iV2(rxW, ryH));
 				}
 			}
 		}
@@ -403,7 +409,7 @@ void MatMap::Update(const iV2 & room, bool full)
 		{
 			// classic style
 			R9_SetClipping( fRect(Size - Room::Border, Rect.p2 + Room::Border) );
-			g_map.DrawRoom( room, layer, DRAWMODE_MATERIAL, Size);
+			g_map.DrawRoom( room, layer, DrawMode::Material, Size);
 		}
 	}
 	g_paint.EndSoftwareRendering();

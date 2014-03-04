@@ -10,9 +10,6 @@
 #include <vector>
 #include <algorithm>
 
-#define MAP_SIZEMIN		128
-#define MAP_SIZEMAX		100000
-
 class Room
 {
 public:
@@ -29,6 +26,8 @@ public:
 	static iRect Rect(const iV2 & r) { return iRect(r * Size, (r + 1) * Size); } 
 };
 
+enum class DrawMode { Normal, Material, Density, None };
+
 typedef Indexed<tBrush *, std::string> Brushes;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -40,6 +39,9 @@ class cDizMap
 
 	std::vector<Room> Rooms;
 public:
+	static const int SizeMin = 128;
+	static const int SizeMax = 100000;
+
 	PlFunctor brush;
 	bool UnifyBrush(PlTerm t, tBrush * b);
 	tBrush * brushPtrNoEx(PlTerm t) { return reinterpret_cast<tBrush *>(static_cast<void *>(t)); }
@@ -52,7 +54,7 @@ public:
 	bool Reload	();					// reload map for debug purposes
 
 	// draw
-	void DrawRoom(const iV2 & rp, int layer, int mode, const iV2 & ofs);	// layer=0..8; mode: 0=normal, 1=material, 2=density
+	void DrawRoom(const iV2 & rp, int layer, DrawMode mode, const iV2 & ofs);	// layer=0..8; mode: 0=normal, 1=material, 2=density
 
 	Room & GetRoom(int idx) { return Rooms[idx]; }
 	Room & GetRoom(int rx, int ry) { return GetRoom(RoomIdx(rx, ry)); }

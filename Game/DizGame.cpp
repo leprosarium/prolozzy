@@ -346,7 +346,7 @@ void cDizGame::NextDrawMode()
 	if (drawmode == DrawMode::None)
 		drawmode = DrawMode::Normal;
 	else if (drawmode == DrawMode::Normal)
-		drawmode ==DrawMode::Material;
+		drawmode = DrawMode::Material;
 	else if (drawmode == DrawMode::Material)
 		drawmode = DrawMode::Density;
 	else

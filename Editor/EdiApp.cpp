@@ -52,7 +52,7 @@ PREDICATE_M(core, tickCount, 1)
 
 Editor::Layers::Layers()
 {
-	for (int i = 0; i<LAYER_MAX; i++) layers[i] = false;
+	for (int i = 0; i<LAYER_MAX; i++) layers[i] = true;
 }
 
 Editor::Editor(HINSTANCE hinstance, LPCTSTR cmdline) : App(hinstance, cmdline)

@@ -25,23 +25,14 @@ static ssize_t Log_write(void *handle, char *buffer, size_t size)
 
 cDizScript g_script;
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// DizScript class
-//////////////////////////////////////////////////////////////////////////////////////////////////
-cDizScript::cDizScript()
+bool cDizScript::Init()
 {
-	
 	Soutput->functions->write = &Log_write;
 	Serror->functions->write = &Log_write;
 
-	Soutput->handle = reinterpret_cast<void *>(& elog::scr());
-	Serror->handle  = reinterpret_cast<void *>(& elog::app());
-
-}
-
-bool cDizScript::Init()
-{
-
+	Soutput->handle = reinterpret_cast<void *>(&elog::scr());
+	Serror->handle = reinterpret_cast<void *>(&elog::app());
+	
 	module = PL_new_module(PL_new_atom("user"));
 	_event= PL_pred(PL_new_functor(PL_new_atom("event"), 1), PL_new_module(PL_new_atom("handlers")));
 

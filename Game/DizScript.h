@@ -84,7 +84,6 @@ class cDizScript
 	void CallHandler (functor_t handler, const PlTermv &av = 0);
 	
 public:
-	cDizScript();
 	bool Init();
 	void Start() { gameStart(); }
 

@@ -190,8 +190,7 @@ userUpdateEdit :-
 	format(string(Bar1), '  selected ~d', [Select]),
 	dlgStatusBar:set(1, Bar1),
 	dlgStatusBar:set(3, ''),
-	edi:getAxeX(AxeX),
-	edi:getAxeY(AxeY),
+	edi:getAxe(AxeX, AxeY),
 	updateRoomInfo(AxeX, AxeY).
 
 updateRoomInfo(X, Y) :-

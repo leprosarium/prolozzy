@@ -92,19 +92,20 @@ addButton(btn(ID, Tooltip, Cmd)) :-
 refresh :-
 	layerUpdateButtons,
 	edi:getTool(Tool),
-	foreach(def:mb(t1, _, ID1), showButton(ID1, Tool)),
-	NTool is 1 - Tool,
-	foreach(def:mb(t2, _, ID2), showButton(ID2, NTool)).
-
-
-showButton(Id, Show) :-
 	def:dlg(menuBar, MB),
 	dlg:select(MB),
-	gui:itemSelect(Id),
-	gui:itemSetHidden(Show),
-	gui:itemSetDisable(Show),
+	hideToolButtons(Tool, 0),
+	actions:nextTool(Tool, NTool),
+	hideToolButtons(NTool, 1),
 	reposition.
 
+hideToolButtons(Tool, Hide) :-
+	foreach(def:mb(Tool, _, Id), hideButton(Id, Hide)).
+
+hideButton(Id, Hide) :-
+	gui:itemSelect(Id),
+	gui:itemSetHidden(Hide),
+	gui:itemSetDisable(Hide).
 
 % reposition the visible buttons
 reposition :-

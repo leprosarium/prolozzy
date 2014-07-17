@@ -50,6 +50,38 @@ PREDICATE_M(core, tickCount, 1)
 	return A1 = static_cast<int>(GetTickCount());
 }
 
+Editor::Tools::Tools()
+{
+	tools.push_back(new cEdiToolPaint());
+	tools.push_back(new cEdiToolEdit());
+	active = tools.front();
+}
+
+Editor::Tools::~Tools()
+{
+	for (auto t : tools) delete t;
+}
+
+void Editor::Tools::Init()
+{
+	active = tools.front();
+	active->Switch(true);
+}
+
+void Editor::Tools::Done()
+{
+	active->Switch(false);
+}
+
+bool Editor::Tools::OnClose()
+{
+	for (auto t : tools)
+		if (t->OnClose())
+			return true;
+	active->Reset();
+	return false;
+}
+
 Editor::Layers::Layers()
 {
 	for (int i = 0; i<LAYER_MAX; i++) layers[i] = true;
@@ -76,12 +108,6 @@ Editor::Editor(HINSTANCE hinstance, LPCTSTR cmdline) : App(hinstance, cmdline)
 	m_color[EDI_COLORGRID3-EDI_COLOR]		= 0x80ffff00;
 	m_color[EDI_COLORMAP-EDI_COLOR]			= 0xff000000;
 	
-	m_toolcrt			= TOOL_PAINT;
-	m_tool[TOOL_PAINT]	= new cEdiToolPaint();
-	m_tool[TOOL_EDIT]	= new cEdiToolEdit();
-
-
-
 	m_drawstats = 0;
 
 	m_mscrollx = 0;
@@ -96,8 +122,6 @@ Editor::~Editor()
 {
 	Done();
 	app = nullptr;
-	delete m_tool[TOOL_PAINT];
-	delete m_tool[TOOL_EDIT];
 }
 
 void Editor::Init()
@@ -117,11 +141,7 @@ void Editor::Init()
 	BOOL ret = GUIInit();
 	g_gui->ScriptPrologDo("editor:init");
 
-	// tools
-	m_tool[TOOL_PAINT]->Init();
-	m_tool[TOOL_EDIT]->Init();
-	m_toolcrt = TOOL_PAINT;
-	m_tool[m_toolcrt]->Switch(TRUE);
+	tools.Init();
 
 	// load param
 	if(CmdLine().find("pmp") != std::string::npos)
@@ -217,10 +237,7 @@ void Editor::Done()
 	// script exit
 	if(g_gui) g_gui->ScriptPrologDo("editor:done");
 
-	// tools
-	m_tool[m_toolcrt]->Switch(FALSE);
-	m_tool[TOOL_PAINT]->Done();
-	m_tool[TOOL_EDIT]->Done();
+	tools.Done();
 	
 	// editor
 	GUIDone();
@@ -241,7 +258,7 @@ void Editor::OnActivate(bool active)
 		eInput::Acquire();
 	else
 		eInput::Unacquire();
-	m_tool[m_toolcrt]->Reset();
+	tools()->Reset();
 	if(g_gui) g_gui->ToolTip.clear();
 	if(g_map.m_scrolling)
 	{
@@ -254,14 +271,23 @@ void Editor::OnActivate(bool active)
 bool Editor::OnClose()
 {
 	//if(g_gui->m_isbusy) return; // can't close now !
-	int mode = m_tool[m_toolcrt]->m_mode;
-	if(m_toolcrt==0 && mode==1) return false;
-	if(m_toolcrt==1 && (mode==1||mode==2)) return false;
-	m_tool[m_toolcrt]->Reset();
+	if (tools.OnClose())
+		return false;
 	g_gui->ScriptPrologDo("editor:close");
 	g_gui->m_isbusy = TRUE; // avoid tools problems
 	return false;
 }
+
+void Editor::Tools::Set(PlAtom tool)
+{
+	auto i = std::find_if(tools.begin(), tools.end(), [tool](cEdiTool * e) { return e->name == tool; });
+	if (i == tools.end()) i = tools.begin();
+	if (active == *i) return;
+	active->Switch(false);
+	active = *i;
+	active->Switch(true);
+}
+
 
 void Editor::OnMsg(UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -360,20 +386,20 @@ bool Editor::Update()
 	// tool
 	if(!g_gui->m_isbusy && !map_isbusy)
 	{
-		m_tool[m_toolcrt]->Update( dtime );
-		tool_isbusy = m_tool[m_toolcrt]->m_isbusy;
+		tools()->Update( dtime );
+		tool_isbusy = tools()->IsBusy();
 	}
 	else
 	if(!gui_wasbusy)
 	{
-		m_tool[m_toolcrt]->Reset(); // reset tool mode
+		tools()->Reset(); // reset tool mode
 		tool_isbusy = false;
 	}
 	gui_wasbusy = g_gui->m_isbusy;
 
 	// statusbar
 	g_gui->ScriptPrologDo("mod", "userUpdate");
-	m_tool[m_toolcrt]->UserUpdate();
+	tools()->UserUpdate();
 
 	// gui
 	g_gui->ReadInput();
@@ -409,7 +435,7 @@ void Editor::Draw()
 		// tool
 		R9_SetClipping( fRect(g_map.m_viewx, g_map.m_viewy, g_map.m_viewx+g_map.m_vieww, g_map.m_viewy+g_map.m_viewh) );
 		if(g_gui && !g_gui->m_isbusy)
-			m_tool[m_toolcrt]->Draw();
+			tools()->Draw();
 		R9_ResetClipping();
 
 		// gui
@@ -439,20 +465,6 @@ void Editor::DrawStats()
 	R9_DrawText( p + 2, str, 0xffffff80 );
 	R9_Flush();
 }
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// TOOLS
-//////////////////////////////////////////////////////////////////////////////////////////////////
-void Editor::ToolSet( int tool )
-{
-	if(tool<0 || tool>=TOOL_MAX) tool=0;
-	if(tool==m_toolcrt) return;
-	m_tool[m_toolcrt]->Switch(FALSE);
-	m_toolcrt = tool;
-	m_tool[m_toolcrt]->Switch(TRUE);
-}
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // UTILS
@@ -551,7 +563,7 @@ PREDICATE_M(edi, tileReload, 0)
 
 PREDICATE_M(edi, getTool, 1)
 {
-	return A1 = Editor::app->m_toolcrt;
+	return A1 = Editor::app->tools()->name;
 }
 
 PREDICATE_M(edi, getAxes, 1)
@@ -584,15 +596,10 @@ PREDICATE_M(edi, getScrH, 1)
 	return A1 = Editor::app->GetScrH();
 }
 
-
-PREDICATE_M(edi, getAxeX, 1)
+PREDICATE_M(edi, getAxe, 2)
 {
-	return A1 = Editor::app->GetAxeX();
-}
-
-PREDICATE_M(edi, getAxeY, 1)
-{
-	return A1 = Editor::app->GetAxeY();
+	iV2 axe = Editor::app->GetAxe();
+	return (A1 = axe.x) && (A2 = axe.y);
 }
 
 PREDICATE_M(edi, getBrushRect, 1)
@@ -632,7 +639,7 @@ PREDICATE_M(edi, getColorMap, 1)
 
 PREDICATE_M(edi, setTool, 1)
 {
-	Editor::app->ToolSet(A1);
+	Editor::app->tools.Set(static_cast<PlAtom>(A1));
 	return true;
 }
 
@@ -751,13 +758,13 @@ PREDICATE_M(edi, toolBrush, 1)
 
 PREDICATE_M(edi, toolReset, 0)
 {
-	Editor::app->m_tool[Editor::app->m_toolcrt]->Reset(); 
+	Editor::app->tools()->Reset(); 
 	return true; 
 }
 
 PREDICATE_M(edi, toolCommand, 1)
 {
-	Editor::app->m_tool[Editor::app->m_toolcrt]->Command(A1); 
+	Editor::app->tools()->Command(A1); 
 	return true; 
 }
 

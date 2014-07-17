@@ -182,20 +182,20 @@ mb(t0, menu, 1100).
 mb(t0, view, 1101).
 mb(t0, tool, 1102).
 
-mb(t1, props, 1103).
-mb(t1, tile, 1104).
-mb(t1, mapping, 1105).
-mb(t1, flip, 1106).
-mb(t1, color, 1107).
-mb(t1, shader, 1108).
-mb(t1, draw, 1110).
-mb(t1, material, 1111).
+mb(paint, props, 1103).
+mb(paint, tile, 1104).
+mb(paint, mapping, 1105).
+mb(paint, flip, 1106).
+mb(paint, color, 1107).
+mb(paint, shader, 1108).
+mb(paint, draw, 1110).
+mb(paint, material, 1111).
 
-mb(t2, search, 1113).
-mb(t2, change, 1114).
-mb(t2, script, 1115).
-mb(t2, script2, 1116).
-mb(t2, script3, 1117).
+mb(edit, search, 1113).
+mb(edit, change, 1114).
+mb(edit, script, 1115).
+mb(edit, script2, 1116).
+mb(edit, script3, 1117).
 
 %mb(last, 1118).
 

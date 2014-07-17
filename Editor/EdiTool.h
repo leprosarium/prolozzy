@@ -7,6 +7,8 @@
 #include "EdiDef.h"
 #include "EdiPaint.h"
 
+#include "SWI-cpp-m.h"
+
 #define TOOLCMD_PICKBRUSH	0
 #define TOOLCMD_PICKCOLOR	1
 #define TOOLCMD_TOFRONT		2
@@ -20,81 +22,67 @@ class cEdiTool
 {
 public:
 	cEdiTool(const std::string & name);
-virtual				~cEdiTool			()							{};
+	virtual ~cEdiTool() {};
+	virtual void Switch(bool) { Reset(); }	// called when switched on or off
+	virtual	void Reset() = 0;				// always interrupt tool and set it in default mode
+	virtual	void Command(int cmd) {};		// general command
+	virtual void Update(float dtime) = 0;	// update tool stuff
+	virtual void Draw() const = 0;				// draw tool stuff
+	virtual	void UserUpdate() = 0;
+	virtual bool OnClose() const = 0;
+	virtual bool IsBusy() const = 0;
 
-virtual void		Init				()							{}; // first time init
-virtual void		Done				()							{}; // last time done
-virtual void		Switch				( BOOL on )					{}; // called when switched on or off
-virtual	void		Reset				()							{ m_mode=0; } // always interrupt tool and set it in default mode
-virtual	void		Command				( int cmd )					{}; // general command
-
-virtual void		Update				( float dtime )				{}; // update tool stuff
-virtual void		Draw				()							{}; // draw tool stuff
-
-virtual	void UserUpdate() {};
-
-
-
-	std::string m_name;	// tool name
-		int			m_mode;				// tool mode (0=default)
-		int			m_ax,m_ay;			// axes
-		bool		m_isbusy;			// tool is busy - don't mess with it :)
+	iV2 axe;
+	PlAtom name;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cEdiToolPaint
-// mode -1=none, 0=normal, 1=paint, 2=pick menu, 3=pick
 //////////////////////////////////////////////////////////////////////////////////////////////////
 class cEdiToolPaint : public cEdiTool
 {
 	tBrush * picked;
+	enum class Mode {None, Normal, Paint, PickMenu, Pick} mode;
 public:
 	cEdiToolPaint();
-
-virtual void		Switch				( BOOL on );
-virtual	void		Reset				();
-virtual	void		Command				( int cmd );
-
-virtual	void UserUpdate();
-
-virtual void		Update				( float dtime );
-virtual void		Draw				();
-
-
-
+	virtual	void Reset();
+	virtual	void Command(int cmd);
+	virtual	void UserUpdate();
+	virtual void Update(float dtime);
+	virtual void Draw() const;
+	virtual bool OnClose() const { return mode == Mode::Paint; }
+	virtual bool IsBusy() const { return mode == Mode::Paint || mode == Mode::PickMenu || mode == Mode::Pick; }
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cEdiToolEdit
-// mode -1=none, 0=normal, 1=select, 2=move
 //////////////////////////////////////////////////////////////////////////////////////////////////
 class cEdiToolEdit : public cEdiTool
 {
+	enum class Mode {Normal, Select, Move} mode;
 public:
-					cEdiToolEdit		();
-virtual void		Done				();
-virtual void		Switch				( BOOL on );
-virtual	void		Reset				();
+	cEdiToolEdit();
+	virtual	void Reset();
+	virtual void Update(float dtime);
+	virtual void Draw() const;
+	virtual	void UserUpdate();
+	virtual bool OnClose() const { return mode == Mode::Select || mode == Mode::Move; }
+	virtual bool IsBusy() const { return mode != Mode::Normal; }
 
-virtual void		Update				( float dtime );
-virtual void		Draw				();
-virtual	void UserUpdate();
-		void		BrushSelect			();					// select brushes in m_rect using m_selop
-		void		BrushDeselect		();					// select brushes in m_rect using m_selop
-		void		BrushDeleteSelected	();
-		void		BrushCopy			();
-		void		BrushPaste			();
-		void		BrushMoveStart		();
-		void		BrushMove			();
+	void BrushSelect();					// select brushes in m_rect using m_selop
+	void BrushDeselect();				// select brushes in m_rect using m_selop
+	void BrushDeleteSelected();
+	void BrushCopy();
+	void BrushPaste();
+	void BrushMoveStart();
+	void BrushMove();
 
-		iRect		m_rect;
-		int			m_selop;								// select operation -1=sub, 0=new, 1=add
-		iV2			m_move;			// movement start
-		iV2			m_moved;		// movement offset
+	iRect rect;
+	enum class SelOp { Sub, New, Add } selop;		// select operation
+	iV2 move;		// movement start
+	iV2 moved;		// movement offset
 
-		std::vector<tBrush *> m_drag;	 // drag list
-
-
+	std::vector<tBrush *> drag;	 // drag list
 };
 
 #endif

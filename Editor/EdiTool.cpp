@@ -15,33 +15,27 @@
 {											\
 	if(Editor::app->m_snap)					\
 	{										\
-		x=SNAP(x,Editor::app->m_gridsize);		\
-		y=SNAP(y,Editor::app->m_gridsize);		\
+		x=SNAP(x,Editor::app->m_gridsize);	\
+		y=SNAP(y,Editor::app->m_gridsize);	\
 	}										\
 }
 
-cEdiTool::cEdiTool(const std::string & name) : m_name(name), m_mode(), m_ax(), m_ay(), m_isbusy()
+cEdiTool::cEdiTool(const std::string & name) : name(name)
 {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cEdiToolPaint
-// mode: 0=none, 1=paint, 2=alt pick/del
 //////////////////////////////////////////////////////////////////////////////////////////////////
-cEdiToolPaint::cEdiToolPaint() : cEdiTool("PAINT"), picked()
+cEdiToolPaint::cEdiToolPaint() : cEdiTool("paint"), picked(), mode(Mode::Normal)
 {
 
-}
-
-void cEdiToolPaint::Switch( BOOL on )
-{
-	Reset();
 }
 
 void cEdiToolPaint::Reset()
 {
-	if( m_mode==2 )	return;
-	m_mode=-1; // draw trick
+	if (mode == Mode::PickMenu)	return;
+	mode = Mode::None; // draw trick
 }
 
 void cEdiToolPaint::Update( float dtime )
@@ -50,7 +44,7 @@ void cEdiToolPaint::Update( float dtime )
 	int mx = Editor::app->GetMouseX() - VIEWX;
 	int my = Editor::app->GetMouseY() - VIEWY;
 	BOOL inview = INVIEW(mx,my);
-	if(!inview && !m_isbusy) return;
+	if(!inview && !IsBusy()) return;
 
 	bool alt = einput->alt();
 	bool ctrl = einput->ctrl();
@@ -58,9 +52,9 @@ void cEdiToolPaint::Update( float dtime )
 	picked = nullptr; // clear picked brush
 	tBrush * brush = & Editor::app->m_brush;
 
-	if( m_mode==-1 ) m_mode=0; // draw trick
+	if( mode == Mode::None ) mode = Mode::Normal; // draw trick
 
-	if( m_mode==0 )
+	if( mode == Mode::Normal )
 	{
 		int bw = static_cast<int>(brush->mapWith()); // brush.m_data[BRUSH_MAP+2]-brush.m_data[BRUSH_MAP+0];
 		int bh = static_cast<int>(brush->mapHeight()); // brush.m_data[BRUSH_MAP+3]-brush.m_data[BRUSH_MAP+1];
@@ -73,23 +67,17 @@ void cEdiToolPaint::Update( float dtime )
 		my = my-bh;
 		SNAP2GRID(mx,my); // grid snap
 
-		brush->pos = iV2(mx, my);
+		axe = iV2(mx, my);
+		brush->pos = axe;
 		brush->size = iV2(bw, bh);
 
-		if(einput->mouseValue(0)) m_mode=1;
-		else
-		if(einput->mouseValue(1)) m_mode=2;
-		else
-		if(einput->mouseValue(2) || alt) m_mode=3;
-		else
-//		if(ctrl && I9_GetKeyDown(I9K_Z)) Editor::app->Undo();
+		if(einput->mouseValue(0)) mode = Mode::Paint;
+		else if(einput->mouseValue(1)) mode = Mode::PickMenu;
+		else if(einput->mouseValue(2) || alt) mode = Mode::Pick;
 
-		// axes
-		m_ax = mx;
-		m_ay = my;
 	}
 	else
-	if( m_mode==1 )
+	if( mode == Mode::Paint)
 	{
 		VIEW2CAM(mx,my);
 		if(mx>CAMX2) mx=CAMX2;
@@ -112,9 +100,7 @@ void cEdiToolPaint::Update( float dtime )
 
 		brush->size = iV2(bw, bh);
 
-		// axes
-		m_ax = brush->pos.x + bw;
-		m_ay = brush->pos.y + bh;
+		axe = brush->pos + brush->size;
 
 		if(!einput->mouseValue(0)) 
 		{
@@ -131,11 +117,11 @@ void cEdiToolPaint::Update( float dtime )
 					g_map.PartitionAdd(b);
 				}
 			}
-			m_mode=0;
+			mode = Mode::Normal;
 		}
 	}
 	else
-	if( m_mode==2 || m_mode==3 ) // pick mode
+	if(mode == Mode::PickMenu || mode == Mode::Pick) // pick mode
 	{
 		VIEW2CAM(mx,my);
 		if(mx<CAMX1) mx=CAMX1;
@@ -144,13 +130,11 @@ void cEdiToolPaint::Update( float dtime )
 		if(my>CAMY2) my=CAMY2;
 		SNAP2GRID(mx,my); // grid snap
 
-		//axes
-		m_ax = mx;
-		m_ay = my;
+		axe = iV2(mx, my);
 
 		picked = g_map.BrushPick(mx,my);
 	
-		if(m_mode==2 && !einput->mouseValue(1))
+		if(mode == Mode::PickMenu && !einput->mouseValue(1))
 		{
 			if(picked)
 			{
@@ -158,10 +142,10 @@ void cEdiToolPaint::Update( float dtime )
 				g_map.UnifyBrush(t[0], picked);
 				g_gui->ScriptPrologDo("actions", "toolPickMenu", t);
 			}
-			m_mode=-1; // draw trick
+			mode = Mode::None; // draw trick
 		}
 		else
-		if(m_mode==3 && !einput->mouseValue(2) && !alt)
+		if(mode == Mode::Pick && !einput->mouseValue(2) && !alt)
 		{
 			if(picked)
 			{
@@ -171,23 +155,21 @@ void cEdiToolPaint::Update( float dtime )
 				g_gui->ScriptPrologDo("brush", "assign", t);				
 				brush = picked;
 			}
-			m_mode=-1; // draw trick
+			mode = Mode::None; // draw trick
 		}
 		else
 		{
 			// tooltip
 			std::ostringstream o;
-			o << (m_mode==2 ? "menu" : "pick");
+			o << (mode == Mode::PickMenu ? "menu" : "pick");
 			if(picked)
 				o << "#" <<picked;
 			g_gui->ToolTip = o.str();
 		}
 	}
-
-	m_isbusy = (m_mode==1 || m_mode==2 || m_mode==3);
 }
 
-void cEdiToolPaint::Draw()
+void cEdiToolPaint::Draw() const
 {
 	int mx = Editor::app->GetMouseX() - VIEWX;
 	int my = Editor::app->GetMouseY() - VIEWY;
@@ -195,10 +177,9 @@ void cEdiToolPaint::Draw()
 
 	tBrush * brush = & Editor::app->m_brush;
 
-	// axes
-	g_map.DrawAxes(m_ax,m_ay);
+	g_map.DrawAxes(axe.x, axe.y);
 
-	if(m_mode==0||m_mode==1)
+	if(mode == Mode::Normal || mode == Mode::Paint)
 	{
 		tBrush tmp = *brush;
 		PlTermv br(1);
@@ -211,7 +192,7 @@ void cEdiToolPaint::Draw()
 		g_paint.DrawBrushAt( &tmp, x, y, (float)CAMZ, TRUE ); // animated
 	}
 	else
-	if( (m_mode==2 || m_mode==3) && picked )
+	if( (mode == Mode::PickMenu || mode == Mode::Pick) && picked )
 	{
 		int x = CAMZ*(picked->pos.x - CAMX1) + VIEWX;
 		int y = CAMZ*(picked->pos.y - CAMY1) + VIEWY;
@@ -261,40 +242,29 @@ void cEdiToolPaint::Command( int cmd )
 void cEdiToolPaint::UserUpdate()
 {
 	PlTermv br(1);
-	g_map.UnifyBrush(br[0], (m_mode==2 || m_mode==3) && picked ? picked : & Editor::app->m_brush);
+	g_map.UnifyBrush(br[0], (mode == Mode::PickMenu || mode == Mode::Pick) && picked ? picked : & Editor::app->m_brush);
 	g_gui->ScriptPrologDo("mod", "userUpdatePaint", br);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cEdiToolEdit
-// mode: 0=none, 1=select, 2=move
 //////////////////////////////////////////////////////////////////////////////////////////////////
-cEdiToolEdit::cEdiToolEdit() : cEdiTool("EDIT"), m_selop()
+cEdiToolEdit::cEdiToolEdit() : cEdiTool("edit"), selop(SelOp::New), mode(Mode::Normal)
 {
-}
-
-void cEdiToolEdit::Done()
-{
-	m_drag.clear();
-}
-
-void cEdiToolEdit::Switch( BOOL on )
-{
-	Reset();
 }
 
 void cEdiToolEdit::Reset()
 {
-	if(m_mode==2)
+	if(mode == Mode::Move)
 	{
-		m_drag.clear();
+		drag.clear();
 		g_map.m_hideselected = FALSE;
 		g_map.m_refresh = TRUE;
 		Editor::app->SetCursor(App::Cursor::Arrow);
 	}
-	m_mode = 0;
-	m_selop = 0;
-	m_rect = iRect(0,0,0,0);
+	mode = Mode::Normal;
+	selop = SelOp::New;
+	rect = iRect();
 }
 
 void cEdiToolEdit::Update( float dtime )
@@ -318,25 +288,25 @@ void cEdiToolEdit::Update( float dtime )
 	bool alt	= einput->alt() || einput->mouseValue(2);
 	bool ctrl	= einput->ctrl();
 	
-	m_selop = 0;
-	if( shift )	m_selop++;
-	if( alt )	m_selop--;
+	selop = shift ?
+		(alt ? SelOp::New : SelOp::Add) :
+		(alt ? SelOp::Sub : SelOp::New);
 
-	if( m_mode==0 && inview )
+	if( mode == Mode::Normal && inview )
 	{
 		if(einput->isMouseDown(0))
 		{
-			if(m_selop==0) BrushDeselect();
-			m_rect.p1 = m_rect.p2 = iV2(mx, my);
-			m_mode=1;
+			if(selop == SelOp::New) BrushDeselect();
+			rect.p1 = rect.p2 = iV2(mx, my);
+			mode = Mode::Select;
 		}
 		else
 		if(einput->isMouseDown(1))
 		{
-			m_move = iV2(mx, my);
-			m_moved = 0;
+			move = iV2(mx, my);
+			moved = 0;
 			BrushMoveStart();
-			m_mode=2;
+			mode = Mode::Move;
 			Editor::app->SetCursor(App::Cursor::Hand);
 		}
 		else
@@ -349,72 +319,68 @@ void cEdiToolEdit::Update( float dtime )
 		if(ctrl && einput->isKeyDown(DIK_X)) { BrushCopy(); BrushDeleteSelected(); }
 	}	
 	else
-	if( m_mode==1 )
+	if( mode == Mode::Select)
 	{
-		m_rect.p2.x = mx;
-		m_rect.p2.y = my;
-		m_rect.p2.x = std::max(m_rect.p2.x, m_rect.p1.x+1);
-		m_rect.p2.y = std::max(m_rect.p2.y, m_rect.p1.y+1);
+		rect.p2.x = mx;
+		rect.p2.y = my;
+		rect.p2.x = std::max(rect.p2.x, rect.p1.x+1);
+		rect.p2.y = std::max(rect.p2.y, rect.p1.y+1);
 		if(!einput->mouseValue(0))
 		{
 			BrushSelect();
-			m_mode=0;
+			mode = Mode::Normal;
 		}
 	}
 	else
-	if( m_mode==2 )
+	if(mode == Mode::Move)
 	{
-		m_moved = iV2(mx, my) - m_move;
+		moved = iV2(mx, my) - move;
 
 		if(!einput->mouseValue(1))
 		{
 			BrushMove();
-			m_mode=0;
+			mode = Mode::Normal;
 			Editor::app->SetCursor(App::Cursor::Arrow);
 		}
 	}
 
-	// axes
-	m_ax = mx;
-	m_ay = my;
+	axe = iV2(mx, my);
 
 	// tooltip
 	std::ostringstream o;
-	if(m_mode!=2)
+	if(mode != Mode::Move)
 	{
-		if( m_selop==-1 ) o << "sub";
-		if( m_selop==1 ) o << "add";
+		if(selop == SelOp::Sub) o << "sub";
+		if(selop == SelOp::Add) o << "add";
 		o << std::endl <<  mx << " " << my;
-		if( m_mode==1 ) o << std::endl << m_rect.Width() << " x " << m_rect.Height();
+		if(mode == Mode::Select) o << std::endl << rect.Width() << " x " << rect.Height();
 	}
 	else
-		o << "mov " << m_moved.x << "," << m_moved.y << std::endl << mx << "," << my;
+		o << "mov " << moved.x << "," << moved.y << std::endl << mx << "," << my;
 	if(inview)
 		g_gui->ToolTip = o.str();
 	else 
 		g_gui->ToolTip.clear();
-
-	m_isbusy = (m_mode!=0);
 }
 
-void cEdiToolEdit::Draw()
+void cEdiToolEdit::Draw() const
 {
 	int mx = Editor::app->GetMouseX() - VIEWX;
 	int my = Editor::app->GetMouseY() - VIEWY;
 	BOOL inview = INVIEW(mx,my);
 	
-	g_map.DrawAxes(m_ax,m_ay);
+	g_map.DrawAxes(axe.x, axe.y);
 
 	// offsets
 	iV2 d;
-	if(m_mode==2)
-		d = m_moved;
+	if(mode == Mode::Move)
+		d = moved;
 
 	// draw selected brushes ( from visible or from dragging )
-	int count = (m_mode!=2) ? g_map.brushvis.size() : m_drag.size();
+	int count = (mode != Mode::Move) ? g_map.brushvis.size() : drag.size();
 	for(int i=0;i<count;i++)
 	{
-		tBrush * brush = (m_mode!=2) ? g_map.brushvis[i] : m_drag[i];
+		tBrush * brush = (mode != Mode::Move) ? g_map.brushvis[i] : drag[i];
 
 		if(!brush->select) continue;
 		int x = VIEWX + CAMZ * (brush->pos.x-CAMX1+d.x);
@@ -429,15 +395,15 @@ void cEdiToolEdit::Draw()
 		brush->color = col;
 	}
 
-	if( m_mode==1 )	
+	if(mode == Mode::Select)	
 	{
 		dword color = 0xffffffff;
-		iRect rect = m_rect;
-		CAM2VIEW(rect.p1.x,rect.p1.y);
-		CAM2VIEW(rect.p2.x,rect.p2.y);
-		rect.Offset(iV2(VIEWX, VIEWY));
+		iRect r = rect;
+		CAM2VIEW(r.p1.x,r.p1.y);
+		CAM2VIEW(r.p2.x,r.p2.y);
+		r.Offset(iV2(VIEWX, VIEWY));
 		
-		GUIDrawRectDot( rect,color);
+		GUIDrawRectDot(r, color);
 	}
 
 }
@@ -452,13 +418,13 @@ void cEdiToolEdit::BrushSelect()
 {
 	for(auto brush: g_map.brushvis)
 	{
-		if (!m_rect.Intersects(brush->rect())) continue;
-		if(m_selop==-1 && brush->select)
+		if (!rect.Intersects(brush->rect())) continue;
+		if(selop == SelOp::Sub && brush->select)
 		{
 			brush->select = false;
 			g_map.m_selectcount--;
 		}
-		else if((m_selop==0 || m_selop==1) && !brush->select)
+		else if((selop == SelOp::New || selop == SelOp::Add) && !brush->select)
 		{
 			brush->select = true;
 			g_map.m_selectcount++;
@@ -480,10 +446,10 @@ void cEdiToolEdit::BrushDeselect()
 void cEdiToolEdit::BrushMoveStart()
 {
 	// create drag list with those visible and selected
-	m_drag.clear();
+	drag.clear();
 	for(auto brush: g_map.brushvis)
 		if(brush->select) 
-			m_drag.push_back(brush);
+			drag.push_back(brush);
 	g_map.m_hideselected = TRUE;
 	g_map.m_refresh=TRUE;
 }
@@ -495,11 +461,11 @@ void cEdiToolEdit::BrushMove()
 	{
 		if(!b->select) continue;
 		g_map.PartitionDel(b); // delete before changing
-		b->pos += m_moved;
+		b->pos += moved;
 		g_map.PartitionAdd(b); // readd after changed
 
 	}
-	m_drag.clear();
+	drag.clear();
 	g_map.m_hideselected = FALSE;
 	g_map.m_refresh=TRUE;
 }

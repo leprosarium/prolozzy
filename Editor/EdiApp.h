@@ -14,11 +14,6 @@
 // defines
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-// tools
-#define TOOL_PAINT	0
-#define TOOL_EDIT	1
-#define TOOL_MAX	2
-
 // layers
 #define LAYER_MAX	8
 
@@ -96,8 +91,7 @@ public:
 	int	GetMouseY();
 	int GetScrW() const { return R9_GetWidth(); }
 	int GetScrH() const { return R9_GetHeight(); }
-	int GetAxeX() const { return m_tool[m_toolcrt]->m_ax; }
-	int GetAxeY() const { return m_tool[m_toolcrt]->m_ay; }
+	iV2 GetAxe() const { return tools()->axe; }
 
 	// settings
 	int			m_exit;									// exit app!
@@ -109,11 +103,20 @@ public:
 	dword		GetColor( int idx )						{ return m_color[idx-EDI_COLOR]; }
 	void		WaitCursor( BOOL on );					// set cursor wait on/off
 
-
-		// tools
-		void		ToolSet				( int tool );		// set current tool
-		int			m_toolcrt;								// current tool
-		cEdiTool*	m_tool[TOOL_MAX];						// editor tools 
+	class Tools
+	{
+		std::vector<cEdiTool *> tools;
+		cEdiTool * active;
+	public:
+		Tools();
+		~Tools();
+		void Init();
+		void Done();
+		bool OnClose();
+		void Set(PlAtom tool);
+		cEdiTool * operator()() { return active; }
+		const cEdiTool * operator()() const { return active; }
+	} tools;
 		tBrush		m_brush;								// current tool brush
 
 	class Layers

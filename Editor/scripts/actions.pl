@@ -40,7 +40,7 @@
 
 
 props :-
-	edi:getTool(1);
+	edi:getTool(edit);
 	dlgProps2:create.
 
 menu :-
@@ -83,12 +83,15 @@ viewSet(View) :-
 
 tool :-
 	edi:getTool(Tool),
-	NTool is 1 - Tool, % toggle tool
+	nextTool(Tool, NTool),
 	edi:setTool(NTool),
 	dlgMenuBar:refresh.
 
+nextTool(paint, edit).
+nextTool(edit, paint).
+
 flip :-
-	edi:getTool(1);
+	edi:getTool(edit);
 	edi:toolBrush(B),
 	brush:getFlip(B, Code),
 	def:flip(_Sel, Code, _),
@@ -98,13 +101,13 @@ flip :-
 	gui:dlgDockUp.
 
 flipSet(Code) :-
-	edi:getTool(1);
+	edi:getTool(edit);
 	def:flip(_Flip, Code, _),
 	edi:toolBrush(B),
 	brush:setFlip(B, Code).
 
 justFlip :-
-	edi:getTool(1);
+	edi:getTool(edit);
 	edi:toolBrush(B),
 	brush:getFlip(B, CurFlip),
 	def:flip(xy, FLIP_XY, _),
@@ -118,7 +121,7 @@ justFlip :-
 	brush:setFlip(B, Flip).
 
 justRotate :-
-	edi:getTool(1);
+	edi:getTool(edit);
 	edi:toolBrush(B),
 	brush:getFlip(B, Flip),
 	def:flip(r, FLIP_R, _),
@@ -126,7 +129,7 @@ justRotate :-
 	brush:setFlip(B, NewFlip).
 
 shader :-
-	edi:getTool(1);
+	edi:getTool(edit);
 	edi:toolBrush(B),
 	brush:getShader(B, Code),
 	def:shader(_Shader, Code),
@@ -136,13 +139,13 @@ shader :-
 	gui:dlgDockUp.
 
 shaderSet(Code) :-
-	edi:getTool(1);
+	edi:getTool(edit);
 	def:shader(_Shader, Code),
 	edi:toolBrush(B),
 	brush:setShader(B, Code).
 
 draw :-
-	edi:getTool(1);
+	edi:getTool(edit);
 	edi:toolBrush(B),
 	brush:getDraw(B, Code),
 	def:drawMode(_Draw, Code, _),
@@ -153,13 +156,13 @@ draw :-
 
 
 drawSet(Code) :-
-	edi:getTool(1);
+	edi:getTool(edit);
 	def:drawMode(_Draw, Code, _),
 	edi:toolBrush(B),
 	brush:setDraw(B, Code).
 
 material :-
-	edi:getTool(1);
+	edi:getTool(edit);
 	edi:toolBrush(B),
 	brush:getMaterial(B, Code),
 	def:material(_Mat, Code, _, _),
@@ -170,7 +173,7 @@ material :-
 
 
 materialSet(Code) :-
-	edi:getTool(1);
+	edi:getTool(edit);
 	def:material(_Mat, Code, _, _),
 	edi:toolBrush(B),
 	brush:setMaterial(B, Code).
@@ -253,7 +256,7 @@ fileInfo :-
 	dlgInfo:create.
 
 tile :-
-	(   edi:getTool(0), \+ edi:tileCount(0)),
+	(   edi:getTool(paint), \+ edi:tileCount(0)),
 	dlgTileBrowse:create(0, 0, actions:tileBrowseSet(_TileID)),
 	gui:dlgMoveToMouse,
 	gui:dlgDockUp.
@@ -272,11 +275,11 @@ tileBrowseSet(TileID) :-
 	mapping.
 
 mapping :-
-	(edi:getTool(0), \+ edi:tileCount(0)),
+	(edi:getTool(paint), \+ edi:tileCount(0)),
 	dlgTileMap:create.
 
 color :-
-	edi:getTool(1);
+	edi:getTool(edit);
 	edi:toolBrush(B),
 	brush:getColor(B, Color),
 	dlgColor:create(0, 0, actions:colorSet(_), Color),
@@ -303,16 +306,16 @@ zoomSet(Step) :-
 	map:refresh.
 
 search :-
-	edi:getTool(0);
+	edi:getTool(paint);
 	scripts:brushSearch.
 
 
 change :-
-	edi:getTool(0);
+	edi:getTool(paint);
 	scripts:brushChange.
 
 script:-
-	edi:getTool(0);
+	edi:getTool(paint);
 	Data = [
 		item(sel-'Selection', "", []),
 		item(inv-' invert', (gui:dlgClose, scripts:brushInvert), [key(i), tooltip('invert selection [I]')]),
@@ -326,7 +329,7 @@ script:-
 
 
 script2:-
-	edi:getTool(0);
+	edi:getTool(paint);
 	Data = [
 		item(rc-'Release checks', "", []),
 		item(cmt-' check missing tiles', (gui:dlgClose, scripts2:checkTile), [tooltip('select all brushes with missing tiles')]),
@@ -380,7 +383,7 @@ toolCommandPickBrush( Brush) :-
 	brush:setProps(B, [tile=Tile, x1=X1, y1=Y1, x2=X2, y2=Y2, flip=Flip]).
 
 roomProps :-
-	edi:getTool(1);
+	edi:getTool(edit);
 	edi:toolBrush(B),
 	brush:getX(B, X),
 	brush:getY(B, Y),

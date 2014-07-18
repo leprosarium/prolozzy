@@ -43,8 +43,8 @@ void cEdiToolPaint::Reset()
 
 void cEdiToolPaint::Update( float dtime )
 {
-	iV2 m = Editor::app->GetMousePos() - iV2(VIEWX, VIEWY);
-	BOOL inview = INVIEW(m.x,m.y);
+	iV2 m = Editor::app->GetMousePos();
+	bool inview = g_map.view.IsInside(m);
 	if(!inview && !IsBusy()) return;
 
 	bool alt = einput->alt();
@@ -57,19 +57,16 @@ void cEdiToolPaint::Update( float dtime )
 
 	if( mode == Mode::Normal )
 	{
-		int bw = static_cast<int>(brush->mapWith()); // brush.m_data[BRUSH_MAP+2]-brush.m_data[BRUSH_MAP+0];
-		int bh = static_cast<int>(brush->mapHeight()); // brush.m_data[BRUSH_MAP+3]-brush.m_data[BRUSH_MAP+1];
-		VIEW2CAM(m.x,m.y);
-		if(m.x<CAMX1+bw)	m.x=CAMX1+bw;
-		if(m.y<CAMY1+bh)	m.y=CAMY1+bh;
-		if(m.x>CAMX2)	m.x=CAMX2;
-		if(m.y>CAMY2)	m.y=CAMY2;
-		iV2 sz = iV2(bw, bh);
-		m -= sz;
+		iV2 bsz(brush->mapSize());
+		m = g_map.view2cam(m);
+		iRect cm = g_map.camRect();
+		cm.p1 += bsz;
+		m.Clip(cm);
+		m -= bsz;
 		Snap(m);
 
 		brush->pos = axe = m;
-		brush->size = sz;
+		brush->size = bsz;
 
 		if(einput->mouseValue(0)) mode = Mode::Paint;
 		else if(einput->mouseValue(1)) mode = Mode::PickMenu;
@@ -79,9 +76,8 @@ void cEdiToolPaint::Update( float dtime )
 	else
 	if( mode == Mode::Paint)
 	{
-		VIEW2CAM(m.x,m.y);
-		if(m.x>CAMX2) m.x=CAMX2;
-		if(m.y>CAMY2) m.y=CAMY2;
+		m = g_map.view2cam(m);
+		m.Clip(g_map.camRect());
 
 		iV2 sz = m - brush->pos;
 		if(sz.x<0) sz.x=0;
@@ -122,11 +118,8 @@ void cEdiToolPaint::Update( float dtime )
 	else
 	if(mode == Mode::PickMenu || mode == Mode::Pick) // pick mode
 	{
-		VIEW2CAM(m.x,m.y);
-		if(m.x<CAMX1) m.x=CAMX1;
-		if(m.y<CAMY1) m.y=CAMY1;
-		if(m.x>CAMX2) m.x=CAMX2;
-		if(m.y>CAMY2) m.y=CAMY2;
+		m = g_map.view2cam(m);
+		m.Clip(g_map.camRect());
 		Snap(m);
 
 		axe = m;
@@ -170,8 +163,7 @@ void cEdiToolPaint::Update( float dtime )
 
 void cEdiToolPaint::Draw() const
 {
-	iV2 m = Editor::app->GetMousePos() - iV2(VIEWX, VIEWY);
-	if(!INVIEW(m.x,m.y)) return; // && !m_isbusy
+	if (!g_map.view.IsInside(Editor::app->GetMousePos())) return; // && !m_isbusy
 
 	tBrush * brush = & Editor::app->m_brush;
 
@@ -184,17 +176,14 @@ void cEdiToolPaint::Draw() const
 		g_map.UnifyBrush(br[0], &tmp);
 		g_gui->ScriptPrologDo("mod", "brushToolDraw", br);	
 		
-		int x = CAMZ*(brush->pos.x - CAMX1) + VIEWX;
-		int y = CAMZ*(brush->pos.y - CAMY1) + VIEWY;
-		
-		g_paint.DrawBrushAt( &tmp, x, y, (float)CAMZ, TRUE ); // animated
+		iV2 p = g_map.cam2view(brush->pos);
+		g_paint.DrawBrushAt(&tmp, p.x, p.y, static_cast<float>(g_map.camScale), TRUE); // animated
 	}
 	else
 	if( (mode == Mode::PickMenu || mode == Mode::Pick) && picked )
 	{
-		int x = CAMZ*(picked->pos.x - CAMX1) + VIEWX;
-		int y = CAMZ*(picked->pos.y - CAMY1) + VIEWY;
-		g_paint.DrawBrushFlashAt( picked, x, y, (float)CAMZ ); // not animated
+		iV2 p = g_map.cam2view(picked->pos);
+		g_paint.DrawBrushFlashAt(picked, p.x, p.y, static_cast<float>(g_map.camScale)); // not animated
 	}
 }
 
@@ -270,14 +259,11 @@ void cEdiToolEdit::Update( float dtime )
 
 	tBrush& brush = Editor::app->m_brush;
 
-	iV2 m = Editor::app->GetMousePos() - iV2(VIEWX, VIEWY);
-	BOOL inview = INVIEW(m.x,m.y);
+	iV2 m = Editor::app->GetMousePos();
+	bool inview = g_map.view.IsInside(m);
 
-	VIEW2CAM(m.x,m.y);
-	if(m.x<CAMX1) m.x=CAMX1;
-	if(m.y<CAMY1) m.y=CAMY1;
-	if(m.x>CAMX2) m.x=CAMX2;
-	if(m.y>CAMY2) m.y=CAMY2;
+	m = g_map.view2cam(m);
+	m.Clip(g_map.camRect());
 	Snap(m); // grid snap
 
 	// additional keys
@@ -291,7 +277,7 @@ void cEdiToolEdit::Update( float dtime )
 
 	if( mode == Mode::Normal && inview )
 	{
-		if(einput->isMouseDown(0))
+		if (einput->isMouseDown(0))
 		{
 			if(selop == SelOp::New) BrushDeselect();
 			rect.p1 = rect.p2 = m;
@@ -321,7 +307,7 @@ void cEdiToolEdit::Update( float dtime )
 		rect.p2 = m;
 		rect.p2.x = std::max(rect.p2.x, rect.p1.x+1);
 		rect.p2.y = std::max(rect.p2.y, rect.p1.y+1);
-		if(!einput->mouseValue(0))
+		if (!einput->mouseValue(0))
 		{
 			BrushSelect();
 			mode = Mode::Normal;
@@ -361,9 +347,6 @@ void cEdiToolEdit::Update( float dtime )
 
 void cEdiToolEdit::Draw() const
 {
-	iV2 m = Editor::app->GetMousePos() - iV2(VIEWX, VIEWY);
-	BOOL inview = INVIEW(m.x,m.y);
-	
 	g_map.DrawAxes(axe.x, axe.y);
 
 	// offsets
@@ -378,29 +361,19 @@ void cEdiToolEdit::Draw() const
 		tBrush * brush = (mode != Mode::Move) ? g_map.brushvis[i] : drag[i];
 
 		if(!brush->select) continue;
-		int x = VIEWX + CAMZ * (brush->pos.x-CAMX1+d.x);
-		int y = VIEWY + CAMZ * (brush->pos.y-CAMY1+d.y);
+		iV2 p = g_map.cam2view(brush->pos + d);
 
 		Blend shd = brush->shader;
 		int col = brush->color;
 		brush->shader = Blend::AlphaRep;
 		brush->color = g_paint.GetFlashingColorBW();
-		g_paint.DrawBrushAt( brush, x, y, (float)CAMZ );
+		g_paint.DrawBrushAt(brush, p.x, p.y, static_cast<float>(g_map.camScale));
 		brush->shader = shd;
 		brush->color = col;
 	}
 
 	if(mode == Mode::Select)	
-	{
-		dword color = 0xffffffff;
-		iRect r = rect;
-		CAM2VIEW(r.p1.x,r.p1.y);
-		CAM2VIEW(r.p2.x,r.p2.y);
-		r.Offset(iV2(VIEWX, VIEWY));
-		
-		GUIDrawRectDot(r, color);
-	}
-
+		GUIDrawRectDot(iRect(g_map.cam2view(rect.p1), g_map.cam2view(rect.p2)), 0xffffffff);
 }
 
 void cEdiToolEdit::UserUpdate()

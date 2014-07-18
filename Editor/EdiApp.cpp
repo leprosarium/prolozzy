@@ -433,7 +433,7 @@ void Editor::Draw()
 		g_map.Draw();
 
 		// tool
-		R9_SetClipping( fRect(g_map.m_viewx, g_map.m_viewy, g_map.m_viewx+g_map.m_vieww, g_map.m_viewy+g_map.m_viewh) );
+		R9_SetClipping(fRect(g_map.view));
 		if(g_gui && !g_gui->m_isbusy)
 			tools()->Draw();
 		R9_ResetClipping();

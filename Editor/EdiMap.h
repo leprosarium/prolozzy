@@ -13,28 +13,6 @@
 #define MAP_SIZEMIN		128
 #define MAP_SIZEMAX		100000
 
-#define	VIEWB	(16)
-#define	VIEWW	(g_map.m_vieww)
-#define	VIEWH	(g_map.m_viewh)
-#define	VIEWX	(g_map.m_viewx)
-#define	VIEWY	(g_map.m_viewy)
-
-#define	CAMX	(g_map.m_camx)
-#define	CAMY	(g_map.m_camy)
-#define	CAMW	(VIEWW/CAMZ)
-#define	CAMH	(VIEWH/CAMZ)
-#define	CAMZ	(g_map.m_camz)
-#define CAMX1	(CAMX-CAMW/2)
-#define CAMY1	(CAMY-CAMH/2)
-#define CAMX2	(CAMX+CAMW/2)
-#define CAMY2	(CAMY+CAMH/2)
-
-// util
-#define	VIEW2CAM( x, y ) { x = x/CAMZ + CAMX1; y = y/CAMZ + CAMY1; }	// from view (screen space) to camera (world space)
-#define	CAM2VIEW( x, y ) { x = CAMZ*(x-CAMX1); y = CAMZ*(y-CAMY1); }	// from camera (world space ) to view (screen space)
-#define INVIEW( x, y )	 ((x>=0 && x<VIEWW) && (y>=0 && y<VIEWH))
-#define INVIEWB( x, y )	 ((x>=-VIEWB && x<VIEWW+VIEWB) && (y>=-VIEWB && y<VIEWH+VIEWB))
-
 #define MAP_ID							"dizzymap"
 #define MAP_CHUNKID						0x11111111
 #define MAP_CHUNKINFO					0x22222222	// obsolete
@@ -89,7 +67,7 @@ virtual void		Draw				();							// draw current
 virtual	void		Refresh				();							// refresh draw
 
 		void		Reset				();
-		BOOL		Resize				( int width, int height );	// resize map; return true if no crop occured
+	bool Resize(const iV2 & sz);	// resize map; return true if no crop occured
 
 public:
 	PlFunctor brush;
@@ -99,23 +77,20 @@ public:
 
 
 		// map
-		int			m_mapw;											// map width
-		int			m_maph;											// map height
-		int			m_roomw;										// room width
-		int			m_roomh;										// room height
+	iV2 mapSize;
+	iV2 roomSize;
 		int			m_roomgrid;										// room grid visible
 				
-		// view
-		int			m_viewx;										// viewport left
-		int			m_viewy;										// viewport top
-		int			m_vieww;										// viewport width
-		int			m_viewh;										// viewport height
+		iRect view;													// viewport
+		static const int viewBorder = 16;
+		iV2 cam;													// camera position
+		int camScale;												// Camera scale
+		iV2 camSize() const { return view.Size() / camScale; }
+		iRect camRect() const  { return iRect(cam, cam).Deflate(camSize() / 2); }
+		iV2 camP1() const { return cam - camSize() / 2; }
+		iV2 view2cam(const iV2 & p) const { return (p - view.p1) / camScale + camP1(); }   // from screen space to world space
+		iV2 cam2view(const iV2 & p) const { return camScale * (p - camP1()) + view.p1; } // from world space to screen space
 
-		// camera												
-		int			m_camx;											// camera position x (center)
-		int			m_camy;											// camera position y (center)
-		int			m_camz;											// scale factor >=1
-																
 		// refresh			
 		BOOL		m_hideselected;									// don't draw selected tiles
 		BOOL		m_refresh;										// if refresh is necessary
@@ -125,8 +100,7 @@ public:
 		int			BrushNew			();							// add a new brush to the brushlist
 		void		BrushIns			( int idx, tBrush& brush );	// insert a new brush and shift others; selectcount friendly
 		void		BrushDel			( tBrush * b );				// delete one brush from brushlist and shift others; selectcount friendly
-//		void		BrushDrawOld		( iRect& view );			// draw brushes in view
-		void		BrushDrawExtra		( iRect& view );			// draw brushes in view using partitioning
+		void		BrushDrawExtra		( const iRect & view );			// draw brushes in view using partitioning
 	tBrush * BrushPick(const iV2 & p) const;
 	void BrushToFront(tBrush * b) { BrushTo(m_brush.rbegin(), m_brush.rend(), b); }				// bring brush to front (first visible in layer)
 	void BrushToBack (tBrush * b) { BrushTo(m_brush.begin(), m_brush.end(), b); } 				// bring brush to back (last visible in layer)
@@ -144,20 +118,20 @@ public:
 		void		PartitionInit		();							// create partitions cels depending on the map size
 		void		PartitionDone		();							// destroy partitions cels
 	void PartitionReset		()							{ PartitionDone(); PartitionInit(); }
-	int		PartitionCountW		()							{ return (m_mapw+PARTITION_CELSIZE-1) / PARTITION_CELSIZE; }
-	int		PartitionCountH		()							{ return (m_maph+PARTITION_CELSIZE-1) / PARTITION_CELSIZE; }
+	int		PartitionCountW		()							{ return (mapSize.x+PARTITION_CELSIZE-1) / PARTITION_CELSIZE; }
+	int		PartitionCountH		()							{ return (mapSize.y+PARTITION_CELSIZE-1) / PARTITION_CELSIZE; }
 		bool		PartitionAdd		(tBrush * b);			// add a brush index to partitioning; true if successful
 		void		PartitionDel		(tBrush * b);			// del a brush index from partitioning; might need PartitionFix
-		int			PartitionGet		( iRect& rect, int* buffer, int buffersize );	// retrive all partitions that intersect a specified area
+		int			PartitionGet		( const iRect & rect, int* buffer, int buffersize );	// retrive all partitions that intersect a specified area
 		bool		PartitionRepartition();							// remove and reenter all brushes; ret ok (or false if some failures)
 		iRect		PartitionRect(int idx, int countw) const {  iV2 p1 = iV2(idx % countw, idx / countw) * PARTITION_CELSIZE; return iRect(p1, p1 + PARTITION_CELSIZE); }
 		
 		std::vector<cPartitionCel *> m_partition;					// partitions cels list
 
 		// markers
-		void		MarkerToggle		( int x, int y );			// add/remove marker at a given pos
+		void		MarkerToggle		(const iV2 &p);				// add/remove marker at a given pos
 		void		MarkerGoto			( int dir=1 );				// go to nearest/next marker
-		int			MarkerClosest		( int x, int y, int &dist );// get index of closest marker to a given pos 
+		int			MarkerClosest		(const iV2 &p, int &dist ); // get index of closest marker to a given pos 
 		void		MarkerClear			();							// clear all markers
 		void		MarkerResize		();							// remove out markers after map is resized (private)
 		BOOL		MarkerTest			( int idx );				// test if a marker is inside map (private)
@@ -170,7 +144,7 @@ public:
 		int			m_selectgoto;									// index of brush used in goto selection
 
 		// others
-		void		DrawGrid( iRect &view );						// draw grid using EdiApp settings
+		void		DrawGrid( const iRect & vw ) const;				// draw grid using EdiApp settings
 		void		DrawAxes( int x, int y );						// draw axes
 		void		DrawScrollers();								// draw side scrollers
 		iRect		GetHScrollRect();

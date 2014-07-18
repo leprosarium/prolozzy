@@ -15,22 +15,22 @@ cEdiMap g_map;
 
 PREDICATE_M(map, getMapW, 1)
 {
-	return A1 = g_map.m_mapw;
+	return A1 = g_map.mapSize.x;
 }
 
 PREDICATE_M(map, getMapH, 1)
 {
-	return A1 = g_map.m_maph;
+	return A1 = g_map.mapSize.y;
 }
 
 PREDICATE_M(map, getRoomW, 1)
 {
-	return A1 = g_map.m_roomw;
+	return A1 = g_map.roomSize.x;
 }
 
 PREDICATE_M(map, getRoomH, 1)
 {
-	return A1 = g_map.m_roomh;
+	return A1 = g_map.roomSize.y;
 }
 
 PREDICATE_M(map, getRoomGrid, 1)
@@ -40,17 +40,17 @@ PREDICATE_M(map, getRoomGrid, 1)
 
 PREDICATE_M(map, getCamX, 1)
 {
-	return A1 = g_map.m_camx;
+	return A1 = g_map.cam.x;
 }
 
 PREDICATE_M(map, getCamY, 1)
 {
-	return A1 = g_map.m_camy;
+	return A1 = g_map.cam.y;
 }
 
 PREDICATE_M(map, getZoom, 1)
 {
-	return  A1 = g_map.m_camz;
+	return  A1 = g_map.camScale;
 }
 
 PREDICATE_M(map, getSelect, 1)
@@ -60,13 +60,13 @@ PREDICATE_M(map, getSelect, 1)
 
 PREDICATE_M(map, setRoomW, 1)
 {
-	g_map.m_roomw = A1;
+	g_map.roomSize.x = A1;
 	return true;
 }
 
 PREDICATE_M(map, setRoomH, 1)
 {
-	g_map.m_roomh = A1;
+	g_map.roomSize.y = A1;
 	return true;
 }
 
@@ -78,19 +78,19 @@ PREDICATE_M(map, setRoomGrid, 1)
 
 PREDICATE_M(map, setCamX, 1)
 {
-	g_map.m_camx = A1;
+	g_map.cam.x = A1;
 	return true;
 }
 
 PREDICATE_M(map, setCamY, 1)
 {
-	g_map.m_camy = A1;
+	g_map.cam.y = A1;
 	return true;
 }
 
 PREDICATE_M(map, setZoom, 1)
 {
-	g_map.m_camz = A1;
+	g_map.camScale = A1;
 	return true;
 }
 
@@ -269,7 +269,7 @@ PREDICATE_M(map, reset, 0)
 
 PREDICATE_M(map, resize, 2)
 {
-	int ret = g_map.Resize(A1, A2); 
+	int ret = g_map.Resize(iV2(A1, A2)); 
 	return ret; 
 }
 
@@ -301,22 +301,9 @@ cEdiMap::cEdiMap() : brush("brush", 1)
 {
 	
 	// map
-	m_mapw			= 0;
-	m_maph			= 0;
-	m_roomw			= 0;
-	m_roomh			= 0;
 	m_roomgrid		= 0;
 
-	// view
-	m_viewx			= 0;
-	m_viewy			= 0;
-	m_vieww			= 0;
-	m_viewh			= 0;
-
-	// camera
-	m_camx			= 0;
-	m_camy			= 0;
-	m_camz			= 1;
+	camScale		= 1;
 	
 	// refresh
 	m_hideselected	= FALSE;
@@ -345,12 +332,10 @@ BOOL cEdiMap::Init()
 	m_target = R9_TextureCreateTarget(width,height);
 	if(!m_target) {	elog::app() << "can't create render target." << std::endl; return FALSE; }
 
-	m_mapw = MAP_SIZEDEFAULT;
-	m_maph = MAP_SIZEDEFAULT;
+	mapSize = MAP_SIZEDEFAULT;
 	CheckMapView();
 
-	m_camx = m_mapw/2;
-	m_camy = m_maph/2;
+	cam = mapSize / 2;
 
 	// partitioning
 	PartitionInit();
@@ -385,38 +370,34 @@ void cEdiMap::Done()
 void cEdiMap::Update( float dtime )
 {
 
-	int stepx = Editor::app->m_gridsize;
-	int stepy = Editor::app->m_gridsize;
-	iV2 m = Editor::app->GetMousePos() - iV2(VIEWX, VIEWY);
+	iV2 step(Editor::app->m_gridsize);
+	iV2 m = Editor::app->GetMousePos() - g_map.view.p1;
 	int mz = einput->mouse.axe[2].delta;
 	bool shift	= einput->shift();
 	bool alt	= einput->alt() || einput->mouseValue(2);
 	bool ctrl	= einput->ctrl();
 
 	// navigation
-	int dx = 0;
-	int dy = 0;
-	
+	iV2 d;
+
 	// key
 	if(ctrl) 
-	{
-		stepx=m_roomw;
-		stepy=m_roomh;
-	}
-	if( einput->keyValue(DIK_RIGHT) )	dx = stepx;
-	if( einput->keyValue(DIK_LEFT) )	dx =-stepx;
-	if( einput->keyValue(DIK_DOWN) )	dy = stepy;
-	if( einput->keyValue(DIK_UP) )	dy =-stepy;
+		step = roomSize;
+
+	if (einput->keyValue(DIK_RIGHT))	d.x = step.x;
+	if (einput->keyValue(DIK_LEFT))	d.x = -step.x;
+	if (einput->keyValue(DIK_DOWN))	d.y = step.y;
+	if (einput->keyValue(DIK_UP))	d.y = -step.y;
 
 	// smart key hit delaying system
 	static int keycnt=0; // key delay counter
-	if( dx!=0 || dy!=0 )
+	if (d != 0)
 	{
 		if( keycnt>0 ) // allow first hit
 		{
 			if(keycnt<400 ) 
 			{
-				dx = dy = 0; // big wait when first pressed
+				d = 0; // big wait when first pressed
 			}
 			else
 			{
@@ -431,26 +412,26 @@ void cEdiMap::Update( float dtime )
 	}
 
 	// vertical scroll
-	if(mz!=0 && iRect(VIEWW, 0, VIEWW+VIEWB, VIEWH).IsInside(m))
+	if (mz != 0 && iRect(view.Width(), 0, view.Width() + viewBorder, view.Height()).IsInside(m))
 	{
-		if(mz<0) dy = stepy;
-		if(mz>0) dy =-stepy;
+		if(mz<0) d.y = step.y;
+		if(mz>0) d.y =-step.y;
 		Editor::app->m_mscrolly = 0;
 		Editor::app->m_mscrollx = 0;
 	}
 	
 	// horizontal scroll
-	if( mz!=0 && iRect(0, VIEWH, VIEWW, VIEWH+VIEWB).IsInside(m))
+	if (mz != 0 && iRect(0, view.Height(), view.Width(), view.Height() + viewBorder).IsInside(m))
 	{
-		if(mz<0) dx = stepx;
-		if(mz>0) dx =-stepx;
+		if(mz<0) d.x = step.x;
+		if(mz>0) d.x =-step.x;
 		Editor::app->m_mscrolly = 0;
 		Editor::app->m_mscrollx = 0;
 	}
 
 	// scroll with the Scroll function (from WM_MOUSEWHEEL)
-	if(Editor::app->m_mscrolly!=0) { dy = Editor::app->m_mscrolly * stepy; Editor::app->m_mscrolly = 0; }
-	if(Editor::app->m_mscrollx!=0) { dx = Editor::app->m_mscrollx * stepx; Editor::app->m_mscrollx = 0; }
+	if(Editor::app->m_mscrolly!=0) { d.y = Editor::app->m_mscrolly * step.y; Editor::app->m_mscrolly = 0; }
+	if(Editor::app->m_mscrollx!=0) { d.x = Editor::app->m_mscrollx * step.x; Editor::app->m_mscrollx = 0; }
 
 	// scrolling
 	iRect rc;
@@ -485,24 +466,23 @@ void cEdiMap::Update( float dtime )
 	if(m_scrolling==1) // scroll horizontal
 	{
 		rc = GetHScrollRect();
-		dx = (m.x-m_scrollofs)-rc.p1.x;
-		dx = (dx/Editor::app->m_gridsize)*Editor::app->m_gridsize;
+		d.x = (m.x-m_scrollofs)-rc.p1.x;
+		d.x = (d.x/Editor::app->m_gridsize)*Editor::app->m_gridsize;
 	}
 	else
 	if(m_scrolling==2) // scroll vertical
 	{
 		rc = GetVScrollRect();
-		dy = (m.y-m_scrollofs)-rc.p1.y;
-		dy = (dy/Editor::app->m_gridsize)*Editor::app->m_gridsize;
+		d.y = (m.y-m_scrollofs)-rc.p1.y;
+		d.y = (d.y/Editor::app->m_gridsize)*Editor::app->m_gridsize;
 	}
 
 
 	// apply
-	if( dx!=0 || dy!=0 )
+	if (d != 0)
 	{
-		m_camx += dx;
-		m_camy += dy;
-		m_refresh=TRUE;
+		cam += d;
+		m_refresh = TRUE;
 	}
 
 	// others
@@ -514,15 +494,9 @@ void cEdiMap::Update( float dtime )
 	}
 
 	// bounds
-	if(m_camz<1) m_camz=1;
-	if(m_camz>4) m_camz=4;
+	camScale = std::min(4, std::max(1, camScale));
 
-	int camw = m_vieww/m_camz;
-	int camh = m_viewh/m_camz;
-	if(m_camx<camw/2) m_camx=camw/2;
-	if(m_camy<camh/2) m_camy=camh/2;
-	if(m_camx>m_mapw-camw/2) m_camx=m_mapw-camw/2;
-	if(m_camy>m_maph-camh/2) m_camy=m_maph-camh/2;
+	cam.Clip(iRect(0, mapSize).Inflate(camSize() / 2));
 
 	if(m_refresh) Refresh(); // @HM is it safe for draw (needs to be after bounds checks) !
 	m_refresh = FALSE;
@@ -538,7 +512,7 @@ void cEdiMap::Draw()
 	// draw pre-rendered map
 	if(!m_target) return; // render target is not supported
 	R9_SetBlend(Blend::Opaque);
-	R9_DrawSprite( fV2(m_viewx,m_viewy), fRect(0,0,m_vieww,m_viewh), m_target );
+	R9_DrawSprite( fV2(view.p1), fRect(0, view.Size()), m_target );
 	R9_Flush();
 	R9_SetBlend(Blend::Alpha);
 
@@ -547,12 +521,9 @@ void cEdiMap::Draw()
 
 	// draw marker
 	int dist = 0;
-	int mark = MarkerClosest(m_camx,m_camy,dist);
+	int mark = MarkerClosest(cam,dist);
 	if(mark!=-1 && dist==0) // on marker
-	{
-		R9_DrawBar( fRect(m_viewx-VIEWB+3,m_viewy-VIEWB+3,m_viewx-3, m_viewy-3), 0xffffffff );
-	}
-
+		R9_DrawBar(fRect(view.p1.x - viewBorder + 3, view.p1.y - viewBorder + 3, view.p1.x - 3, view.p1.y - 3), 0xffffffff);
 }
 
 void cEdiMap::Refresh()
@@ -561,13 +532,9 @@ void cEdiMap::Refresh()
 	if(R9_BeginScene(m_target))
 	{
 		R9_Clear(Editor::app->GetColor(EDI_COLORMAP));
-		iV2 cam(m_camx, m_camy);
-		iRect view(cam, cam);
-		view.Deflate((iV2(m_vieww, m_viewh) / m_camz) /2);
-		BrushDrawExtra( view );
-
-		DrawGrid( view );
-
+		iRect v = camRect();
+		BrushDrawExtra(v);
+		DrawGrid(v);
 		R9_EndScene();
 	}
 }
@@ -583,42 +550,31 @@ void cEdiMap::Reset()
 	PartitionDone();
 	BrushClear();
 
-	m_mapw = MAP_SIZEDEFAULT;
-	m_maph = MAP_SIZEDEFAULT;
+	mapSize = MAP_SIZEDEFAULT;
 	CheckMapView();
+	cam = mapSize / 2;
 
-	// partitioning
 	PartitionInit();
-
-	m_camx = m_mapw/2;
-	m_camy = m_maph/2;
 
 	m_refresh = TRUE;
 	SelectionRefresh();
 
 }
 
-int cEdiMap::Resize( int width, int height )
+bool cEdiMap::Resize(const iV2 & sz)
 {
-	if(width<MAP_SIZEMIN)	width = MAP_SIZEMIN;	// too small
-	if(height<MAP_SIZEMIN)	height = MAP_SIZEMIN;	// too small
-	if(width>MAP_SIZEMAX)	width = MAP_SIZEMAX;	// too big
-	if(height>MAP_SIZEMAX)	height = MAP_SIZEMAX;	// too big
-
 	PartitionDone();
 	
-	m_mapw = width;
-	m_maph = height;
+	mapSize = iV2(sz).Clip(iRect(MAP_SIZEMIN, MAP_SIZEMAX));
 	CheckMapView();
-	
+	cam = mapSize / 2;
+
 	PartitionInit();
 	bool ok = PartitionRepartition();
 
 	SelectionRefresh();
 	MarkerResize();
 
-	m_camx = m_mapw/2;
-	m_camy = m_maph/2;
 	m_refresh = TRUE;
 	return ok;
 }
@@ -666,12 +622,10 @@ void cEdiMap::BrushDel(tBrush * brush)
 	brushvis.clear();
 }
 
-void cEdiMap::BrushDrawExtra( iRect& view )
+void cEdiMap::BrushDrawExtra( const iRect& view )
 {
 	m_count_brushdraw = 0;
 	m_count_brushcheck = 0;
-
-
 
 	int partition[32];
 	int partitioncount = PartitionGet(view, partition,32);
@@ -709,8 +663,8 @@ void cEdiMap::BrushDrawExtra( iRect& view )
 		PlTermv br(1);
 		g_map.UnifyBrush(br[0], & brushtemp);
 		if(!g_gui->ScriptPrologDo("mod", "brushDraw", br)) continue;
-		iV2 p = m_camz  * (brushtemp.pos - view.p1);
-		g_paint.DrawBrushAt( &brushtemp, p.x, p.y, (float)m_camz );
+		iV2 p = camScale  * (brushtemp.pos - view.p1);
+		g_paint.DrawBrushAt(&brushtemp, p.x, p.y, static_cast<float>(camScale));
 		m_count_brushdraw++;
 	}
 }
@@ -776,7 +730,7 @@ void cEdiMap::PartitionDel( tBrush * b )
 			m_partition[i]->Del(b);
 }
 
-int	cEdiMap::PartitionGet( iRect& rect, int* buffer, int buffersize )
+int	cEdiMap::PartitionGet( const iRect& rect, int* buffer, int buffersize )
 {
 	assert(buffer!=NULL);
 	assert(buffersize>0);
@@ -804,23 +758,23 @@ bool cEdiMap::PartitionRepartition()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // MARKERS
 //////////////////////////////////////////////////////////////////////////////////////////////////
-void cEdiMap::MarkerToggle( int x, int y )
+void cEdiMap::MarkerToggle( const iV2 & p)
 {
 	int dist = -1;
-	int mark = MarkerClosest( m_camx, m_camy, dist );
+	int mark = MarkerClosest(cam, dist );
 	if(mark!=-1 && dist==0) // remove existing mark
 	{
 		m_marker.erase(m_marker.begin() + mark);
 	}
 	else // add mark
 	{
-		m_marker.push_back(tMarker(x,y,m_camz));
+		m_marker.push_back(tMarker(p.x, p.y, camScale));
 	}
 }
 void cEdiMap::MarkerGoto( int dir )				
 {
 	int dist = -1;
-	int mark = MarkerClosest( m_camx, m_camy, dist );
+	int mark = MarkerClosest(cam, dist );
 	if(mark==-1) return; // no markers
 	if(dist==0) // select next
 	{
@@ -828,13 +782,13 @@ void cEdiMap::MarkerGoto( int dir )
 		if(mark<0) mark = m_marker.size()-1;
 		if(mark>m_marker.size()-1) mark = 0;
 	}
-	m_camx = m_marker[mark].x;
-	m_camy = m_marker[mark].y;
-	m_camz = m_marker[mark].z;
+	cam.x = m_marker[mark].x;
+	cam.y = m_marker[mark].y;
+	camScale = m_marker[mark].z;
 	m_refresh = TRUE;
 }
 
-int	cEdiMap::MarkerClosest( int x, int y, int &dist )
+int	cEdiMap::MarkerClosest( const iV2 & p, int &dist )
 {
 	int mark=-1;
 	int mind = -1;
@@ -842,7 +796,7 @@ int	cEdiMap::MarkerClosest( int x, int y, int &dist )
 	{
 		int mx = m_marker[i].x;
 		int my = m_marker[i].y;
-		double d = (double)(x-mx)*(double)(x-mx)+(double)(y-my)*(double)(y-my);
+		double d = (double)(p.x-mx)*(double)(p.x-mx)+(double)(p.y-my)*(double)(p.y-my);
 		d=sqrt(d);
 		if(mind==-1 || (int)d<mind)
 		{
@@ -875,16 +829,10 @@ void cEdiMap::MarkerResize()
 BOOL cEdiMap::MarkerTest( int idx )
 {
 	if(idx<0 || idx>=m_marker.size()) return FALSE;
-	int camx = m_marker[idx].x;
-	int camy = m_marker[idx].y;
+	iV2 cam(m_marker[idx].x, m_marker[idx].y);
 	int camz = m_marker[idx].z;
-	int camw = m_vieww/camz;
-	int camh = m_viewh/camz;
-	if(camx<camw/2) return FALSE;
-	if(camy<camh/2) return FALSE;
-	if(camx>m_mapw-camw/2) return FALSE;
-	if(camy>m_maph-camh/2) return FALSE;
-	return TRUE;
+	iV2 cam_sz = view.Size() / camz / 2;
+	return iRect(cam_sz, mapSize - cam_sz).IsInside(cam);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -912,8 +860,7 @@ void cEdiMap::SelectionGoto( int dir )
 		if(i>=m_brush.size()) i=0;
 		if(m_brush[i]->select) 
 		{
-			m_camx = m_brush[i]->pos.x;
-			m_camy = m_brush[i]->pos.y;
+			cam = m_brush[i]->pos;
 			m_refresh = TRUE;
 			m_selectgoto = i;
 			return;
@@ -926,7 +873,7 @@ void cEdiMap::SelectionGoto( int dir )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // OTHERS
 //////////////////////////////////////////////////////////////////////////////////////////////////
-void cEdiMap::DrawGrid( iRect &view )
+void cEdiMap::DrawGrid( const iRect & vw ) const
 {
 	int i;
 	iRect view2;
@@ -937,48 +884,48 @@ void cEdiMap::DrawGrid( iRect &view )
 	if( Editor::app->m_grid && grid!=0 ) 
 	{
 		// snap view
-		view2 = view; 
+		view2 = vw; 
 		view2.p1 = view2.p1 / grid * grid;
 		view2.p2 = view2.p2 / grid * grid;
 		
 		// vertical
+		iV2 cp1 = camP1();
 		for( i=view2.p1.x; i<=view2.p2.x; i+=grid )
 		{
-			int x = m_camz * (i - (m_camx - (m_vieww/m_camz)/2));
-			R9_DrawLine( fV2(x,0), fV2(x,m_viewh), Editor::app->GetColor(EDI_COLORGRID1) );
+			int x = camScale * (i - cp1.x);
+			R9_DrawLine(fV2(x, 0), fV2(x, view.Height()), Editor::app->GetColor(EDI_COLORGRID1));
 		}
 
 		// horizontal
 		for( i=view2.p1.y; i<=view2.p2.y; i+=grid )
 		{
-			int y = m_camz * (i - (m_camy - (m_viewh/m_camz)/2));
-			R9_DrawLine( fV2(0,y), fV2(m_vieww,y), Editor::app->GetColor(EDI_COLORGRID1) );
+			int y = camScale * (i - cp1.y);
+			R9_DrawLine(fV2(0, y), fV2(view.Width(), y), Editor::app->GetColor(EDI_COLORGRID1));
 		}
 	}
 
 	// ROOM GRID
-	int gridx = m_roomw;
-	int gridy = m_roomh;
-	if( m_roomgrid && gridx!=0 && gridy!=0 ) 
+	iV2 rgrid = roomSize;
+	if( m_roomgrid && rgrid.x!=0 && rgrid.y!=0 ) 
 	{
-		iV2 gr(gridx, gridy);
 		// snap view
-		view2 = view; 
-		view2.p1 = view2.p1 / gr * gr;
-		view2.p2 = view2.p2 / gr * gr;
+		view2 = vw; 
+		view2.p1 = view2.p1 / rgrid * rgrid;
+		view2.p2 = view2.p2 / rgrid * rgrid;
 		
 		// vertical
-		for( i=view2.p1.x; i<=view2.p2.x; i+=gridx )
+		iV2 cp1 = camP1();
+		for( i=view2.p1.x; i<=view2.p2.x; i+=rgrid.x )
 		{
-			int x = m_camz * (i - (m_camx - (m_vieww/m_camz)/2));
-			R9_DrawLine( fV2(x,0), fV2(x,m_viewh), Editor::app->GetColor(EDI_COLORGRID2) );
+			int x = camScale * (i - cp1.x);
+			R9_DrawLine( fV2(x,0), fV2(x,view.Height()), Editor::app->GetColor(EDI_COLORGRID2) );
 		}
 
 		// horizontal
-		for( i=view2.p1.y; i<=view2.p2.y; i+=gridy )
+		for( i=view2.p1.y; i<=view2.p2.y; i+=rgrid.y )
 		{
-			int y = m_camz * (i - (m_camy - (m_viewh/m_camz)/2));
-			R9_DrawLine( fV2(0,y), fV2(m_vieww,y), Editor::app->GetColor(EDI_COLORGRID2));
+			int y = camScale * (i - cp1.y);
+			R9_DrawLine( fV2(0,y), fV2(view.Width(),y), Editor::app->GetColor(EDI_COLORGRID2));
 		}
 	}
 
@@ -987,12 +934,9 @@ void cEdiMap::DrawGrid( iRect &view )
 void cEdiMap::DrawAxes( int x, int y )
 {
 	if(!Editor::app->m_axes) return;
-
-	CAM2VIEW(x,y);
-	x += VIEWX;
-	y += VIEWY;
-	R9_DrawLine( fV2(x,VIEWY), fV2(x,VIEWY+VIEWH), Editor::app->GetColor(EDI_COLORGRID3) );
-	R9_DrawLine( fV2(VIEWX,y), fV2(VIEWX+VIEWW,y), Editor::app->GetColor(EDI_COLORGRID3) );
+	iV2 p = cam2view(iV2(x,y));
+	R9_DrawLine( fV2(p.x,view.p1.y), fV2(p.x,view.p2.y), Editor::app->GetColor(EDI_COLORGRID3) );
+	R9_DrawLine(fV2(view.p1.x, p.y), fV2(view.p2.x, p.y), Editor::app->GetColor(EDI_COLORGRID3));
 }
 
 void cEdiMap::DrawScrollers()
@@ -1006,31 +950,31 @@ void cEdiMap::DrawScrollers()
 
 iRect cEdiMap::GetHScrollRect()
 {
-	float x1 = (float)(m_camx-(m_vieww/m_camz)/2) / m_mapw * m_vieww;
-	float x2 = (float)(m_camx+(m_vieww/m_camz)/2) / m_mapw * m_vieww;
-	iRect rc( (float)m_viewx+x1, (float)m_viewy+m_viewh+2, (float)m_viewx+x2, (float)m_viewy+m_viewh+VIEWB );	
+	int w = view.Width();
+	float x1 = (float)(cam.x - (w / camScale) / 2) / mapSize.x * w;
+	float x2 = (float)(cam.x + (w / camScale) / 2) / mapSize.x * w;
+	iRect rc(view.p1.x + x1, view.p2.y + 2.0f, view.p1.x + x2, static_cast<float>(view.p2.y + viewBorder));
 	return rc;
 }
 
 iRect cEdiMap::GetVScrollRect()
 {
-	float y1 = (float)(m_camy-(m_viewh/m_camz)/2) / m_maph * m_viewh;
-	float y2 = (float)(m_camy+(m_viewh/m_camz)/2) / m_maph * m_viewh;
-	iRect rc( (float)m_viewx+m_vieww+2, (float)m_viewy+y1, (float)m_viewx+m_vieww+VIEWB, (float)m_viewy+y2 );
+	int h = view.Height();
+	float y1 = (float)(cam.y - (h / camScale) / 2) / mapSize.y * h;
+	float y2 = (float)(cam.y + (h / camScale) / 2) / mapSize.y * h;
+	iRect rc(view.p2.x + 2.0f, view.p1.y + y1, static_cast<float>(view.p2.x + viewBorder), view.p1.y + y2);
 	return rc;
 }
 
 void cEdiMap::CheckMapView()
 {
-	m_viewx = VIEWB;
-	m_viewy = VIEWB+32;
-	m_vieww = R9_GetWidth() - 2*VIEWB;
-	m_viewh = R9_GetHeight() - (32+16+2*VIEWB);
-
-	if(m_vieww>m_mapw) m_vieww=m_mapw;
-	if(m_viewh>m_maph) m_viewh=m_maph;
-	m_viewx = VIEWB + (R9_GetWidth() - m_vieww - (2*VIEWB) ) / 2;
-	m_viewy = VIEWB + 32 + (R9_GetHeight() - m_viewh - (32+16+2*VIEWB) ) / 2;
+	view = iRect(0, iV2(R9_GetWidth(), R9_GetHeight())).Inflate(viewBorder);
+	view.p1.y += 32;
+	view.p2.y -= 16;
+	iV2 sz = view.Size();
+	if (sz.x > mapSize.x) sz.x = mapSize.x;
+	if (sz.y > mapSize.y) sz.y = mapSize.y;
+	view.Inflate((view.Size() - sz) / 2);
 }
 
 
@@ -1045,18 +989,17 @@ bool cEdiMap::SaveMapImage(const std::string & filename )
 	// CREATE IMGHUGE
 	r9Img imghuge;
 	imghuge.m_pf = R9_PF_RGB;
-	imghuge.m_width = m_mapw;
-	imghuge.m_height = m_maph;
+	imghuge.m_width = mapSize.x;
+	imghuge.m_height = mapSize.y;
 	if(!R9_ImgCreate(&imghuge)) return false;
 
 	// LOOP
-	int w=256;
-	int h=256;
-	int y=0;
-	while(y<m_maph)
+	iV2 sz(256);
+	iV2 p;
+	while (p.y < mapSize.y)
 	{
-		int x=0;
-		while(x<m_mapw)
+		p.x = 0;
+		while (p.x < mapSize.x)
 		{
 			// draw in render target
 			if(R9_BeginScene(m_target))
@@ -1064,37 +1007,31 @@ bool cEdiMap::SaveMapImage(const std::string & filename )
 				R9_Clear(Editor::app->GetColor(EDI_COLORMAP));
 
 				// DRAW
-				int camz = m_camz;
-				int camx = m_camx;
-				int camy = m_camy;
-				int vieww = m_vieww;
-				int viewh = m_viewh;
-				m_camz = 1;
-				m_camx = x + 128;
-				m_camy = y + 128;
-				m_vieww = w;
-				m_viewh = h;
-				iRect view(x, y, x + w, y + h); // camera view in map
-				BrushDrawExtra( view );
-				DrawGrid( view );
-				m_camz = camz;
-				m_camx = camx;
-				m_camy = camy;
-				m_vieww = vieww;
-				m_viewh = viewh;
+				int _camScale = camScale;
+				iV2 _cam = cam;
+				iRect _view = view;
+				camScale = 1;
+				cam = p + 128;
+				view.p2 = view.p1 + sz;
+				iRect vw(p, p + sz); // camera view in map
+				BrushDrawExtra( vw );
+				DrawGrid( vw );
+				camScale = _camScale;
+				cam = _cam;
+				view = _view;
 
 				// END DRAW
 				R9_Flush();
 				R9_EndScene();
 			}
 
-			fRect rect(x,y,x+w,y+h);
+			fRect rect(p, p + sz);
 			R9_CopyTargetToImage(m_target,&imghuge,&rect);
 
-			x+=w;
+			p.x+=sz.x;
 		}
 
-		y+=h;
+		p.y+=sz.y;
 	}
 
 	bool ok = R9_ImgSaveFile(filename, &imghuge);
@@ -1159,12 +1096,12 @@ bool cEdiMap::LoadMap(const std::string &filename)
 			{
 				if( chunksize!= 6*4 ) { ERROR_CHUNK("size"); }
 				size = 0;
-				size += file->Read(&m_mapw, 4);
-				size += file->Read(&m_maph, 4);
-				size += file->Read(&g_map.m_roomw, 4);
-				size += file->Read(&g_map.m_roomh, 4);
-				size += file->Read(&g_map.m_camx, 4);
-				size += file->Read(&g_map.m_camy, 4);
+				size += file->Read(&mapSize.x, 4);
+				size += file->Read(&mapSize.y, 4);
+				size += file->Read(&g_map.roomSize.x, 4);
+				size += file->Read(&g_map.roomSize.y, 4);
+				size += file->Read(&g_map.cam.x, 4);
+				size += file->Read(&g_map.cam.y, 4);
 				if( size!=chunksize ) { ERROR_CHUNK("size"); }
 				
 				break;
@@ -1228,9 +1165,8 @@ bool cEdiMap::LoadMap(const std::string &filename)
 	}
 
 	files->FileClose(file);
-	elog::app() << "  map=" << m_mapw << "x" << m_maph << ", room=" << g_map.m_roomw << "x" << g_map.m_roomh << ", brushes=" << count_brush << ", objects=" << count_obj << std::endl;
+	elog::app() << "  map=" << roomSize.x << "x" << roomSize.y << ", room=" << g_map.roomSize.x << "x" << g_map.roomSize.y << ", brushes=" << count_brush << ", objects=" << count_obj << std::endl;
 
-	int ret=g_map.Resize(m_mapw, m_maph); 
-
+	g_map.Resize(mapSize); 
 	return true;
 }

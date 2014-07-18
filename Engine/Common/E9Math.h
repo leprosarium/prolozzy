@@ -96,6 +96,7 @@ struct iV2
 	iV2 &	operator-=	( int s)					{ x -= s; y -= s; return *this; }
 	iV2		operator-	() const					{ return iV2(-x, -y); }
 	iV2	Tran() const { return iV2(y, x); }
+	iV2 & Clip(const iRect & c);
 
 	bool operator <(int v) const { return x < v && y < v; }
     bool operator >(int v) const { return x > v && y > v; }
@@ -206,6 +207,15 @@ inline	bool	operator!=	( const iRect& r1, const iRect& r2 )	{ return ! (r1 == r2
 //inline iRect	operator+=	( iRect& r1, const iRect& r2 )			{ if(r2.p1.x<r1.p1.x) r1.p1.x=r2.p1.x; if(r2.p1.y<r1.p1.y) r1.p1.y=r2.p1.y; if(r2.p2.x>r1.p2.x) r1.p2.x=r2.p2.x; if(r2.p2.y>r1.p2.y) r1.p2.y=r2.p2.y; return r1; }
 inline iRect	operator*	( const iRect& r1, const iRect& r2 )	{ return iRect( std::max(r1.p1.x,r2.p1.x), std::max(r1.p1.y,r2.p1.y), std::min(r1.p2.x, r2.p2.x), std::min(r1.p2.y,r2.p2.y)); }
 //inline iRect	operator*=	( iRect& r1, const iRect& r2 )			{ if(r2.p1.x>r1.p1.x) r1.p1.x=r2.p1.x; if(r2.p1.y>r1.p1.y) r1.p1.y=r2.p1.y; if(r2.p2.x<r1.p2.x) r1.p2.x=r2.p2.x; if(r2.p2.y<r1.p2.y) r1.p2.y=r2.p2.y; return r1; }
+inline iV2 & iV2::Clip(const iRect & c)
+{
+	if (x < c.p1.x) x = c.p1.x;
+	if (y < c.p1.y) y = c.p1.y;
+	if (x > c.p2.x) x = c.p2.x;
+	if (y > c.p2.y) y = c.p2.y;
+	return *this;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // fColor

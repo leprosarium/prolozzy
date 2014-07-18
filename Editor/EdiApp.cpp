@@ -469,20 +469,13 @@ void Editor::DrawStats()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // UTILS
 //////////////////////////////////////////////////////////////////////////////////////////////////
-int	Editor::GetMouseX()
-{
-	POINT mouse;
-	GetCursorPos(&mouse);
-	ScreenToClient(Wnd(), &mouse);
-	return mouse.x;
-}
 
-int Editor::GetMouseY()
+iV2 Editor::GetMousePos() const
 {
 	POINT mouse;
 	GetCursorPos(&mouse);
 	ScreenToClient(Wnd(), &mouse);
-	return mouse.y;
+	return iV2(mouse.x, mouse.y);
 }
 
 void Editor::WaitCursor( BOOL on )

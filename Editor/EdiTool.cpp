@@ -8,17 +8,20 @@
 
 #include "eInput.h"
 
-
-#define SNAP(x,grid)	( ((x)/(grid))*(grid) + ((x)%(grid)>=(grid)/2)*(grid) )
-
-#define SNAP2GRID(x,y)						\
-{											\
-	if(Editor::app->m_snap)					\
-	{										\
-		x=SNAP(x,Editor::app->m_gridsize);	\
-		y=SNAP(y,Editor::app->m_gridsize);	\
-	}										\
+inline int Snap(int x, int grid)
+{
+	int xx = x / grid;
+	if (x % grid >= grid / 2)
+		++xx;
+	return xx * grid;
 }
+
+inline void Snap(iV2 & p)
+{
+	if (Editor::app->m_snap)
+		p = iV2(Snap(p.x, Editor::app->m_gridsize), Snap(p.y, Editor::app->m_gridsize));
+}
+
 
 cEdiTool::cEdiTool(const std::string & name) : name(name)
 {
@@ -40,10 +43,8 @@ void cEdiToolPaint::Reset()
 
 void cEdiToolPaint::Update( float dtime )
 {
-
-	int mx = Editor::app->GetMouseX() - VIEWX;
-	int my = Editor::app->GetMouseY() - VIEWY;
-	BOOL inview = INVIEW(mx,my);
+	iV2 m = Editor::app->GetMousePos() - iV2(VIEWX, VIEWY);
+	BOOL inview = INVIEW(m.x,m.y);
 	if(!inview && !IsBusy()) return;
 
 	bool alt = einput->alt();
@@ -58,18 +59,17 @@ void cEdiToolPaint::Update( float dtime )
 	{
 		int bw = static_cast<int>(brush->mapWith()); // brush.m_data[BRUSH_MAP+2]-brush.m_data[BRUSH_MAP+0];
 		int bh = static_cast<int>(brush->mapHeight()); // brush.m_data[BRUSH_MAP+3]-brush.m_data[BRUSH_MAP+1];
-		VIEW2CAM(mx,my);
-		if(mx<CAMX1+bw)	mx=CAMX1+bw;
-		if(my<CAMY1+bh)	my=CAMY1+bh;
-		if(mx>CAMX2)	mx=CAMX2;
-		if(my>CAMY2)	my=CAMY2;
-		mx = mx-bw;
-		my = my-bh;
-		SNAP2GRID(mx,my); // grid snap
+		VIEW2CAM(m.x,m.y);
+		if(m.x<CAMX1+bw)	m.x=CAMX1+bw;
+		if(m.y<CAMY1+bh)	m.y=CAMY1+bh;
+		if(m.x>CAMX2)	m.x=CAMX2;
+		if(m.y>CAMY2)	m.y=CAMY2;
+		iV2 sz = iV2(bw, bh);
+		m -= sz;
+		Snap(m);
 
-		axe = iV2(mx, my);
-		brush->pos = axe;
-		brush->size = iV2(bw, bh);
+		brush->pos = axe = m;
+		brush->size = sz;
 
 		if(einput->mouseValue(0)) mode = Mode::Paint;
 		else if(einput->mouseValue(1)) mode = Mode::PickMenu;
@@ -79,26 +79,25 @@ void cEdiToolPaint::Update( float dtime )
 	else
 	if( mode == Mode::Paint)
 	{
-		VIEW2CAM(mx,my);
-		if(mx>CAMX2) mx=CAMX2;
-		if(my>CAMY2) my=CAMY2;
+		VIEW2CAM(m.x,m.y);
+		if(m.x>CAMX2) m.x=CAMX2;
+		if(m.y>CAMY2) m.y=CAMY2;
 
-		int bw = mx - brush->pos.x;
-		int bh = my - brush->pos.y;
-		if(bw<0) bw=0;
-		if(bh<0) bh=0;
+		iV2 sz = m - brush->pos;
+		if(sz.x<0) sz.x=0;
+		if(sz.y<0) sz.y=0;
 		
 		if(einput->keyValue(DIK_LSHIFT))
 		{
 			int mw = static_cast<int>(brush->mapWith()); // brush.m_data[BRUSH_MAP+2]-brush.m_data[BRUSH_MAP+0];
 			int mh = static_cast<int>(brush->mapHeight()); // brush.m_data[BRUSH_MAP+3]-brush.m_data[BRUSH_MAP+1];
-			if(mw<1) bw=0; else	bw = (bw / mw) * mw;
-			if(mh<1) bh=0; else	bh = (bh / mh) * mh;
+			if(mw<1) sz.x=0; else	sz.x = (sz.x / mw) * mw;
+			if(mh<1) sz.y=0; else	sz.y = (sz.y / mh) * mh;
 		}
 		else
-			SNAP2GRID(bw,bh); // grid snap
+			Snap(sz); // grid snap
 
-		brush->size = iV2(bw, bh);
+		brush->size = sz;
 
 		axe = brush->pos + brush->size;
 
@@ -123,16 +122,16 @@ void cEdiToolPaint::Update( float dtime )
 	else
 	if(mode == Mode::PickMenu || mode == Mode::Pick) // pick mode
 	{
-		VIEW2CAM(mx,my);
-		if(mx<CAMX1) mx=CAMX1;
-		if(my<CAMY1) my=CAMY1;
-		if(mx>CAMX2) mx=CAMX2;
-		if(my>CAMY2) my=CAMY2;
-		SNAP2GRID(mx,my); // grid snap
+		VIEW2CAM(m.x,m.y);
+		if(m.x<CAMX1) m.x=CAMX1;
+		if(m.y<CAMY1) m.y=CAMY1;
+		if(m.x>CAMX2) m.x=CAMX2;
+		if(m.y>CAMY2) m.y=CAMY2;
+		Snap(m);
 
-		axe = iV2(mx, my);
+		axe = m;
 
-		picked = g_map.BrushPick(mx,my);
+		picked = g_map.BrushPick(m);
 	
 		if(mode == Mode::PickMenu && !einput->mouseValue(1))
 		{
@@ -171,9 +170,8 @@ void cEdiToolPaint::Update( float dtime )
 
 void cEdiToolPaint::Draw() const
 {
-	int mx = Editor::app->GetMouseX() - VIEWX;
-	int my = Editor::app->GetMouseY() - VIEWY;
-	if(!INVIEW(mx,my)) return; // && !m_isbusy
+	iV2 m = Editor::app->GetMousePos() - iV2(VIEWX, VIEWY);
+	if(!INVIEW(m.x,m.y)) return; // && !m_isbusy
 
 	tBrush * brush = & Editor::app->m_brush;
 
@@ -272,16 +270,15 @@ void cEdiToolEdit::Update( float dtime )
 
 	tBrush& brush = Editor::app->m_brush;
 
-	int mx = Editor::app->GetMouseX() - VIEWX;
-	int my = Editor::app->GetMouseY() - VIEWY;
-	BOOL inview = INVIEW(mx,my);
+	iV2 m = Editor::app->GetMousePos() - iV2(VIEWX, VIEWY);
+	BOOL inview = INVIEW(m.x,m.y);
 
-	VIEW2CAM(mx,my);
-	if(mx<CAMX1) mx=CAMX1;
-	if(my<CAMY1) my=CAMY1;
-	if(mx>CAMX2) mx=CAMX2;
-	if(my>CAMY2) my=CAMY2;
-	SNAP2GRID(mx,my); // grid snap
+	VIEW2CAM(m.x,m.y);
+	if(m.x<CAMX1) m.x=CAMX1;
+	if(m.y<CAMY1) m.y=CAMY1;
+	if(m.x>CAMX2) m.x=CAMX2;
+	if(m.y>CAMY2) m.y=CAMY2;
+	Snap(m); // grid snap
 
 	// additional keys
 	bool shift	= einput->shift();;
@@ -297,13 +294,13 @@ void cEdiToolEdit::Update( float dtime )
 		if(einput->isMouseDown(0))
 		{
 			if(selop == SelOp::New) BrushDeselect();
-			rect.p1 = rect.p2 = iV2(mx, my);
+			rect.p1 = rect.p2 = m;
 			mode = Mode::Select;
 		}
 		else
 		if(einput->isMouseDown(1))
 		{
-			move = iV2(mx, my);
+			move = m;
 			moved = 0;
 			BrushMoveStart();
 			mode = Mode::Move;
@@ -321,8 +318,7 @@ void cEdiToolEdit::Update( float dtime )
 	else
 	if( mode == Mode::Select)
 	{
-		rect.p2.x = mx;
-		rect.p2.y = my;
+		rect.p2 = m;
 		rect.p2.x = std::max(rect.p2.x, rect.p1.x+1);
 		rect.p2.y = std::max(rect.p2.y, rect.p1.y+1);
 		if(!einput->mouseValue(0))
@@ -334,7 +330,7 @@ void cEdiToolEdit::Update( float dtime )
 	else
 	if(mode == Mode::Move)
 	{
-		moved = iV2(mx, my) - move;
+		moved = m - move;
 
 		if(!einput->mouseValue(1))
 		{
@@ -344,7 +340,7 @@ void cEdiToolEdit::Update( float dtime )
 		}
 	}
 
-	axe = iV2(mx, my);
+	axe = m;
 
 	// tooltip
 	std::ostringstream o;
@@ -352,11 +348,11 @@ void cEdiToolEdit::Update( float dtime )
 	{
 		if(selop == SelOp::Sub) o << "sub";
 		if(selop == SelOp::Add) o << "add";
-		o << std::endl <<  mx << " " << my;
+		o << std::endl <<  m.x << " " << m.y;
 		if(mode == Mode::Select) o << std::endl << rect.Width() << " x " << rect.Height();
 	}
 	else
-		o << "mov " << moved.x << "," << moved.y << std::endl << mx << "," << my;
+		o << "mov " << moved.x << "," << moved.y << std::endl << m.x << "," << m.y;
 	if(inview)
 		g_gui->ToolTip = o.str();
 	else 
@@ -365,9 +361,8 @@ void cEdiToolEdit::Update( float dtime )
 
 void cEdiToolEdit::Draw() const
 {
-	int mx = Editor::app->GetMouseX() - VIEWX;
-	int my = Editor::app->GetMouseY() - VIEWY;
-	BOOL inview = INVIEW(mx,my);
+	iV2 m = Editor::app->GetMousePos() - iV2(VIEWX, VIEWY);
+	BOOL inview = INVIEW(m.x,m.y);
 	
 	g_map.DrawAxes(axe.x, axe.y);
 

@@ -127,7 +127,7 @@ public:
 		void		BrushDel			( tBrush * b );				// delete one brush from brushlist and shift others; selectcount friendly
 //		void		BrushDrawOld		( iRect& view );			// draw brushes in view
 		void		BrushDrawExtra		( iRect& view );			// draw brushes in view using partitioning
-		tBrush *	BrushPick			( int x, int y );			// pick brush from a map position; -1 if not found
+	tBrush * BrushPick(const iV2 & p) const;
 	void BrushToFront(tBrush * b) { BrushTo(m_brush.rbegin(), m_brush.rend(), b); }				// bring brush to front (first visible in layer)
 	void BrushToBack (tBrush * b) { BrushTo(m_brush.begin(), m_brush.end(), b); } 				// bring brush to back (last visible in layer)
 		void		BrushClear			();							// free brush buffers and counts; selectcount friendly

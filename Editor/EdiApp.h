@@ -87,8 +87,7 @@ public:
 	static void HandleReset();							// handle render device reset; used to repaint map's render target
 
 	// utils
-	int GetMouseX();
-	int	GetMouseY();
+	iV2 GetMousePos() const;
 	int GetScrW() const { return R9_GetWidth(); }
 	int GetScrH() const { return R9_GetHeight(); }
 	iV2 GetAxe() const { return tools()->axe; }

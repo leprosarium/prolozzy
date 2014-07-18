@@ -387,8 +387,7 @@ void cEdiMap::Update( float dtime )
 
 	int stepx = Editor::app->m_gridsize;
 	int stepy = Editor::app->m_gridsize;
-	int mx = Editor::app->GetMouseX() - VIEWX;
-	int my = Editor::app->GetMouseY() - VIEWY;
+	iV2 m = Editor::app->GetMousePos() - iV2(VIEWX, VIEWY);
 	int mz = einput->mouse.axe[2].delta;
 	bool shift	= einput->shift();
 	bool alt	= einput->alt() || einput->mouseValue(2);
@@ -432,7 +431,7 @@ void cEdiMap::Update( float dtime )
 	}
 
 	// vertical scroll
-	if( mz!=0 && iRect(VIEWW, 0, VIEWW+VIEWB, VIEWH).IsInside(iV2(mx, my)) )
+	if(mz!=0 && iRect(VIEWW, 0, VIEWW+VIEWB, VIEWH).IsInside(m))
 	{
 		if(mz<0) dy = stepy;
 		if(mz>0) dy =-stepy;
@@ -441,7 +440,7 @@ void cEdiMap::Update( float dtime )
 	}
 	
 	// horizontal scroll
-	if( mz!=0 && iRect(0, VIEWH, VIEWW, VIEWH+VIEWB).IsInside(iV2(mx, my)))
+	if( mz!=0 && iRect(0, VIEWH, VIEWW, VIEWH+VIEWB).IsInside(m))
 	{
 		if(mz<0) dx = stepx;
 		if(mz>0) dx =-stepx;
@@ -455,24 +454,23 @@ void cEdiMap::Update( float dtime )
 
 	// scrolling
 	iRect rc;
-	mx = Editor::app->GetMouseX();
-	my = Editor::app->GetMouseY();
+	m = Editor::app->GetMousePos();
 	if(!m_scrolling && einput->isMouseDown(0))
 	{
 		rc = GetHScrollRect();
-		if(rc.IsInside(fV2(mx,my))) 
+		if(rc.IsInside(fV2(m))) 
 		{
 			m_scrolling = 1;
-			m_scrollofs = mx-rc.p1.x;
+			m_scrollofs = m.x-rc.p1.x;
 			Editor::app->SetCursor(App::Cursor::Hand);
 		}
 		else
 		{
 			rc = GetVScrollRect();
-			if(rc.IsInside(fV2(mx,my)))
+			if(rc.IsInside(fV2(m)))
 			{
 				m_scrolling = 2;
-				m_scrollofs = my-rc.p1.y;
+				m_scrollofs = m.y-rc.p1.y;
 				Editor::app->SetCursor(App::Cursor::Hand);
 			}
 		}
@@ -487,14 +485,14 @@ void cEdiMap::Update( float dtime )
 	if(m_scrolling==1) // scroll horizontal
 	{
 		rc = GetHScrollRect();
-		dx = (mx-m_scrollofs)-rc.p1.x;
+		dx = (m.x-m_scrollofs)-rc.p1.x;
 		dx = (dx/Editor::app->m_gridsize)*Editor::app->m_gridsize;
 	}
 	else
 	if(m_scrolling==2) // scroll vertical
 	{
 		rc = GetVScrollRect();
-		dy = (my-m_scrollofs)-rc.p1.y;
+		dy = (m.y-m_scrollofs)-rc.p1.y;
 		dy = (dy/Editor::app->m_gridsize)*Editor::app->m_gridsize;
 	}
 
@@ -717,12 +715,12 @@ void cEdiMap::BrushDrawExtra( iRect& view )
 	}
 }
 
-tBrush * cEdiMap::BrushPick( int x, int y )
+tBrush * cEdiMap::BrushPick(const iV2 & p) const
 {
 	auto it = find_if(m_brush.rbegin(), m_brush.rend(), 
-		[x,y](tBrush *brush) -> bool
+		[p](tBrush *brush) -> bool
 	{ 
-		return !Editor::app->layers.IsHidden(brush->layer) && brush->rect().IsInside(iV2(x, y));
+		return !Editor::app->layers.IsHidden(brush->layer) && brush->rect().IsInside(p);
 	});
 	return it == m_brush.rend() ? nullptr : *it;
 }

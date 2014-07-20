@@ -319,13 +319,8 @@ cEdiMap::cEdiMap() : brush("brush", 1)
 	m_count_brushcheck = 0;
 }
 
-cEdiMap::~cEdiMap()
+bool cEdiMap::Init()
 {
-}
-
-BOOL cEdiMap::Init()
-{
-
 	// create render target shader
 	int width = R9_GetWidth();
 	int height = R9_GetHeight();
@@ -347,7 +342,7 @@ BOOL cEdiMap::Init()
 		R9_EndScene();
 	}
 
-	return TRUE;
+	return true;
 }
 
 void cEdiMap::Done()

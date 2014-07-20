@@ -76,7 +76,7 @@ public:
 	// map
 	iV2 mapSize;
 	iV2 roomSize;
-	int			m_roomgrid;										// room grid visible
+	int m_roomgrid;										// room grid visible
 	iRect view;													// viewport
 	static const int viewBorder = 16;
 	iV2 cam;													// camera position
@@ -148,10 +148,6 @@ public:
 	void CheckMapView();									// checks viewport if exceedes map sizes and adjust
 	int	m_scrolling;									// 0=no, 1=horizontal, 1=vertical
 	int	m_scrollofs;									// scroll pick offset (h or v)
-
-	// statistics
-	int	m_count_brushdraw;
-	int	m_count_brushcheck;
 
 	// save map image
 	bool SaveMapImage(const std::string & filename);					// save huge map image, rendering in the target texture each 256x256 cel

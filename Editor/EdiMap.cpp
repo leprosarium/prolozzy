@@ -313,10 +313,6 @@ cEdiMap::cEdiMap() : brush("brush", 1)
 	// selection
 	m_selectcount	= 0;
 	m_selectgoto	= 0;
-
-	// others
-	m_count_brushdraw = 0;
-	m_count_brushcheck = 0;
 }
 
 bool cEdiMap::Init()
@@ -619,9 +615,6 @@ void cEdiMap::BrushDel(tBrush * brush)
 
 void cEdiMap::BrushDrawExtra( const iRect& view )
 {
-	m_count_brushdraw = 0;
-	m_count_brushcheck = 0;
-
 	int partition[32];
 	int partitioncount = PartitionGet(view, partition,32);
 	if( partitioncount==0 ) return;
@@ -636,7 +629,6 @@ void cEdiMap::BrushDrawExtra( const iRect& view )
 		for(auto brush: *m_partition[pidx])
 		{
 
-			m_count_brushcheck++;
 			if (Editor::app->layers.IsHidden(brush->layer)) continue;
 			if(!view.Intersects(brush->rect())) continue;
 
@@ -660,7 +652,6 @@ void cEdiMap::BrushDrawExtra( const iRect& view )
 		if(!g_gui->ScriptPrologDo("mod", "brushDraw", br)) continue;
 		iV2 p = camScale  * (brushtemp.pos - view.p1);
 		g_paint.DrawBrushAt(&brushtemp, p.x, p.y, static_cast<float>(camScale));
-		m_count_brushdraw++;
 	}
 }
 

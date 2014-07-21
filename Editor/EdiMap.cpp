@@ -251,7 +251,7 @@ PREDICATE_M(map, brushNew, 1)
 
 PREDICATE_M(map, repartition, 0)
 {
-	return g_map.PartitionRepartition();
+	return g_map.partitions.Repartition(g_map.m_brush);
 }
 
 PREDICATE_M(map, refresh, 0) 
@@ -297,13 +297,10 @@ PREDICATE_M(map, saveImage, 1)
 // INIT
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-cEdiMap::cEdiMap() : brush("brush", 1)
+cEdiMap::cEdiMap() : brush("brush", 1), camScale(1)
 {
-	
 	// map
 	m_roomgrid		= 0;
-
-	camScale		= 1;
 	
 	// refresh
 	m_hideselected	= FALSE;
@@ -328,8 +325,7 @@ bool cEdiMap::Init()
 
 	cam = mapSize / 2;
 
-	// partitioning
-	PartitionInit();
+	partitions.Init(mapSize);
 
 	// clear the target
 	if(R9_BeginScene(m_target))
@@ -345,7 +341,7 @@ void cEdiMap::Done()
 {
 
 	MarkerClear();
-	PartitionDone();
+	partitions.Done();
 
 	// refresh
 	if(m_target) { R9_TextureDestroy(m_target); m_target=NULL; }
@@ -538,14 +534,14 @@ void cEdiMap::Reset()
 {
 
 	MarkerClear();
-	PartitionDone();
+	partitions.Done();
 	BrushClear();
 
 	mapSize = MAP_SIZEDEFAULT;
 	CheckMapView();
 	cam = mapSize / 2;
 
-	PartitionInit();
+	partitions.Init(mapSize);
 
 	m_refresh = TRUE;
 	SelectionRefresh();
@@ -554,14 +550,14 @@ void cEdiMap::Reset()
 
 bool cEdiMap::Resize(const iV2 & sz)
 {
-	PartitionDone();
+	partitions.Done();
 	
 	mapSize = iV2(sz).Clip(iRect(MAP_SIZEMIN, MAP_SIZEMAX));
 	CheckMapView();
 	cam = mapSize / 2;
 
-	PartitionInit();
-	bool ok = PartitionRepartition();
+	partitions.Init(mapSize);
+	bool ok = partitions.Repartition(m_brush);
 
 	SelectionRefresh();
 	MarkerResize();
@@ -615,33 +611,7 @@ void cEdiMap::BrushDel(tBrush * brush)
 
 void cEdiMap::BrushDrawExtra( const iRect& view )
 {
-	int partition[32];
-	int partitioncount = PartitionGet(view, partition,32);
-	if( partitioncount==0 ) return;
-
-	// brushvis is a draw buffer that holds indexes to brushes accepted for draw; will be order before draw
-	brushvis.clear();
-
-	// check partitions for draw
-	for( int p=0; p<partitioncount; p++ )
-	{
-		int pidx = partition[p];
-		for(auto brush: *m_partition[pidx])
-		{
-
-			if (Editor::app->layers.IsHidden(brush->layer)) continue;
-			if(!view.Intersects(brush->rect())) continue;
-
-			brushvis.push_back(brush); // store in drawbuffer
-		}
-	}
-
-	std::sort(brushvis.begin(), brushvis.end());
-	brushvis.erase(std::unique(brushvis.begin(), brushvis.end()), brushvis.end());
-
-	std::sort(brushvis.begin(), brushvis.end(), [](tBrush * b1, tBrush * b2) { return  b1->layer < b2->layer; });
-
-	// draw drawbuffer
+	partitions.Filter(view, brushvis);
 	tBrush brushtemp;
 	for(auto brush: brushvis)
 	{
@@ -673,74 +643,87 @@ void cEdiMap::BrushClear()
 	m_selectcount=0;
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// PARTITIONING
-//////////////////////////////////////////////////////////////////////////////////////////////////
-void cEdiMap::PartitionInit()
+void Partitions::Init(const iV2 & mapSize)
 {
-	PartitionDone();// safety
-	int pcountw = PartitionCountW();
-	int pcounth = PartitionCountH();
-	for(int i=0;i<pcountw*pcounth;i++)
-		m_partition.push_back(new cPartitionCel());
+	Done();
+	size = (mapSize + CellSize - 1) / CellSize;
+	iV2 p;
+	for (int x = 0, y = 0; y < size.y; ++y, p.y += CellSize)
+	for (x = 0, p.x = 0; x < size.x; ++x, p.x += CellSize)
+		cells.push_back(new Cell(iRect(p, p + CellSize)));
 }
 
-void cEdiMap::PartitionDone()
+void Partitions::Done()
 {
-	for(auto c: m_partition) delete c;
-	m_partition.clear(); 
+	for (auto c : cells) delete c;
+	cells.clear();
 }
 
-bool cEdiMap::PartitionAdd( tBrush * b)
+bool Partitions::Add(tBrush * b)
 {
-	int pcountw = PartitionCountW();
 	iRect br = b->rect();
 	bool ok = false;
-	for(size_t i=0; i<m_partition.size(); i++)
-		if( br.Intersects(PartitionRect(i, pcountw)) )
-		{	
-			m_partition[i]->Add(b);
+	for (auto cell : cells)
+	if (br.Intersects(cell->rect))
+		{
+			cell->Add(b);
 			ok = true;
 		}
-	if(!ok)
+	if (!ok)
 		elog::app() << "Brush # " << b << " (" << br.p1.x << ", " << br.p1.y << ")-(" << br.p2.x << ", " << br.p2.y << ") out of bounds" << std::endl;
 	return ok;
 }
 
-void cEdiMap::PartitionDel( tBrush * b )
+void Partitions::Del(tBrush * b)
 {
-	int pcountw = PartitionCountW();
-	iRect br =b->rect();
-	for(size_t i=0; i<m_partition.size(); i++)
-		if( br.Intersects(PartitionRect(i, pcountw)) )
-			m_partition[i]->Del(b);
+	iRect br = b->rect();
+	for (auto cell : cells)
+	if (br.Intersects(cell->rect))
+		cell->Del(b);
 }
 
-int	cEdiMap::PartitionGet( const iRect& rect, int* buffer, int buffersize )
+void Partitions::Get(const iRect& rect, Cont & tmp, int maxsize) const
 {
-	assert(buffer!=NULL);
-	assert(buffersize>0);
-	int pcountw = PartitionCountW();
 	int count = 0;
-	for(size_t i=0; i<m_partition.size(); i++)
-		if(rect.Intersects(PartitionRect(i, pcountw)) )
-		{
-			buffer[count] = i;
-			count++;
-			if(count==buffersize) break;
-		}
-	return count;
+	for (auto cell: cells)
+	if (rect.Intersects(cell->rect))
+	{
+		tmp.push_back(cell);
+		count++;
+		if (count == maxsize) break;
+	}
 }
 
-bool cEdiMap::PartitionRepartition()
+bool Partitions::Repartition(const Brushes & brushes)
 {
-	for(auto c: m_partition) c->clear();
+	for (auto c : cells) c->clear();
 	bool ok = true;
-	for(auto b: m_brush) ok &= PartitionAdd(b);
+	for (auto b : brushes) ok &= Add(b);
 	return ok;
 }
 
+void Partitions::Filter(const iRect & view, Brushes & vis) const
+{
+	vis.clear();
+	Cont partition;
+	Get(view, partition, 32);
+	if (partition.empty()) return;
 
+	for (auto cell : partition)
+		for (auto brush : * cell)
+		{
+
+			if (Editor::app->layers.IsHidden(brush->layer)) continue;
+			if (!view.Intersects(brush->rect())) continue;
+
+			vis.push_back(brush); // store in drawbuffer
+		}
+
+	std::sort(vis.begin(), vis.end());
+	vis.erase(std::unique(vis.begin(), vis.end()), vis.end());
+
+	std::sort(vis.begin(), vis.end(), [](tBrush * b1, tBrush * b2) { return  b1->layer < b2->layer; });
+}
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // MARKERS
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1128,7 +1111,7 @@ bool cEdiMap::LoadMap(const std::string &filename)
 						else if(j == BRUSH_SHADER) b->shader = static_cast<Blend>(val);
 						else if(j == BRUSH_SCALE) b->scale = val;
 						else if(j == BRUSH_SELECT) b->select = val != 0;
-						else if(j == BRUSH_ID) {std::ostringstream o; o << val; b->id = o.str(); }
+						else if (j == BRUSH_ID) { if (val) { std::ostringstream o; o << val; b->id = o.str(); } }
 						else if(j == BRUSH_MATERIAL) b->material = val;
 						else if(j == BRUSH_DRAW) b->draw = val;
 						else if(j == BRUSH_DISABLE) b->disable = val != 0;

@@ -22,23 +22,37 @@
 #define MAP_CHUNKBRUSHES				0x88888888	// obsolete
 #define MAP_CHUNKBRUSHES2				0x88888889
 
+typedef std::vector<tBrush *> Brushes;
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// partitioning
-//////////////////////////////////////////////////////////////////////////////////////////////////
-const int PARTITION_CELSIZE = 1024;
-
-class cPartitionCel : std::vector<tBrush *>
+class Partitions
 {
-	typedef std::vector<tBrush *> Cont;
-public:
-	using Cont::begin;
-	using Cont::end;
-	using Cont::clear;
+	static const int CellSize = 1024;
+	class Cell : std::vector<tBrush *>
+	{
+		typedef std::vector<tBrush *> Cont;
+	public:
+		const iRect rect;
+		using Cont::begin;
+		using Cont::end;
+		using Cont::clear;
 
-	void Add(tBrush *b) { push_back(b); }
-	void Del(tBrush * b) { auto it = std::find(begin(), end(), b); if(it != end()) erase(it); }
-	bool Find(tBrush * b) { return std::find(begin(), end(), b) != end(); }
+		Cell(const iRect & rect) : rect(rect) {}
+		void Add(tBrush *b) { push_back(b); }
+		void Del(tBrush * b) { auto it = std::find(begin(), end(), b); if (it != end()) erase(it); }
+		bool Find(tBrush * b) { return std::find(begin(), end(), b) != end(); }
+	};
+	typedef std::vector<Cell *> Cont;
+	Cont cells;
+
+	iV2 size;
+	void Get(const iRect & rect, Cont & tmp, int maxsize) const;
+public:
+	void Init(const iV2 & mapSize);
+	void Done();
+	bool Add(tBrush * b);
+	void Del(tBrush * b);
+	bool Repartition(const Brushes & brushes);
+	void Filter(const iRect & view, Brushes & vis) const;
 };
 
 struct tMarker
@@ -107,22 +121,10 @@ public:
 
 	void TakeBrush(tBrush * b);
 	bool validBrushIdx(int idx) const { return static_cast<size_t>(idx) < m_brush.size(); }
-	std::vector<tBrush *> m_brush;							// brush buffer list (brushes in map)
-	std::vector<tBrush *> brushvis;									// visible brushes list (brushes to draw; updated on refresh)
+	Brushes m_brush;							// brush buffer list (brushes in map)
+	Brushes brushvis;							// visible brushes list (brushes to draw; updated on refresh)
 
-	// partitioning
-	void PartitionInit();							// create partitions cels depending on the map size
-	void PartitionDone();							// destroy partitions cels
-	void PartitionReset()							{ PartitionDone(); PartitionInit(); }
-	int PartitionCountW()							{ return (mapSize.x + PARTITION_CELSIZE - 1) / PARTITION_CELSIZE; }
-	int	PartitionCountH()							{ return (mapSize.y + PARTITION_CELSIZE - 1) / PARTITION_CELSIZE; }
-	bool PartitionAdd(tBrush * b);			// add a brush index to partitioning; true if successful
-	void PartitionDel(tBrush * b);			// del a brush index from partitioning; might need PartitionFix
-	int PartitionGet(const iRect & rect, int* buffer, int buffersize);	// retrive all partitions that intersect a specified area
-	bool PartitionRepartition();							// remove and reenter all brushes; ret ok (or false if some failures)
-	iRect PartitionRect(int idx, int countw) const { iV2 p1 = iV2(idx % countw, idx / countw) * PARTITION_CELSIZE; return iRect(p1, p1 + PARTITION_CELSIZE); }
-
-	std::vector<cPartitionCel *> m_partition;					// partitions cels list
+	Partitions partitions;
 
 	// markers
 	void MarkerToggle(const iV2 &p);				// add/remove marker at a given pos
@@ -168,7 +170,7 @@ void cEdiMap::BrushTo(It begin, It end, tBrush * b)
 	It to = cur++;
 	std::copy_backward(front, to, cur);
 	*front = b;
-	PartitionRepartition();
+	partitions.Repartition(g_map.m_brush);
 }
 
 extern	cEdiMap		g_map;

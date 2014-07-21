@@ -109,7 +109,7 @@ void cEdiToolPaint::Update( float dtime )
 					tBrush * b = g_map.brushPtr(a[1]);
 					b->select = false;
 					g_map.m_refresh = TRUE;
-					g_map.PartitionAdd(b);
+					g_map.partitions.Add(b);
 				}
 			}
 			mode = Mode::Normal;
@@ -219,7 +219,7 @@ void cEdiToolPaint::Command( int cmd )
 	else
 	if(cmd==TOOLCMD_DELETE)
 	{
-		g_map.PartitionDel(picked);
+		g_map.partitions.Del(picked);
 		g_map.BrushDel(picked);
 		picked = nullptr;
 		g_map.m_refresh = TRUE;
@@ -428,9 +428,9 @@ void cEdiToolEdit::BrushMove()
 	for(auto b: g_map.m_brush)
 	{
 		if(!b->select) continue;
-		g_map.PartitionDel(b); // delete before changing
+		g_map.partitions.Del(b); // delete before changing
 		b->pos += moved;
-		g_map.PartitionAdd(b); // readd after changed
+		g_map.partitions.Add(b); // readd after changed
 
 	}
 	drag.clear();
@@ -446,7 +446,7 @@ void cEdiToolEdit::BrushDeleteSelected()
 	{
 		tBrush * brush = g_map.m_brush[idx];
 		if(!brush->select) continue;
-		g_map.PartitionDel(brush);
+		g_map.partitions.Del(brush);
 		g_map.BrushDel(brush); 
 		idx--;
 	}
@@ -516,7 +516,7 @@ void cEdiToolEdit::BrushPaste()
 				{
 					tBrush * b = g_map.m_brush.back();
 					b->select = true;
-					g_map.PartitionAdd(b);	
+					g_map.partitions.Add(b);	
 				}
 			}
 			g_map.m_selectcount=count;

@@ -361,7 +361,6 @@ void Editor::Scroll( int dx, int dy )
 
 void Editor::HandleReset()
 {
-	g_map.m_refresh = TRUE; // refresh map
 	g_map.Refresh();
 	Editor::app->Draw();
 }

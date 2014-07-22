@@ -108,7 +108,7 @@ void cEdiToolPaint::Update( float dtime )
 				{
 					tBrush * b = g_map.brushPtr(a[1]);
 					b->select = false;
-					g_map.m_refresh = TRUE;
+					g_map.Refresh();
 					g_map.partitions.Add(b);
 				}
 			}
@@ -208,13 +208,13 @@ void cEdiToolPaint::Command( int cmd )
 	if(cmd==TOOLCMD_TOFRONT)
 	{
 		g_map.BrushToFront(picked);
-		g_map.m_refresh = TRUE;
+		g_map.Refresh();
 	}
 	else
 	if(cmd==TOOLCMD_TOBACK)
 	{
 		g_map.BrushToBack(picked);
-		g_map.m_refresh = TRUE;
+		g_map.Refresh();
 	}
 	else
 	if(cmd==TOOLCMD_DELETE)
@@ -222,7 +222,7 @@ void cEdiToolPaint::Command( int cmd )
 		g_map.partitions.Del(picked);
 		g_map.BrushDel(picked);
 		picked = nullptr;
-		g_map.m_refresh = TRUE;
+		g_map.Refresh();
 	}
 }
 
@@ -245,8 +245,8 @@ void cEdiToolEdit::Reset()
 	if(mode == Mode::Move)
 	{
 		drag.clear();
-		g_map.m_hideselected = FALSE;
-		g_map.m_refresh = TRUE;
+		g_map.m_hideselected = false;
+		g_map.Refresh();
 		Editor::app->SetCursor(App::Cursor::Arrow);
 	}
 	mode = Mode::Normal;
@@ -398,7 +398,7 @@ void cEdiToolEdit::BrushSelect()
 			g_map.m_selectcount++;
 		}
 	}
-	g_map.m_refresh=TRUE;
+	g_map.Refresh();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -407,7 +407,7 @@ void cEdiToolEdit::BrushDeselect()
 	for(tBrush * b: g_map.m_brush) 
 		b->select = false;
 	g_map.m_selectcount=0;
-	g_map.m_refresh=TRUE;
+	g_map.Refresh();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -418,8 +418,8 @@ void cEdiToolEdit::BrushMoveStart()
 	for(auto brush: g_map.brushvis)
 		if(brush->select) 
 			drag.push_back(brush);
-	g_map.m_hideselected = TRUE;
-	g_map.m_refresh=TRUE;
+	g_map.m_hideselected = true;
+	g_map.Refresh();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -434,8 +434,8 @@ void cEdiToolEdit::BrushMove()
 
 	}
 	drag.clear();
-	g_map.m_hideselected = FALSE;
-	g_map.m_refresh=TRUE;
+	g_map.m_hideselected = false;
+	g_map.Refresh();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -451,7 +451,7 @@ void cEdiToolEdit::BrushDeleteSelected()
 		idx--;
 	}
 	g_map.m_selectcount=0;
-	g_map.m_refresh=TRUE;
+	g_map.Refresh();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -520,7 +520,7 @@ void cEdiToolEdit::BrushPaste()
 				}
 			}
 			g_map.m_selectcount=count;
-			g_map.m_refresh=TRUE;
+			g_map.Refresh();
 			BEEP_OK();			
 			GlobalUnlock(handler); 
 		}

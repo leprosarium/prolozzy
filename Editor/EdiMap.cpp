@@ -245,8 +245,7 @@ PREDICATE_M(map, brushNew, 0)
 
 PREDICATE_M(map, brushNew, 1)
 {
-	int idx = g_map.BrushNew();
-	return g_map.UnifyBrush(A1, g_map.m_brush[idx]);
+	return g_map.UnifyBrush(A1, g_map.BrushNew());
 }
 
 PREDICATE_M(map, repartition, 0)
@@ -256,7 +255,7 @@ PREDICATE_M(map, repartition, 0)
 
 PREDICATE_M(map, refresh, 0) 
 {
-	g_map.m_refresh = TRUE;
+	g_map.Refresh();
 	return true;
 }
 
@@ -289,7 +288,7 @@ PREDICATE_M(selection, refresh, 0)
 PREDICATE_M(map, saveImage, 1)
 {
 	bool ret = g_map.SaveMapImage(WideStringToMultiByte(A1));
-	g_map.m_refresh = TRUE;
+	g_map.Refresh();
 	return ret;
 }
 
@@ -297,14 +296,13 @@ PREDICATE_M(map, saveImage, 1)
 // INIT
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-cEdiMap::cEdiMap() : brush("brush", 1), camScale(1)
+cEdiMap::cEdiMap() : 
+	refresh(true),
+	brush("brush", 1), 
+	camScale(1), 
+	m_roomgrid(), 
+	m_hideselected()
 {
-	// map
-	m_roomgrid		= 0;
-	
-	// refresh
-	m_hideselected	= FALSE;
-	m_refresh		= TRUE;
 	m_target		= NULL;
 
 	// selection
@@ -469,7 +467,7 @@ void cEdiMap::Update( float dtime )
 	if (d != 0)
 	{
 		cam += d;
-		m_refresh = TRUE;
+		Refresh();
 	}
 
 	// others
@@ -477,7 +475,7 @@ void cEdiMap::Update( float dtime )
 	{
 		if(einput->isKeyDown(DIK_A))			{ Editor::app->m_axes = !Editor::app->m_axes; }
 		if(einput->isKeyDown(DIK_S))			{ Editor::app->m_snap = !Editor::app->m_snap; }
-		if(einput->isKeyDown(DIK_G))			{ Editor::app->m_grid = !Editor::app->m_grid; m_refresh=TRUE; }
+		if(einput->isKeyDown(DIK_G))			{ Editor::app->m_grid = !Editor::app->m_grid; Refresh(); }
 	}
 
 	// bounds
@@ -485,9 +483,7 @@ void cEdiMap::Update( float dtime )
 
 	cam.Clip(iRect(0, mapSize).Inflate(camSize() / 2));
 
-	if(m_refresh) Refresh(); // @HM is it safe for draw (needs to be after bounds checks) !
-	m_refresh = FALSE;
-
+	if(refresh) Render(); // @HM is it safe for draw (needs to be after bounds checks) !
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -495,7 +491,6 @@ void cEdiMap::Update( float dtime )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiMap::Draw()
 {
-
 	// draw pre-rendered map
 	if(!m_target) return; // render target is not supported
 	R9_SetBlend(Blend::Opaque);
@@ -513,7 +508,7 @@ void cEdiMap::Draw()
 		R9_DrawBar(fRect(view.p1.x - viewBorder + 3, view.p1.y - viewBorder + 3, view.p1.x - 3, view.p1.y - 3), 0xffffffff);
 }
 
-void cEdiMap::Refresh()
+void cEdiMap::Render()
 {
 	// draw in render target
 	if(R9_BeginScene(m_target))
@@ -524,6 +519,7 @@ void cEdiMap::Refresh()
 		DrawGrid(v);
 		R9_EndScene();
 	}
+	refresh = false;
 }
 
 
@@ -543,7 +539,7 @@ void cEdiMap::Reset()
 
 	partitions.Init(mapSize);
 
-	m_refresh = TRUE;
+	Refresh();
 	SelectionRefresh();
 
 }
@@ -562,7 +558,7 @@ bool cEdiMap::Resize(const iV2 & sz)
 	SelectionRefresh();
 	MarkerResize();
 
-	m_refresh = TRUE;
+	Refresh();
 	return ok;
 }
 
@@ -570,10 +566,11 @@ bool cEdiMap::Resize(const iV2 & sz)
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // BRUSHES
 //////////////////////////////////////////////////////////////////////////////////////////////////
-int	cEdiMap::BrushNew()
+tBrush * cEdiMap::BrushNew()
 {
-	m_brush.push_back(new tBrush());
-	return m_brush.size()-1;
+	tBrush * b = new tBrush();
+	m_brush.push_back(b);
+	return b;
 }
 
 void cEdiMap::BrushIns( int idx, tBrush& brush )
@@ -711,13 +708,8 @@ void Partitions::Filter(const iRect & view, Brushes & vis) const
 
 	for (auto cell : partition)
 		for (auto brush : * cell)
-		{
-
-			if (Editor::app->layers.IsHidden(brush->layer)) continue;
-			if (!view.Intersects(brush->rect())) continue;
-
-			vis.push_back(brush); // store in drawbuffer
-		}
+			if (! Editor::app->layers.IsHidden(brush->layer) && view.Intersects(brush->rect()))
+				vis.push_back(brush);
 
 	std::sort(vis.begin(), vis.end());
 	vis.erase(std::unique(vis.begin(), vis.end()), vis.end());
@@ -754,7 +746,7 @@ void cEdiMap::MarkerGoto( int dir )
 	cam.x = m_marker[mark].x;
 	cam.y = m_marker[mark].y;
 	camScale = m_marker[mark].z;
-	m_refresh = TRUE;
+	Refresh();
 }
 
 int	cEdiMap::MarkerClosest( const iV2 & p, int &dist )
@@ -830,7 +822,7 @@ void cEdiMap::SelectionGoto( int dir )
 		if(m_brush[i]->select) 
 		{
 			cam = m_brush[i]->pos;
-			m_refresh = TRUE;
+			Refresh();
 			m_selectgoto = i;
 			return;
 		}
@@ -874,24 +866,23 @@ void cEdiMap::DrawGrid( const iRect & vw ) const
 	}
 
 	// ROOM GRID
-	iV2 rgrid = roomSize;
-	if( m_roomgrid && rgrid.x!=0 && rgrid.y!=0 ) 
+	if (m_roomgrid && roomSize.x && roomSize.y)
 	{
 		// snap view
 		view2 = vw; 
-		view2.p1 = view2.p1 / rgrid * rgrid;
-		view2.p2 = view2.p2 / rgrid * rgrid;
+		view2.p1 = view2.p1 / roomSize * roomSize;
+		view2.p2 = view2.p2 / roomSize * roomSize;
 		
 		// vertical
 		iV2 cp1 = camP1();
-		for( i=view2.p1.x; i<=view2.p2.x; i+=rgrid.x )
+		for (i = view2.p1.x; i <= view2.p2.x; i += roomSize.x)
 		{
 			int x = camScale * (i - cp1.x);
 			R9_DrawLine( fV2(x,0), fV2(x,view.Height()), Editor::app->GetColor(EDI_COLORGRID2) );
 		}
 
 		// horizontal
-		for( i=view2.p1.y; i<=view2.p2.y; i+=rgrid.y )
+		for (i = view2.p1.y; i <= view2.p2.y; i += roomSize.y)
 		{
 			int y = camScale * (i - cp1.y);
 			R9_DrawLine( fV2(0,y), fV2(view.Width(),y), Editor::app->GetColor(EDI_COLORGRID2));
@@ -1088,8 +1079,7 @@ bool cEdiMap::LoadMap(const std::string &filename)
 				int brushcount = chunksize/(BRUSH_MAX*4);
 				for(int i = 0; i < brushcount;i++)
 				{
-					if(i != g_map.BrushNew()) { ERROR_CHUNK("index"); }
-					tBrush * b = g_map.m_brush[i];
+					tBrush * b = g_map.BrushNew();
 					for(int j = 0; j  < BRUSH_MAX; j++)
 					{	
 						int val = 0;

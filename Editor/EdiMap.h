@@ -69,18 +69,21 @@ struct tMarker
 
 class cEdiMap
 {
+	bool refresh;
+	void Render();
 public:
 	cEdiMap();
 
 	bool Init();
 	void Done();
 
-	void Update(float dtime);			// update
-	void Draw();							// draw current
-	void Refresh();							// refresh draw
-
+	void Update(float dtime);
+	void Draw();
+							
 	void Reset();
 	bool Resize(const iV2 & sz);	// resize map; return true if no crop occured
+
+	void Refresh() { refresh = true; }
 
 	PlFunctor brush;
 	bool UnifyBrush(PlTerm t, tBrush * b);
@@ -90,7 +93,7 @@ public:
 	// map
 	iV2 mapSize;
 	iV2 roomSize;
-	int m_roomgrid;										// room grid visible
+	int m_roomgrid;												// room grid visible
 	iRect view;													// viewport
 	static const int viewBorder = 16;
 	iV2 cam;													// camera position
@@ -102,12 +105,12 @@ public:
 	iV2 cam2view(const iV2 & p) const { return camScale * (p - camP1()) + view.p1; } // from world space to screen space
 
 	// refresh			
-	BOOL m_hideselected;									// don't draw selected tiles
-	BOOL m_refresh;										// if refresh is necessary
+	bool m_hideselected;									// don't draw selected tiles
+
 	R9TEXTURE m_target;										// render target texture
 
 	// brushes
-	int BrushNew();							// add a new brush to the brushlist
+	tBrush * BrushNew();									// add a new brush to the brushlist
 	void BrushIns(int idx, tBrush& brush);	// insert a new brush and shift others; selectcount friendly
 	void BrushDel(tBrush * b);				// delete one brush from brushlist and shift others; selectcount friendly
 	void BrushDrawExtra(const iRect & view);			// draw brushes in view using partitioning

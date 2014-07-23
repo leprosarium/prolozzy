@@ -55,7 +55,7 @@ PREDICATE_M(map, getZoom, 1)
 
 PREDICATE_M(map, getSelect, 1)
 {
-	return A1 = g_map.m_selectcount;
+	return A1 = g_map.brushes.SelectCount;
 }
 
 PREDICATE_M(map, setRoomW, 1)
@@ -96,7 +96,7 @@ PREDICATE_M(map, setZoom, 1)
 
 PREDICATE_M(map, setSelect, 1)
 {
-	g_map.m_selectcount = A1;
+	g_map.brushes.SelectCount = A1;
 	return true;
 }
 
@@ -107,20 +107,10 @@ PREDICATE_M(map, load, 1)
 
 PREDICATE_M(map, brushCount, 1)
 {
-	return A1 = static_cast<int>(g_map.m_brush.size());
+	return A1 = static_cast<int>(g_map.brushes.size());
 }
 
-bool cEdiMap::UnifyBrush(PlTerm t, tBrush * b)
-{
-	if(!(t = brush))
-		return false;
-	return t[1] = b;
-}
 
-PREDICATE_M(map, brushIdx, 2)
-{
-	return g_map.UnifyBrush(A2, g_map.m_brush[static_cast<int>(A1)]);
-}
 
 PREDICATE_NONDET_M(map, brush, 1)
 { 
@@ -128,14 +118,14 @@ PREDICATE_NONDET_M(map, brush, 1)
 	if(call == PL_PRUNED)
 		return true;
 	PlTerm t = A1;
-	if(!(t = g_map.brush))
+	if (!(t = PlBrush::Functor()))
 		return false;
 	PlTerm br = t[1];
 	if (br.type() != PL_VARIABLE)
-			return std::find(g_map.m_brush.begin(), g_map.m_brush.end(), g_map.brushPtrNoEx(br)) != g_map.m_brush.end();
+		return std::find(g_map.brushes.begin(), g_map.brushes.end(), PlBrush::Cast(br)) != g_map.brushes.end();
 	size_t idx = call == PL_FIRST_CALL ? 0 : PL_foreign_context(handle);
-	if(idx < g_map.m_brush.size() && (br = g_map.m_brush[idx]))
-		if(++idx == g_map.m_brush.size())
+	if (idx < g_map.brushes.size() && (br = g_map.brushes[idx]))
+		if (++idx == g_map.brushes.size())
 			return true;
 		else
 			PL_retry(idx);
@@ -146,8 +136,8 @@ PREDICATE_NONDET_M(map, brush, 1)
 GET_BRUSH_PROP(Prop, PROP)\
 SET_BRUSH_PROP(Prop, PROP)
 
-#define GET_BRUSH_PROP(Prop, PROP) PREDICATE_M(brush, get##Prop, 2) { return A2 = g_map.brushPtr(A1)->PROP; }
-#define SET_BRUSH_PROP(Prop, PROP) PREDICATE_M(brush, set##Prop, 2) { g_map.brushPtr(A1)->PROP = A2; return true; }
+#define GET_BRUSH_PROP(Prop, PROP) PREDICATE_M(brush, get##Prop, 2) { return A2 = PlBrush(A1)->PROP; }
+#define SET_BRUSH_PROP(Prop, PROP) PREDICATE_M(brush, set##Prop, 2) { PlBrush(A1)->PROP = A2; return true; }
 
 BRUSH_PROP(Layer, layer)
 BRUSH_PROP(X, pos.x)
@@ -170,87 +160,87 @@ BRUSH_PROP(Collider, collider)
 
 PREDICATE_M(brush, getColor, 2) 
 {
-	int64 color = static_cast<dword>(g_map.brushPtr(A1)->color);
+	int64 color = static_cast<dword>(PlBrush(A1)->color);
 	return A2 = color;
 }
 
 PREDICATE_M(brush, setColor , 2) 
 {
 	int64 color = A2;
-	g_map.brushPtr(A1)->color = static_cast<dword>(color);
+	PlBrush(A1)->color = static_cast<dword>(color);
 	return true;
 }
 
 PREDICATE_M(brush, getShader, 2) 
 {
-	return A2 = static_cast<int>(g_map.brushPtr(A1)->shader);
+	return A2 = static_cast<int>(PlBrush(A1)->shader);
 }
 
 PREDICATE_M(brush, setShader, 2) 
 {
-	g_map.brushPtr(A1)->shader =  static_cast<Blend>(static_cast<int>(A2));
+	PlBrush(A1)->shader = static_cast<Blend>(static_cast<int>(A2));
 	return true;
 }
 
 PREDICATE_M(brush, getID, 2) 
 {
-	const std::string & id = g_map.brushPtr(A1)->id;
+	const std::string & id = PlBrush(A1)->id;
 	return id.empty() ? false : (A2 = id);
 }
 
 PREDICATE_M(brush, setID , 2) 
 {
-	g_map.brushPtr(A1)->id = static_cast<const char *>(A2);
+	PlBrush(A1)->id = static_cast<const char *>(A2);
 	return true;
 }
 
 PREDICATE_M(brush, getDisable, 2) 
 {
-	return A2 = g_map.brushPtr(A1)->disable ? 1 : 0;
+	return A2 = PlBrush(A1)->disable ? 1 : 0;
 }
 
 PREDICATE_M(brush, setDisable , 2) 
 {
-	g_map.brushPtr(A1)->disable = static_cast<int>(A2) != 0;
+	PlBrush(A1)->disable = static_cast<int>(A2) != 0;
 	return true;
 }
 
 PREDICATE_M(brush, getSelect, 2) 
 {
-	return A2 = g_map.brushPtr(A1)->select ? 1 : 0;
+	return A2 = PlBrush(A1)->select ? 1 : 0;
 }
 
 PREDICATE_M(brush, setSelect , 2) 
 {
-	g_map.brushPtr(A1)->select = static_cast<int>(A2) != 0;
+	PlBrush(A1)->select = static_cast<int>(A2) != 0;
 	return true;
 }
 
 PREDICATE_M(brush, getCollision, 2) 
 {
-	return A2 = g_map.brushPtr(A1)->collision ? 1 : 0;
+	return A2 = PlBrush(A1)->collision ? 1 : 0;
 }
 
 PREDICATE_M(brush, setCollision, 2) 
 {
-	g_map.brushPtr(A1)->collision = static_cast<int>(A2) != 0;
+	PlBrush(A1)->collision = static_cast<int>(A2) != 0;
 	return true;
 }
 
 PREDICATE_M(map, brushNew, 0)
 {
-	g_map.BrushNew();
+	g_map.brushes.New();
 	return true;
 }
 
 PREDICATE_M(map, brushNew, 1)
 {
-	return g_map.UnifyBrush(A1, g_map.BrushNew());
+	return PlBrush(g_map.brushes.New()) = A1;
 }
 
 PREDICATE_M(map, repartition, 0)
 {
-	return g_map.partitions.Repartition(g_map.m_brush);
+	return g_map.partitions.Repartition(g_map.brushes);
 }
 
 PREDICATE_M(map, refresh, 0) 
@@ -275,13 +265,13 @@ PREDICATE_M(map, resize, 2)
 
 PREDICATE_M(selection, goto, 1)
 {
-	g_map.SelectionGoto(A1);
+	g_map.brushes.SelectionGoto(A1);
 	return true;
 }
 
 PREDICATE_M(selection, refresh, 0)
 {
-	g_map.SelectionRefresh();
+	g_map.brushes.SelectionRefresh();
 	return true;
 }
 
@@ -296,18 +286,90 @@ PREDICATE_M(map, saveImage, 1)
 // INIT
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
+Brushes::Brushes() : SelectCount(), Selectgoto()
+{
+}
+
+tBrush * Brushes::New()
+{
+	tBrush * b = new tBrush();
+	push_back(b);
+	return b;
+}
+
+void Brushes::Del(tBrush * brush)
+{
+	if (brush->select) SelectCount--;
+	PlTermv a(1);
+	(PlBrush(brush)) = a[0];
+	g_gui->ScriptPrologDo("brush", "delete", a);
+	delete brush;
+	auto it = std::find(begin(), end(), brush);
+	if (it == end())
+		return;
+	erase(it);
+}
+
+void Brushes::SelectionRefresh()
+{
+	SelectCount = 0;
+	for (tBrush * b : *this)
+	if (b->select)
+		SelectCount++;
+}
+
+tBrush * Brushes::Pick(const iV2 & p) const
+{
+	auto it = find_if(rbegin(), rend(),
+		[p](tBrush *brush) -> bool
+	{
+		return !Editor::app->layers.IsHidden(brush->layer) && brush->rect().IsInside(p);
+	});
+	return it == rend() ? nullptr : *it;
+}
+
+void Brushes::Clear()
+{
+	for (auto b : *this) delete b;
+	clear();
+	SelectCount = 0;
+}
+
+
+void Brushes::SelectionGoto(int dir)
+{
+	if (empty()) return 
+	assert(dir == -1 || dir == 1);
+	if (Selectgoto <= -1) Selectgoto = size() - 1;
+	if (Selectgoto >= size()) Selectgoto = 0;
+	int i = Selectgoto;
+	while (true)
+	{
+		i += dir;
+		if (i <= -1) i = size() - 1;
+		if (i >= size()) i = 0;
+		tBrush * br = operator[](i);
+		if (br->select)
+		{
+			Selectgoto = i;
+			g_map.cam = br->pos;
+			g_map.Refresh();
+			return;
+
+		}
+		if (i == Selectgoto) return;
+	}
+}
+
+
 cEdiMap::cEdiMap() : 
 	refresh(true),
-	brush("brush", 1), 
 	camScale(1), 
 	m_roomgrid(), 
 	m_hideselected()
 {
 	m_target		= NULL;
 
-	// selection
-	m_selectcount	= 0;
-	m_selectgoto	= 0;
 }
 
 bool cEdiMap::Init()
@@ -344,8 +406,8 @@ void cEdiMap::Done()
 	// refresh
 	if(m_target) { R9_TextureDestroy(m_target); m_target=NULL; }
 	
-	for(auto b: m_brush) delete b;
-	m_brush.clear();
+	brushes.Clear();
+	brushvis.clear();
 }
 
 
@@ -531,7 +593,8 @@ void cEdiMap::Reset()
 
 	MarkerClear();
 	partitions.Done();
-	BrushClear();
+	brushes.Clear();
+	brushvis.clear();
 
 	mapSize = MAP_SIZEDEFAULT;
 	CheckMapView();
@@ -540,7 +603,7 @@ void cEdiMap::Reset()
 	partitions.Init(mapSize);
 
 	Refresh();
-	SelectionRefresh();
+	brushes.SelectionRefresh();
 
 }
 
@@ -553,57 +616,13 @@ bool cEdiMap::Resize(const iV2 & sz)
 	cam = mapSize / 2;
 
 	partitions.Init(mapSize);
-	bool ok = partitions.Repartition(m_brush);
+	bool ok = partitions.Repartition(brushes);
 
-	SelectionRefresh();
+	brushes.SelectionRefresh();
 	MarkerResize();
 
 	Refresh();
 	return ok;
-}
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// BRUSHES
-//////////////////////////////////////////////////////////////////////////////////////////////////
-tBrush * cEdiMap::BrushNew()
-{
-	tBrush * b = new tBrush();
-	m_brush.push_back(b);
-	return b;
-}
-
-void cEdiMap::BrushIns( int idx, tBrush& brush )
-{
-	assert(validBrushIdx(idx));
-	BrushNew();
-	for(int i=m_brush.size()-1;i>idx;i--) m_brush[i] = m_brush[i-1];
-	*m_brush[idx]=brush;
-	if(m_brush[idx]->select) m_selectcount++;
-}
-
-void cEdiMap::TakeBrush(tBrush * b)
-{
-	auto it = std::find(m_brush.begin(), m_brush.end(), b);
-	if(it == m_brush.end())
-		return;
-	if(b->select) m_selectcount--;
-	m_brush.erase(it);
-	brushvis.clear();
-}
-
-void cEdiMap::BrushDel(tBrush * brush)
-{
-	if(brush->select) m_selectcount--;
-	PlTermv a(1);
-	UnifyBrush(a[0], brush);
-	g_gui->ScriptPrologDo("brush", "delete", a);
-	delete brush;
-	auto it = std::find(m_brush.begin(), m_brush.end(), brush);
-	if(it == m_brush.end())
-		return;
-	m_brush.erase(it);
-	brushvis.clear();
 }
 
 void cEdiMap::BrushDrawExtra( const iRect& view )
@@ -615,29 +634,11 @@ void cEdiMap::BrushDrawExtra( const iRect& view )
 		if( m_hideselected && brush->select ) continue;
 		brushtemp = *brush;
 		PlTermv br(1);
-		g_map.UnifyBrush(br[0], & brushtemp);
+		(PlBrush(&brushtemp)) = br[0];
 		if(!g_gui->ScriptPrologDo("mod", "brushDraw", br)) continue;
 		iV2 p = camScale  * (brushtemp.pos - view.p1);
 		g_paint.DrawBrushAt(&brushtemp, p.x, p.y, static_cast<float>(camScale));
 	}
-}
-
-tBrush * cEdiMap::BrushPick(const iV2 & p) const
-{
-	auto it = find_if(m_brush.rbegin(), m_brush.rend(), 
-		[p](tBrush *brush) -> bool
-	{ 
-		return !Editor::app->layers.IsHidden(brush->layer) && brush->rect().IsInside(p);
-	});
-	return it == m_brush.rend() ? nullptr : *it;
-}
-
-void cEdiMap::BrushClear()
-{
-	for(auto b: m_brush) delete b;
-	m_brush.clear();
-	brushvis.clear();
-	m_selectcount=0;
 }
 
 void Partitions::Init(const iV2 & mapSize)
@@ -661,7 +662,7 @@ bool Partitions::Add(tBrush * b)
 	iRect br = b->rect();
 	bool ok = false;
 	for (auto cell : cells)
-	if (br.Intersects(cell->rect))
+		if (br.Intersects(cell->rect))
 		{
 			cell->Add(b);
 			ok = true;
@@ -699,7 +700,7 @@ bool Partitions::Repartition(const Brushes & brushes)
 	return ok;
 }
 
-void Partitions::Filter(const iRect & view, Brushes & vis) const
+void Partitions::Filter(const iRect & view, BrushList & vis) const
 {
 	vis.clear();
 	Cont partition;
@@ -797,41 +798,6 @@ BOOL cEdiMap::MarkerTest( int idx )
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-// SELECTION GOTO
-//////////////////////////////////////////////////////////////////////////////////////////////////
-void cEdiMap::SelectionRefresh()
-{
-	m_selectcount=0;
-	for(tBrush * b: m_brush)
-		if(b->select) 
-			m_selectcount++;
-}
-
-void cEdiMap::SelectionGoto( int dir )
-{
-	if(m_brush.empty()) return;
-	assert(dir==-1 || dir==1);
-	if(m_selectgoto<=-1) m_selectgoto = m_brush.size()-1;
-	if(m_selectgoto>=m_brush.size()) m_selectgoto = 0;
-	int i = m_selectgoto;
-	while(TRUE)
-	{
-		i+=dir;
-		if(i<=-1) i=m_brush.size()-1;
-		if(i>=m_brush.size()) i=0;
-		if(m_brush[i]->select) 
-		{
-			cam = m_brush[i]->pos;
-			Refresh();
-			m_selectgoto = i;
-			return;
-		}
-		if(i==m_selectgoto) return;
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
 // OTHERS
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiMap::DrawGrid( const iRect & vw ) const
@@ -901,14 +867,11 @@ void cEdiMap::DrawAxes( int x, int y )
 
 void cEdiMap::DrawScrollers()
 {
-	fRect rc;
-	rc = GetHScrollRect();
-	R9_DrawBar(rc, (Editor::app->GetColor(EDI_COLORBACK2) & 0x00ffffff) | 0x60000000 );
-	rc = GetVScrollRect();
-	R9_DrawBar(rc, (Editor::app->GetColor(EDI_COLORBACK2) & 0x00ffffff) | 0x60000000);
+	R9_DrawBar(GetHScrollRect(), (Editor::app->GetColor(EDI_COLORBACK2) & 0x00ffffff) | 0x60000000);
+	R9_DrawBar(GetVScrollRect(), (Editor::app->GetColor(EDI_COLORBACK2) & 0x00ffffff) | 0x60000000);
 }
 
-iRect cEdiMap::GetHScrollRect()
+iRect cEdiMap::GetHScrollRect() const
 {
 	int w = view.Width();
 	float x1 = (float)(cam.x - (w / camScale) / 2) / mapSize.x * w;
@@ -917,7 +880,7 @@ iRect cEdiMap::GetHScrollRect()
 	return rc;
 }
 
-iRect cEdiMap::GetVScrollRect()
+iRect cEdiMap::GetVScrollRect() const
 {
 	int h = view.Height();
 	float y1 = (float)(cam.y - (h / camScale) / 2) / mapSize.y * h;
@@ -936,7 +899,6 @@ void cEdiMap::CheckMapView()
 	if (sz.y > mapSize.y) sz.y = mapSize.y;
 	view.Inflate((view.Size() - sz) / 2);
 }
-
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1079,7 +1041,7 @@ bool cEdiMap::LoadMap(const std::string &filename)
 				int brushcount = chunksize/(BRUSH_MAX*4);
 				for(int i = 0; i < brushcount;i++)
 				{
-					tBrush * b = g_map.BrushNew();
+					tBrush * b = g_map.brushes.New();
 					for(int j = 0; j  < BRUSH_MAX; j++)
 					{	
 						int val = 0;

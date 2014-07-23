@@ -22,19 +22,19 @@
 #define MAP_CHUNKBRUSHES				0x88888888	// obsolete
 #define MAP_CHUNKBRUSHES2				0x88888889
 
-typedef std::vector<tBrush *> Brushes;
+class Brushes;
+typedef std::vector<tBrush *> BrushList;
 
 class Partitions
 {
 	static const int CellSize = 1024;
-	class Cell : std::vector<tBrush *>
+	class Cell : BrushList
 	{
-		typedef std::vector<tBrush *> Cont;
 	public:
 		const iRect rect;
-		using Cont::begin;
-		using Cont::end;
-		using Cont::clear;
+		using BrushList::begin;
+		using BrushList::end;
+		using BrushList::clear;
 
 		Cell(const iRect & rect) : rect(rect) {}
 		void Add(tBrush *b) { push_back(b); }
@@ -52,8 +52,67 @@ public:
 	bool Add(tBrush * b);
 	void Del(tBrush * b);
 	bool Repartition(const Brushes & brushes);
-	void Filter(const iRect & view, Brushes & vis) const;
+	void Filter(const iRect & view, BrushList & vis) const;
 };
+
+class PlBrush
+{
+	tBrush * b;
+public:
+	PlBrush(tBrush * b) : b(b) {}
+	PlBrush(PlTerm t) { if (!(t = Functor())) throw PlTypeError("brush", t); b = Cast(t[1]); }
+	static PlFunctor Functor() { static PlFunctor brush("brush", 1); return brush; }
+	static tBrush * Cast(PlTerm t) { return reinterpret_cast<tBrush *>(static_cast<void *>(t)); }
+
+	bool operator = (PlTerm t) { if (!(t = Functor())) return false; return t[1] = b; }
+	operator tBrush *() { return b; }
+	tBrush * operator ->() { return b; }
+};
+
+class Brushes : BrushList
+{
+	int	Selectgoto;
+	template<class It>
+	void To(It begin, It end, tBrush * b);
+public:
+	int SelectCount;
+
+	using BrushList::begin;
+	using BrushList::end;
+	using BrushList::back;
+	using BrushList::size;
+	using BrushList::operator[];
+
+	Brushes();
+	~Brushes() { Clear(); }
+	void Clear();
+
+	tBrush * New();
+	void Del(tBrush * b);
+	tBrush * Pick(const iV2 & p) const;
+	void ToFront(tBrush * b) { To(rbegin(), rend(), b); }
+	void ToBack(tBrush * b) { To(begin(), end(), b); }
+						
+	void SelectionRefresh();
+	void SelectionGoto(int dir);
+};
+
+template<class It>
+void Brushes::To(It begin, It end, tBrush * b)
+{
+	It cur = std::find(begin, end, b);
+	if (cur == end)
+		return;
+	int layer = b->layer;
+	It front = std::find_if(begin, cur, [layer](tBrush * b) { return b->layer == layer; });
+	if (front == cur)
+		return;
+	It to = cur++;
+	std::copy_backward(front, to, cur);
+	*front = b;
+	g_map.partitions.Repartition(g_map.brushes);
+	g_map.Refresh();
+}
 
 struct tMarker
 {
@@ -71,6 +130,8 @@ class cEdiMap
 {
 	bool refresh;
 	void Render();
+	iRect GetHScrollRect() const;
+	iRect GetVScrollRect() const;
 public:
 	cEdiMap();
 
@@ -84,11 +145,6 @@ public:
 	bool Resize(const iV2 & sz);	// resize map; return true if no crop occured
 
 	void Refresh() { refresh = true; }
-
-	PlFunctor brush;
-	bool UnifyBrush(PlTerm t, tBrush * b);
-	tBrush * brushPtrNoEx(PlTerm t) { return reinterpret_cast<tBrush *>(static_cast<void *>(t)); }
-	tBrush * brushPtr(PlTerm t) { if (!(t = brush)) throw PlTypeError("brush", t); return brushPtrNoEx(t[1]); }
 
 	// map
 	iV2 mapSize;
@@ -109,24 +165,8 @@ public:
 
 	R9TEXTURE m_target;										// render target texture
 
-	// brushes
-	tBrush * BrushNew();									// add a new brush to the brushlist
-	void BrushIns(int idx, tBrush& brush);	// insert a new brush and shift others; selectcount friendly
-	void BrushDel(tBrush * b);				// delete one brush from brushlist and shift others; selectcount friendly
-	void BrushDrawExtra(const iRect & view);			// draw brushes in view using partitioning
-	tBrush * BrushPick(const iV2 & p) const;
-	void BrushToFront(tBrush * b) { BrushTo(m_brush.rbegin(), m_brush.rend(), b); }				// bring brush to front (first visible in layer)
-	void BrushToBack(tBrush * b) { BrushTo(m_brush.begin(), m_brush.end(), b); } 				// bring brush to back (last visible in layer)
-	void BrushClear();							// free brush buffers and counts; selectcount friendly
-
-	template<class It>
-	void BrushTo(It begin, It end, tBrush * b);
-
-	void TakeBrush(tBrush * b);
-	bool validBrushIdx(int idx) const { return static_cast<size_t>(idx) < m_brush.size(); }
-	Brushes m_brush;							// brush buffer list (brushes in map)
-	Brushes brushvis;							// visible brushes list (brushes to draw; updated on refresh)
-
+	BrushList brushvis;
+	Brushes brushes;
 	Partitions partitions;
 
 	// markers
@@ -138,20 +178,14 @@ public:
 	BOOL MarkerTest(int idx);				// test if a marker is inside map (private)
 	std::vector<tMarker> m_marker;								// markers list
 
-	// selection
-	void SelectionRefresh();							// recount selection
-	void SelectionGoto(int dir = 1);				// go to next selected brush
-	int m_selectcount;									// count of selected brushes
-	int	m_selectgoto;									// index of brush used in goto selection
-
+	void BrushDrawExtra(const iRect & view);			// draw brushes in view using partitioning
 	// others
 	void DrawGrid(const iRect & vw) const;				// draw grid using EdiApp settings
 	void DrawAxes(int x, int y);						// draw axes
 	void DrawScrollers();								// draw side scrollers
-	iRect GetHScrollRect();
-	iRect GetVScrollRect();
+
 	void CheckMapView();									// checks viewport if exceedes map sizes and adjust
-	int	m_scrolling;									// 0=no, 1=horizontal, 1=vertical
+	int	m_scrolling;									// 0=no, 1=horizontal, 2=vertical
 	int	m_scrollofs;									// scroll pick offset (h or v)
 
 	// save map image
@@ -159,22 +193,6 @@ public:
 	bool Load(const std::string & filename);
 	bool LoadMap(const std::string & filename);
 };
-
-template<class It>
-void cEdiMap::BrushTo(It begin, It end, tBrush * b)
-{
-	It cur = std::find(begin,end, b);
-	if(cur == end)
-		return;
-	int layer = b->layer;
-	It front = std::find_if(begin, cur, [layer](tBrush * b) { return b->layer==layer; });
-	if(front == cur)
-		return;
-	It to = cur++;
-	std::copy_backward(front, to, cur);
-	*front = b;
-	partitions.Repartition(g_map.m_brush);
-}
 
 extern	cEdiMap		g_map;
 

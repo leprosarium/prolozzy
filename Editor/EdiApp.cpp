@@ -745,7 +745,7 @@ PREDICATE_M(edi, layerSet, 2)
 
 PREDICATE_M(edi, toolBrush, 1)
 {
-	return g_map.UnifyBrush(A1, & Editor::app->m_brush);
+	return PlBrush(&Editor::app->m_brush) = A1;
 }
 
 PREDICATE_M(edi, toolReset, 0)

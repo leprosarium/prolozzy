@@ -335,7 +335,6 @@ void Brushes::Clear()
 	SelectCount = 0;
 }
 
-
 void Brushes::SelectionGoto(int dir)
 {
 	if (empty()) return 
@@ -399,8 +398,6 @@ bool cEdiMap::Init()
 
 void cEdiMap::Done()
 {
-
-	MarkerClear();
 	partitions.Done();
 
 	// refresh
@@ -562,12 +559,6 @@ void cEdiMap::Draw()
 
 	// draw scrollers
 	DrawScrollers();
-
-	// draw marker
-	int dist = 0;
-	int mark = MarkerClosest(cam,dist);
-	if(mark!=-1 && dist==0) // on marker
-		R9_DrawBar(fRect(view.p1.x - viewBorder + 3, view.p1.y - viewBorder + 3, view.p1.x - 3, view.p1.y - 3), 0xffffffff);
 }
 
 void cEdiMap::Render()
@@ -590,8 +581,6 @@ void cEdiMap::Render()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiMap::Reset()
 {
-
-	MarkerClear();
 	partitions.Done();
 	brushes.Clear();
 	brushvis.clear();
@@ -619,7 +608,6 @@ bool cEdiMap::Resize(const iV2 & sz)
 	bool ok = partitions.Repartition(brushes);
 
 	brushes.SelectionRefresh();
-	MarkerResize();
 
 	Refresh();
 	return ok;
@@ -717,89 +705,7 @@ void Partitions::Filter(const iRect & view, BrushList & vis) const
 
 	std::sort(vis.begin(), vis.end(), [](tBrush * b1, tBrush * b2) { return  b1->layer < b2->layer; });
 }
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// MARKERS
-//////////////////////////////////////////////////////////////////////////////////////////////////
-void cEdiMap::MarkerToggle( const iV2 & p)
-{
-	int dist = -1;
-	int mark = MarkerClosest(cam, dist );
-	if(mark!=-1 && dist==0) // remove existing mark
-	{
-		m_marker.erase(m_marker.begin() + mark);
-	}
-	else // add mark
-	{
-		m_marker.push_back(tMarker(p.x, p.y, camScale));
-	}
-}
-void cEdiMap::MarkerGoto( int dir )				
-{
-	int dist = -1;
-	int mark = MarkerClosest(cam, dist );
-	if(mark==-1) return; // no markers
-	if(dist==0) // select next
-	{
-		mark = mark+dir;
-		if(mark<0) mark = m_marker.size()-1;
-		if(mark>m_marker.size()-1) mark = 0;
-	}
-	cam.x = m_marker[mark].x;
-	cam.y = m_marker[mark].y;
-	camScale = m_marker[mark].z;
-	Refresh();
-}
 
-int	cEdiMap::MarkerClosest( const iV2 & p, int &dist )
-{
-	int mark=-1;
-	int mind = -1;
-	for(int i=0;i<m_marker.size();i++)
-	{
-		int mx = m_marker[i].x;
-		int my = m_marker[i].y;
-		double d = (double)(p.x-mx)*(double)(p.x-mx)+(double)(p.y-my)*(double)(p.y-my);
-		d=sqrt(d);
-		if(mind==-1 || (int)d<mind)
-		{
-			mark=i;
-			mind=(int)d;
-		}
-	}
-	dist = mind;
-	return mark;
-}
-
-void cEdiMap::MarkerClear()
-{
-	m_marker.clear();
-}
-
-void cEdiMap::MarkerResize()
-{
-	// remove markers out of the new map size
-	for(int i=0;i<m_marker.size();i++)
-	{
-		if(!MarkerTest(i))	
-		{
-			m_marker.erase(m_marker.begin() + i);
-			i--;
-		}
-	}
-}
-
-BOOL cEdiMap::MarkerTest( int idx )
-{
-	if(idx<0 || idx>=m_marker.size()) return FALSE;
-	iV2 cam(m_marker[idx].x, m_marker[idx].y);
-	int camz = m_marker[idx].z;
-	iV2 cam_sz = view.Size() / camz / 2;
-	return iRect(cam_sz, mapSize - cam_sz).IsInside(cam);
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// OTHERS
-//////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiMap::DrawGrid( const iRect & vw ) const
 {
 	int i;

@@ -114,14 +114,6 @@ void Brushes::To(It begin, It end, tBrush * b)
 	g_map.Refresh();
 }
 
-struct tMarker
-{
-	int x;	// marker pos x
-	int y;	// marker pos y
-	int z;	// marker zoom
-	tMarker( int _x, int _y, int _z ) { x=_x; y=_y; z=_z; }
-};
-
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cEdiMap
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -168,15 +160,6 @@ public:
 	BrushList brushvis;
 	Brushes brushes;
 	Partitions partitions;
-
-	// markers
-	void MarkerToggle(const iV2 &p);				// add/remove marker at a given pos
-	void MarkerGoto(int dir = 1);				// go to nearest/next marker
-	int MarkerClosest(const iV2 &p, int &dist); // get index of closest marker to a given pos 
-	void MarkerClear();							// clear all markers
-	void MarkerResize();							// remove out markers after map is resized (private)
-	BOOL MarkerTest(int idx);				// test if a marker is inside map (private)
-	std::vector<tMarker> m_marker;								// markers list
 
 	void BrushDrawExtra(const iRect & view);			// draw brushes in view using partitioning
 	// others

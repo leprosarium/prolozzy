@@ -442,13 +442,12 @@ void cEdiToolEdit::BrushMove()
 void cEdiToolEdit::BrushDeleteSelected()
 {
 	BEEP_OK();
-	for (int idx = 0; idx<g_map.brushes.size(); idx++)
+	BrushList selected;
+	std::copy_if(g_map.brushes.begin(), g_map.brushes.end(), std::back_inserter(selected), [](tBrush * b) { return b->select; });
+	for (auto brush : selected)
 	{
-		tBrush * brush = g_map.brushes[idx];
-		if(!brush->select) continue;
 		g_map.partitions.Del(brush);
 		g_map.brushes.Del(brush);
-		idx--;
 	}
 	g_map.brushes.SelectCount = 0;
 	g_map.Refresh();

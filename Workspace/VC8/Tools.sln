@@ -1,16 +1,18 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Express 2013 for Windows Desktop
+VisualStudioVersion = 12.0.30501.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Setup", "..\..\Setup\Setup.vcproj", "{8D9295CC-E260-4C76-9EF8-43770FAE3AA1}"
 	ProjectSection(ProjectDependencies) = postProject
 		{D42B91AA-006F-4929-B508-8B60FFB4C85C} = {D42B91AA-006F-4929-B508-8B60FFB4C85C}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Pak", "..\..\Pak\Pak.vcproj", "{E5A2C209-A680-4239-8F92-4DFF4DA57173}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Pak", "..\..\Pak\Pak.vcxproj", "{E5A2C209-A680-4239-8F92-4DFF4DA57173}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CheckTiles", "..\..\CheckTiles\checktiles.vcproj", "{D49B559A-4F33-449F-9C34-3BB8DA6201D7}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Engine", "..\..\Engine\Engine.vcproj", "{D42B91AA-006F-4929-B508-8B60FFB4C85C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Engine", "..\..\Engine\Engine.vcxproj", "{D42B91AA-006F-4929-B508-8B60FFB4C85C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TgaWorks", "..\..\TgaWorks\tgaworks.vcproj", "{EA291A70-912F-4D97-9AF9-6C92B2415C6B}"
 EndProject

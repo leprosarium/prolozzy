@@ -29,6 +29,7 @@ get(Br, y, Val) :- brush:getY(Br, Val).
 get(Br, w, Val) :- brush:getW(Br, Val).
 get(Br, h, Val) :- brush:getH(Br, Val).
 get(Br, tile, Val) :- brush:getTile(Br, Val).
+get(Br, frame, Val) :- brush:getFrame(Br, Val).
 get(Br, x1, Val) :- brush:getMapX1(Br, Val).
 get(Br, y1, Val) :- brush:getMapY1(Br, Val).
 get(Br, x2, Val) :- brush:getMapX2(Br, Val).
@@ -57,6 +58,7 @@ set(Br, y, Val) :- !, brush:setY(Br, Val).
 set(Br, w, Val) :- !, brush:setW(Br, Val).
 set(Br, h, Val) :- !, brush:setH(Br, Val).
 set(Br, tile, Val) :- !, brush:setTile(Br, Val).
+set(Br, frame, Val) :- !, brush:setFrame(Br, Val).
 set(Br, x1, Val) :- !, brush:setMapX1(Br, Val).
 set(Br, y1, Val) :- !, brush:setMapY1(Br, Val).
 set(Br, x2, Val) :- !, brush:setMapX2(Br, Val).

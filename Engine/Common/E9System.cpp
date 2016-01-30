@@ -38,9 +38,9 @@ BOOL sys_senddata( HWND fromhwnd, HWND tohwnd, int cmd, int slot, int size, char
 
 std::istringstream ini_get(const std::string & file, const std::string & group, const std::string & key)
 {
-	char sz[64]; sz[0]=0;
+	char sz[1024]; sz[0]=0;
 	std::istringstream o;
-	if(GetPrivateProfileString(group.c_str(), key.c_str(), "", sz, 64, file.c_str()))
+	if(GetPrivateProfileString(group.c_str(), key.c_str(), "", sz, 1024, file.c_str()))
 		o.str(sz);
 	else
 		o.setstate(std::ios::failbit);

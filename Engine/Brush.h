@@ -4,7 +4,7 @@
 #include "E9Math.h"
 #include "R9Render.h"
 
-struct tBrush
+struct Brush
 {
 public:
 	int layer;		// layer idx
@@ -27,7 +27,7 @@ public:
 	bool collision;	// if collision with player 1, else 0 (updated per frame)
 	bool select;
 		
-	tBrush() : shader(Blend::Opaque), 
+	Brush() : shader(Blend::Opaque), 
 		layer(), 
 		tile(-1), 
 		frame(), 

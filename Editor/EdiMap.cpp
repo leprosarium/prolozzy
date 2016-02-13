@@ -290,14 +290,14 @@ Brushes::Brushes() : SelectCount(), Selectgoto()
 {
 }
 
-tBrush * Brushes::New()
+Brush * Brushes::New()
 {
-	tBrush * b = new tBrush();
+	Brush * b = new Brush();
 	push_back(b);
 	return b;
 }
 
-void Brushes::Del(tBrush * brush)
+void Brushes::Del(Brush * brush)
 {
 	if (brush->select) SelectCount--;
 	PlTermv a(1);
@@ -313,15 +313,15 @@ void Brushes::Del(tBrush * brush)
 void Brushes::SelectionRefresh()
 {
 	SelectCount = 0;
-	for (tBrush * b : *this)
+	for (Brush * b : *this)
 	if (b->select)
 		SelectCount++;
 }
 
-tBrush * Brushes::Pick(const iV2 & p) const
+Brush * Brushes::Pick(const iV2 & p) const
 {
 	auto it = find_if(rbegin(), rend(),
-		[p](tBrush *brush) -> bool
+		[p](Brush *brush) -> bool
 	{
 		return !Editor::app->layers.IsHidden(brush->layer) && brush->rect().IsInside(p);
 	});
@@ -347,7 +347,7 @@ void Brushes::SelectionGoto(int dir)
 		i += dir;
 		if (i <= -1) i = size() - 1;
 		if (i >= size()) i = 0;
-		tBrush * br = operator[](i);
+		Brush * br = operator[](i);
 		if (br->select)
 		{
 			Selectgoto = i;
@@ -616,7 +616,7 @@ bool cEdiMap::Resize(const iV2 & sz)
 void cEdiMap::BrushDrawExtra( const iRect& view )
 {
 	partitions.Filter(view, brushvis);
-	tBrush brushtemp;
+	Brush brushtemp;
 	for(auto brush: brushvis)
 	{
 		if( m_hideselected && brush->select ) continue;
@@ -645,7 +645,7 @@ void Partitions::Done()
 	cells.clear();
 }
 
-bool Partitions::Add(tBrush * b)
+bool Partitions::Add(Brush * b)
 {
 	iRect br = b->rect();
 	bool ok = false;
@@ -660,7 +660,7 @@ bool Partitions::Add(tBrush * b)
 	return ok;
 }
 
-void Partitions::Del(tBrush * b)
+void Partitions::Del(Brush * b)
 {
 	iRect br = b->rect();
 	for (auto cell : cells)
@@ -703,7 +703,7 @@ void Partitions::Filter(const iRect & view, BrushList & vis) const
 	std::sort(vis.begin(), vis.end());
 	vis.erase(std::unique(vis.begin(), vis.end()), vis.end());
 
-	std::sort(vis.begin(), vis.end(), [](tBrush * b1, tBrush * b2) { return  b1->layer < b2->layer; });
+	std::sort(vis.begin(), vis.end(), [](Brush * b1, Brush * b2) { return  b1->layer < b2->layer; });
 }
 
 void cEdiMap::DrawGrid( const iRect & vw ) const
@@ -947,7 +947,7 @@ bool cEdiMap::LoadMap(const std::string &filename)
 				int brushcount = chunksize/(BRUSH_MAX*4);
 				for(int i = 0; i < brushcount;i++)
 				{
-					tBrush * b = g_map.brushes.New();
+					Brush * b = g_map.brushes.New();
 					for(int j = 0; j  < BRUSH_MAX; j++)
 					{	
 						int val = 0;

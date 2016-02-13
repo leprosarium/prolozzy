@@ -433,7 +433,7 @@ int MatMap::Get(int x1, int x2, int y) const
 	return mat;
 }
 
-void cDizGame::ObjPresent(tBrush * b)
+void cDizGame::ObjPresent(Brush * b)
 {
 	if(std::find(m_obj.begin(), m_obj.end(), b) == m_obj.end())
 		ObjAdd(b);
@@ -451,7 +451,7 @@ void cDizGame::ObjGather()
 			ObjAdd(b); // object is present in current bordered room
 }
 
-void cDizGame::ObjDraw(const tBrush & brush)
+void cDizGame::ObjDraw(const Brush & brush)
 {
 	if(cTile * tile = g_paint.tiles.Get(g_paint.tiles.Find(brush.tile)))
 		g_paint.DrawBrush( brush, viewShift + brush.pos - roomPos * Room::Size, tile->ComputeFrame(brush.frame, brush.anim));

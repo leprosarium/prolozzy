@@ -265,7 +265,7 @@ class cDizPaint
 	void DrawTileSoft(int idx, const iV2 & p, const iRect & map, dword color=0xffffffff, int flip=0, int frame=0, Blend blend = Blend::Alpha, float scale=1.0f ) const;	// paints tile in the image target map (faster, no rotation, no scale)
 	void DrawTileSoft2(int idx, const iV2 & p, const iRect & map, dword color=0xffffffff, int flip=0, int frame=0, Blend blend = Blend::Alpha, float scale=1.0f ) const;	// paints tile in the image target map (accept rotation and scale)
 
-	std::function<void(const iV2&)> selectDrawMethod(const tBrush & brush, int idx, int frame) const;
+	std::function<void(const iV2&)> selectDrawMethod(const Brush & brush, int idx, int frame) const;
 
 public:
 	int scale;			// scale factor
@@ -287,7 +287,7 @@ public:
 	void DrawChar(int fontidx, const iV2 & p, char c, dword color=0xffffffff ) const;
 
 	// Draw brush 
-	void DrawBrush( const tBrush & brush, const iV2 & p, int frame=-1 ) const; // if frame is -1, tile is automatic animated
+	void DrawBrush( const Brush & brush, const iV2 & p, int frame=-1 ) const; // if frame is -1, tile is automatic animated
 
 	void BeginSoftwareRendering(const iV2 & size, dword cap, byte * data);
 	void EndSoftwareRendering();

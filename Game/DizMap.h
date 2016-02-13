@@ -28,7 +28,7 @@ public:
 
 enum class DrawMode { Normal, Material, Density, None };
 
-typedef Indexed<tBrush *, std::string> Brushes;
+typedef Indexed<Brush *, std::string> Brushes;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // cDizMap
@@ -43,9 +43,9 @@ public:
 	static const int SizeMax = 100000;
 
 	PlFunctor brush;
-	bool UnifyBrush(PlTerm t, tBrush * b);
-	tBrush * brushPtrNoEx(PlTerm t) { return reinterpret_cast<tBrush *>(static_cast<void *>(t)); }
-	tBrush * brushPtr(PlTerm t) { if(!(t = brush)) throw PlTypeError("brush", t); return brushPtrNoEx(t[1]); }
+	bool UnifyBrush(PlTerm t, Brush * b);
+	Brush * brushPtrNoEx(PlTerm t) { return reinterpret_cast<Brush *>(static_cast<void *>(t)); }
+	Brush * brushPtr(PlTerm t) { if(!(t = brush)) throw PlTypeError("brush", t); return brushPtrNoEx(t[1]); }
 	cDizMap();
 
 	void Resize(const iV2 & sz);	// resize map;

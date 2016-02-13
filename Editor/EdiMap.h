@@ -23,7 +23,7 @@
 #define MAP_CHUNKBRUSHES2				0x88888889
 
 class Brushes;
-typedef std::vector<tBrush *> BrushList;
+typedef std::vector<Brush *> BrushList;
 
 class Partitions
 {
@@ -37,9 +37,9 @@ class Partitions
 		using BrushList::clear;
 
 		Cell(const iRect & rect) : rect(rect) {}
-		void Add(tBrush *b) { push_back(b); }
-		void Del(tBrush * b) { auto it = std::find(begin(), end(), b); if (it != end()) erase(it); }
-		bool Find(tBrush * b) { return std::find(begin(), end(), b) != end(); }
+		void Add(Brush *b) { push_back(b); }
+		void Del(Brush * b) { auto it = std::find(begin(), end(), b); if (it != end()) erase(it); }
+		bool Find(Brush * b) { return std::find(begin(), end(), b) != end(); }
 	};
 	typedef std::vector<Cell *> Cont;
 	Cont cells;
@@ -49,31 +49,31 @@ class Partitions
 public:
 	void Init(const iV2 & mapSize);
 	void Done();
-	bool Add(tBrush * b);
-	void Del(tBrush * b);
+	bool Add(Brush * b);
+	void Del(Brush * b);
 	bool Repartition(const Brushes & brushes);
 	void Filter(const iRect & view, BrushList & vis) const;
 };
 
 class PlBrush
 {
-	tBrush * b;
+	Brush * b;
 public:
-	PlBrush(tBrush * b) : b(b) {}
+	PlBrush(Brush * b) : b(b) {}
 	PlBrush(PlTerm t) { if (!(t = Functor())) throw PlTypeError("brush", t); b = Cast(t[1]); }
 	static PlFunctor Functor() { static PlFunctor brush("brush", 1); return brush; }
-	static tBrush * Cast(PlTerm t) { return reinterpret_cast<tBrush *>(static_cast<void *>(t)); }
+	static Brush * Cast(PlTerm t) { return reinterpret_cast<Brush *>(static_cast<void *>(t)); }
 
 	bool operator = (PlTerm t) { if (!(t = Functor())) return false; return t[1] = b; }
-	operator tBrush *() { return b; }
-	tBrush * operator ->() { return b; }
+	operator Brush *() { return b; }
+	Brush * operator ->() { return b; }
 };
 
 class Brushes : BrushList
 {
 	int	Selectgoto;
 	template<class It>
-	void To(It begin, It end, tBrush * b);
+	void To(It begin, It end, Brush * b);
 public:
 	int SelectCount;
 
@@ -87,24 +87,24 @@ public:
 	~Brushes() { Clear(); }
 	void Clear();
 
-	tBrush * New();
-	void Del(tBrush * b);
-	tBrush * Pick(const iV2 & p) const;
-	void ToFront(tBrush * b) { To(rbegin(), rend(), b); }
-	void ToBack(tBrush * b) { To(begin(), end(), b); }
+	Brush * New();
+	void Del(Brush * b);
+	Brush * Pick(const iV2 & p) const;
+	void ToFront(Brush * b) { To(rbegin(), rend(), b); }
+	void ToBack(Brush * b) { To(begin(), end(), b); }
 						
 	void SelectionRefresh();
 	void SelectionGoto(int dir);
 };
 
 template<class It>
-void Brushes::To(It begin, It end, tBrush * b)
+void Brushes::To(It begin, It end, Brush * b)
 {
 	It cur = std::find(begin, end, b);
 	if (cur == end)
 		return;
 	int layer = b->layer;
-	It front = std::find_if(begin, cur, [layer](tBrush * b) { return b->layer == layer; });
+	It front = std::find_if(begin, cur, [layer](Brush * b) { return b->layer == layer; });
 	if (front == cur)
 		return;
 	It to = cur++;

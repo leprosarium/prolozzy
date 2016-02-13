@@ -51,7 +51,7 @@ void cEdiToolPaint::Update( float dtime )
 	bool ctrl = einput->ctrl();
 
 	picked = nullptr; // clear picked brush
-	tBrush * brush = & Editor::app->m_brush;
+	Brush * brush = & Editor::app->m_brush;
 
 	if( mode == Mode::None ) mode = Mode::Normal; // draw trick
 
@@ -106,7 +106,7 @@ void cEdiToolPaint::Update( float dtime )
 				(PlBrush(brush)) = a[0];
 				if(g_gui->ScriptPrologDo("brush", "clone", a))
 				{
-					tBrush * b = PlBrush(a[1]);
+					Brush * b = PlBrush(a[1]);
 					b->select = false;
 					g_map.Refresh();
 					g_map.partitions.Add(b);
@@ -165,13 +165,13 @@ void cEdiToolPaint::Draw() const
 {
 	if (!g_map.view.IsInside(Editor::app->GetMousePos())) return; // && !m_isbusy
 
-	tBrush * brush = & Editor::app->m_brush;
+	Brush * brush = & Editor::app->m_brush;
 
 	g_map.DrawAxes(axe.x, axe.y);
 
 	if(mode == Mode::Normal || mode == Mode::Paint)
 	{
-		tBrush tmp = *brush;
+		Brush tmp = *brush;
 		PlTermv br(1);
 		(PlBrush (&tmp)) = br[0];
 		g_gui->ScriptPrologDo("mod", "brushToolDraw", br);	
@@ -257,7 +257,7 @@ void cEdiToolEdit::Reset()
 void cEdiToolEdit::Update( float dtime )
 {
 
-	tBrush& brush = Editor::app->m_brush;
+	Brush& brush = Editor::app->m_brush;
 
 	iV2 m = Editor::app->GetMousePos();
 	bool inview = g_map.view.IsInside(m);
@@ -358,7 +358,7 @@ void cEdiToolEdit::Draw() const
 	int count = (mode != Mode::Move) ? g_map.brushvis.size() : drag.size();
 	for(int i=0;i<count;i++)
 	{
-		tBrush * brush = (mode != Mode::Move) ? g_map.brushvis[i] : drag[i];
+		Brush * brush = (mode != Mode::Move) ? g_map.brushvis[i] : drag[i];
 
 		if(!brush->select) continue;
 		iV2 p = g_map.cam2view(brush->pos + d);
@@ -404,7 +404,7 @@ void cEdiToolEdit::BrushSelect()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiToolEdit::BrushDeselect()
 {
-	for (tBrush * b : g_map.brushes)
+	for (Brush * b : g_map.brushes)
 		b->select = false;
 	g_map.brushes.SelectCount = 0;
 	g_map.Refresh();
@@ -443,7 +443,7 @@ void cEdiToolEdit::BrushDeleteSelected()
 {
 	BEEP_OK();
 	BrushList selected;
-	std::copy_if(g_map.brushes.begin(), g_map.brushes.end(), std::back_inserter(selected), [](tBrush * b) { return b->select; });
+	std::copy_if(g_map.brushes.begin(), g_map.brushes.end(), std::back_inserter(selected), [](Brush * b) { return b->select; });
 	for (auto brush : selected)
 	{
 		g_map.partitions.Del(brush);
@@ -457,7 +457,7 @@ void cEdiToolEdit::BrushDeleteSelected()
 void cEdiToolEdit::BrushCopy()
 {
 	std::ostringstream o;
-	for (tBrush * b : g_map.brushes)
+	for (Brush * b : g_map.brushes)
 		if(b->select)
 		{
 			PlTermv a(2);
@@ -513,7 +513,7 @@ void cEdiToolEdit::BrushPaste()
 				PlCompound a(props.c_str());
 				if(g_gui->ScriptPrologDo("brush", "paste", a))
 				{
-					tBrush * b = g_map.brushes.back();
+					Brush * b = g_map.brushes.back();
 					b->select = true;
 					g_map.partitions.Add(b);	
 				}

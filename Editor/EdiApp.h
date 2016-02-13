@@ -116,7 +116,7 @@ public:
 		cEdiTool * operator()() { return active; }
 		const cEdiTool * operator()() const { return active; }
 	} tools;
-		tBrush		m_brush;								// current tool brush
+		Brush		m_brush;								// current tool brush
 
 	class Layers
 	{

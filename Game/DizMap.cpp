@@ -18,7 +18,7 @@ cDizMap::cDizMap() :  brush("brush", 1)
 
 }
 
-bool cDizMap::UnifyBrush(PlTerm t, tBrush * b)
+bool cDizMap::UnifyBrush(PlTerm t, Brush * b)
 {
 	if(!(t = g_map.brush))
 		return false;
@@ -53,7 +53,7 @@ PREDICATE_NONDET_M(map, brush, 1)
 		return false;
 	PlTerm br = t[1];
 	if (br.type() != PL_VARIABLE) {
-		tBrush * b = g_map.brushPtrNoEx(br);
+		Brush * b = g_map.brushPtrNoEx(br);
 		if(g_map.objects.empty())
 			return false;
 		return std::find(g_map.objects.begin(), g_map.objects.end(), b) != g_map.objects.end();
@@ -245,7 +245,7 @@ void cDizMap::DrawRoom( const iV2 & rp, int layer, DrawMode mode, const iV2 & of
 	{
 		int brushidx = part[i];
 
-		tBrush & brush = * brushes.Get(brushidx);
+		Brush & brush = * brushes.Get(brushidx);
 
 		if( mode == DrawMode::Normal   && (brush.draw&1)==0 ) continue; // don't draw
 		if( mode == DrawMode::Material && (brush.draw&2)==0 ) continue; // don't write material
@@ -303,7 +303,7 @@ void cDizMap::DrawRoom( const iV2 & rp, int layer, DrawMode mode, const iV2 & of
 
 void cDizMap::PartitionAdd(int brushidx)
 {
-	const tBrush * brush = brushes.get(brushidx);
+	const Brush * brush = brushes.get(brushidx);
 	iRect rbrush = brush->rect();
 	auto room = Rooms.begin();
 	for(iV2 r; r.y < size().y; ++r.y)

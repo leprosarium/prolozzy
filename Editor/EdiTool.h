@@ -41,7 +41,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////////////////////////
 class cEdiToolPaint : public cEdiTool
 {
-	tBrush * picked;
+	Brush * picked;
 	enum class Mode {None, Normal, Paint, PickMenu, Pick} mode;
 public:
 	cEdiToolPaint();
@@ -82,7 +82,7 @@ public:
 	iV2 move;		// movement start
 	iV2 moved;		// movement offset
 
-	std::vector<tBrush *> drag;	 // drag list
+	std::vector<Brush *> drag;	 // drag list
 };
 
 #endif

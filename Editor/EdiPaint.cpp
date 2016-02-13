@@ -204,7 +204,7 @@ void cEdiPaint::DrawTile( int idx, int x, int y, dword color, int flip, int fram
 
 }
 
-void cEdiPaint::DrawBrushAt( tBrush* brush, int x, int y, float zoom, BOOL anim )
+void cEdiPaint::DrawBrushAt( Brush* brush, int x, int y, float zoom, BOOL anim )
 {
 	if(brush==NULL) return;
 	int idx = TileFind(brush->tile);
@@ -262,7 +262,7 @@ void cEdiPaint::DrawBrushAt( tBrush* brush, int x, int y, float zoom, BOOL anim 
 	R9_SetClipping(oldclip);
 }
 
-void cEdiPaint::DrawBrushFlashAt( tBrush* brush, int x, int y, float zoom, BOOL anim )
+void cEdiPaint::DrawBrushFlashAt( Brush* brush, int x, int y, float zoom, BOOL anim )
 {
 	if(brush==NULL) return;
 	Blend shd = brush->shader;

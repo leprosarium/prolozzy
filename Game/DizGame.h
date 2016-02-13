@@ -111,17 +111,17 @@ public:
 	iV2 viewShift;					// view position (used in draw, set from G_VIEW, G_SHAKE, and G_VIEWPORT)
 
 			
-	inline void ObjAdd(tBrush *);		// add object to present lists (objects and coliders)
+	inline void ObjAdd(Brush *);		// add object to present lists (objects and coliders)
 	void ObjGather();					// gather objects present in current room
-	void ObjPresent(tBrush *);			// add object to present list if not in it already
-	void ObjDraw(const tBrush & brush);	// draw one object
-	std::vector<tBrush *> m_obj;		// objects list with objects indexes (present in current room)
-	std::vector<tBrush *> m_collider;	// colliders list with objects indexes (present in current room)
+	void ObjPresent(Brush *);			// add object to present list if not in it already
+	void ObjDraw(const Brush & brush);	// draw one object
+	std::vector<Brush *> m_obj;		// objects list with objects indexes (present in current room)
+	std::vector<Brush *> m_collider;	// colliders list with objects indexes (present in current room)
 
 	int visible_brushes;
 };
 
-inline void cDizGame::ObjAdd(tBrush *b)
+inline void cDizGame::ObjAdd(Brush *b)
 {
  	m_obj.push_back(b);
 	if(b->collider)

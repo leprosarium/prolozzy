@@ -337,7 +337,7 @@ void cDizPaint::DrawChar( int fontidx, const iV2 & p, char c, dword color ) cons
 		}
 }
 
-std::function<void(const iV2 &)> cDizPaint::selectDrawMethod(const tBrush & brush, int idx, int frame) const
+std::function<void(const iV2 &)> cDizPaint::selectDrawMethod(const Brush & brush, int idx, int frame) const
 {
 	iRect map = brush.map;
 	dword color = brush.color;
@@ -351,7 +351,7 @@ std::function<void(const iV2 &)> cDizPaint::selectDrawMethod(const tBrush & brus
 	return [this, idx, map, color, flip, frame, blend, ms](const iV2 & p) { DrawTileSoft(idx, p, map, color, flip, frame, blend, ms); };
 }
 
-void cDizPaint::DrawBrush( const tBrush & brush, const iV2 & p0, int frame ) const
+void cDizPaint::DrawBrush( const Brush & brush, const iV2 & p0, int frame ) const
 {
 	int idx = tiles.Find(brush.tile);
 	if(idx==-1) return;

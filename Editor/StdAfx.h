@@ -27,6 +27,7 @@
 #include <fstream>
 #include <deque>
 #include <memory>
+#include <iterator>
 
 #define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>

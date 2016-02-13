@@ -10,7 +10,7 @@
 #include "..\\Libs\\zlib\\zlib.h"
 
 #include <string>
-#include <hash_map>
+#include <unordered_map>
 
 struct f9ZipFileInfo
 {
@@ -39,7 +39,7 @@ private:
 	bool ReadFAT();
 	typedef std::vector<f9ZipFileInfo *> InfoList;
 	InfoList m_fat;
-	typedef std::hash_map<std::string, int> Hash;
+	typedef std::unordered_map<std::string, int> Hash;
 	Hash index;
 };
 

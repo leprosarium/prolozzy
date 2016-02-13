@@ -8,7 +8,7 @@
 #include "EdiDef.h"
 #include "Brush.h"
 
-#include <hash_map>
+#include <unordered_map>
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // DEFINES
@@ -118,7 +118,7 @@ public:
 		dword			GetFlashingColorBW();
 
 
-		typedef std::hash_map<int, int> Hash;
+		typedef std::unordered_map<int, int> Hash;
 		// tiles
 		std::vector<cTile *> m_tile;	// tiles list
 		Hash			index;			// hash for tiles (id,idx)

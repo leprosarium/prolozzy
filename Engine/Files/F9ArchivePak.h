@@ -8,7 +8,7 @@
 #include "F9Archive.h"
 #include "F9FileDisk.h"
 #include <string>
-#include <hash_map>
+#include <unordered_map>
 //#include "zlib.h"
 
 #define F9_PAK_VERSION			2
@@ -59,7 +59,7 @@ private:
 	f9PakHeader m_header;
 	typedef std::vector<f9PakFileInfo*> InfoList;
 	InfoList m_fat;		
-	typedef std::hash_map<std::string, int>	Hash;
+	typedef std::unordered_map<std::string, int>	Hash;
 	Hash index;
 };
 

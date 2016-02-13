@@ -8,7 +8,7 @@
 #include "R9Render.h"
 
 #include <vector>
-#include <hash_map>
+#include <unordered_map>
 
 class r9TexturePool : private std::vector<R9TEXTURE>
 {
@@ -21,7 +21,7 @@ public:
 		int			Find( const std::string & name );						// search for a texture; return index
 		R9TEXTURE	Get( int idx )							{ if(idx >= 0 && static_cast<size_type>(idx) < size()) return (*this)[idx]; return 0; }
 
-		typedef std::hash_map<std::string, int> Hash;
+		typedef std::unordered_map<std::string, int> Hash;
 		Hash index;
 };
 

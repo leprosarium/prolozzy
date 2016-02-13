@@ -7,7 +7,7 @@
 class App
 {
 public:
-	enum class Cursor { None, Arrow, Wait, Hand, Custom, Max, Default = Arrow };
+	enum Cursor { None, Arrow, Wait, Hand, Custom, Max, Default = Arrow };
 private:
 	static LPCWSTR ClassName;
 	static HINSTANCE instance;

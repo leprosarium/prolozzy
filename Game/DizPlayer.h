@@ -110,6 +110,8 @@ public:
 	int			matCenter() const { return _matCenter; }
 	dword		flip() const { return (flipX ? 1 : 0 ) | (flipY ? 2 : 0); }
 	void setDir(int d) { dir = d; flipX = dir == -1; }
+private:
+	void setTile(int ntile) { if (tile != ntile) { frame = 0; tile = ntile; } }
 };
 
 extern	cDizPlayer	g_player;

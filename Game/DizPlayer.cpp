@@ -189,13 +189,7 @@ void cDizPlayer::EnterIdle()
 	status = idle;
 	setDir(0);
 	pow = 0;
-	int idleTile = costume + tileIdle + emotion;
-	if(tile != idleTile)
-	{
-		frame = 0;
-		tile = idleTile;
-	}
-
+	setTile(costume + tileIdle + emotion);
 }
 
 void cDizPlayer::EnterWalk( int dr )
@@ -203,13 +197,7 @@ void cDizPlayer::EnterWalk( int dr )
 	status = walk; 
 	setDir(dr);
 	pow = 0;
-	int walkTile = costume + tileWalk;
-	if(tile!= walkTile)
-	{
-		frame = 0;
-		tile = walkTile;
-	}
-
+	setTile(costume + tileWalk);
 }
 
 void cDizPlayer::EnterJump( int dr, int pw )
@@ -217,25 +205,7 @@ void cDizPlayer::EnterJump( int dr, int pw )
 	status = jump; 
 	setDir(dr);
 	pow = pw;
-	if(dir)
-	{
-		int jumpTile = costume + tileJump;
-		if(tile != jumpTile)
-		{
-			frame = 0;
-			tile = jumpTile;
-		}
-	}
-	else
-	{ 
-		int upTile = costume + tileUp;
-		if(tile != upTile)
-		{	
-			frame = 0;
-			tile = upTile;
-		}
-	}
-	
+	setTile(costume + (dir ? tileJump : tileUp));
 }
 
 void cDizPlayer::EnterFall()
@@ -251,7 +221,7 @@ void cDizPlayer::EnterRoll()
 	
 	if(tile == costume + tileUp || tile == costume + tileJump ) // only when jumping
 		if(cTile* tile = FindTile())
-			if(tile->ComputeFrame(frame, anim) != 0) return; // don't enter idle unless last frame reached; untill then stay in roll
+			if(tile->ComputeFrame(frame, anim)) return; // don't enter idle unless last frame reached; untill then stay in roll
 
 	EnterKeyState(); // be sure to stop the fall, just in case the fall handler doesn't
 
@@ -268,7 +238,7 @@ void cDizPlayer::EnterJumper( int mat )
 	int dir = 0;
 
 	// direction
-	if(key(cDizCfg::key::right))	dir++;
+	if(key(cDizCfg::key::right)) dir++;
 	if(key(cDizCfg::key::left))	dir--;
 
 	// call jump handler to determine the power of the jump
@@ -294,7 +264,7 @@ void cDizPlayer::EnterKeyState()
 	if( life <= 0 ) {	EnterIdle(); return; } // prepare to die
 
 	int dir = 0;
-	if(key(cDizCfg::key::right))	dir++;
+	if(key(cDizCfg::key::right)) dir++;
 	if(key(cDizCfg::key::left))	dir--;
 	if(key(cDizCfg::key::jump))		
 	{
@@ -303,14 +273,10 @@ void cDizPlayer::EnterKeyState()
 		if(pow>0) EnterJump(dir,pow); // 7 would be the default jump power
 	}
 	else
-	if(dir!=0)
-	{
-		EnterWalk(dir);
-	}
-	else 
-	{
-		EnterIdle();
-	}
+		if(dir)
+			EnterWalk(dir);
+		else 
+			EnterIdle();
 }
 
 
@@ -540,9 +506,6 @@ void cDizPlayer::ReadMatInfo()
 }
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// DRAW
-//////////////////////////////////////////////////////////////////////////////////////////////////
 void cDizPlayer::Draw()
 {
 	if(disable) return;
@@ -554,6 +517,3 @@ void cDizPlayer::Draw()
 		R9_DrawSprite(g_paint.scrPos(p), tile->FrameRect(tile->ComputeFrame(frame, anim)), tile->tex, color, flip(), static_cast<float>(g_paint.scale));
 	}
 }
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////

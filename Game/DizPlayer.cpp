@@ -123,9 +123,12 @@ void cDizPlayer::Reset()
 	status = idle;
 	delay = 3;
 	layer = 7;
+	frame = 0;
 
 	tile = TILE_IDLE;
 	anim = 2;
+	costume = 0;
+	emotion = 0;
 	color = 0xffffffffu;
 
 	tileIdle = TILE_IDLE;
@@ -134,7 +137,15 @@ void cDizPlayer::Reset()
 	tileJump = TILE_JUMP;
 
 	life = 100;
+	stunLevel = 0;
+	pow = 0;
+	dir = 0;
+	pos = 0;
 
+	flipX = false;
+	flipY = false;
+	customMove = false;
+	disable = true;
 	input = true;
 	m_debug	= false;
 }

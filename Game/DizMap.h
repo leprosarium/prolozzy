@@ -16,14 +16,23 @@ public:
 	static iV2 Size;
 	static const int Border = 16;
 private:
-	std::vector<int> _Brushes;
+	std::vector<Brush *> _Brushes;
+	iV2 _pos;
+	iRect _rect;
 public:
-	void AddBrush(int idx) { _Brushes.push_back(idx); }
-	const std::vector<int> & Brushes() const { return _Brushes; }
+	Room(const iV2 & pos = iV2()) : _pos(pos), _rect(pos * Size, (pos + 1) * Size) { }
+	void AddBrush(Brush * b) { _Brushes.push_back(b); }
+	const std::vector<Brush *> & Brushes() const { return _Brushes; }
+
+	const iV2 & pos() const { return _pos; }
+	const iRect & rect() const { return _rect; }
+
+	iRect borderRect(const iV2 & border) { return iRect(rect()).Deflate(border); }
+
+
 	static iV2 Pos2Room(const iV2 & p) { return iV2(PosX2Room(p.x), PosY2Room(p.y)); }
 	static int PosX2Room(int x) { return x >= 0  ?  x / Size.x : (x + 1) / Size.x - 1; }
 	static int PosY2Room(int y) { return y >= 0  ?  y / Size.y : (y + 1) / Size.y - 1; }
-	static iRect Rect(const iV2 & r) { return iRect(r * Size, (r + 1) * Size); } 
 };
 
 enum class DrawMode { Normal, Material, Density, None };
@@ -58,10 +67,11 @@ public:
 
 	Room & GetRoom(int idx) { return Rooms[idx]; }
 	Room & GetRoom(int rx, int ry) { return GetRoom(RoomIdx(rx, ry)); }
+	Room & GetRoom(const iV2 & p) { return GetRoom(p.x, p.y); }
 	int RoomIdx(int rx, int ry) const { return rx + ry * _size.x; }
 	bool InvalidRoomCoord(int rx, int ry)	{ return rx < 0 || rx >= _size.x || ry < 0 || ry >= _size.y; }
 
-	iRect RoomBorderRect( const iV2 & room, const iV2 & border)	{ return Room::Rect(room).Deflate(border); }
+//	iRect RoomBorderRect( const iV2 & room, const iV2 & border)	{ return Room::Rect(room).Deflate(border); }
 
 	iV2 size() const { return _size; }
 
@@ -70,8 +80,8 @@ public:
 
 private:
 	// partition
-	void PartitionAdd(int brushidx);	// add a brush to partitioning
-	void PartitionMake();				// init and partition brushes
+	void PartitionAdd(Brush * brush);	// add a brush to partitioning
+	void PartitionMake();			// init and partition brushes
 };
 
 extern cDizMap	g_map;

@@ -15,7 +15,7 @@ cDizMap	g_map;
 
 cDizMap::cDizMap() :  brush("brush", 1)
 {
-
+	Reset();
 }
 
 bool cDizMap::UnifyBrush(PlTerm t, Brush * b)
@@ -209,7 +209,8 @@ PREDICATE_M(map, reset, 0)
 void cDizMap::Reset()
 {
 	Rooms.clear();
-	_size = 0;
+	Rooms.push_back(Room());
+	_size = 1;
 	brushes.clear();
 	objects.clear();
 }
@@ -240,12 +241,10 @@ void cDizMap::DrawRoom( const iV2 & rp, int layer, DrawMode mode, const iV2 & of
 
 
 	}
-	const std::vector<int> & part = GetRoom(rp.x, rp.y).Brushes();
-	for(size_t i=0;i<part.size();i++)
+	const std::vector<Brush *> & part = GetRoom(rp.x, rp.y).Brushes();
+	for(Brush *b: GetRoom(rp.x, rp.y).Brushes())
 	{
-		int brushidx = part[i];
-
-		Brush & brush = * brushes.Get(brushidx);
+		Brush & brush = * b;
 
 		if( mode == DrawMode::Normal   && (brush.draw&1)==0 ) continue; // don't draw
 		if( mode == DrawMode::Material && (brush.draw&2)==0 ) continue; // don't write material
@@ -301,21 +300,17 @@ void cDizMap::DrawRoom( const iV2 & rp, int layer, DrawMode mode, const iV2 & of
 // PARTITIONS
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void cDizMap::PartitionAdd(int brushidx)
+void cDizMap::PartitionAdd(Brush * brush)
 {
-	const Brush * brush = brushes.get(brushidx);
-	iRect rbrush = brush->rect();
-	auto room = Rooms.begin();
-	for(iV2 r; r.y < size().y; ++r.y)
-		for(r.x = 0; r.x < size().x; ++r.x, ++room)
-			if(rbrush.Intersects(RoomBorderRect(r, Room::Border)) )
-				room->AddBrush(brushidx);
+	for(Room & room: Rooms)
+		if (brush->rect().Intersects(room.borderRect(Room::Border)))
+			room.AddBrush(brush);
 }
 
 void cDizMap::PartitionMake()
 {
-	for(int i=0, e=brushes.size(); i < e; ++i)
-		PartitionAdd(i);
+	for(Brush * brush: brushes)
+		PartitionAdd(brush);
 }
 
 void cDizMap::Resize( const iV2 & sz )
@@ -324,7 +319,10 @@ void cDizMap::Resize( const iV2 & sz )
 				std::min(std::max(sz.y, SizeMin), SizeMax)) / Room::Size;
 
 	Rooms.clear();
-	Rooms.resize(size().x * size().y);
+	for (iV2 r; r.y < _size.y; ++r.y)
+		for (r.x = 0; r.x < _size.x; ++r.x)
+			Rooms.push_back(Room(r));
+
 	PartitionMake();
 
 	objects.Reindex();

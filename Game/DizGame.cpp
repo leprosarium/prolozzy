@@ -114,8 +114,7 @@ bool cDizGame::Start()
 	m_collider.clear();
 
 	g_player.Reset();
-	g_player.pos = 0;
-	g_player.disable = true;
+
 
 	einput->vibra.Stop();
 	SetRoom(0);
@@ -218,7 +217,7 @@ bool cDizGame::Update()
 	if( g_map.size() > 0) // if map size is valid
 	{
 		// room bound check
-		if(!Room::Rect(roomPos).IsInside(g_player.pos))	g_script.roomOut(); // users may change player's pos on this handler
+		if(! g_map.GetRoom(roomPos).rect().IsInside(g_player.pos))	g_script.roomOut(); // users may change player's pos on this handler
 
 		// world bound check
 		iV2 r = Room::Pos2Room(g_player.pos);

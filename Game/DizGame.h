@@ -106,7 +106,7 @@ public:
 	PlAtom 	DensMap(const iV2 & p) { return materials[MatMap(p)].density; }
 
 	void SetRoom(const iV2 & v);	// set current room (load)
-	iRect RoomBorderRect(const iV2 & border) { return g_map.RoomBorderRect(roomPos, border); }
+	iRect RoomBorderRect(const iV2 & border) { return g_map.GetRoom(roomPos).borderRect(border); }
 
 	iV2 viewShift;					// view position (used in draw, set from G_VIEW, G_SHAKE, and G_VIEWPORT)
 

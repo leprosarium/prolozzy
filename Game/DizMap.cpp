@@ -231,18 +231,12 @@ void cDizMap::DrawRoom( const iV2 & rp, int layer, DrawMode mode, const iV2 & of
 	dword color;
 	if(InvalidRoomCoord(rp.x, rp.y)) return;
 
+	Room & room = GetRoom(rp);
 	// viewport clipping test
-	if( !g_paint.drawtilesoft() )
-	{
-		iV2 p1 = g_game.roomPos * Room::Size - g_game.viewport;
-		iRect viewport(p1, p1 + Room::Size);
-		if(!(rp * Room::Size < viewport.p2 && (rp + 1) * Room::Size > viewport.p1))
-			return;
+	if( !g_paint.drawtilesoft() && !room.rect().Intersects(iRect(GetRoom(g_game.roomPos).rect()).Offset(-g_game.viewport)))
+		return;
 
-
-	}
-	const std::vector<Brush *> & part = GetRoom(rp.x, rp.y).Brushes();
-	for(Brush *b: GetRoom(rp.x, rp.y).Brushes())
+	for(Brush *b: room.Brushes())
 	{
 		Brush & brush = * b;
 
@@ -252,12 +246,11 @@ void cDizMap::DrawRoom( const iV2 & rp, int layer, DrawMode mode, const iV2 & of
 		
 		if( brush.layer != layer ) continue; // filter layer
 
-		iV2 p = brush.pos - rp * Room::Size + ofs;
+		iV2 p = brush.pos - room.rect().p1 + ofs;
 		int frame = brush.frame;
 
 		if(mode == DrawMode::Material)
 		{
-			// use special color and shader
 			color	= brush.color;
 			shader	= brush.shader;
 			brush.color = g_game.materials[brush.material].color | 0xff000000;
@@ -270,16 +263,13 @@ void cDizMap::DrawRoom( const iV2 & rp, int layer, DrawMode mode, const iV2 & of
 		else
 		if(mode == DrawMode::Density)
 		{
-			// use special color and shader
-//			dword matd_color[MATD_MAX] = {0xff000000,0xff606060,0xffa0a0a0,0xffffffff};
 			color	= brush.color;
 			shader	= brush.shader;
 			PlAtom dens = g_game.materials[brush.material].density;
-			dword matd_color = dens == g_game._void ? 0xff000000 : 
+			brush.color = dens == g_game._void ? 0xff000000 :
 					dens == g_game.soft ? 0xff606060 :
 					dens == g_game.hard ? 0xffa0a0a0 :
 					0xffffffff;
-			brush.color = matd_color;
 			brush.shader= Blend::AlphaRep;
 			g_paint.DrawBrush( brush, p, frame );
 			brush.color = color;

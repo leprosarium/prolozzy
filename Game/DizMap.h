@@ -71,8 +71,6 @@ public:
 	int RoomIdx(int rx, int ry) const { return rx + ry * _size.x; }
 	bool InvalidRoomCoord(int rx, int ry)	{ return rx < 0 || rx >= _size.x || ry < 0 || ry >= _size.y; }
 
-//	iRect RoomBorderRect( const iV2 & room, const iV2 & border)	{ return Room::Rect(room).Deflate(border); }
-
 	iV2 size() const { return _size; }
 
 	Brushes brushes;

@@ -256,6 +256,10 @@ BOOL WinDlgOpenFolder( LPWSTR foldername )
 	return 1;
 }
 
+inline dword RGB2BGR(dword argb)
+{
+	return ((argb & 0xff00ff00) | ((argb & 0x00ff0000) >> 16) | ((argb & 0x000000ff) << 16));
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL WinDlgOpenColor( dword* color, BOOL extended )

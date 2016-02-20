@@ -239,12 +239,10 @@ void r9Render::DrawQuadRot(const fV2 & pos, const fV2 & size, const fV2 & center
 	fV2 d2 = -center + sz;
 	fV2 d3 = -center + (-sz.x, sz.y);
 
-	float angsin = sinf(DEG2RAD(angle));
-	float angcos = cosf(DEG2RAD(angle));
-	d0 = Rotate(d0,angsin,angcos) + pos;
-	d1 = Rotate(d1,angsin,angcos) + pos;
-	d2 = Rotate(d2,angsin,angcos) + pos;
-	d3 = Rotate(d3,angsin,angcos) + pos;
+	d0 = Rotate(d0, angle) + pos;
+	d1 = Rotate(d1, angle) + pos;
+	d2 = Rotate(d2, angle) + pos;
+	d3 = Rotate(d3, angle) + pos;
 
 	r9Vertex vx[6] = {
 		{ d0.x, d0.y, src.p1.x, src.p1.y, color },

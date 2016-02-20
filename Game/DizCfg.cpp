@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "DizCfg.h"
 #include "DizDef.h"
+#include "F9Files.h"
 #include "dinput.h"
 
 cDizCfg g_cfg;

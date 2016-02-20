@@ -7,8 +7,9 @@
 #include "DizApp.h"
 #include "DizDef.h"
 #include "DizCfg.h"
-
+#include "E9String.h"
 #include "SWI-cpp-m.h"
+
 
 
 int APIENTRY WinMain(HINSTANCE hInstance,

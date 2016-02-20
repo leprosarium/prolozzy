@@ -8,7 +8,8 @@
 #include "DizDef.h"
 #include "Brush.h"
 
-#include <deque> 
+#include <deque>
+#include <unordered_map>
 #include <algorithm>
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

@@ -6,6 +6,7 @@
 
 #include "E9System.h"
 #include "DizPaint.h"
+#include "SWI-cpp-m.h"
 
 #include <vector>
 #include <algorithm>

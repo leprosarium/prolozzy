@@ -1,30 +1,12 @@
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// E9Math.h
-// math structures and functions
-///////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef __E9MATH_H__
 #define __E9MATH_H__
 
 #include "stdafx.h"
 #include "E9System.h"
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// defines
-///////////////////////////////////////////////////////////////////////////////////////////////////
-#define PI							(3.1415926535897932385f)	// pi
-#define RAD2DEG(r)					((r) * 180.0f / PI)			// convert from radians to degrees
-#define DEG2RAD(d)					((d) * PI / 180.0f)			// convert from degrees to radians
-
-#define INRECT( x,y,r )				( r.left<=x && x<r.right && r.top<=y && y<r.bottom )
-
-#define RGB2BGR( argb )				( (argb & 0xff00ff00) | ((argb & 0x00ff0000)>>16) | ((argb & 0x000000ff)<<16) )
 
 struct iV2;
 struct iRect;
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// fV2 
-// float vector 2
-///////////////////////////////////////////////////////////////////////////////////////////////////
 struct fV2
 {
 	float x, y;
@@ -69,14 +51,14 @@ struct fV2
 	friend bool	Nor			( fV2 & v1 ) { float t = !v1; if( t==0.0f ) return false; else { v1 *= (1.0f/t); return true; } }
 	friend fV2	Unit		( const fV2 & v1 ) { fV2 v = v1; Nor(v); return v; }
 	friend fV2	Lerp		( const fV2 & v1, const fV2 & v2, float s ) { return v1 + s * (v2 - v1); }
-	friend fV2	Rotate		( const fV2 & v1, float angsin, float angcos )	{ return  fV2( v1.x * angcos + v1.y * -angsin, v1.x * angsin + v1.y * angcos ); }
-	friend fV2	Rotate		( const fV2 & v1, float angle )				{ float rad = DEG2RAD(angle); return Rotate(v1, sin(rad), cos(rad)); }
+	friend fV2	Rotate(const fV2 & v, float angle)
+	{
+		float sn = std::sin(angle);
+		float cs = std::cos(angle);
+		return fV2(v.x * cs + v.y * -sn, v.x * sn + v.y * cs);
+	}
 };
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// iV2 
-// int vector 2
-///////////////////////////////////////////////////////////////////////////////////////////////////
 struct iV2
 {
 	int x, y;
@@ -121,10 +103,6 @@ struct iV2
 	friend iV2	operator-	( int s, const iV2 & v )			{ return s + -v;}
 };
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// fRect
-// float rectangle
-///////////////////////////////////////////////////////////////////////////////////////////////////
 struct fRect
 {
 	fV2 p1, p2;
@@ -158,15 +136,8 @@ struct fRect
 
 inline	bool	operator==	( const fRect& r1, const fRect& r2 )	{ return r1.p1 == r2.p1 && r1.p2 == r2.p2; }
 inline	bool	operator!=	( const fRect& r1, const fRect& r2 )	{ return ! (r1 == r2); }
-//inline fRect	operator+	( const fRect& r1, const fRect& r2 )	{ return fRect( (r1.x1<r2.x1)?r1.x1:r2.x1, (r1.y1<r2.y1)?r1.y1:r2.y1, (r1.x2>r2.x2)?r1.x2:r2.x2, (r1.y2>r2.y2)?r1.y2:r2.y2 ); }
-//inline fRect	operator+=	( fRect& r1, const fRect& r2 )			{ if(r2.x1<r1.x1) r1.x1=r2.x1; if(r2.y1<r1.y1) r1.y1=r2.y1; if(r2.x2>r1.x2) r1.x2=r2.x2; if(r2.y2>r1.y2) r1.y2=r2.y2; return r1; }
 inline fRect	operator*	( const fRect& r1, const fRect& r2 )	{ return fRect( std::max(r1.p1.x,r2.p1.x), std::max(r1.p1.y,r2.p1.y), std::min(r1.p2.x, r2.p2.x), std::min(r1.p2.y,r2.p2.y)); }
-//inline fRect	operator*=	( fRect& r1, const fRect& r2 )			{ if(r2.x1>r1.x1) r1.x1=r2.x1; if(r2.y1>r1.y1) r1.y1=r2.y1; if(r2.x2<r1.x2) r1.x2=r2.x2; if(r2.y2<r1.y2) r1.y2=r2.y2; return r1; }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// iRect
-// int rectangle
-///////////////////////////////////////////////////////////////////////////////////////////////////
 struct iRect
 {
 	iV2 p1, p2;
@@ -203,10 +174,7 @@ struct iRect
 
 inline	bool	operator==	( const iRect& r1, const iRect& r2 )	{ return r1.p1 == r2.p1 && r1.p2 == r2.p2;; }
 inline	bool	operator!=	( const iRect& r1, const iRect& r2 )	{ return ! (r1 == r2); }
-//inline iRect	operator+	( const iRect& r1, const iRect& r2 )	{ return iRect( std::min(r1.p1.x, r2.p1.x), std::min(r1.p1.y, r2.p1.y), std::max(r1.p2.x, r2.p2.x), std::max(r1.p2.y, r2.p2.y)); }
-//inline iRect	operator+=	( iRect& r1, const iRect& r2 )			{ if(r2.p1.x<r1.p1.x) r1.p1.x=r2.p1.x; if(r2.p1.y<r1.p1.y) r1.p1.y=r2.p1.y; if(r2.p2.x>r1.p2.x) r1.p2.x=r2.p2.x; if(r2.p2.y>r1.p2.y) r1.p2.y=r2.p2.y; return r1; }
 inline iRect	operator*	( const iRect& r1, const iRect& r2 )	{ return iRect( std::max(r1.p1.x,r2.p1.x), std::max(r1.p1.y,r2.p1.y), std::min(r1.p2.x, r2.p2.x), std::min(r1.p2.y,r2.p2.y)); }
-//inline iRect	operator*=	( iRect& r1, const iRect& r2 )			{ if(r2.p1.x>r1.p1.x) r1.p1.x=r2.p1.x; if(r2.p1.y>r1.p1.y) r1.p1.y=r2.p1.y; if(r2.p2.x<r1.p2.x) r1.p2.x=r2.p2.x; if(r2.p2.y<r1.p2.y) r1.p2.y=r2.p2.y; return r1; }
 inline iV2 & iV2::Clip(const iRect & c)
 {
 	if (x < c.p1.x) x = c.p1.x;
@@ -217,10 +185,6 @@ inline iV2 & iV2::Clip(const iRect & c)
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// fColor
-// float color
-///////////////////////////////////////////////////////////////////////////////////////////////////
 struct fColor
 {
 	union
@@ -231,15 +195,17 @@ struct fColor
 	
 	fColor() : b(), g(), r(), a() { }
 	fColor( float a, float r, float g, float b )	: a(a), r(r), g(g), b(b) { }
-	fColor( dword color ) { b=(float)((color & 0x000000ff)) / 255.0f; g=(float)((color & 0x0000ff00)>>8) / 255.0f; r=(float)((color & 0x00ff0000)>>16) / 255.0f; a=(float)((color & 0xff000000)) / 255.0f; }
+	fColor( dword color ) : 
+		b((color & 0x000000ff) / 255.0f), 
+		g(((color & 0x0000ff00) >> 8) / 255.0f),
+		r(((color & 0x00ff0000) >> 16) / 255.0f),
+		a(((color & 0xff000000) >> 24)/ 255.0f)
+	{}
 	
 	inline	operator float *()				{ return (float*)this; }
 };
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// inlines
-///////////////////////////////////////////////////////////////////////////////////////////////////
 inline fV2::fV2( const iV2 & v ) : x(static_cast<float>(v.x)), y(static_cast<float>(v.y)) {}
 inline fRect::fRect( const iRect & r ) : p1(r.p1), p2(r.p2) {}
 
@@ -260,4 +226,4 @@ inline int GetPow2HI( int value )
 }
 
 #endif
-///////////////////////////////////////////////////////////////////////////////////////////////////
+

@@ -5,6 +5,7 @@
 #include "DizPaint.h"
 #include "DizGame.h"
 #include "DizDebug.h"
+#include "R9ImgLoader.h"
 
 cDizPaint g_paint;
 

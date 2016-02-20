@@ -1,23 +1,6 @@
 #ifndef __DIZDEF_H__
 #define __DIZDEF_H__
 
-#include "E9System.h"
-#include "E9Math.h"
-#include "E9String.h"
-#include "F9Files.h"
-#include "A9Audio.h"
-#include "R9Img.h"
-#include "R9ImgLoader.h"
-#include "R9Render.h"
-#include "SWI-cpp-m.h"
-
-#include <unordered_map>
-
-typedef std::unordered_map<atom_t, int> IntIndex;
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// System
-//////////////////////////////////////////////////////////////////////////////////////////////////
 #define GAME_NAME			"DizzyAGE"					// application name
 #define GAME_VERSION		"2.4"						// application version (change this with each change, at least 2 digits)
 

@@ -94,8 +94,8 @@ public:
 	Font() : id(), font() {}
 	Font(int id, r9Font * font) : id(id), font(font) {}
 	~Font() { delete font; }
-	Font(Font && f) : id(f.id), font(f.font) { f.font = 0; }
-	Font & operator = (Font && f) { id = f.id; font = f.font; f.font = 0; return *this; }
+	Font(Font && f) : id(f.id), font(f.font) { f.font = nullptr; }
+	Font & operator = (Font && f) { id = f.id; font = f.font; f.font = nullptr; return *this; }
 
 	int GetSize() const { return static_cast<int>(font->GetSize()); }
 	int GetCharWidth( char c ) const { return static_cast<int>(font->GetCharWidth(c)); }
@@ -251,7 +251,7 @@ public:
 	void GetTextSize(const std::string & text, int& w, int& h, int&c, int&r);								// in text's width and height in pixels and the number of columns and rows
 };
 
-class cDizPaint
+class DizPaint
 {
 	r9Img _imgtarget;	// target image in PF_A8 format (pointing to material map data)
 	bool _drawtilesoft;	// true for DrawBrush to call DrawTileSoft
@@ -273,7 +273,7 @@ public:
 	iV2 scrOffs;		// screen offset
 	byte drawtilemat;	// material to draw the tile
 
-	cDizPaint() : scale(1), _drawtilesoft(), drawtilemat() {}
+	DizPaint() : scale(1), _drawtilesoft(), drawtilemat() {}
 	
 	bool Init()	{ Layout(); return true; }
 	void Done() { tiles.clear(); fonts.clear(); }
@@ -304,7 +304,7 @@ public:
 	HUD hud;
 };
 
-extern	cDizPaint	g_paint;
+extern	DizPaint	g_paint;
 
 #endif
 //////////////////////////////////////////////////////////////////////////////////////////////////

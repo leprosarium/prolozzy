@@ -7,7 +7,7 @@
 #include "DizDebug.h"
 #include "R9ImgLoader.h"
 
-cDizPaint g_paint;
+DizPaint g_paint;
 
 PREDICATE_M(tile, find, 2)
 {
@@ -167,7 +167,7 @@ bool Tiles::Reacquire()
 	for(Tile & tile: *this) 
 	{
 		tile.tex = R9_TextureLoad(tile.name);
-		if(tile.tex==NULL)
+		if(!tile.tex)
 		{
 			elog::sys() << "error reacquireing tile " << tile.name.c_str() << std::endl;
 			ok = false;
@@ -180,7 +180,7 @@ void Tiles::Unacquire()
 {
 	for(Tile & t: *this) t.Destroy();
 }
-void cDizPaint::Unacquire()
+void DizPaint::Unacquire()
 {
 	elog::app() << "Paint unaquire." << std::endl;
 	tiles.Unacquire();
@@ -188,7 +188,7 @@ void cDizPaint::Unacquire()
 }
 
 
-void cDizPaint::Layout()
+void DizPaint::Layout()
 {
 	scale = g_cfg.m_scale;
 	if(!scale)	scale = std::max(0, std::min(R9_GetWidth()/g_game.screenSize.x, R9_GetHeight()/g_game.screenSize.y));
@@ -307,7 +307,7 @@ bool Tiles::Load(const std::string & path)
 // Draw functions
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void cDizPaint::DrawTile( int idx,const iV2 & p, const iRect & map, dword color, int flip, int frame, Blend blend, float sc ) const
+void DizPaint::DrawTile( int idx,const iV2 & p, const iRect & map, dword color, int flip, int frame, Blend blend, float sc ) const
 {
 	if(auto tile = tiles.Get(idx))
 	{
@@ -316,7 +316,7 @@ void cDizPaint::DrawTile( int idx,const iV2 & p, const iRect & map, dword color,
 	}
 }
 	
-void cDizPaint::DrawTile( int idx, const iV2 & p, dword color, int flip, int frame, Blend blend, float sc ) const
+void DizPaint::DrawTile( int idx, const iV2 & p, dword color, int flip, int frame, Blend blend, float sc ) const
 {
 	if(auto tile = tiles.Get(idx))
 	{
@@ -325,7 +325,7 @@ void cDizPaint::DrawTile( int idx, const iV2 & p, dword color, int flip, int fra
 	}
 }
 
-void cDizPaint::DrawChar( int fontidx, const iV2 & p, char c, dword color ) const
+void DizPaint::DrawChar( int fontidx, const iV2 & p, char c, dword color ) const
 {
 	if(auto f = fonts.Get(fontidx))
 		if(auto font = f->font)
@@ -338,7 +338,7 @@ void cDizPaint::DrawChar( int fontidx, const iV2 & p, char c, dword color ) cons
 		}
 }
 
-std::function<void(const iV2 &)> cDizPaint::selectDrawMethod(const Brush & brush, int idx, int frame) const
+std::function<void(const iV2 &)> DizPaint::selectDrawMethod(const Brush & brush, int idx, int frame) const
 {
 	iRect map = brush.map;
 	dword color = brush.color;
@@ -352,7 +352,7 @@ std::function<void(const iV2 &)> cDizPaint::selectDrawMethod(const Brush & brush
 	return [this, idx, map, color, flip, frame, blend, ms](const iV2 & p) { DrawTileSoft(idx, p, map, color, flip, frame, blend, ms); };
 }
 
-void cDizPaint::DrawBrush( const Brush & brush, const iV2 & p0, int frame ) const
+void DizPaint::DrawBrush( const Brush & brush, const iV2 & p0, int frame ) const
 {
 	int idx = tiles.Find(brush.tile);
 	if(idx==-1) return;
@@ -389,7 +389,7 @@ void cDizPaint::DrawBrush( const Brush & brush, const iV2 & p0, int frame ) cons
 // rotated and scalled sprites go through DrawTileSoft2
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void cDizPaint::BeginSoftwareRendering(const iV2 & size, dword cap, byte * data)
+void DizPaint::BeginSoftwareRendering(const iV2 & size, dword cap, byte * data)
 {
 	rollback.scale = scale;
 	rollback.offs = scrOffs;
@@ -405,7 +405,7 @@ void cDizPaint::BeginSoftwareRendering(const iV2 & size, dword cap, byte * data)
 	_imgtarget.m_data = data;
 }
 
-void cDizPaint::EndSoftwareRendering()
+void DizPaint::EndSoftwareRendering()
 {
 	_drawtilesoft = false;
 	scrOffs = rollback.offs;
@@ -414,7 +414,7 @@ void cDizPaint::EndSoftwareRendering()
 }
 
 
-void cDizPaint::DrawTileSoft( int idx, const iV2 & p, const iRect & map, dword color, int flip, int frame, Blend blend, float scale ) const
+void DizPaint::DrawTileSoft( int idx, const iV2 & p, const iRect & map, dword color, int flip, int frame, Blend blend, float scale ) const
 {
 	auto tile = tiles.Get(idx); 
 	if(tile == nullptr) return;
@@ -478,7 +478,7 @@ void cDizPaint::DrawTileSoft( int idx, const iV2 & p, const iRect & map, dword c
 
 }
 
-void cDizPaint::DrawTileSoft2( int idx, const iV2 & p, const iRect & map, dword color, int flip, int frame, Blend blend, float scale ) const
+void DizPaint::DrawTileSoft2( int idx, const iV2 & p, const iRect & map, dword color, int flip, int frame, Blend blend, float scale ) const
 {
 	auto tile = tiles.Get(idx); 
 	if(tile == nullptr) return;

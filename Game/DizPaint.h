@@ -83,19 +83,19 @@ public:
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // FONT
 //////////////////////////////////////////////////////////////////////////////////////////////////
-class cFont
+class Font
 {
-	cFont(const cFont &);
-	cFont & operator = (const cFont &);
+	Font(const Font &);
+	Font & operator = (const Font &);
 public:
 	int id;						// unique id >=0
 	r9Font * font;				// font
 		
-	cFont() : id(), font() {}
-	cFont(int id, r9Font * font) : id(id), font(font) {}
-	~cFont() { delete font; }
-	cFont(cFont && f) : id(f.id), font(f.font) { f.font = 0; }
-	cFont & operator = (cFont && f) { id = f.id; font = f.font; f.font = 0; return *this; }
+	Font() : id(), font() {}
+	Font(int id, r9Font * font) : id(id), font(font) {}
+	~Font() { delete font; }
+	Font(Font && f) : id(f.id), font(f.font) { f.font = 0; }
+	Font & operator = (Font && f) { id = f.id; font = f.font; f.font = 0; return *this; }
 
 	int GetSize() const { return static_cast<int>(font->GetSize()); }
 	int GetCharWidth( char c ) const { return static_cast<int>(font->GetCharWidth(c)); }
@@ -224,12 +224,12 @@ public:
 	void Unacquire(); // called before render reset to free render resources
 };
 
-class Fonts : public Indexed<cFont>
+class Fonts : public Indexed<Font>
 {
 	bool LoadFile(const std::string & filepath, size_t & total, size_t & fail, size_t & duplicates);
 public:
 	bool Load(const std::string & path);
-	void Unacquire() { std::for_each(begin(), end(), [](cFont &f) { if(f.font) f.font->SetTexture(nullptr); }); }
+	void Unacquire() { std::for_each(begin(), end(), [](Font &f) { if(f.font) f.font->SetTexture(nullptr); }); }
 
 };
 

@@ -597,7 +597,7 @@ void HUD::GetTextSize(const std::string & text, int& w, int& h, int& c, int& r )
 	w = h = c = r = 0;
 	if(text.empty()) return; // invalid text
 	int fontidx = g_paint.fonts.Find(font); // find font
-	const cFont* font = g_paint.fonts.Get(fontidx);
+	const Font* font = g_paint.fonts.Get(fontidx);
 	if(!font) return; // no font
 
 	auto m = text.begin();
@@ -657,7 +657,7 @@ void HUD::DrawText( int tileid, const iRect & dst, const std::string & text, int
 	Tile* tile = g_paint.tiles.Get(tileidx); 
 	if(!tile) return; // invalid tile
 	int fontidx = g_paint.fonts.Find(font); // find font
-	cFont* font = g_paint.fonts.Get(fontidx);
+	Font* font = g_paint.fonts.Get(fontidx);
 	if(!font) return; // no font
 
 	// overwrite font's texture and shader
@@ -828,7 +828,7 @@ bool Fonts::LoadFile(const std::string & filepath, size_t & total, size_t & fail
 	}
 
 	// add to list
-	cFont font(id, new r9Font());
+	Font font(id, new r9Font());
 	font.font->Create(8,8,8,32,128);
 	if(!font.font->Create(filepath))
 	{

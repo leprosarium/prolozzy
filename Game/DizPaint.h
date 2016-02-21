@@ -266,7 +266,8 @@ class DizPaint
 	void DrawTileSoft(int idx, const iV2 & p, const iRect & map, dword color=0xffffffff, int flip=0, int frame=0, Blend blend = Blend::Alpha, float scale=1.0f ) const;	// paints tile in the image target map (faster, no rotation, no scale)
 	void DrawTileSoft2(int idx, const iV2 & p, const iRect & map, dword color=0xffffffff, int flip=0, int frame=0, Blend blend = Blend::Alpha, float scale=1.0f ) const;	// paints tile in the image target map (accept rotation and scale)
 
-	std::function<void(const iV2&)> selectDrawMethod(const Brush & brush, int idx, int frame) const;
+	typedef std::function<void(const iV2&)> DrawMethod;
+	DrawMethod selectDrawMethod(const Brush & brush, int idx, int frame) const;
 
 public:
 	int scale;			// scale factor

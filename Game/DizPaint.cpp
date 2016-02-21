@@ -338,7 +338,7 @@ void DizPaint::DrawChar( int fontidx, const iV2 & p, char c, dword color ) const
 		}
 }
 
-std::function<void(const iV2 &)> DizPaint::selectDrawMethod(const Brush & brush, int idx, int frame) const
+DizPaint::DrawMethod DizPaint::selectDrawMethod(const Brush & brush, int idx, int frame) const
 {
 	iRect map = brush.map;
 	dword color = brush.color;

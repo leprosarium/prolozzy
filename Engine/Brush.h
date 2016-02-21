@@ -48,7 +48,7 @@ public:
 	float mapHeight() const { return ( Is<Flip::R>(flip) ? map.Width( ) : map.Height()) * mapScale(); }
 
  	iRect rect() const { return iRect(pos, pos + size); }
-	fV2 mapSize() const { fV2 sz = map.Size(); return (Is<Flip::R>(flip) ? fV2(sz.y, sz.x) : sz) * mapScale(); }
+	fV2 mapSize() const { fV2 sz = map.Size(); return (Is<Flip::R>(flip) ? sz.Tran() : sz) * mapScale(); }
 };
 
 

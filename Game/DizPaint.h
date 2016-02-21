@@ -102,6 +102,7 @@ public:
 	int GetTextWidth( const std::string & text ) const { return static_cast<int>(font->GetTextWidth(text)); }
 	int	GetOfsX() const { return (int)font->GetOfsX(); }
 	int GetOfsY() const { return (int)font->GetOfsY(); }
+	iV2 GetOfs() const { return iV2(GetOfsX(), GetOfsY()); }
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

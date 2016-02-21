@@ -592,45 +592,43 @@ HUD::Cmd HUD::ScanText(std::string::const_iterator start, std::string::const_ite
 	return Cmd::None;
 }
 
-void HUD::GetTextSize(const std::string & text, int& w, int& h, int& c, int& r )
+void HUD::GetTextSize(const std::string & text, int& w, int& h, int& c, int& rowcount )
 {
-	w = h = c = r = 0;
-	if(text.empty()) return; // invalid text
-	int fontidx = g_paint.fonts.Find(font); // find font
-	const Font* font = g_paint.fonts.Get(fontidx);
-	if(!font) return; // no font
+	w = h = c = rowcount = 0;
+	if (text.empty()) return;
+	const Font* font = g_paint.fonts.Get(g_paint.fonts.Find(this->font));
+	if(!font) return;
 
 	auto m = text.begin();
 	int data[4];
-	h = 0;
 	int chrcount = 0;
-	int rowcount = 0;
 	int linesize = 0;
-	bool newline=true;
+	bool newline = true;
+	const iV2 fontOfs = font->GetOfs();
 	while(m != text.end())
 	{
 		// escape command
 		decltype(m) m2;
 		Cmd cmd = Cmd::None;
 		if( *m == '{')	cmd = ScanText(m, text.end(), m2, data); // read command
-		if(cmd != Cmd::None) m = m2 + 1; // step over it
+		if(cmd != Cmd::None)
+			m = m2 + 1; // step over it
 		else 
 		{
-			if(*m == '\n')
+			newline = *m == '\n';
+			if(newline)
 			{
-				if(chrcount) linesize -= font->GetOfsX();
-				h += font->GetSize() + font->GetOfsY();
-				if(linesize>w) w=linesize;
-				if(chrcount>c) c=chrcount;
+				if(chrcount) linesize -= fontOfs.x;
+				h += font->GetSize() + fontOfs.y;
+				if(linesize > w) w = linesize;
+				if(chrcount > c) c = chrcount;
 				chrcount = 0;
 				linesize = 0;
 				rowcount++;
-				newline = true;
 			}
 			else
 			{
-				newline = false;
-				linesize += font->GetCharWidth(*m) + font->GetOfsX();
+				linesize += font->GetCharWidth(*m) + fontOfs.x;
 				chrcount++;
 			}
 			m++;
@@ -639,14 +637,12 @@ void HUD::GetTextSize(const std::string & text, int& w, int& h, int& c, int& r )
 	// last row, if not empty, or after a \n
 	if(chrcount || newline) 
 	{
-		if(chrcount) linesize -= font->GetOfsX();
+		if(chrcount) linesize -= fontOfs.x;
 		h += font->GetSize();
-		if(linesize>w) w=linesize;
-		if(chrcount>c) c=chrcount;
+		if(linesize > w) w = linesize;
+		if(chrcount > c) c = chrcount;
 		rowcount++;
 	}
-
-	r = rowcount;
 }
 
 void HUD::DrawText( int tileid, const iRect & dst, const std::string & text, int m_align )
@@ -654,11 +650,11 @@ void HUD::DrawText( int tileid, const iRect & dst, const std::string & text, int
 	if(!visible) return;
 	if( text.empty() ) return;
 	int tileidx = g_paint.tiles.Find(tileid);
-	Tile* tile = g_paint.tiles.Get(tileidx); 
-	if(!tile) return; // invalid tile
+	if (g_paint.tiles.InvalidIdx(tileidx)) return;
+	Tile * tile = g_paint.tiles.Get(tileidx); 
 	int fontidx = g_paint.fonts.Find(font); // find font
-	Font* font = g_paint.fonts.Get(fontidx);
-	if(!font) return; // no font
+	if (g_paint.fonts.InvalidIdx(fontidx)) return;
+	Font * font = g_paint.fonts.Get(fontidx);
 
 	// overwrite font's texture and shader
 	font->font->SetTexture(tile->tex);
@@ -691,9 +687,9 @@ void HUD::DrawText( int tileid, const iRect & dst, const std::string & text, int
 
 		// PASS1: scan current line for size
 		auto m = lnstart;	// scan cursor
-		int chrcount=0;		// printable characters to scan cursor
-		int linesize=0;		// line size in pixels
-		
+		int chrcount = 0;	// printable characters to scan cursor
+		int linesize = 0;	// line size in pixels
+		const iV2 fontOfs = font->GetOfs();
 		while(m != text.end() && *m != '\n')
 		{
 			// escape command
@@ -702,48 +698,48 @@ void HUD::DrawText( int tileid, const iRect & dst, const std::string & text, int
 			if( *m == '{') cmd = ScanText(m,text.end(), m2, data); // read command
 			if(cmd != Cmd::None) // only if command found and valid
 			{
-				if(cmd == Cmd::Align) align=data[0];
-				m=m2+1; // step over it
+				if(cmd == Cmd::Align) align = data[0];
+				m = m2 + 1; // step over it
 			}
 			else
 			{
-				linesize+=font->GetCharWidth(*m)+font->GetOfsX();
+				linesize += font->GetCharWidth(*m) + fontOfs.x;
 				m++;
 				chrcount++;
 			}
 		}
-		if(chrcount>0) linesize-=font->GetOfsX();
+		if(chrcount>0) linesize -= fontOfs.x;
 
 		lnend = m;
 
 		// compute aligniament
-		if(align==0) p.x+=((sz.x-linesize)/2); else
-		if(align==1) p.x+=(sz.x-linesize);
+		if(align == 0)
+			p.x += ((sz.x-linesize)/2);
+		else if(align == 1)
+			p.x += (sz.x-linesize);
 
 		// PASS2: print characters to the end of the line
 		m = lnstart;
-		while(m<lnend)
+		while(m < lnend)
 		{
 			if(m == text.end()) break; // safety+
 
 			// escape command
 			decltype(m) m2;
 			cmd = Cmd::None;
-			if( *m == '{')	cmd = ScanText(m,text.end(), m2, data); // read command
+			if( *m == '{')	cmd = ScanText(m, text.end(), m2, data); // read command
 			if(cmd != Cmd::None) // only if command found and valid
 			{
-				if(cmd == Cmd::Color) 	clr=data[0];
-				else
-				if(cmd == Cmd::Focus)	focus=data[0];
-				else
-				if(cmd == Cmd::Tile)	g_paint.DrawTile( g_paint.tiles.Find(data[0]), iV2(p.x+data[1], p.y+data[2]), focus ? colorfocus : clr, 0, 0 );
-				m=m2+1; // step over it
+				if(cmd == Cmd::Color) clr = data[0];
+				else if(cmd == Cmd::Focus) focus = data[0];
+				else if(cmd == Cmd::Tile) g_paint.DrawTile( g_paint.tiles.Find(data[0]), p + iV2(data[1], data[2]), focus ? colorfocus : clr, 0, 0);
+				m = m2 + 1; // step over it
 			}
 			else
 			{
 				// print character
 				g_paint.DrawChar( fontidx, p, *m, focus ? colorfocus : clr );
-				p.x+=font->GetCharWidth(*m)+font->GetOfsX();
+				p.x += font->GetCharWidth(*m) + fontOfs.x;
 				chrcount--;
 				m++;
 			}
@@ -752,11 +748,10 @@ void HUD::DrawText( int tileid, const iRect & dst, const std::string & text, int
 		if(m != text.end() && *m == '\n') m++; // step over new line character
 
 		// new Line
-		p.y += font->GetSize() + font->GetOfsY();
+		p.y += font->GetSize() + fontOfs.y;
 		lnstart = m;
 		linecount++;
 	}
-
 }
 
 
@@ -764,9 +759,9 @@ void HUD::DrawTile( int tileid, const iRect & dst, const iRect & src, dword flag
 {
 	if(!visible) return;
 	int tileidx = g_paint.tiles.Find(tileid);
-	if(tileidx==-1) return;
+	if(g_paint.tiles.InvalidIdx(tileidx)) return;
 	iV2 sz = src.Size();
-	if( sz.x==0 || sz.y==0 ) return;
+	if( sz.x == 0 || sz.y == 0 ) return;
 	fRect oldclip = R9_GetClipping();
 	fRect newclip = fRect(g_paint.scrPos(dst.p1), g_paint.scrPos(dst.p2));
 	R9_AddClipping(newclip);
@@ -774,15 +769,15 @@ void HUD::DrawTile( int tileid, const iRect & dst, const iRect & src, dword flag
 	{
 		iV2 c = (dst.Size() + sz - 1) / sz;
 		iV2 p(dst.p1);
-		for(int i=0;i<c.y;i++)
+		for(int i = 0; i < c.y; i++)
 		{
 			p.x = dst.p1.x;
-			for(int j=0;j<c.x;j++)
+			for(int j = 0; j < c.x; j++)
 			{
 				g_paint.DrawTile( tileidx, p, src, color, flags, frame, shader );
-				p.x+=sz.x;
+				p.x += sz.x;
 			}
-			p.y+=sz.y;
+			p.y += sz.y;
 		}
 	}
 

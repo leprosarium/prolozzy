@@ -231,7 +231,7 @@ void cDizPlayer::EnterRoll()
 	pow = 1; // cut fall power to roll on ground
 	
 	if(tile == costume + tileUp || tile == costume + tileJump ) // only when jumping
-		if(cTile* tile = FindTile())
+		if(Tile* tile = FindTile())
 			if(tile->ComputeFrame(frame, anim)) return; // don't enter idle unless last frame reached; untill then stay in roll
 
 	EnterKeyState(); // be sure to stop the fall, just in case the fall handler doesn't
@@ -520,7 +520,7 @@ void cDizPlayer::ReadMatInfo()
 void cDizPlayer::Draw()
 {
 	if(disable) return;
-	if(cTile* tile = FindTile())
+	if(Tile* tile = FindTile())
 	{
 		iV2 sz = tile->GetSize();
 		R9_SetBlend(shader);

@@ -17,10 +17,10 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-class cTile
+class Tile
 {
-	cTile(const cTile &);
-	cTile & operator = (const cTile &);
+	Tile(const Tile &);
+	Tile & operator= (const Tile &);
 public:
 		int			id;						// unique id >=0
 		int			frames;					// number of frames
@@ -30,8 +30,8 @@ public:
 		r9Img		img;						// img alpha mask
 		std::string	name;						// tile name
 		
-		cTile(int id) : id(id), frames(1), fx(1), fy(1), tex(nullptr) { }
-		cTile(cTile && t) : 
+		Tile(int id) : id(id), frames(1), fx(1), fy(1), tex(nullptr) { }
+		Tile(Tile && t) : 
 			id(t.id),
 			frames(t.frames),
 			fx(t.fx),
@@ -43,7 +43,7 @@ public:
 			t.tex = 0; 
 		}
 
-		cTile & operator = (cTile && t) 
+		Tile & operator = (Tile && t) 
 		{
 			id = t.id;
 			frames = t.frames;
@@ -55,7 +55,7 @@ public:
 			t.tex = 0;
 			return *this;
 		}
-		~cTile() { Destroy();  R9_ImgDestroy(&img); }
+		~Tile() { Destroy();  R9_ImgDestroy(&img); }
 		void Destroy() { if(tex) { R9_TextureDestroy(tex); tex = 0; } }
 
 		int         GetFx(int frame) const		{ return frame % fx; }
@@ -215,7 +215,7 @@ public:
 
 
 
-class Tiles : public Indexed<cTile>
+class Tiles : public Indexed<Tile>
 {
 	bool LoadFile(const std::string & file, size_t & total, size_t & fail, size_t & duplicates);
 public:
@@ -235,7 +235,7 @@ public:
 
 class HUD
 {
-	enum Cmd { None, Align, Color, Focus, Tile };
+	enum class Cmd { None, Align, Color, Focus, Tile };
 	Cmd ScanText(std::string::const_iterator start, std::string::const_iterator end, std::string::const_iterator & res, int* data);								// helper for hud text; scans for command and return command and data info
 
 public:

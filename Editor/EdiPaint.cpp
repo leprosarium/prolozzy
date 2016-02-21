@@ -85,7 +85,7 @@ bool cEdiPaint::TileLoadFile( const std::string & filepath, size_t & total, size
 		elog::err() << "! " << filepath.c_str() << " (texture failed)" << std::endl;
 		return false;
 	}
-	cTile* tile = TileGet(TileAdd(id));
+	Tile* tile = TileGet(TileAdd(id));
 	tile->tex = tex;
 	tile->frames	= frames;
 	tile->fx = fpl;
@@ -117,13 +117,13 @@ bool cEdiPaint::TileLoad( const std::string & path )
 	elog::app() << "Tiles report: total=" << total << ", failed=" << fail << " (duplicates=" << duplicates << ")" << std::endl;
 
 	// sort by id
-	std::sort(m_tile.begin(), m_tile.end(), [](cTile * t1, cTile * t2) { return t1->id < t2->id; });
+	std::sort(m_tile.begin(), m_tile.end(), [](Tile * t1, Tile * t2) { return t1->id < t2->id; });
 
 	// rehash after reordering
 	index.clear();
 	for(int i=0;i<TileCount();i++)
 	{
-		cTile* tile = g_paint.TileGet(i); assert(tile!=NULL);
+		Tile* tile = g_paint.TileGet(i); assert(tile!=NULL);
 		index.insert(Hash::value_type(tile->id, i));
 	}
 
@@ -134,7 +134,7 @@ void cEdiPaint::TileUnload()
 {
 	// done
 	index.clear();
-	std::for_each(m_tile.begin(), m_tile.end(), [](cTile *t) {t->Destroy(); delete t; });
+	std::for_each(m_tile.begin(), m_tile.end(), [](Tile *t) {t->Destroy(); delete t; });
 	m_tile.clear();
 }
 
@@ -146,7 +146,7 @@ int cEdiPaint::TileAdd( int id )
 	if(TileFind(id)!=-1) return -1; // duplicate id
 	
 	// add new tile to list
-	cTile* tile = new cTile();
+	Tile* tile = new Tile();
 	tile->id = id;
 	int idx = m_tile.size();
 	m_tile.push_back(tile);
@@ -158,7 +158,7 @@ int cEdiPaint::TileAdd( int id )
 
 void cEdiPaint::TileDel( int idx )
 {
-	if(cTile* tile = TileGet(idx)) {
+	if(Tile* tile = TileGet(idx)) {
 		index.erase(tile->id);
 		delete tile;
 		m_tile.erase(m_tile.begin() + idx);
@@ -171,7 +171,7 @@ void cEdiPaint::TileDel( int idx )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void cEdiPaint::DrawTile( int idx, int x, int y, const iRect & map, dword color, int flip, int frame, Blend blend, float scale )
 {
-	cTile* tile = TileGet(idx); 
+	Tile* tile = TileGet(idx); 
 	if(tile==NULL) return;
 	
 	int w = tile->GetWidth();
@@ -189,7 +189,7 @@ void cEdiPaint::DrawTile( int idx, int x, int y, const iRect & map, dword color,
 	
 void cEdiPaint::DrawTile( int idx, int x, int y, dword color, int flip, int frame, Blend blend, float scale )
 {
-	cTile* tile = TileGet(idx); 
+	Tile* tile = TileGet(idx); 
 	if(tile==NULL) return;
 
 	int w = tile->GetWidth();

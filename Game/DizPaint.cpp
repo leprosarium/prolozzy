@@ -32,35 +32,35 @@ PREDICATE_M(tile, unload, 0)
 
 PREDICATE_M(tile, id, 2) 
 {
-	if(cTile* tile = g_paint.tiles.Get(A1))
+	if(Tile* tile = g_paint.tiles.Get(A1))
 		return A2 = tile->id;
 	throw PlDomainError("invalid tile index", A1); 
 }
 
 PREDICATE_M(tile, width, 2) 
 {
-	if(cTile* tile = g_paint.tiles.Get(A1))
+	if(Tile* tile = g_paint.tiles.Get(A1))
 		return A2 = tile->GetWidth();
 	throw PlDomainError("invalid tile index", A1); 
 }
 
 PREDICATE_M(tile, height, 2) 
 {
-	if(cTile* tile = g_paint.tiles.Get(A1))
+	if(Tile* tile = g_paint.tiles.Get(A1))
 		return A2 = tile->GetHeight();
 	throw PlDomainError("invalid tile index", A1); 
 }
 
 PREDICATE_M(tile, frames, 2) 
 {
-	if(cTile* tile = g_paint.tiles.Get(A1))
+	if(Tile* tile = g_paint.tiles.Get(A1))
 		return A2 = tile->frames;
 	throw PlDomainError("invalid tile index", A1); 
 }
 
 PREDICATE_M(tile, name, 2) 
 {
-	if(cTile* tile = g_paint.tiles.Get(A1))
+	if(Tile* tile = g_paint.tiles.Get(A1))
 		return A2 = tile->name;
 	throw PlDomainError("invalid tile index", A1); 
 }
@@ -164,7 +164,7 @@ bool Tiles::Reacquire()
 {
 	elog::app() << "Paint reaquire." << std::endl;
 	bool ok=true;
-	for(cTile & tile: *this) 
+	for(Tile & tile: *this) 
 	{
 		tile.tex = R9_TextureLoad(tile.name);
 		if(tile.tex==NULL)
@@ -178,7 +178,7 @@ bool Tiles::Reacquire()
 
 void Tiles::Unacquire()
 {
-	for(cTile & t: *this) t.Destroy();
+	for(Tile & t: *this) t.Destroy();
 }
 void cDizPaint::Unacquire()
 {
@@ -262,7 +262,7 @@ bool Tiles::LoadFile( const std::string & filepath, size_t & total, size_t & fai
 		elog::sys() << "! " << filepath.c_str() << " (texture failed)" << std::endl;
 		return false;
 	}
-	cTile tile(id);
+	Tile tile(id);
 	tile.tex = tex;
 	tile.frames = frames;
 	tile.fx = fpl;
@@ -551,7 +551,7 @@ HUD::Cmd HUD::ScanText(std::string::const_iterator start, std::string::const_ite
 
 	// search for close sign
 	while(res != end && *res != '}') ++res;
-	if(end<start+4 || *res != '}' || *(start + 2) != ':') return None; // invalid command
+	if(end<start+4 || *res != '}' || *(start + 2) != ':') return Cmd::None; // invalid command
 
 	// copy data string
 	std::string szdata(start+3, res);
@@ -561,7 +561,7 @@ HUD::Cmd HUD::ScanText(std::string::const_iterator start, std::string::const_ite
 		case 'A': // align
 		{
 			data[0] = (szdata[0]=='l') ? -1 : (szdata[0]=='r') ? 1 : 0;
-			return Align;
+			return Cmd::Align;
 		}
 		case 'c': // color
 		case 'C': // color
@@ -572,24 +572,24 @@ HUD::Cmd HUD::ScanText(std::string::const_iterator start, std::string::const_ite
 			if(i >> t)
 			{
 				data[0] = static_cast<int>(t);
-				return Color;
+				return Cmd::Color;
 			}
 		}
 		case 'f': // focus
 		case 'F': // focus
 		{
 			data[0] = (szdata[0]=='1') ? 1 : 0;
-			return Focus;
+			return Cmd::Focus;
 		}
 		case 't': // tile
 		case 'T': // tile
 		{
 			std::istringstream i(szdata);
 			if(i >> data[0] >> data[1] >> data[2]) // id, x, y (in client)
-				return Tile;
+				return Cmd::Tile;
 		}
 	}
-	return None;
+	return Cmd::None;
 }
 
 void HUD::GetTextSize(const std::string & text, int& w, int& h, int& c, int& r )
@@ -611,9 +611,9 @@ void HUD::GetTextSize(const std::string & text, int& w, int& h, int& c, int& r )
 	{
 		// escape command
 		decltype(m) m2;
-		Cmd cmd = None;
+		Cmd cmd = Cmd::None;
 		if( *m == '{')	cmd = ScanText(m, text.end(), m2, data); // read command
-		if(cmd != None) m = m2 + 1; // step over it
+		if(cmd != Cmd::None) m = m2 + 1; // step over it
 		else 
 		{
 			if(*m == '\n')
@@ -654,8 +654,8 @@ void HUD::DrawText( int tileid, const iRect & dst, const std::string & text, int
 	if(!visible) return;
 	if( text.empty() ) return;
 	int tileidx = g_paint.tiles.Find(tileid);
-	cTile* tile = g_paint.tiles.Get(tileidx); 
-	if(tile==NULL) return; // invalid tile
+	Tile* tile = g_paint.tiles.Get(tileidx); 
+	if(!tile) return; // invalid tile
 	int fontidx = g_paint.fonts.Find(font); // find font
 	cFont* font = g_paint.fonts.Get(fontidx);
 	if(!font) return; // no font
@@ -698,11 +698,11 @@ void HUD::DrawText( int tileid, const iRect & dst, const std::string & text, int
 		{
 			// escape command
 			decltype(m) m2;
-			cmd = None;
+			cmd = Cmd::None;
 			if( *m == '{') cmd = ScanText(m,text.end(), m2, data); // read command
-			if(cmd != None) // only if command found and valid
+			if(cmd != Cmd::None) // only if command found and valid
 			{
-				if(cmd == Align) align=data[0];
+				if(cmd == Cmd::Align) align=data[0];
 				m=m2+1; // step over it
 			}
 			else
@@ -728,15 +728,15 @@ void HUD::DrawText( int tileid, const iRect & dst, const std::string & text, int
 
 			// escape command
 			decltype(m) m2;
-			cmd = None;
+			cmd = Cmd::None;
 			if( *m == '{')	cmd = ScanText(m,text.end(), m2, data); // read command
-			if(cmd != None) // only if command found and valid
+			if(cmd != Cmd::None) // only if command found and valid
 			{
-				if(cmd == Color) 	clr=data[0];
+				if(cmd == Cmd::Color) 	clr=data[0];
 				else
-				if(cmd == Focus)	focus=data[0];
+				if(cmd == Cmd::Focus)	focus=data[0];
 				else
-				if(cmd == Tile)	g_paint.DrawTile( g_paint.tiles.Find(data[0]), iV2(p.x+data[1], p.y+data[2]), focus ? colorfocus : clr, 0, 0 );
+				if(cmd == Cmd::Tile)	g_paint.DrawTile( g_paint.tiles.Find(data[0]), iV2(p.x+data[1], p.y+data[2]), focus ? colorfocus : clr, 0, 0 );
 				m=m2+1; // step over it
 			}
 			else

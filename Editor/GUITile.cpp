@@ -23,7 +23,7 @@ void cGUITile::OnDraw()
 
 	// tile
 	int idx = g_paint.TileFind(value);
-	cTile* tile = g_paint.TileGet(idx); 
+	Tile* tile = g_paint.TileGet(idx); 
 	if(tile==NULL) return;
 	int x = rc.p1.x;
 	int y = rc.p1.y;
@@ -97,7 +97,7 @@ cGUITileMap::cGUITileMap(cGUIDlg *d) : cGUIItem(d), scale(), snap(), grid(), axe
 void cGUITileMap::OnUpdate()
 {
 	// tile info
-	cTile * tile = g_paint.TileGet(g_paint.TileFind(value)); 
+	Tile * tile = g_paint.TileGet(g_paint.TileFind(value)); 
 	if(tile==NULL) return;
 	int tilew = tile->GetWidth();
 	int tileh = tile->GetHeight();

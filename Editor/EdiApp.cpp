@@ -502,9 +502,9 @@ PREDICATE_M(edi, tileCount, 1)
 }
 
 
-cTile *TileGet(PlTerm idx)
+Tile *TileGet(PlTerm idx)
 {
-	cTile * tile = g_paint.TileGet(idx); 
+	Tile * tile = g_paint.TileGet(idx); 
 	if(!tile)
 		throw PlDomainError("invalid tile index", idx);
 	return tile;

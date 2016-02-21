@@ -33,7 +33,7 @@
 class cDizPlayer
 {
 	void ReadMatInfo();
-	cTile * FindTile() { return g_paint.tiles.Get(g_paint.tiles.Find(tile)); }
+	Tile * FindTile() { return g_paint.tiles.Get(g_paint.tiles.Find(tile)); }
 
 	void EnterIdle();
 	void EnterWalk(int dir);

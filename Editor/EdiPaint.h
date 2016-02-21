@@ -26,7 +26,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // TILE
 //////////////////////////////////////////////////////////////////////////////////////////////////
-class cTile
+class Tile
 {
 public:
 	int id;						// unique id >=0
@@ -36,7 +36,7 @@ public:
 	R9TEXTURE tex;				// texture
 	std::string name;			// tile name
 						
-	cTile(): id(), frames(1), fx(1), fy(1), tex() {}
+	Tile(): id(), frames(1), fx(1), fy(1), tex() {}
 	int GetFx(int frame) const { return frame % fx; }
 	int GetFy(int frame) const { return frame / fx; }
 	int GetWidth() const { return fx > 0 ? tex->width / fx : tex->width; }
@@ -101,7 +101,7 @@ public:
 
 		// Tiles
 		int				TileCount		()					{ return m_tile.size(); }
-		cTile*			TileGet			( int idx )			{ if(0<=idx && static_cast<size_t>(idx)<m_tile.size()) return m_tile[idx]; return 0; }
+		Tile*			TileGet			( int idx )			{ if(0<=idx && static_cast<size_t>(idx)<m_tile.size()) return m_tile[idx]; return 0; }
 		int				TileAdd			( int id );			// add a new empty tile; id must be unique
 		void			TileDel			( int idx );		// delete tile by index
 		int				TileFind		( int id )			{ Hash::iterator i = index.find(id); if(i == index.end()) return -1; return i->second; }
@@ -120,7 +120,7 @@ public:
 
 		typedef std::unordered_map<int, int> Hash;
 		// tiles
-		std::vector<cTile *> m_tile;	// tiles list
+		std::vector<Tile *> m_tile;	// tiles list
 		Hash			index;			// hash for tiles (id,idx)
 		std::string 	m_tilepath;		// path to tiles (obtained from the tilefile at load)
 

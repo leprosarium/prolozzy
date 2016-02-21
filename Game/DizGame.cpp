@@ -452,6 +452,6 @@ void cDizGame::ObjGather()
 
 void cDizGame::ObjDraw(const Brush & brush)
 {
-	if(cTile * tile = g_paint.tiles.Get(g_paint.tiles.Find(brush.tile)))
+	if(Tile * tile = g_paint.tiles.Get(g_paint.tiles.Find(brush.tile)))
 		g_paint.DrawBrush( brush, viewShift + brush.pos - roomPos * Room::Size, tile->ComputeFrame(brush.frame, brush.anim));
 }

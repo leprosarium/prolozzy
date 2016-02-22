@@ -3,7 +3,7 @@ brush:new([x=720,y=104,w=232,h=152,tile=1000,x2=900,y2=600,shader=1,scale=25,dra
 brush:new([id=collide_handler,layer=3,x=543,y=198,w=32,h=64,tile=1400,x1=32,x2=96,y2=128,color=4294967040,shader=1,scale=50,material=2,draw=3,delay=3,anim=2,collider=1,class=bubble]).
 brush:new([layer=2,x=480,y=256,w=240,h=16,tile=120,x1=24,y1=24,x2=40,y2=40,color=4291297280,shader=1,material=7,draw=3]).
 brush:new([layer=2,x=480,y=136,w=240,h=8,tile=120,x1=24,y1=40,x2=40,y2=48,color=4291297280,shader=1,material=7,draw=3]).
-brush:new([x=504,y=152,w=35,h=58,tile=5,x2=35,y2=58,shader=1,draw=1,class=item,name='SCUBA']).
+brush:new([x=504,y=152,w=35,h=58,tile=5,x2=35,y2=58,shader=1,draw=1]).
 brush:new([x=720,y=136,w=240,h=8,tile=120,x1=24,y1=40,x2=40,y2=48,color=4291297280,shader=1,material=7,draw=2,class=item,name='FLIPPERS']).
 brush:new([layer=2,x=240,y=256,w=240,h=16,tile=120,x1=24,y1=24,x2=40,y2=40,color=4291297280,shader=1,material=7,draw=3]).
 brush:new([id=dora,layer=6,x=504,y=232,w=24,h=24,tile=173,x2=24,y2=24,shader=1,scale=100,draw=1,delay=3,anim=2,class=action]).

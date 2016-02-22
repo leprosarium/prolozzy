@@ -55,20 +55,6 @@ public:
 	void Filter(const iRect & view, BrushList & vis) const;
 };
 
-class PlBrush
-{
-	Brush * b;
-public:
-	PlBrush(Brush * b) : b(b) {}
-	PlBrush(PlTerm t) { if (!(t = Functor())) throw PlTypeError("brush", t); b = Cast(t[1]); }
-	static PlFunctor Functor() { static PlFunctor brush("brush", 1); return brush; }
-	static Brush * Cast(PlTerm t) { return reinterpret_cast<Brush *>(static_cast<void *>(t)); }
-
-	bool operator = (PlTerm t) { if (!(t = Functor())) return false; return t[1] = b; }
-	operator Brush *() { return b; }
-	Brush * operator ->() { return b; }
-};
-
 class Brushes : BrushList
 {
 	int	Selectgoto;

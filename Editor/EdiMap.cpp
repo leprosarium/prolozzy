@@ -10,6 +10,7 @@
 #include "GUI.h"
 
 #include "R9ImgLoader.h"
+#include "PlBrush.h"
 
 cEdiMap g_map;
 
@@ -109,8 +110,6 @@ PREDICATE_M(map, brushCount, 1)
 {
 	return A1 = static_cast<int>(g_map.brushes.size());
 }
-
-
 
 PREDICATE_NONDET_M(map, brush, 1)
 { 

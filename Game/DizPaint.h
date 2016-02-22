@@ -121,13 +121,11 @@ public:
 	using Cont::end;
 	using Cont::empty;
 	using Cont::front;
-
+	using Cont::operator[];
 	Indexed() { reserve(2000); }
 	bool InvalidIdx(int idx) const {return idx < 0 && static_cast<size_type>(idx) >= size(); }
-	T & get(int idx) { return (*this)[idx]; }
-	const T & get(int idx) const{ return (*this)[idx]; }
-	T * Get(int idx) { return InvalidIdx(idx) ? nullptr : & get(idx); }
-	const T * Get(int idx) const { return InvalidIdx(idx) ? nullptr : & get(idx); }
+	T * Get(int idx) { return InvalidIdx(idx) ? nullptr : & (*this)[idx]; }
+	const T * Get(int idx) const { return InvalidIdx(idx) ? nullptr : & (*this)[idx]; }
 	int	New() { push_back(T()); return size() - 1; }
 
 	void clear() { Index.clear(); Cont::clear(); }
@@ -173,12 +171,10 @@ public:
 	using Cont::front;
 
 	~Indexed() { clear(); }
-
+	using Cont::operator [];
 	bool InvalidIdx(int idx) const {return idx < 0 && static_cast<size_type>(idx) >= size(); }
-	T * get(int idx) { return (*this)[idx]; }
-	const T * get(int idx) const{ return (*this)[idx]; }
-	T * Get(int idx) { return InvalidIdx(idx) ? nullptr : get(idx); }
-	const T * Get(int idx) const { return InvalidIdx(idx) ? nullptr : get(idx); }
+	T * Get(int idx) { return InvalidIdx(idx) ? nullptr : (*this)[idx]; }
+	const T * Get(int idx) const { return InvalidIdx(idx) ? nullptr : (*this)[idx]; }
 	int	New() { push_back(new T()); return size() - 1; }
 
 	void clear() { for(auto a: *this) delete a; Index.clear(); Cont::clear(); }
@@ -206,8 +202,9 @@ public:
 	void Reindex()
 	{
 		Index.clear();
-		for(size_t i = 0, e = size(); i != e; ++i) {
-			auto id = get(i)->id;
+		for(size_t i = 0, e = size(); i != e; ++i)
+		{
+			auto id = (*this)[i]->id;
 			if(!id.empty())
 				Index.insert(IndexType::value_type(id, i));
 		}

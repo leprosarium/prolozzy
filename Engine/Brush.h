@@ -51,5 +51,4 @@ public:
 	fV2 mapSize() const { fV2 sz = map.Size(); return (Is<Flip::R>(flip) ? sz.Tran() : sz) * mapScale(); }
 };
 
-
 #endif

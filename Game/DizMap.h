@@ -6,7 +6,6 @@
 
 #include "E9System.h"
 #include "DizPaint.h"
-#include "SWI-cpp-m.h"
 
 #include <vector>
 #include <algorithm>
@@ -52,10 +51,6 @@ public:
 	static const int SizeMin = 128;
 	static const int SizeMax = 100000;
 
-	PlFunctor brush;
-	bool UnifyBrush(PlTerm t, Brush * b);
-	Brush * brushPtrNoEx(PlTerm t) { return reinterpret_cast<Brush *>(static_cast<void *>(t)); }
-	Brush * brushPtr(PlTerm t) { if(!(t = brush)) throw PlTypeError("brush", t); return brushPtrNoEx(t[1]); }
 	cDizMap();
 
 	void Resize(const iV2 & sz);	// resize map;

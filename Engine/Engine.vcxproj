@@ -100,6 +100,7 @@
     <ClInclude Include="Files\F9FileZip.h" />
     <ClInclude Include="Brush.h" />
     <ClInclude Include="Input\eInput.h" />
+    <ClInclude Include="PlBrush.h" />
     <ClInclude Include="Sound\A9Audio.h" />
     <ClInclude Include="Sound\A9AudioDX.h" />
     <ClInclude Include="Sound\A9Codec.h" />

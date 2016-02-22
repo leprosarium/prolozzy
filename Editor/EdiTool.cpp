@@ -3,6 +3,7 @@
 #include "EdiApp.h"
 #include "EdiMap.h"
 #include "GUI.h"
+#include "PlBrush.h"
 
 #include <algorithm>
 

@@ -11,6 +11,7 @@
 #include "eInput.h"
 
 #include <SWI-Stream.h>
+#include "PlBrush.h"
 
 
 #include <string>
@@ -252,7 +253,7 @@ PREDICATE_M(core, materialGetFreeDist, 7)
 
 PREDICATE_M(core, setObjPresent, 1)
 {
-	g_game.ObjPresent(g_map.brushPtr(A1)); 
+	g_game.ObjPresent(PlBrush(A1)); 
 	return true;
 }
 
@@ -262,11 +263,11 @@ PREDICATE_NONDET_M(core, objPresent, 1)
 	if(call == PL_PRUNED)
 		return true;
 	PlTerm t = A1;
-	if(!(t = g_map.brush))
+	if (!(t = PlBrush::Functor()))
 		return false;
 	PlTerm br = t[1];
 	if (br.type() != PL_VARIABLE)
-		return std::find(g_game.m_obj.begin(), g_game.m_obj.end(), g_map.brushPtrNoEx(br)) != g_game.m_obj.end();
+		return std::find(g_game.m_obj.begin(), g_game.m_obj.end(), PlBrush::Cast(br)) != g_game.m_obj.end();
 
 	size_t idx = call == PL_FIRST_CALL ? 0 : PL_foreign_context(handle);
 	if(idx < g_game.m_obj.size() && (br = g_game.m_obj[idx]))

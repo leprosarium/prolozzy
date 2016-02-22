@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-
+#include "PlBrush.h"
 
 #include "DizMap.h"
 #include "DizGame.h"
@@ -13,26 +13,19 @@
 iV2 Room::Size(GAME_ROOMW, GAME_ROOMH);
 cDizMap	g_map;
 
-cDizMap::cDizMap() :  brush("brush", 1)
+cDizMap::cDizMap()
 {
 	Reset();
 }
 
-bool cDizMap::UnifyBrush(PlTerm t, Brush * b)
-{
-	if(!(t = g_map.brush))
-		return false;
-	return t[1] = b;
-}
-
 PREDICATE_M(brush, create, 1)
 {
-	return g_map.UnifyBrush(A1, g_map.objects.get(g_map.objects.New()));
+	return PlBrush(g_map.objects[g_map.objects.New()]) = A1;
 }
 
 PREDICATE_M(brush, createStatic, 1)
 {
-	return g_map.UnifyBrush(A1, g_map.brushes.get(g_map.brushes.New()));
+	return PlBrush(g_map.brushes[g_map.brushes.New()]) = A1;
 }
 
 PREDICATE_M(brush, find, 2)
@@ -40,27 +33,23 @@ PREDICATE_M(brush, find, 2)
 	int idx = g_map.objects.Find(A1);
 	if(idx == -1)
 		return false;
-	return g_map.UnifyBrush(A2, g_map.objects.Get(idx));
+	return PlBrush(g_map.objects.Get(idx)) = A2;
 }
 
 PREDICATE_NONDET_M(map, brush, 1)
 { 
 	auto call = PL_foreign_control(handle);
-	if(call == PL_PRUNED)
+	if (call == PL_PRUNED)
 		return true;
 	PlTerm t = A1;
-	if(!(t = g_map.brush))
+	if (!(t = PlBrush::Functor()))
 		return false;
 	PlTerm br = t[1];
-	if (br.type() != PL_VARIABLE) {
-		Brush * b = g_map.brushPtrNoEx(br);
-		if(g_map.objects.empty())
-			return false;
-		return std::find(g_map.objects.begin(), g_map.objects.end(), b) != g_map.objects.end();
-	}
+	if (br.type() != PL_VARIABLE)
+		return std::find(g_map.objects.begin(), g_map.objects.end(), PlBrush::Cast(br)) != g_map.objects.end();
 	size_t idx = call == PL_FIRST_CALL ? 0 : PL_foreign_context(handle);
-	if(idx < g_map.objects.size() && (br = g_map.objects.get(idx)))
-		if(++idx == g_map.objects.size())
+	if (idx < g_map.objects.size() && (br = g_map.objects[idx]))
+		if (++idx == g_map.objects.size())
 			return true;
 		else
 			PL_retry(idx);
@@ -71,8 +60,8 @@ PREDICATE_NONDET_M(map, brush, 1)
 GET_BRUSH_PROP(Prop, PROP)\
 SET_BRUSH_PROP(Prop, PROP)
 
-#define GET_BRUSH_PROP(Prop, PROP) PREDICATE_M(brush, get##Prop, 2) { return A2 = g_map.brushPtr(A1)->PROP; }
-#define SET_BRUSH_PROP(Prop, PROP) PREDICATE_M(brush, set##Prop, 2) { g_map.brushPtr(A1)->PROP = A2; return true; }
+#define GET_BRUSH_PROP(Prop, PROP) PREDICATE_M(brush, get##Prop, 2) { return A2 = PlBrush(A1)->PROP; }
+#define SET_BRUSH_PROP(Prop, PROP) PREDICATE_M(brush, set##Prop, 2) { PlBrush(A1)->PROP = A2; return true; }
 
 BRUSH_PROP(Layer, layer)
 BRUSH_PROP(X, pos.x)
@@ -95,58 +84,59 @@ BRUSH_PROP(Collider, collider)
 
 PREDICATE_M(brush, getColor, 2) 
 {
-	int64 color = static_cast<dword>(g_map.brushPtr(A1)->color);
+	int64 color = static_cast<dword>(PlBrush(A1)->color);
 	return A2 = color;
 }
 
 PREDICATE_M(brush, setColor , 2) 
 {
 	int64 color = A2;
-	g_map.brushPtr(A1)->color = static_cast<dword>(color);
+	PlBrush(A1)->color = static_cast<dword>(color);
 	return true;
 }
 
 PREDICATE_M(brush, getShader, 2) 
 {
-	return A2 = static_cast<int>(g_map.brushPtr(A1)->shader);
+	return A2 = static_cast<int>(PlBrush(A1)->shader);
 }
 
 PREDICATE_M(brush, setShader, 2) 
 {
-	g_map.brushPtr(A1)->shader =  static_cast<Blend>(static_cast<int>(A2));
+	PlBrush(A1)->shader =  static_cast<Blend>(static_cast<int>(A2));
 	return true;
 }
 
 PREDICATE_M(brush, getID, 2) 
 {
-	return A2 = g_map.brushPtr(A1)->id;
+	const std::string & id = PlBrush(A1)->id;
+	return id.empty() ? false : (A2 = id);
 }
 
 PREDICATE_M(brush, setID , 2) 
 {
-	g_map.brushPtr(A1)->id = static_cast<const char *>(A2);
+	PlBrush(A1)->id = static_cast<const char *>(A2);
 	return true;
 }
 
 PREDICATE_M(brush, getDisable, 2) 
 {
-	return A2 = g_map.brushPtr(A1)->disable ? 1 : 0;
+	return A2 = PlBrush(A1)->disable ? 1 : 0;
 }
 
 PREDICATE_M(brush, setDisable , 2) 
 {
-	g_map.brushPtr(A1)->disable = static_cast<int>(A2) != 0;
+	PlBrush(A1)->disable = static_cast<int>(A2) != 0;
 	return true;
 }
 
 PREDICATE_M(brush, getCollision, 2) 
 {
-	return A2 = g_map.brushPtr(A1)->collision ? 1 : 0;
+	return A2 = PlBrush(A1)->collision ? 1 : 0;
 }
 
 PREDICATE_M(brush, setCollision, 2) 
 {
-	g_map.brushPtr(A1)->collision = static_cast<int>(A2) != 0;
+	PlBrush(A1)->collision = static_cast<int>(A2) != 0;
 	return true;
 }
 

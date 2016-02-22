@@ -8,7 +8,7 @@
 #include "Resource.h"
 
 #include "SWI-cpp-m.h"
-
+#include "PlBrush.h"
 #include "EdiMap.h"
 #include "Gui.h"
 #include "GuiTile.h"

@@ -102,7 +102,7 @@ namespace elog
 		wchar_t wBuffer[128];
 		std::wfilebuf file;
 		sysbuf sys;
-		channel channels[Channel::max];
+		channel channels[static_cast<size_t>(Channel::max)];
 		bool _open;
 	public:
 		log() : _open() {}

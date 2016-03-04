@@ -1,8 +1,4 @@
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// DizMap.h
-//////////////////////////////////////////////////////////////////////////////////////////////////
-#ifndef __DIZMAP_H__
-#define __DIZMAP_H__
+#pragma once
 
 #include "E9System.h"
 #include "DizPaint.h"
@@ -39,10 +35,7 @@ enum class DrawMode { Normal, Material, Density, None };
 
 typedef Indexed<Brush *, std::string> Brushes;
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// cDizMap
-//////////////////////////////////////////////////////////////////////////////////////////////////
-class cDizMap
+class DizMap
 {
 	iV2 _size; // map size
 
@@ -51,14 +44,13 @@ public:
 	static const int SizeMin = 128;
 	static const int SizeMax = 100000;
 
-	cDizMap();
+	DizMap();
 
-	void Resize(const iV2 & sz);	// resize map;
+	void Resize(const iV2 & sz);
 	void Reset();					// reset when start game; clears map brushes
 
 	bool Reload	();					// reload map for debug purposes
 
-	// draw
 	void DrawRoom(const iV2 & rp, int layer, DrawMode mode, const iV2 & ofs);	// layer=0..8; mode: 0=normal, 1=material, 2=density
 
 	Room & GetRoom(int idx) { return Rooms[idx]; }
@@ -73,13 +65,8 @@ public:
 	Brushes objects;
 
 private:
-	// partition
-	void PartitionAdd(Brush * brush);	// add a brush to partitioning
-	void PartitionMake();			// init and partition brushes
+	void PartitionAdd(Brush * brush);
+	void PartitionMake();
 };
 
-extern cDizMap	g_map;
-
-#endif
-//////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////
+extern DizMap	g_map;

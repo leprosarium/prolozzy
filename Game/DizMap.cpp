@@ -11,9 +11,9 @@
 
 #include <sstream>
 iV2 Room::Size(GAME_ROOMW, GAME_ROOMH);
-cDizMap	g_map;
+DizMap	g_map;
 
-cDizMap::cDizMap()
+DizMap::DizMap()
 {
 	Reset();
 }
@@ -196,7 +196,7 @@ PREDICATE_M(map, reset, 0)
 // INIT
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void cDizMap::Reset()
+void DizMap::Reset()
 {
 	Rooms.clear();
 	Rooms.push_back(Room());
@@ -205,7 +205,7 @@ void cDizMap::Reset()
 	objects.clear();
 }
 
-bool cDizMap::Reload()
+bool DizMap::Reload()
 {
 	Reset();
 	g_script.reloadMap();
@@ -215,7 +215,7 @@ bool cDizMap::Reload()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // DRAW ROOM
 //////////////////////////////////////////////////////////////////////////////////////////////////
-void cDizMap::DrawRoom( const iV2 & rp, int layer, DrawMode mode, const iV2 & ofs)
+void DizMap::DrawRoom( const iV2 & rp, int layer, DrawMode mode, const iV2 & ofs)
 {
 	Blend shader;
 	dword color;
@@ -280,20 +280,20 @@ void cDizMap::DrawRoom( const iV2 & rp, int layer, DrawMode mode, const iV2 & of
 // PARTITIONS
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void cDizMap::PartitionAdd(Brush * brush)
+void DizMap::PartitionAdd(Brush * brush)
 {
 	for(Room & room: Rooms)
 		if (brush->rect().Intersects(room.borderRect(Room::Border)))
 			room.AddBrush(brush);
 }
 
-void cDizMap::PartitionMake()
+void DizMap::PartitionMake()
 {
 	for(Brush * brush: brushes)
 		PartitionAdd(brush);
 }
 
-void cDizMap::Resize( const iV2 & sz )
+void DizMap::Resize( const iV2 & sz )
 {
 	_size = iV2(std::min(std::max(sz.x, SizeMin), SizeMax),
 				std::min(std::max(sz.y, SizeMin), SizeMax)) / Room::Size;

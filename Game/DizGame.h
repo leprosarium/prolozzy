@@ -32,7 +32,6 @@ class MatMap
 	iV2 Size, Size3;
 	int Cap;
 	iRect Rect;
-	void SetSize(const iV2 & size);
 	bool in(const iV2 & p) const { return Rect.IsInside(p); }
 	int idx(const iV2 & p)  const { return (p.x + Size.x) + (p.y + Size.y) * Size3.x; }
 public:
@@ -96,7 +95,7 @@ public:
 
 	int frame;
 
-	bool IsUpdate(int delay) { return delay==0 || (frame % delay == 0); }
+	bool IsUpdate(int delay) { return delay == 0 || (frame % delay == 0); }
 	bool Key(int key) { return (keys & (1 << key)) != 0; }
 	bool KeyHit(int key) { return (keysHit & (1 << key)) != 0; }
 
@@ -106,7 +105,7 @@ public:
 	PlAtom 	DensMap(const iV2 & p) { return materials[MatMap(p)].density; }
 
 	void SetRoom(const iV2 & v);	// set current room (load)
-	iRect RoomBorderRect(const iV2 & border) { return g_map.GetRoom(roomPos).borderRect(border); }
+	iRect RoomBorderRect(const iV2 & border) const { return g_map.GetRoom(roomPos).borderRect(border); }
 
 	iV2 viewShift;					// view position (used in draw, set from G_VIEW, G_SHAKE, and G_VIEWPORT)
 
@@ -115,8 +114,8 @@ public:
 	void ObjGather();					// gather objects present in current room
 	void ObjPresent(Brush *);			// add object to present list if not in it already
 	void ObjDraw(const Brush & brush);	// draw one object
-	std::vector<Brush *> m_obj;		// objects list with objects indexes (present in current room)
-	std::vector<Brush *> m_collider;	// colliders list with objects indexes (present in current room)
+	std::vector<Brush *> m_obj;         // objects present in current room
+	std::vector<Brush *> m_collider;	// collider щиоусеы present in current room
 
 	int visible_brushes;
 };

@@ -288,16 +288,14 @@ void cDizGame::Draw()
 		// room
 		if(viewportMode)
 			// full matmap 3x3 rooms
-			for( iV2 r; r.y<3; r.y++ )
-				for(r.x=0; r.x<3; r.x++ )
+			for( iV2 r(-1); r.y<2; r.y++ )
+				for(r.x=-1; r.x<2; r.x++ )
 				{
-					// clip here to avoid duplicate draw (brushes shared in neighbour rooms)
-					// Note: brushes order must also be perserved (so the drawframe trick didn't work)
 					R9_SetClipping(rect);
-					iV2 p1 = g_paint.scrPos(viewShift + (r - 1) * Room::Size);
+					iV2 ofs = viewShift + r * Room::Size;
+					iV2 p1 = g_paint.scrPos(ofs);
 					R9_AddClipping(fRect(p1, p1 + Room::Size * g_paint.scale));
-					iV2 rr = r - 1;
-					g_map.DrawRoom(roomPos + rr, layer, drawmode, viewShift + rr * Room::Size);
+					g_map.DrawRoom(roomPos + r, layer, drawmode, ofs);
 				}
 		else
 		{
@@ -364,17 +362,12 @@ void cDizGame::SetRoom(const iV2 & p)
 	ObjGather();
 }
 
-void MatMap::SetSize(const iV2 & size)
-{
-	Size = size;
-	Rect = iRect(-Size, Size * 2); 
-	Size3 = Rect.Size();
-	Cap = Size3.x * Size3.y;
-
-}
 void MatMap::Resize(const iV2 & size)
 {
-	SetSize(size);
+	Size = size;
+	Rect = iRect(-Size, Size * 2);
+	Size3 = Rect.Size();
+	Cap = Size3.x * Size3.y;
 	delete [] map;
 	map = new byte[Cap];
 }
@@ -391,16 +384,13 @@ void MatMap::Update(const iV2 & room, bool full)
 		if( full )
 		{
 			// full matmap 3x3 rooms
-			for( iV2 r; r.y<3; r.y++ )
+			for(iV2 r, rr; r.y < 3; r.y++, rr.y += Size.y)
 			{
-				int ryH = r.y * Size.y;
-				for(r.x=0; r.x<3; r.x++ )
+				for(r.x = 0, rr.x = 0; r.x < 3; r.x++, rr.x += Size.x)
 				{
-					int rxW = r.x * Size.x;
 					// clip here to avoid duplicate draw (brushes shared in neighbour rooms)
-					R9_SetClipping(fRect(rxW, ryH, rxW + Size.x, ryH + Size.y));
-					iV2 rr = r - 1;
-					g_map.DrawRoom(room + rr, layer, DrawMode::Material, iV2(rxW, ryH));
+					R9_SetClipping(fRect(rr, rr + Size));
+					g_map.DrawRoom(room + r - 1, layer, DrawMode::Material, rr);
 				}
 			}
 		}

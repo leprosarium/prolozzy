@@ -111,26 +111,9 @@ PREDICATE_M(map, brushCount, 1)
 	return A1 = static_cast<int>(g_map.brushes.size());
 }
 
-PREDICATE_NONDET_M(map, brush, 1)
-{ 
-	auto call = PL_foreign_control(handle);
-	if(call == PL_PRUNED)
-		return true;
-	PlTerm t = A1;
-	if (!(t = PlBrush::Functor()))
-		return false;
-	PlTerm br = t[1];
-	if (br.type() != PL_VARIABLE)
-		return std::find(g_map.brushes.begin(), g_map.brushes.end(), PlBrush::Cast(br)) != g_map.brushes.end();
-	size_t idx = call == PL_FIRST_CALL ? 0 : PL_foreign_context(handle);
-	if (idx < g_map.brushes.size() && (br = g_map.brushes[idx]))
-		if (++idx == g_map.brushes.size())
-			return true;
-		else
-			PL_retry(idx);
-	return false;
-}
-	
+PREDICATE_BRUSH_CONT(map, brush, g_map.brushes)
+
+
 #define BRUSH_PROP(Prop, PROP)\
 GET_BRUSH_PROP(Prop, PROP)\
 SET_BRUSH_PROP(Prop, PROP)

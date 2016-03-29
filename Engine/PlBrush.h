@@ -18,7 +18,7 @@ public:
 };
 
 
-#define PREDICATE_CONT(Module, Prop, Cont) \
+#define PREDICATE_BRUSH_CONT(Module, Prop, Cont) \
 PREDICATE_NONDET_M(Module, Prop, 1)\
 {\
 	auto call = PL_foreign_control(handle);\
@@ -31,8 +31,8 @@ PREDICATE_NONDET_M(Module, Prop, 1)\
 	if (br.type() != PL_VARIABLE)\
 		return std::find(Cont.begin(), Cont.end(), PlBrush::Cast(br)) != Cont.end();\
 	size_t idx = call == PL_FIRST_CALL ? 0 : PL_foreign_context(handle);\
-	if (idx < g_map.objects.size() && (br = Cont[idx]))\
-		if (++idx == g_map.objects.size())\
+	if (idx < Cont.size() && (br = Cont[idx]))\
+		if (++idx == Cont.size())\
 			return true;\
 		else\
 			PL_retry(idx);\

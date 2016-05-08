@@ -16,12 +16,12 @@ public:
 					r9TexturePool()									{};
 		void		Done();
 
-		int			Add( R9TEXTURE texture, const std::string & name );		// add a specific texture, return index
-		int			Load( const std::string & name, bool noduplicate = true );// load a texture by file; if noduplicate and texture already in pool, the same index is returned
-		int			Find( const std::string & name );						// search for a texture; return index
+		int			Add( R9TEXTURE texture, const std::wstring & name );		// add a specific texture, return index
+		int			Load( const std::wstring & name, bool noduplicate = true );// load a texture by file; if noduplicate and texture already in pool, the same index is returned
+		int			Find( const std::wstring & name );						// search for a texture; return index
 		R9TEXTURE	Get( int idx )							{ if(idx >= 0 && static_cast<size_type>(idx) < size()) return (*this)[idx]; return 0; }
 
-		typedef std::unordered_map<std::string, int> Hash;
+		typedef std::unordered_map<std::wstring, int> Hash;
 		Hash index;
 };
 

@@ -22,12 +22,12 @@ inline  void			ShiftLeft			(int chr, int count);	// shifts count chars starting 
 		void			ClipboardCopy		();						// copy to windows clipboard
 		void			ClipboardPaste		();						// paste from windows clipboard
 		void			SelectionCut		();						// cut current selection, if any
-		void			SelectionPaste		(const std::string & );	// paste some text at cursor (and shift right)
+		void			SelectionPaste		(const std::wstring & );	// paste some text at cursor (and shift right)
 
 		int				m_sel1;										// selected char start pos
 		int				m_sel2;										// selected char end pos (after last selected)
 		bool			m_edit;										// if TRUE it is in edit mode
-		std::string 	m_bktxt;			
+		std::wstring 	m_bktxt;			
 
 		int sel1() const { return std::min(m_sel1, m_sel2); }
 		int sel2() const { return std::max(m_sel1, m_sel2); }
@@ -45,7 +45,7 @@ inline  void cGUIEdit::ShiftLeft(int chr, int count)
 	if(!count) return;
 	if(chr > txt.size())
 		return;
-	std::string tail = txt.substr(chr);
+	std::wstring tail = txt.substr(chr);
 	int begin = chr - count;
 	if(begin <= 0) 
 		txt = tail;

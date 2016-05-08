@@ -20,13 +20,13 @@ void cGUIColorPick::OnUpdate()
 		Action(2);
 	else
 	{
-		std::ostringstream o;
-		o << std::hex << std::uppercase << std::setfill('0') << std::setw(6) << (color[0] & 0x00ffffff);
+		std::wostringstream o;
+		o << std::hex << std::uppercase << std::setfill(L'0') << std::setw(6) << (color[0] & 0x00ffffff);
 		tooltip = o.str();
 	}
 }
 
-void cGUIColorPick::LoadImg(const std::string & nm )
+void cGUIColorPick::LoadImg(const std::wstring & nm )
 {
 	txt = nm;
 	R9_ImgDestroy(&m_img);

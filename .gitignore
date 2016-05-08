@@ -27,3 +27,4 @@ ipch
 *.suo
 *Debug/
 !Engine/Debug
+*.db

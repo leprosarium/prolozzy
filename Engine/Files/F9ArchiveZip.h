@@ -16,7 +16,7 @@ struct f9ZipFileInfo
 {
 	dword	m_offset;
 	dword	m_size;
-	std::string	m_name;
+	std::wstring	m_name;
 };
 
 class f9ArchiveZip : public f9Archive
@@ -25,13 +25,13 @@ public:
 	f9ArchiveZip();
 	virtual ~f9ArchiveZip();
 						
-	virtual	bool Open(const std::string & name, int mode = F9_READ, const std::string & password = std::string() );
+	virtual	bool Open(const std::wstring & name, int mode = F9_READ, const std::wstring & password = std::wstring() );
 	virtual	bool Close();
 						
-	virtual	f9File * FileOpen(const std::string & name, int mode = F9_READ);
+	virtual	f9File * FileOpen(const std::wstring & name, int mode = F9_READ);
 	virtual	int FileCount() const { return m_fat.size(); }
-	virtual	int FileFind( const std::string & name ) const;
-	virtual	std::string	FileGetName(int idx) const;
+	virtual	int FileFind( const std::wstring & name ) const;
+	virtual	std::wstring FileGetName(int idx) const;
 	virtual	dword FileGetSize(int idx) const;
 	inline	f9ZipFileInfo *	FileGetInfo(int idx) const { return idx >= 0 && idx < static_cast<int>(m_fat.size()) ? m_fat[idx] : 0; }
 
@@ -39,7 +39,7 @@ private:
 	bool ReadFAT();
 	typedef std::vector<f9ZipFileInfo *> InfoList;
 	InfoList m_fat;
-	typedef std::unordered_map<std::string, int> Hash;
+	typedef std::unordered_map<std::wstring, int> Hash;
 	Hash index;
 };
 

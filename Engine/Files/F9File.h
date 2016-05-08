@@ -29,7 +29,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class f9File
 {
-	virtual bool DoOpen(const std::string & name, int mode) = 0;
+	virtual bool DoOpen(const std::wstring & name, int mode) = 0;
 	virtual bool DoClose() = 0;
 	virtual	int64 DoRead(void * data, int64 size) = 0;
 	virtual	int64 DoWrite(void * data, int64 size) { return 0; }
@@ -40,7 +40,7 @@ class f9File
 public:
 	f9File() : m_mode(F9_READ), m_open(), m_pos(0), m_size(0) {}
 	virtual ~f9File() {}
-	bool Open(const std::string & name, int mode) 
+	bool Open(const std::wstring & name, int mode) 
 	{ 
 		if(IsOpen()) Close(); 
 		if(DoOpen(name, mode)) 

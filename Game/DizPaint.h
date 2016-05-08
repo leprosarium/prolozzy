@@ -28,7 +28,7 @@ public:
 		int			fy;
 		R9TEXTURE	tex;						// texture
 		r9Img		img;						// img alpha mask
-		std::string	name;						// tile name
+		std::wstring name;						// tile name
 		
 		Tile(int id) : id(id), frames(1), fx(1), fy(1), tex(nullptr) { }
 		Tile(Tile && t) : 
@@ -98,8 +98,8 @@ public:
 	Font & operator = (Font && f) { id = f.id; font = f.font; f.font = nullptr; return *this; }
 
 	int GetSize() const { return static_cast<int>(font->GetSize()); }
-	int GetCharWidth( char c ) const { return static_cast<int>(font->GetCharWidth(c)); }
-	int GetTextWidth( const std::string & text ) const { return static_cast<int>(font->GetTextWidth(text)); }
+	int GetCharWidth( wchar_t c ) const { return static_cast<int>(font->GetCharWidth(c)); }
+	int GetTextWidth( const std::wstring & text ) const { return static_cast<int>(font->GetTextWidth(text)); }
 	int	GetOfsX() const { return (int)font->GetOfsX(); }
 	int GetOfsY() const { return (int)font->GetOfsY(); }
 	iV2 GetOfs() const { return iV2(GetOfsX(), GetOfsY()); }
@@ -215,18 +215,18 @@ public:
 
 class Tiles : public Indexed<Tile>
 {
-	bool LoadFile(const std::string & file, size_t & total, size_t & fail, size_t & duplicates);
+	bool LoadFile(const std::wstring & file, size_t & total, size_t & fail, size_t & duplicates);
 public:
-	bool Load(const std::string & path); 
+	bool Load(const std::wstring & path); 
 	bool Reacquire(); // called before render reset to reload render resources
 	void Unacquire(); // called before render reset to free render resources
 };
 
 class Fonts : public Indexed<Font>
 {
-	bool LoadFile(const std::string & filepath, size_t & total, size_t & fail, size_t & duplicates);
+	bool LoadFile(const std::wstring & filepath, size_t & total, size_t & fail, size_t & duplicates);
 public:
-	bool Load(const std::string & path);
+	bool Load(const std::wstring & path);
 	void Unacquire() { std::for_each(begin(), end(), [](Font &f) { if(f.font) f.font->SetTexture(nullptr); }); }
 
 };
@@ -234,7 +234,7 @@ public:
 class HUD
 {
 	enum class Cmd { None, Align, Color, Focus, Tile };
-	Cmd ScanText(std::string::const_iterator start, std::string::const_iterator end, std::string::const_iterator & res, int* data);								// helper for hud text; scans for command and return command and data info
+	Cmd ScanText(std::wstring::const_iterator start, std::wstring::const_iterator end, std::wstring::const_iterator & res, int* data);								// helper for hud text; scans for command and return command and data info
 
 public:
 	int font;		// current font id
@@ -245,8 +245,8 @@ public:
 	HUD() : font(), shader(Blend::Alpha), color(0xffffffff), visible() {}
 	void SetClipping(const iRect & dst);														// set a clipping rect
 	void DrawTile(int tileid, const iRect & dst, const iRect & src, dword flags, int frame);	// draw tile
-	void DrawText(int tileid, const iRect & dst, const std::string & text, int align);						// draw text with escape commands
-	void GetTextSize(const std::string & text, int& w, int& h, int&c, int&r);								// in text's width and height in pixels and the number of columns and rows
+	void DrawText(int tileid, const iRect & dst, const std::wstring & text, int align);						// draw text with escape commands
+	void GetTextSize(const std::wstring & text, int& w, int& h, int&c, int&r);								// in text's width and height in pixels and the number of columns and rows
 };
 
 class DizPaint
@@ -284,7 +284,7 @@ public:
 	// Draw scaled
 	void DrawTile(int idx, const iV2 & p, const iRect & map, dword color=0xffffffff, int flip=0, int frame=0, Blend blend = Blend::Alpha, float scale=1.0f ) const;	// tile scale (in editor paint it was full scale)
 	void DrawTile(int idx, const iV2 & p, dword color=0xffffffff, int flip=0, int frame=0, Blend blend = Blend::Alpha, float scale=1.0f) const;				// tile scale (in editor paint it was full scale)
-	void DrawChar(int fontidx, const iV2 & p, char c, dword color=0xffffffff ) const;
+	void DrawChar(int fontidx, const iV2 & p, wchar_t c, dword color=0xffffffff ) const;
 
 	// Draw brush 
 	void DrawBrush( const Brush & brush, const iV2 & p, int frame=-1 ) const; // if frame is -1, tile is automatic animated

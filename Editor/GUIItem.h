@@ -23,7 +23,7 @@ public:
 	bool hidden;
 	bool disable;
 	iRect rect;
-	std::string txt;
+	std::wstring txt;
 	int txtAlign;
 	dword txtColor;
 	int txtOffset;
@@ -36,7 +36,7 @@ public:
 	std::string cmdAction;
 	int value;
 	int group;
-	std::string tooltip;
+	std::wstring tooltip;
 	cGUIDlg * m_dlg;
 	bool m_mousein;
 

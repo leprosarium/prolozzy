@@ -55,7 +55,7 @@ public:
 
 class Samples : std::vector<tSoundProto>
 {
-	bool LoadFile(const std::string & filepath, size_t & total, size_t & fail, size_t & duplicates, int group);	// load a sample file (proto)
+	bool LoadFile(const std::wstring & filepath, size_t & total, size_t & fail, size_t & duplicates, int group);	// load a sample file (proto)
 	int	Find(PlAtom id) { for(size_t i = 0; i < size(); i++) if((*this)[i].m_id == id) return i; return -1; }
 
 	A9BUFFER m_voice[SOUND_VOICES];						// list with voices buffers
@@ -68,7 +68,7 @@ public:
 	void Done() { StopAll(); clear(); }
 	void Update();
 
-	bool Load(const std::string & path, int group=0);		// load samples from a path (protos)
+	bool Load(const std::wstring & path, int group=0);		// load samples from a path (protos)
 	void Unload(int group = 0);							// destroy all samples (proto)
 	int Play(PlAtom id, int loop = 0);					// play a proto sample; return voiceidx or -1 if failed
 	int Playing(size_t voiceidx);						// return sample id if playing or -1 if not playing
@@ -80,7 +80,7 @@ public:
 
 class Music : std::vector<tMusicProto>
 {
-	bool LoadFile(const std::string & filename, size_t & total, size_t & fail, size_t & duplicates, int group);			// load a music file (proto)
+	bool LoadFile(const std::wstring & filename, size_t & total, size_t & fail, size_t & duplicates, int group);			// load a music file (proto)
 	int Find(PlAtom id) { for(size_t i = 0; i < size(); i++) if((*this)[i].m_id == id) return i; return -1; }
 
 	A9STREAM _stream;	// music stream
@@ -97,7 +97,7 @@ public:
 
 	void Done() { Stop(); clear(); }
 
-	bool Load(const std::string & path, int group = 0);	// load all musics from a path (protos)
+	bool Load(const std::wstring & path, int group = 0);// load all musics from a path (protos)
 	void Update(float dtime);							// deals with the play, stop and volume management
 	void Unload(int group = 0);							// destroy all musics (proto)
 	void Fade(int out, int in) { _fadeout = out; _fadein = in; }	// set fade values

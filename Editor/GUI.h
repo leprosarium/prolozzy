@@ -38,7 +38,7 @@ public:
 	void Draw();
 		
 	// status bar
-	std::string		ToolTip;
+	std::wstring ToolTip;
 
 	// input
 	iV2 m_mouse;						// mouse pos
@@ -46,8 +46,8 @@ public:
 	void ReadInput();					// read input ( CALL IT BEFORE UPDATE ! )
 
 	// images
-	int ImgLoad( const std::string & image ) { return m_texturepool.Load(image); }
-	int ImgFind( const std::string & image ) { return m_texturepool.Find(image); }
+	int ImgLoad( const std::wstring & image ) { return m_texturepool.Load(image); }
+	int ImgFind( const std::wstring & image ) { return m_texturepool.Find(image); }
 	r9TexturePool m_texturepool;
 				
 	bool DlgSelect(const std::string & id);

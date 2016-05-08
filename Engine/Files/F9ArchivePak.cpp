@@ -5,6 +5,7 @@
 #include "F9ArchivePak.h"
 #include "F9FilePak.h"
 #include "F9FilePakZ.h"
+#include "E9String.h"
 
 #include <algorithm>
 
@@ -21,7 +22,7 @@ f9ArchivePak::~f9ArchivePak()
 	Close();
 }
 
-bool f9ArchivePak::Open(const std::string & name, int mode, const std::string & password)
+bool f9ArchivePak::Open(const std::wstring & name, int mode, const std::wstring & password)
 {
 	if(IsOpen()) Close();
 	if(!f9File::IsReadOnlyMode(mode)) return false; // readonly
@@ -47,7 +48,7 @@ bool f9ArchivePak::Close()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // files serve
 //////////////////////////////////////////////////////////////////////////////////////////////////
-f9File * f9ArchivePak::FileOpen(const std::string & name, int mode)
+f9File * f9ArchivePak::FileOpen(const std::wstring & name, int mode)
 {
 	if(!IsOpen()) return nullptr;
 	if( (mode & 3) != (m_mode & 3) ) return nullptr; // open mode must match
@@ -79,9 +80,9 @@ f9File * f9ArchivePak::FileOpen(const std::string & name, int mode)
 	return file;
 }
 
-int f9ArchivePak::FileFind(const std::string & name) const
+int f9ArchivePak::FileFind(const std::wstring & name) const
 {
-	std::string nm(name);
+	std::wstring nm(name);
 	std::transform(nm.begin(), nm.end(), nm.begin(), ::tolower);
 
 	auto i = index.find(nm);
@@ -90,11 +91,11 @@ int f9ArchivePak::FileFind(const std::string & name) const
 	return i->second;
 }
 
-std::string f9ArchivePak::FileGetName(int idx) const
+std::wstring f9ArchivePak::FileGetName(int idx) const
 {
 	if(idx >= 0 && idx < static_cast<int>(m_fat.size()))
 		return m_fat[idx]->m_name;	
-	return std::string();
+	return std::wstring();
 }
 
 dword f9ArchivePak::FileGetSize(int idx) const
@@ -138,7 +139,7 @@ bool f9ArchivePak::ReadFAT()
 	if(fatsizec!=m_header.m_fatsizec) { delete [] bufferc; return false; }
 
 	// password
-	if(!m_password.empty()) decrypt_data(bufferc, m_header.m_fatsizec, m_password.c_str());
+	if(!m_password.empty()) decrypt_data(bufferc, m_header.m_fatsizec, WideStringToMultiByte(m_password.c_str()));
 
 	// check crc
 	dword crc=0;
@@ -164,7 +165,7 @@ bool f9ArchivePak::ReadFAT()
 		fi->m_offset= *(dword*)(buffer+pos+4);
 		fi->m_sizec	= *(dword*)(buffer+pos+8);
 		fi->m_size	= *(dword*)(buffer+pos+12);
-		fi->m_name	= (char*)(buffer+pos+16);
+		fi->m_name	= MultiByteToWideString((char*)(buffer+pos+16));
 		pos += 16 + fi->m_name.size() + 1;
 		
 		// add file info

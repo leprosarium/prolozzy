@@ -31,8 +31,8 @@ bool cGUI::Init()
 
 	// fonts
 	m_font = new r9Font(); 
-	bool ok = m_font->Create("editor\\font\\font.fnt");
-	R9TEXTURE tex = R9_TextureLoad("editor\\font\\font.tga");
+	bool ok = m_font->Create(L"editor\\font\\font.fnt");
+	R9TEXTURE tex = R9_TextureLoad(L"editor\\font\\font.tga");
 	m_font->SetTexture(tex);
 	m_font->SetSpace(4); // !
 	
@@ -581,7 +581,7 @@ PREDICATE_M(gui, itemSetY2, 1)
 
 PREDICATE_M(gui, itemSetTxt, 1)
 {
-	g_gui->GetLastItem()->txt = static_cast<const char *>(A1);
+	g_gui->GetLastItem()->txt = static_cast<LPCWSTR>(A1);
 	return true;
 }
 
@@ -609,7 +609,7 @@ PREDICATE_M(gui, itemSetTxtAlign, 1)
 
 PREDICATE_M(gui, itemSetToolTip, 1)
 {
-	g_gui->GetLastItem()->tooltip = static_cast<const char *>(A1);
+	g_gui->GetLastItem()->tooltip = static_cast<LPCWSTR>(A1);
 	return true;
 }
 

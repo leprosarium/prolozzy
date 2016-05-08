@@ -185,8 +185,7 @@ void cGUIEdit::OnUpdate()
 
 		if(!einput->keyQueue.empty())
 		{
-			std::string str = WideStringToMultiByte(einput->keyQueue.c_str());
-			for(char ch: str)
+			for(auto ch: einput->keyQueue)
 			{
 				if(std::isprint(ch))
 				{
@@ -321,22 +320,22 @@ void cGUIEdit::ClipboardCopy()
 		HGLOBAL handler = GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE,size+1); assert(handler!=NULL);
 		void* data = GlobalLock(handler); assert(data!=NULL);
 		memcpy(data,txt.c_str() + s1,size);
-		((char*)data)[size]=0;
+		((LPWSTR)data)[size]=0;
 		GlobalUnlock(handler);
-		SetClipboardData(CF_TEXT,handler);
+		SetClipboardData(CF_UNICODETEXT,handler);
 	}
 	CloseClipboard();
 }
 
 void cGUIEdit::ClipboardPaste()
 {
-	if(!IsClipboardFormatAvailable(CF_TEXT)) return;
+	if(!IsClipboardFormatAvailable(CF_UNICODETEXT)) return;
 	if(!OpenClipboard(NULL)) return;
-	if(HGLOBAL handler = GetClipboardData(CF_TEXT))
+	if(HGLOBAL handler = GetClipboardData(CF_UNICODETEXT))
 		if(void* data = GlobalLock(handler))
 		{
 			SelectionCut();
-			SelectionPaste((char*)data);
+			SelectionPaste((LPWSTR)data);
 			GlobalUnlock(handler); 
 		}
 	CloseClipboard();
@@ -350,7 +349,7 @@ void cGUIEdit::SelectionCut()
 	m_sel1 = m_sel2 = s1;
 }
 
-void cGUIEdit::SelectionPaste(const std::string & pst)
+void cGUIEdit::SelectionPaste(const std::wstring & pst)
 {
 	if(pst.empty()) return;
 	txt = txt.substr(0, m_sel1) + pst + txt.substr(m_sel1);

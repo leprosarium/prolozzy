@@ -15,9 +15,9 @@
 
 cDizDebug g_dizdebug;
 
-bool IS_WORD_CHAR(char c)
+bool IS_WORD_CHAR(wchar_t c)
 {
-	return ('0'<=c && c<='9') || ('A'<=c && c<='Z') || ('a'<=c && c<='z') || c=='_';
+	return (L'0'<=c && c<=L'9') || (L'A'<=c && c<=L'Z') || (L'a'<=c && c<=L'z') || c==L'_';
 }
 #define COLOR_INFO		0xff408040
 #define COLOR_SLOTS		0xff004080
@@ -50,13 +50,14 @@ Prolog::Prolog(Console & con, Slots & slots) :
 	con(con), 
 	slots(slots)
 { 	
-	input.setAction([this](const std::string &s){ this->Ready(s); });
+	input.setAction([this](const std::wstring &s){ this->Ready(s); });
 }
 
 void Prolog::Open(bool o) {
 	PL_set_prolog_flag("tty_control", PL_BOOL, o ? TRUE : FALSE);
 	Sinput->functions->read = o ? Log_read : 0;
 	Sinput->handle = this;
+	Sinput->encoding = ENC_WCHAR;
 }
 
 ssize_t Prolog::Read(char *buffer, size_t size)
@@ -66,7 +67,7 @@ ssize_t Prolog::Read(char *buffer, size_t size)
 	int mode = PL_ttymode(Suser_input);
 	bool single = mode == PL_RAWTTY;
 	if(auto prompt = PL_prompt_string(0))
-		input.setPrompt(prompt);
+		input.setPrompt(MultiByteToWideString(prompt));
 	ssize_t readed = 0;
 
 	struct Events 
@@ -95,14 +96,14 @@ ssize_t Prolog::Read(char *buffer, size_t size)
 		{
 			if(!einput->keyQueue.empty())
 			{
-				std::string str = WideStringToMultiByte(einput->keyQueue.c_str());
+				std::wstring str = einput->keyQueue;
 				einput->keyQueue = einput->keyQueue.substr(1);
 				if(!str.empty())
 				{
-					char ch = str[0];
-					if(std::isprint(ch))
+					wchar_t ch = str[0];
+					if(iswprint(ch))
 					{
-						buffer[0] = ch;
+						memcpy(buffer, &ch, sizeof(wchar_t));
 						readed = 1;
 						return false;
 					}
@@ -114,12 +115,13 @@ ssize_t Prolog::Read(char *buffer, size_t size)
 			if(CmdReady)
 			{
 				CmdReady = false;
-				Cmd += "\n";
-				size_t sz = std::min(Cmd.size(), size);
-				memcpy(buffer, Cmd.c_str(), sz);
-				Cmd = "";
+				Cmd += L"\n";
+				size_t sz = std::min(Cmd.size(), size / sizeof(wchar_t));
+				memcpy(buffer, Cmd.c_str(), sz * sizeof(wchar_t));
+				Cmd = L"";
 				PL_prompt_next(0);
-				elog::dbg() << std::wstring(buffer, buffer + sz);
+				LPWSTR wbuf = reinterpret_cast<LPWSTR>(buffer);
+				elog::dbg() << std::wstring(wbuf,  wbuf + sz);
 				readed = sz;
 				return false;
 			}
@@ -129,7 +131,7 @@ ssize_t Prolog::Read(char *buffer, size_t size)
 
 	DizApp::app->Loop();
 
-	return readed;
+	return readed * sizeof(wchar_t);
 }
 
 
@@ -150,7 +152,7 @@ public:
 	virtual int flushBuffer(int num)
 	{
 		buffer[num] = 0;
-		con.Push(color, WideStringToMultiByte(buffer));
+		con.Push(color, buffer);
 		return num;
 	}
 };
@@ -161,9 +163,9 @@ bool cDizDebug::Init()
 	
 	// config
 	int dev = 0;
-	ini_get(file_getfullpath(GetIniFile()), "ADVANCED",	"dev") >> dev;
+	ini_get(file_getfullpath(GetIniFile()), L"ADVANCED", L"dev") >> dev;
 	_active = dev != 0;
-	if(!g_cfg.Info("game_protection").empty()) 
+	if(!g_cfg.Info(L"game_protection").empty()) 
 		_active=false; // no developer for protected games
 
 	// console
@@ -249,7 +251,7 @@ void cDizDebug::Draw()
 	if(!_visible)
 	{
 		R9_DrawBar(fRect(2,2,4+8*ChrW,4+ChrH),0xffff0000);
-		R9_DrawText(fV2(4,4),"DEV-MODE",0xffffffff);
+		R9_DrawText(fV2(4,4), L"DEV-MODE", 0xffffffff);
 		return;
 	}
 	info.Draw();
@@ -306,9 +308,9 @@ void Info::Draw()
 	p.y+=ChrH;
 
 	// player
-	std::ostringstream os;
-	os << "room=(" << g_game.roomPos.x << "," << g_game.roomPos.y << "), player=(" << g_player.pos.x << "," << g_player.pos.y << ")";
-	os << " voices=" << g_sound.samples.playingVoices();
+	std::wostringstream os;
+	os << L"room=(" << g_game.roomPos.x << L"," << g_game.roomPos.y << L"), player=(" << g_player.pos.x << L"," << g_player.pos.y << L")";
+	os << L" voices=" << g_sound.samples.playingVoices();
 	R9_DrawText( p, os.str(), COLOR_INFO);
 
 }
@@ -347,7 +349,7 @@ void cDizDebug::NavigationUpdate()
 	g_player.m_debug = (ctrl||shift);
 }
 
-void cDizDebug::Call(const std::string & cmd)
+void cDizDebug::Call(const std::wstring & cmd)
 {
 	try
 	{
@@ -418,10 +420,10 @@ void Console::Draw()
 	R9_SetClipping(oldclip);
 }
 
-void Console::Push(dword color, const std::string & str)
+void Console::Push(dword color, const std::wstring & str)
 {
-	std::string::size_type st = 0, e = 0;
-	while ((e = str.find('\n', st)) != std::string::npos) {
+	std::wstring::size_type st = 0, e = 0;
+	while ((e = str.find(L'\n', st)) != std::wstring::npos) {
 		PushToken(Line(color, str.substr(st, e - st)));
 		PushNewLine();
 		st = e + 1;
@@ -469,7 +471,7 @@ void Slots::Draw()
 void cDizDebug::SlotSet( size_t slot, LPCWSTR text )
 {
 	if(text)
-		slots.Set(slot, WideStringToMultiByte(text));
+		slots.Set(slot, text);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -566,10 +568,9 @@ void Input::Update()
 	{
 		if(!einput->keyQueue.empty())
 		{
-			std::string str = WideStringToMultiByte(einput->keyQueue.c_str());
-			for(auto ch: str)
+			for(auto ch: einput->keyQueue)
 			{
-				if(!std::isprint(ch)) continue;
+				if(!iswprint(ch)) continue;
 				crt = cmd.insert(crt, ch);
 				crt ++;
 				complete = 0;
@@ -577,8 +578,6 @@ void Input::Update()
 			einput->keyQueue.clear();
 		}
 	}
-
-	
 }
 
 void Input::Draw()
@@ -610,9 +609,9 @@ void Input::Execute()
 
 
 
-std::string::const_iterator Input::CmdWordBegin() const
+std::wstring::const_iterator Input::CmdWordBegin() const
 {
-	std::string::const_iterator b = crt;
+	std::wstring::const_iterator b = crt;
 	while(b > cmd.begin())
 	{
 		--b;		
@@ -621,28 +620,31 @@ std::string::const_iterator Input::CmdWordBegin() const
 	return b;
 
 }
-std::string::const_iterator Input::CmdWordEnd() const {
+std::wstring::const_iterator Input::CmdWordEnd() const {
 
-	std::string::const_iterator e = crt;
+	std::wstring::const_iterator e = crt;
 	for(;e < cmd.end() && IS_WORD_CHAR(*e); ++e);
 	return e;
 }
 
+
+
 void Input::AutoComplete()
 {
+	static std::vector<wchar_t> candidate(255);
 	auto cmpl = complete;
 	complete = 0;
 
 	auto start = CmdWordBegin();
 	if(start == cmd.end() || !islower(*start)) return;
-	std::string buf = cmd.substr(start - cmd.begin(), crt - start);
-	auto name = PL_atom_generator(buf.c_str(), 0);
+	std::wstring buf = cmd.substr(start - cmd.begin(), crt - start);
+	auto name = PL_atom_generator_w(buf.c_str(), & candidate[0], candidate.size(), 0);
 	if (!name) return;
-	std::string prefix = cmd.substr(0, start - cmd.begin());
-	std::string suffix = cmd.substr(CmdWordEnd() - cmd.begin());
-	std::string match = name;
+	std::wstring prefix = cmd.substr(0, start - cmd.begin());
+	std::wstring suffix = cmd.substr(CmdWordEnd() - cmd.begin());
+	std::wstring match = name;
 	size_t nmatches = 1;
-	for(;name = PL_atom_generator(buf.c_str(), 1); nmatches++)
+	for(;name = PL_atom_generator_w(buf.c_str(), &candidate[0], candidate.size(), 1); nmatches++)
 		match = match.substr(0, 
 					std::mismatch(match.begin(), match.end(), name, 
 					[](char c1, char c2) { return tolower(c1) == tolower(c2); }).first - match.begin());
@@ -651,7 +653,7 @@ void Input::AutoComplete()
 	auto crtDif = prefix.size() + match.size();
 	crt = cmd.begin() + crtDif;
 	if(nmatches <= 1) return;
-	for(;name = PL_atom_generator(match.c_str(), complete ? 1 : 0); ++complete)
+	for(;name = PL_atom_generator_w(match.c_str(), &candidate[0], candidate.size(), complete ? 1 : 0); ++complete)
 		if(cmpl == complete) 
 		{
 			++complete;

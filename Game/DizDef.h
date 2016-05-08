@@ -2,7 +2,7 @@
 #define __DIZDEF_H__
 
 #define GAME_NAME			"DizzyAGE"					// application name
-#define GAME_VERSION		"2.4"						// application version (change this with each change, at least 2 digits)
+#define GAME_VERSION		L"2.4"						// application version (change this with each change, at least 2 digits)
 
 #define GAME_SCRWB			320							// default screen width with borders
 #define GAME_SCRHB			240							// default screen height with borders

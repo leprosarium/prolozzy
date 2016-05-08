@@ -37,12 +37,12 @@ void cEdiPaint::Done()
 // TILES
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool cEdiPaint::TileLoadFile( const std::string & filepath, size_t & total, size_t & fail, size_t & duplicates)
+bool cEdiPaint::TileLoadFile( const std::wstring & filepath, size_t & total, size_t & fail, size_t & duplicates)
 {
 	// check file type (not counted if unaccepted); only TGA and PNG files accepted
-	std::string ext = file_path2ext(filepath);
-	if(ext != "tga" && ext != "png") return false;
-	std::istringstream name(file_path2name(filepath));
+	std::wstring ext = file_path2ext(filepath);
+	if(ext != L"tga" && ext != L"png") return false;
+	std::wistringstream name(file_path2name(filepath));
 	
 	total++;
 	int id;
@@ -52,7 +52,7 @@ bool cEdiPaint::TileLoadFile( const std::string & filepath, size_t & total, size
 		elog::err() << "! "<< filepath.c_str() << " (bad name)" << std::endl; 
 		return false; 
 	}
-	std::string szt;
+	std::wstring szt;
 	int frames	= 1;
 	name >> szt >> frames;
 
@@ -101,18 +101,18 @@ bool cEdiPaint::TileLoadFile( const std::string & filepath, size_t & total, size
 	return true;
 }
 
-bool cEdiPaint::TileLoad( const std::string & path )
+bool cEdiPaint::TileLoad( const std::wstring & path )
 {
 	m_tilepath = path;
 	if(!m_tilepath.empty() && *m_tilepath.rbegin() != '\\')
-		m_tilepath += "\\";
+		m_tilepath += L"\\";
 	elog::app() << "Loading tiles from \"" << m_tilepath.c_str() << "\"" << std::endl;
 
 	size_t total = 0;
 	size_t fail = 0;
 	size_t duplicates = 0;
 
-	file_findfiles(m_tilepath, "*.*", [this, &total, &fail, &duplicates](const std::string & filepath, bool) { TileLoadFile(filepath, total, fail, duplicates); }, FILE_FINDREC );
+	file_findfiles(m_tilepath, L"*.*", [this, &total, &fail, &duplicates](const std::wstring & filepath, bool) { TileLoadFile(filepath, total, fail, duplicates); }, FILE_FINDREC );
 
 	elog::app() << "Tiles report: total=" << total << ", failed=" << fail << " (duplicates=" << duplicates << ")" << std::endl;
 

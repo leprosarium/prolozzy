@@ -198,24 +198,24 @@ void DizPaint::Layout()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // TILES
 //////////////////////////////////////////////////////////////////////////////////////////////////
-bool Tiles::LoadFile( const std::string & filepath, size_t & total, size_t & fail, size_t & duplicates)
+bool Tiles::LoadFile( const std::wstring & filepath, size_t & total, size_t & fail, size_t & duplicates)
 {
 	
 	// check file type (not counted if unaccepted); only TGA and PNG files accepted
-	std::string ext = file_path2ext(filepath);
-	if(ext != "tga" && ext != "png") return false;
-	std::istringstream name(file_path2name(filepath));
+	std::wstring ext = file_path2ext(filepath);
+	if(ext != L"tga" && ext != L"png") return false;
+	std::wistringstream name(file_path2name(filepath));
 	
 	total++;
 	int id;
 	if(!(name >> id))
 	{
 		fail++; 
-		elog::sys() << "! " << filepath.c_str() << " (bad name)" << std::endl; 
+		elog::sys() << "! " << filepath << " (bad name)" << std::endl; 
 		return false; 
 	}
 
-	std::string szt;
+	std::wstring szt;
 	int frames	= 1;
 	name >> szt >> frames;
 
@@ -228,7 +228,7 @@ bool Tiles::LoadFile( const std::string & filepath, size_t & total, size_t & fai
 	{
 		fail++;
 		duplicates++;
-		elog::sys() << "! " << filepath.c_str() << " (duplicate id)" << std::endl;
+		elog::sys() << "! " << filepath << " (duplicate id)" << std::endl;
 		return false;
 	}
 
@@ -237,7 +237,7 @@ bool Tiles::LoadFile( const std::string & filepath, size_t & total, size_t & fai
 	if(!R9_ImgLoadFile(filepath, &img))
 	{
 		fail++;
-		elog::sys() << "! " << filepath.c_str() << " (load failed)" << std::endl;
+		elog::sys() << "! " << filepath << " (load failed)" << std::endl;
 		return false;
 	}
 
@@ -250,7 +250,7 @@ bool Tiles::LoadFile( const std::string & filepath, size_t & total, size_t & fai
 		!R9_ImgBitBltSafe(&img,0,0,img.m_width,img.m_height,&imga,0,0) ) 
 	{
 		fail++;
-		elog::sys() << "! " << filepath.c_str() << " (alpha failed)" << std::endl;
+		elog::sys() << "! " << filepath << " (alpha failed)" << std::endl;
 		R9_ImgDestroy(&img);
 		return false;
 	}
@@ -259,7 +259,7 @@ bool Tiles::LoadFile( const std::string & filepath, size_t & total, size_t & fai
 	if(!tex)
 	{
 		fail++;
-		elog::sys() << "! " << filepath.c_str() << " (texture failed)" << std::endl;
+		elog::sys() << "! " << filepath << " (texture failed)" << std::endl;
 		return false;
 	}
 	Tile tile(id);
@@ -277,16 +277,16 @@ bool Tiles::LoadFile( const std::string & filepath, size_t & total, size_t & fai
 	R9_ImgDestroy(&img);
 
 	if(g_dizdebug.active()) // log for developers
-		elog::app() << "  " << filepath.c_str() << " [" << frames << "]" << std::endl;
+		elog::app() << "  " << filepath << " [" << frames << "]" << std::endl;
 	
 	return true;
 }
 
 
 
-bool Tiles::Load(const std::string & path)
+bool Tiles::Load(const std::wstring & path)
 {
-	elog::app() << "Loading tiles from \"" << path.c_str()  << "\"" << std::endl;
+	elog::app() << "Loading tiles from \"" << path  << "\"" << std::endl;
 
 
 	// init
@@ -294,7 +294,7 @@ bool Tiles::Load(const std::string & path)
 	size_t fail = 0;
 	size_t duplicates = 0;
 
-	files->FindFiles(path, [this, &total, &fail, &duplicates](const std::string & filepath) { LoadFile(filepath, total, fail, duplicates); } );
+	files->FindFiles(path, [this, &total, &fail, &duplicates](const std::wstring & filepath) { LoadFile(filepath, total, fail, duplicates); } );
 
 	// report
 	elog::app() << "Tiles report: total=" << total << ", failed=" << fail << " (duplicates=" << duplicates << ")" << std::endl << std::endl;
@@ -325,7 +325,7 @@ void DizPaint::DrawTile( int idx, const iV2 & p, dword color, int flip, int fram
 	}
 }
 
-void DizPaint::DrawChar( int fontidx, const iV2 & p, char c, dword color ) const
+void DizPaint::DrawChar( int fontidx, const iV2 & p, wchar_t c, dword color ) const
 {
 	if(auto f = fonts.Get(fontidx))
 		if(auto font = f->font)
@@ -544,29 +544,29 @@ void DizPaint::DrawTileSoft2( int idx, const iV2 & p, const iRect & map, dword c
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 // command format can be: {a:l} or {a:left}, {a:c}, {a:r}, {c:ff0080}, {f:0}, {f:1}, {t:10 16 18}
-HUD::Cmd HUD::ScanText(std::string::const_iterator start, std::string::const_iterator end, std::string::const_iterator & res, int* data )
+HUD::Cmd HUD::ScanText(std::wstring::const_iterator start, std::wstring::const_iterator end, std::wstring::const_iterator & res, int* data )
 {
 	res = start;
 	data[0]=0;
 
 	// search for close sign
-	while(res != end && *res != '}') ++res;
-	if(end<start+4 || *res != '}' || *(start + 2) != ':') return Cmd::None; // invalid command
+	while(res != end && *res != L'}') ++res;
+	if(end<start+4 || *res != L'}' || *(start + 2) != L':') return Cmd::None; // invalid command
 
 	// copy data string
-	std::string szdata(start+3, res);
+	std::wstring szdata(start+3, res);
 	switch(*(start+1))
 	{
-		case 'a': // align
-		case 'A': // align
+		case L'a': // align
+		case L'A': // align
 		{
-			data[0] = (szdata[0]=='l') ? -1 : (szdata[0]=='r') ? 1 : 0;
+			data[0] = (szdata[0]==L'l') ? -1 : (szdata[0]==L'r') ? 1 : 0;
 			return Cmd::Align;
 		}
-		case 'c': // color
-		case 'C': // color
+		case L'c': // color
+		case L'C': // color
 		{
-			std::istringstream i(szdata);
+			std::wistringstream i(szdata);
 			i >> std::hex;
 			dword t;
 			if(i >> t)
@@ -575,16 +575,16 @@ HUD::Cmd HUD::ScanText(std::string::const_iterator start, std::string::const_ite
 				return Cmd::Color;
 			}
 		}
-		case 'f': // focus
-		case 'F': // focus
+		case L'f': // focus
+		case L'F': // focus
 		{
-			data[0] = (szdata[0]=='1') ? 1 : 0;
+			data[0] = (szdata[0]==L'1') ? 1 : 0;
 			return Cmd::Focus;
 		}
-		case 't': // tile
-		case 'T': // tile
+		case L't': // tile
+		case L'T': // tile
 		{
-			std::istringstream i(szdata);
+			std::wistringstream i(szdata);
 			if(i >> data[0] >> data[1] >> data[2]) // id, x, y (in client)
 				return Cmd::Tile;
 		}
@@ -592,7 +592,7 @@ HUD::Cmd HUD::ScanText(std::string::const_iterator start, std::string::const_ite
 	return Cmd::None;
 }
 
-void HUD::GetTextSize(const std::string & text, int& w, int& h, int& c, int& rowcount )
+void HUD::GetTextSize(const std::wstring & text, int& w, int& h, int& c, int& rowcount )
 {
 	w = h = c = rowcount = 0;
 	if (text.empty()) return;
@@ -610,12 +610,12 @@ void HUD::GetTextSize(const std::string & text, int& w, int& h, int& c, int& row
 		// escape command
 		decltype(m) m2;
 		Cmd cmd = Cmd::None;
-		if( *m == '{')	cmd = ScanText(m, text.end(), m2, data); // read command
+		if( *m == L'{')	cmd = ScanText(m, text.end(), m2, data); // read command
 		if(cmd != Cmd::None)
 			m = m2 + 1; // step over it
 		else 
 		{
-			newline = *m == '\n';
+			newline = *m == L'\n';
 			if(newline)
 			{
 				if(chrcount) linesize -= fontOfs.x;
@@ -645,7 +645,7 @@ void HUD::GetTextSize(const std::string & text, int& w, int& h, int& c, int& row
 	}
 }
 
-void HUD::DrawText( int tileid, const iRect & dst, const std::string & text, int m_align )
+void HUD::DrawText( int tileid, const iRect & dst, const std::wstring & text, int m_align )
 {
 	if(!visible) return;
 	if( text.empty() ) return;
@@ -690,12 +690,12 @@ void HUD::DrawText( int tileid, const iRect & dst, const std::string & text, int
 		int chrcount = 0;	// printable characters to scan cursor
 		int linesize = 0;	// line size in pixels
 		const iV2 fontOfs = font->GetOfs();
-		while(m != text.end() && *m != '\n')
+		while(m != text.end() && *m != L'\n')
 		{
 			// escape command
 			decltype(m) m2;
 			cmd = Cmd::None;
-			if( *m == '{') cmd = ScanText(m,text.end(), m2, data); // read command
+			if( *m == L'{') cmd = ScanText(m,text.end(), m2, data); // read command
 			if(cmd != Cmd::None) // only if command found and valid
 			{
 				if(cmd == Cmd::Align) align = data[0];
@@ -727,7 +727,7 @@ void HUD::DrawText( int tileid, const iRect & dst, const std::string & text, int
 			// escape command
 			decltype(m) m2;
 			cmd = Cmd::None;
-			if( *m == '{')	cmd = ScanText(m, text.end(), m2, data); // read command
+			if( *m == L'{')	cmd = ScanText(m, text.end(), m2, data); // read command
 			if(cmd != Cmd::None) // only if command found and valid
 			{
 				if(cmd == Cmd::Color) clr = data[0];
@@ -745,7 +745,7 @@ void HUD::DrawText( int tileid, const iRect & dst, const std::string & text, int
 			}
 		}
 
-		if(m != text.end() && *m == '\n') m++; // step over new line character
+		if(m != text.end() && *m == L'\n') m++; // step over new line character
 
 		// new Line
 		p.y += font->GetSize() + fontOfs.y;
@@ -796,10 +796,10 @@ void HUD::SetClipping( const iRect & dst )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // Fonts
 //////////////////////////////////////////////////////////////////////////////////////////////////
-bool Fonts::LoadFile(const std::string & filepath, size_t & total, size_t & fail, size_t & duplicates)
+bool Fonts::LoadFile(const std::wstring & filepath, size_t & total, size_t & fail, size_t & duplicates)
 {
-	if(file_path2ext(filepath) != "fnt") return false;
-	std::istringstream name(file_path2name(filepath));
+	if(file_path2ext(filepath) != L"fnt") return false;
+	std::wistringstream name(file_path2name(filepath));
 	
 	total++;
 
@@ -807,18 +807,18 @@ bool Fonts::LoadFile(const std::string & filepath, size_t & total, size_t & fail
 	if(!(name >> id))
 	{
 		fail++; 
-		elog::sys() << "! " << filepath.c_str() << " (bad name)" << std::endl; 
+		elog::sys() << "! " << filepath << " (bad name)" << std::endl; 
 		return false; 
 	}
 
-	std::string szt;
+	std::wstring szt;
 	name >> szt;
 
 	if(Find(id) !=-1)
 	{
 		fail++;
 		duplicates++;
-		elog::sys() << "! " << filepath.c_str() << " (duplicate id)" << std::endl;
+		elog::sys() << "! " << filepath << " (duplicate id)" << std::endl;
 		return false;
 	}
 
@@ -828,25 +828,25 @@ bool Fonts::LoadFile(const std::string & filepath, size_t & total, size_t & fail
 	if(!font.font->Create(filepath))
 	{
 		fail++;
-		elog::sys() << "! " << filepath.c_str() << " (failed to load)" << std::endl;
+		elog::sys() << "! " << filepath << " (failed to load)" << std::endl;
 		return false;
 	}
 	Add(id, std::move(font));
 
 	if(g_dizdebug.active()) // log for developers
-		elog::app() << "  " << filepath.c_str() << std::endl;
+		elog::app() << "  " << filepath << std::endl;
 	return true;
 }
 
-bool Fonts::Load(const std::string & path)
+bool Fonts::Load(const std::wstring & path)
 {
-	elog::app() << "Loading fonts from \"" << path.c_str() << "\"" << std::endl;
+	elog::app() << "Loading fonts from \"" << path << "\"" << std::endl;
 
 	size_t total = 0;
 	size_t fail = 0;
 	size_t duplicates = 0;
 
-	files->FindFiles(path, [this, &total, &fail, &duplicates](const std::string & filepath) { LoadFile(filepath, total, fail, duplicates); } );
+	files->FindFiles(path, [this, &total, &fail, &duplicates](const std::wstring & filepath) { LoadFile(filepath, total, fail, duplicates); } );
 
 	// report
 	elog::app() << "Fonts report: total=" << total << ", failed=" << fail << " (duplicates=" << duplicates << ")" << std::endl << std::endl;

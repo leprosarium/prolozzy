@@ -103,7 +103,7 @@ PREDICATE_M(map, setSelect, 1)
 
 PREDICATE_M(map, load, 1)
 {
-	return g_map.Load(WideStringToMultiByte(A1));
+	return g_map.Load(A1);
 }
 
 PREDICATE_M(map, brushCount, 1)
@@ -166,13 +166,13 @@ PREDICATE_M(brush, setShader, 2)
 
 PREDICATE_M(brush, getID, 2) 
 {
-	const std::string & id = PlBrush(A1)->id;
+	const std::wstring & id = PlBrush(A1)->id;
 	return id.empty() ? false : (A2 = id);
 }
 
 PREDICATE_M(brush, setID , 2) 
 {
-	PlBrush(A1)->id = static_cast<const char *>(A2);
+	PlBrush(A1)->id = static_cast<LPCWSTR>(A2);
 	return true;
 }
 
@@ -259,7 +259,7 @@ PREDICATE_M(selection, refresh, 0)
 
 PREDICATE_M(map, saveImage, 1)
 {
-	bool ret = g_map.SaveMapImage(WideStringToMultiByte(A1));
+	bool ret = g_map.SaveMapImage(A1);
 	g_map.Refresh();
 	return ret;
 }
@@ -792,7 +792,7 @@ void cEdiMap::CheckMapView()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // SAVE MAP IMAGE
 //////////////////////////////////////////////////////////////////////////////////////////////////
-bool cEdiMap::SaveMapImage(const std::string & filename )
+bool cEdiMap::SaveMapImage(const std::wstring & filename )
 {
 	if(!m_target) return false;
 
@@ -852,7 +852,7 @@ bool cEdiMap::SaveMapImage(const std::string & filename )
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool cEdiMap::Load( const std::string & filename )
+bool cEdiMap::Load( const std::wstring & filename )
 {
 	elog::app() << "Loading map \"" << filename.c_str() << "\"" << std::endl;
 
@@ -863,7 +863,7 @@ bool cEdiMap::Load( const std::string & filename )
 
 
 #define ERROR_CHUNK( info )	{ files->FileClose(file); elog::app() << "brocken chunk (" << info << ")" << std::endl; return false; }
-bool cEdiMap::LoadMap(const std::string &filename)
+bool cEdiMap::LoadMap(const std::wstring &filename)
 {
 
 	// open file
@@ -951,7 +951,7 @@ bool cEdiMap::LoadMap(const std::string &filename)
 						else if(j == BRUSH_SHADER) b->shader = static_cast<Blend>(val);
 						else if(j == BRUSH_SCALE) b->scale = val;
 						else if(j == BRUSH_SELECT) b->select = val != 0;
-						else if (j == BRUSH_ID) { if (val) { std::ostringstream o; o << val; b->id = o.str(); } }
+						else if (j == BRUSH_ID) { if (val) { std::wostringstream o; o << val; b->id = o.str(); } }
 						else if(j == BRUSH_MATERIAL) b->material = val;
 						else if(j == BRUSH_DRAW) b->draw = val;
 						else if(j == BRUSH_DISABLE) b->disable = val != 0;

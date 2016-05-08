@@ -28,10 +28,10 @@ bool F9_Init();
 void F9_Done();
 
 // helper for memory files ext must not exceed 5 characters but may be NULL - uses sprint!
-inline std::string F9_MakeFileName(const std::string & name, void * addr, int size) 
+inline std::wstring F9_MakeFileName(const std::wstring & name, void * addr, int size) 
 { 
-	std::ostringstream o;
-	o << "#" << std::hex << (dwordptr)addr << "#" << size << "#";
+	std::wostringstream o;
+	o << L"#" << std::hex << (dwordptr)addr << L"#" << size << L"#";
 	if(!name.empty())
 		o << name;
 	return o.str();
@@ -42,18 +42,18 @@ class Files
 	bool _searchInResources;
 	typedef std::vector<f9Archive *> Array;
 	Array	Archives;
-	typedef std::map<std::string, f9Archive *> Map;
+	typedef std::map<std::wstring, f9Archive *> Map;
 	Map Index;
-	template<class Arc> void DoIndex(const std::string & file) { DoIndex(new Arc(), file); }
-	void DoIndex(f9Archive * arc, const std::string & file);
+	template<class Arc> void DoIndex(const std::wstring & file) { DoIndex(new Arc(), file); }
+	void DoIndex(f9Archive * arc, const std::wstring & file);
 public:
 	Files() : _searchInResources() {}
 	~Files() { for(f9Archive *a: Archives) delete a; }
-	void MakeIndex(const std::string & path);
-	void FindFiles(const std::string & path, std::function<void(const std::string &)>);
-	f9File * OpenFile(const std::string & file);
+	void MakeIndex(const std::wstring & path);
+	void FindFiles(const std::wstring & path, std::function<void(const std::wstring &)>);
+	f9File * OpenFile(const std::wstring & file);
 	template<class FileType>
-	static f9File * OpenFile(const std::string & name, int mode = F9_READ)
+	static f9File * OpenFile(const std::wstring & name, int mode = F9_READ)
 	{
 		f9File * file = new FileType();
 		if(file->Open(name, mode))

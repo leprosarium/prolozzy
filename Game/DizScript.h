@@ -94,7 +94,7 @@ public:
 	void roomOpen() { CallHandler(_roomOpen); }
 	void roomClose() { CallHandler(_roomClose); }
 	void roomOut() { CallHandler(_roomOut); }
-	void collision(const std::string & id, int mode) { PlTermv av(2); av[0] = id; av[1] = mode; CallHandler(_collision, av) ; }
+	void collision(const std::wstring & id, int mode) { PlTermv av(2); av[0] = id; av[1] = mode; CallHandler(_collision, av) ; }
 	void fall() { CallHandler(_fall); }
 	int jump(int mat, int clean) { PlTermv av(3); av[0] = mat; av[1] = clean; CallHandler(_jump, av); return av[2]; }
 	void playerUpdate() { CallHandler(_playerUpdate); }
@@ -105,7 +105,7 @@ public:
 	void debug() { CallHandler(_debug); }		
 	void reloadMap() { CallHandler(_reloadMap); }
 
-	std::string UpdateStack() const;
+	std::wstring UpdateStack() const;
 };
 
 extern cDizScript g_script;

@@ -246,8 +246,14 @@ void App::Icon(int res)
 			PostMessageW(wnd, WM_SETICON, ICON_BIG,(LPARAM)(HICON)hIcon);
 }
 
+void App::ErrorMessage(LPCWSTR msg)
+{
+	elog::err() << "DizzyAGE ERROR:" << std::endl << msg << std::endl;
+	sys_msgbox( Wnd(), msg, L"DizzyAGE ERROR", MB_OK );
+}
+
 void App::ErrorMessage(LPCSTR msg)
 {
 	elog::err() << "DizzyAGE ERROR:" << std::endl << msg << std::endl;
-	sys_msgbox( Wnd(), msg, "DizzyAGE ERROR", MB_OK );
+	sys_msgbox(Wnd(), msg, "DizzyAGE ERROR", MB_OK);
 }

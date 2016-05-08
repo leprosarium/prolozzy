@@ -16,7 +16,7 @@ void r9TexturePool::Done()
 	clear();
 }
 
-int r9TexturePool::Add( R9TEXTURE texture, const std::string & name )
+int r9TexturePool::Add( R9TEXTURE texture, const std::wstring & name )
 {
 	assert(texture!=NULL);
 	int i = size();
@@ -25,7 +25,7 @@ int r9TexturePool::Add( R9TEXTURE texture, const std::string & name )
 	return i;
 }
 
-int r9TexturePool::Load( const std::string & name, bool noduplicate )
+int r9TexturePool::Load( const std::wstring & name, bool noduplicate )
 {
 	if(noduplicate)
 	{
@@ -37,7 +37,7 @@ int r9TexturePool::Load( const std::string & name, bool noduplicate )
 	return Add(texture, name);
 }
 
-int r9TexturePool::Find( const std::string & name )
+int r9TexturePool::Find( const std::wstring & name )
 {
 	Hash::const_iterator i = index.find(name);
 	if( i == index.end())

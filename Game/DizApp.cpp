@@ -18,15 +18,15 @@ BOOL CALLBACK DialogProcInfo( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	if(uMsg == WM_INITDIALOG) 
 	{
 		// create info content
-		std::ostringstream o1;
-		o1 << g_cfg.Info("game_title") << " v" << g_cfg.Info("game_version") << "\r\n" << "by "
-			<< g_cfg.Info("game_author") << "\r\n" 
-			<< g_cfg.Info("game_website");
-		SetDlgItemText(hwndDlg, IDC_TEXT1, o1.str().c_str());
-		std::ostringstream o2;
-		o2 << "Created with DizzyAGE v" << g_cfg.Info("dizzyage_version") << "\r\n"
-			<< "by Alexandru and Cristina Simion\r\nhttp://www.yolkfolk.com/dizzyage";
-		SetDlgItemText(hwndDlg, IDC_TEXT2, o2.str().c_str());
+		std::wostringstream o1;
+		o1 << g_cfg.Info(L"game_title") << L" v" << g_cfg.Info(L"game_version") << L"\r\n" << L"by "
+			<< g_cfg.Info(L"game_author") << L"\r\n" 
+			<< g_cfg.Info(L"game_website");
+		SetDlgItemTextW(hwndDlg, IDC_TEXT1, o1.str().c_str());
+		std::wostringstream o2;
+		o2 << L"Created with DizzyAGE v" << g_cfg.Info(L"dizzyage_version") << L"\r\n"
+			<< "Lby Alexandru and Cristina Simion\r\nhttp://www.yolkfolk.com/dizzyage";
+		SetDlgItemTextW(hwndDlg, IDC_TEXT2, o2.str().c_str());
 		return true; // autofocus
 	}
 	if(uMsg == WM_CLOSE || (uMsg == WM_COMMAND && (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)))
@@ -52,7 +52,7 @@ DizApp::DizApp(HINSTANCE hinstance, LPCTSTR cmdline) : App(hinstance, cmdline), 
 	if(!InitApp()) throw std::exception("Init app error.");
 	if(!InitFiles()) throw std::exception("Init files error.");
 	if(!InitInput()) throw std::exception("Init input device error.");
-	if(!InitAudio()) { App::ErrorMessage("Init audio device error."); } // allow to run without audio
+	if(!InitAudio()) { App::ErrorMessage(L"Init audio device error."); } // allow to run without audio
 	if(!InitVideo()) throw std::exception("Init video device error.");
 
 	// game init
@@ -72,7 +72,7 @@ bool DizApp::InitApp()
 	Icon(IDI_ICON);
 
 	bool cool = true;
-	ini_get( file_getfullpath(GetIniFile()), "ADVANCED", "cool") >> cool;
+	ini_get( file_getfullpath(GetIniFile()), L"ADVANCED", L"cool") >> cool;
 	Cool(cool);
 	
 	return true;
@@ -81,16 +81,16 @@ bool DizApp::InitApp()
 bool DizApp::InitFiles()
 {
 	if(!F9_Init()) return false;
-	files->MakeIndex("data\\");
+	files->MakeIndex(L"data\\");
 	return true;
 }
 
 bool DizApp::InitInput()
 {
-	std::string inifile = file_getfullpath(GetIniFile());
+	std::wstring inifile = file_getfullpath(GetIniFile());
 
 	int input_enabled = 1;
-	ini_get(inifile, "INPUT", "enabled") >> input_enabled;
+	ini_get(inifile, L"INPUT", L"enabled") >> input_enabled;
 	if(!input_enabled) return true; // no input
 
 	if(!eInput::Init(Wnd(), Instance())) return false;
@@ -99,9 +99,9 @@ bool DizApp::InitInput()
 	int keyboard	= 1;
 	int mouse		= 0;
 	int joystick	= 1;
-	ini_get(inifile, "INPUT", "keyboard") >> keyboard;
-	ini_get(inifile, "INPUT", "mouse") >> mouse;
-	ini_get(inifile, "INPUT", "joystick") >> joystick;
+	ini_get(inifile, L"INPUT", L"keyboard") >> keyboard;
+	ini_get(inifile, L"INPUT", L"mouse") >> mouse;
+	ini_get(inifile, L"INPUT", L"joystick") >> joystick;
 
 	bool ok = false;
 	if(keyboard)	ok = eInput::Init<Keyboard>() || ok;
@@ -114,7 +114,7 @@ bool DizApp::InitInput()
 bool DizApp::InitAudio()
 {
 	int audio_enabled = 1;
-	ini_get(file_getfullpath(GetIniFile()), "AUDIO", "enabled") >> audio_enabled;
+	ini_get(file_getfullpath(GetIniFile()), L"AUDIO", L"enabled") >> audio_enabled;
 	if(!audio_enabled) return true; // no audio
 	
 	if(!A9_Init(Wnd(), A9_API_DEFAULT)) return false;
@@ -312,12 +312,12 @@ void DizApp::Draw()
 
 void DizApp::DrawStats()
 {
-	std::ostringstream o;
-	o << "obj:"<<g_game.m_obj.size() << ", "
-		 "brs:"<< g_game.visible_brushes << ", "
-		 "fps:"<< gamefps<< "/" << FPS();
+	std::wostringstream o;
+	o << L"obj:"<<g_game.m_obj.size() << L", "
+		 L"brs:"<< g_game.visible_brushes << L", "
+		 L"fps:"<< gamefps<< L"/" << FPS();
 
-	std::string str = o.str();
+	std::wstring str = o.str();
 	fV2 sz = fV2(ChrW * str.size(), ChrH) + 4;
 	fV2 p(R9_GetWidth() - sz.x - 2, 2.0f);
 

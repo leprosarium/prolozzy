@@ -5,6 +5,7 @@
 #include "E9Math.h"
 #include "F9ArchiveZip.h"
 #include "F9FileZip.h"
+#include "E9String.h"
 #include <algorithm>
 
 f9ArchiveZip::f9ArchiveZip() : f9Archive(F9_ARCHIVE_ZIP)
@@ -15,7 +16,7 @@ f9ArchiveZip::~f9ArchiveZip()
 {
 }
 
-bool f9ArchiveZip::Open(const std::string & name, int mode, const std::string & password )
+bool f9ArchiveZip::Open(const std::wstring & name, int mode, const std::wstring & password )
 {
 	if( IsOpen() ) Close();
 	if(!f9File::IsReadOnlyMode(mode)) return false; // readonly
@@ -38,7 +39,7 @@ bool f9ArchiveZip::Close()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // files serve
 //////////////////////////////////////////////////////////////////////////////////////////////////
-f9File * f9ArchiveZip::FileOpen(const std::string &  name, int mode)
+f9File * f9ArchiveZip::FileOpen(const std::wstring &  name, int mode)
 {
 	if( !IsOpen() ) return nullptr;
 	if( (mode & 3) != (m_mode & 3) ) return nullptr; // open mode must match
@@ -58,9 +59,9 @@ f9File * f9ArchiveZip::FileOpen(const std::string &  name, int mode)
 	return fzip;
 }
 
-int f9ArchiveZip::FileFind( const std::string & name ) const
+int f9ArchiveZip::FileFind( const std::wstring & name ) const
 {
-	std::string nm(name);
+	std::wstring nm(name);
 	std::transform(nm.begin(), nm.end(), nm.begin(), ::tolower);
 	auto i = index.find(nm);
 	if (i == index.end())
@@ -68,11 +69,11 @@ int f9ArchiveZip::FileFind( const std::string & name ) const
 	return i->second;
 }
 
-std::string f9ArchiveZip::FileGetName(int idx) const
+std::wstring f9ArchiveZip::FileGetName(int idx) const
 {
 	if(idx >= 0 && idx < static_cast<int>(m_fat.size())) 
 		return m_fat[idx]->m_name;
-	return std::string();
+	return std::wstring();
 }
 
 dword f9ArchiveZip::FileGetSize(int idx) const
@@ -155,7 +156,7 @@ bool f9ArchiveZip::ReadFAT()
 		
 		// create file info entry - filters may be applied here
 		fi = new f9ZipFileInfo();
-		fi->m_name		= fname;
+		fi->m_name		= MultiByteToWideString(fname);
 		fi->m_offset	= fh->offset;
 		fi->m_size		= fh->sizeuncomp;
 		int idx = m_fat.size();

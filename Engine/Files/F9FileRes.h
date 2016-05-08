@@ -10,19 +10,18 @@
 
 #include "F9File.h"
 
-#define F9_FILERES_GROUP	"FILES"
+#define F9_FILERES_GROUP L"FILES"
 
 class f9FileRes : public f9File
 {
-	virtual bool DoOpen(const std::string & name, int mode);
+	virtual bool DoOpen(const std::wstring & name, int mode);
 	virtual bool DoClose();
 	virtual int64 DoRead(void* data, int64 size);
 	virtual bool DoSeek(int64 offset, int origin = F9_SEEK_SET);
 public:
 	f9FileRes() : m_addr(nullptr) {} 
-	
 protected:
-	byte * m_addr;		// data buffer address
+	byte * m_addr;
 };
 
 #endif

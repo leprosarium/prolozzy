@@ -54,12 +54,12 @@ class r9Font
 	dword		m_color;		// color (0xffffffff)
 	Blend		m_blend;		// blend state
 	R9TEXTURE	m_tex;			// texture
-	Char		m_char[256];	// chars mapping
+	Char		m_char[65536];	// chars mapping
 public:
 	r9Font();
 // load
 	bool Create( int chrw, int chrh, int cols=16, int start=32, int count=96 ); // create from a table with given cel size and columns (fixed char size)
-	bool Create( const std::string & fontfile );				// create from a .fnt file
+	bool Create( const std::wstring & fontfile );				// create from a .fnt file
 
 // config
 	void SetTexture(R9TEXTURE texture) { m_tex = texture; }
@@ -70,7 +70,7 @@ public:
 	void SetSize( float size ) { m_scale = size / m_chrh; }
 	void SetSpace( int width ) { m_char[32].w = width; }
 	void SetScale(float s) { m_scale = s; }
-	bool IsValid( char c ) const { return ( m_char[(byte)c].w>0 ); }
+	bool IsValid( wchar_t c ) const { return ( m_char[c].w > 0 ); }
 
 	dword GetColor() const { return m_color; }
 	float GetScale() const { return m_scale; }
@@ -82,14 +82,14 @@ public:
 
 // sizes
 	float GetCharWidth() const { return GetScaleW() * m_chrw; }
-	float GetCharWidth(char c) const;								// gets the current width of a char (in pixels) - italic not included
-	float GetTextWidth(const std::string & text) const;				// gets the current width of a string (in pixels) - italic included, newlines ignored
-	float GetTextWidth(const std::string & text, int size ) const;	// gets the current width of a string (in pixels) - italic included, newlines ignored
-	fV2 GetTextBox(const std::string & text) const;				// gets the box sizes the text fits in; italic and newlines included
+	float GetCharWidth(wchar_t c) const;								// gets the current width of a char (in pixels) - italic not included
+	float GetTextWidth(const std::wstring & text) const;				// gets the current width of a string (in pixels) - italic included, newlines ignored
+	float GetTextWidth(const std::wstring & text, int size ) const;	// gets the current width of a string (in pixels) - italic included, newlines ignored
+	fV2 GetTextBox(const std::wstring & text) const;				// gets the box sizes the text fits in; italic and newlines included
 
 // draw
-	void Char(const fV2 & p, char c);						// draw a single char at point p
-	void Print(const fV2 & p, const std::string & text);	// draw a text at (x,y)
+	void Char(const fV2 & p, wchar_t c);						// draw a single char at point p
+	void Print(const fV2 & p, const std::wstring & text);	// draw a text at (x,y)
 };
 
 #endif

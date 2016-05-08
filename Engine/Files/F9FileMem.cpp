@@ -5,16 +5,16 @@
 #include "F9FileMem.h"
 
 
-bool f9FileMem::DoOpen(const std::string & name, int mode )
+bool f9FileMem::DoOpen(const std::wstring & name, int mode )
 {
 	if(name.empty()) return false;
-	if(name[0] != '#') return false;
+	if(name[0] != L'#') return false;
 
 	// open
 	m_addr = nullptr;
 	m_size = 0;
 	m_pos  = 0;
-	if(2!=sscanf(name.c_str(),"#%x#%x#",&m_addr,&m_size)) return false; // bad name format
+	if(2!= swscanf(name.c_str(),L"#%x#%x#", &m_addr, &m_size)) return false; // bad name format
 	if(!m_addr || m_size<0) return false; // bad name format
 	return true;
 }

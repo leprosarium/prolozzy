@@ -90,13 +90,13 @@ PREDICATE_M(brush, setShader, 2)
 
 PREDICATE_M(brush, getID, 2) 
 {
-	const std::string & id = PlBrush(A1)->id;
+	const std::wstring & id = PlBrush(A1)->id;
 	return id.empty() ? false : (A2 = id);
 }
 
 PREDICATE_M(brush, setID , 2) 
 {
-	PlBrush(A1)->id = static_cast<const char *>(A2);
+	PlBrush(A1)->id = static_cast<LPCWSTR>(A2);
 	return true;
 }
 

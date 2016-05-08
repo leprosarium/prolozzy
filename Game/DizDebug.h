@@ -20,11 +20,11 @@ const size_t INPUT_HISTORY = 16;// input history count
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // cDizDebug
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class Line : public std::string
+class Line : public std::wstring
 {
 public:
 	Line() : color(DWORD_GREY) {}
-	Line(dword color, const std::string & str) : std::string(str), color(color) {}  
+	Line(dword color, const std::wstring & str) : std::wstring(str), color(color) {}  
 	dword color;
 };
 
@@ -51,18 +51,18 @@ public:
 	void Layout(const iRect & r) { rect = r; int h = r.Height(); lines = h < ChrH ? 0 : (h / ChrH - 1);}
 	void Update();
 	void Draw();
-	void Push(dword color, const std::string & str);
-	std::string lastLine() const { return empty() ? std::string() : back(); }
+	void Push(dword color, const std::wstring & str);
+	std::wstring lastLine() const { return empty() ? std::wstring() : back(); }
 };
 
 class Slots
 {
-	std::string slots[SLOT_COUNT];
+	std::wstring slots[SLOT_COUNT];
 	fRect rect;
 public:
 	void Layout(const iRect & r) { rect = r; }
 	void Draw();
-	void Set( size_t slot, const std::string & str) { if(slot < SLOT_COUNT) slots[slot] = str; }
+	void Set( size_t slot, const std::wstring & str) { if(slot < SLOT_COUNT) slots[slot] = str; }
 };
 
 class Info
@@ -75,18 +75,18 @@ public:
 
 class Input
 {
-	typedef std::function<void(const std::string &)> ActionType;
+	typedef std::function<void(const std::wstring &)> ActionType;
 	bool	open;										// input dialog opend
 	int		complete;									// auto-complete count (0=first, 1=next, etc)
-	std::string prompt;
-	std::string cmd;									// input command string
-	std::string::const_iterator crt;					// input currsor
-	std::deque<std::string> hist;					// input history list of commands
-	std::deque<std::string>::const_iterator histcrt;// current history cursor
+	std::wstring prompt;
+	std::wstring cmd;									// input command string
+	std::wstring::const_iterator crt;					// input currsor
+	std::deque<std::wstring> hist;					// input history list of commands
+	std::deque<std::wstring>::const_iterator histcrt;// current history cursor
 	fRect	rect;
-	std::string::const_iterator CmdWordBegin() const;
-	std::string::const_iterator CmdWordEnd() const;
-	bool MoveCrt(std::string::const_iterator v) { bool moved = v != crt; crt = v; return moved; }
+	std::wstring::const_iterator CmdWordBegin() const;
+	std::wstring::const_iterator CmdWordEnd() const;
+	bool MoveCrt(std::wstring::const_iterator v) { bool moved = v != crt; crt = v; return moved; }
 	ActionType Action;
 	bool SkipWordLeft() { return MoveCrt(CmdWordBegin()); }	// move cursor left over a word
 	bool SkipWordRight() { return MoveCrt(CmdWordEnd()); }	// move cursor left over a word
@@ -94,14 +94,14 @@ class Input
 	void Execute();
 
 public:
-	Input(const std::string & prompt = ">") : open(), prompt(prompt), crt(cmd.end()), complete(), histcrt(hist.begin()) {}
+	Input(const std::wstring & prompt = L">") : open(), prompt(prompt), crt(cmd.end()), complete(), histcrt(hist.begin()) {}
 	void Layout(const iRect & r) { rect = r; }
 	void Open() { open = true; }
 	bool IsOpened() const { return open; }
 	void Update();
 	void Draw();
-	void setCmd(const std::string & c) { cmd = c; crt = cmd.end(); complete = 0;}
-	void setPrompt(const std::string & p) { prompt = p; }
+	void setCmd(const std::wstring & c) { cmd = c; crt = cmd.end(); complete = 0;}
+	void setPrompt(const std::wstring & p) { prompt = p; }
 	void setAction(ActionType a) { Action = a; }
 };
 
@@ -111,8 +111,8 @@ class Prolog
 	Slots & slots;
 	Input input;
 	void Draw();
-	void Ready(const std::string & cmd) { Cmd = cmd; CmdReady = true; }
-	std::string Cmd;
+	void Ready(const std::wstring & cmd) { Cmd = cmd; CmdReady = true; }
+	std::wstring Cmd;
 	bool CmdReady;
 public:
 	Prolog(Console & con, Slots & slots);
@@ -140,7 +140,7 @@ class cDizDebug
 	Developer dev;
 	bool _visible;									// developer console active
 	bool _active;								// developer debug active (set from ini)
-	static void Call(const std::string & cmd);
+	static void Call(const std::wstring & cmd);
 	void NavigationUpdate();
 public:
 	cDizDebug();

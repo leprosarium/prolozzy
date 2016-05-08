@@ -9,7 +9,7 @@
 
 class f9FileDisk : public f9File
 {
-	virtual bool DoOpen(const std::string & name, int mode);
+	virtual bool DoOpen(const std::wstring & name, int mode);
 	virtual	bool DoClose();
 	virtual	int64 DoRead(void* data, int64 size);
 	virtual	int64 DoWrite(void* data, int64 size);
@@ -25,7 +25,7 @@ public:
 	FILE * GetFILE() const { return m_file; }
 
 protected:
-		FILE*	m_file;		// file handler
+	FILE * m_file;
 };
 
 #endif

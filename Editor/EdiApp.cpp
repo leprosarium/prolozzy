@@ -26,22 +26,22 @@ PREDICATE_M(core, dl, 1)
 
 PREDICATE_M(core, ini, 4)
 {
-	static char tmp_fullpath[256];
-	if(!GetFullPathName(A1, 255, tmp_fullpath, NULL )) 
+	static wchar_t tmp_fullpath[256];
+	if(!GetFullPathNameW(A1, 255, tmp_fullpath, NULL )) 
 		return false;
 
 	PlTerm val = A4;	
 	if(val.type() == PL_VARIABLE)
 	{
-		std::string value;
+		std::wstring value;
 		if(!(ini_get(tmp_fullpath, A2, A3) >> value))
 			return false;
 		PlTerm ct;
-		if (PL_chars_to_term(value.c_str(), ct))
+		if (PL_wchars_to_term(value.c_str(), ct))
 			return A4 = ct;
 		return A4 = value;
 	}
-	ini_set<std::string>(tmp_fullpath, A2, A3, val);
+	ini_set<std::wstring>(tmp_fullpath, A2, A3, val);
 	return true;
 }
 
@@ -162,7 +162,7 @@ bool Editor::InitApp()
 	Icon(IDI_ICON);
 
 	bool cool = true;
-	ini_get( file_getfullpath(USER_INIFILE), "EDITOR", "options_cool") >> cool;
+	ini_get( file_getfullpath(USER_INIFILE), L"EDITOR", L"options_cool") >> cool;
 	Cool(cool);
 	
 	return true;
@@ -171,7 +171,7 @@ bool Editor::InitApp()
 bool Editor::InitFiles()
 {
 	if(!F9_Init()) return false;
-	files->MakeIndex("editor\\");
+	files->MakeIndex(L"editor\\");
 	return true;
 }
 
@@ -182,17 +182,17 @@ bool Editor::InitInput()
 
 bool Editor::InitVideo()
 {
-	std::string inifile = file_getfullpath(USER_INIFILE);
+	std::wstring inifile = file_getfullpath(USER_INIFILE);
 
 	int screensize = 1;
 	int delta = 64; // substract from screen size
-	ini_get(inifile, "EDITOR", "options_screensize") >> screensize;
+	ini_get(inifile, L"EDITOR", L"options_screensize") >> screensize;
 	if(screensize<0||screensize>=4) screensize=1;
 	int screensizelist[4][2]={ {640,480}, {800,600}, {1024,768}, {1280,1024} };
 
 	// custom sizes
-	ini_get(inifile, "EDITOR", "options_screenw") >> screensizelist[3][0];
-	ini_get(inifile, "EDITOR", "options_screenh") >> screensizelist[3][1];
+	ini_get(inifile, L"EDITOR", L"options_screenw") >> screensizelist[3][0];
+	ini_get(inifile, L"EDITOR", L"options_screenh") >> screensizelist[3][1];
 
 	// default config
 	r9Cfg cfg;
@@ -204,7 +204,7 @@ bool Editor::InitVideo()
 
 	// load config
 	int apiv;
-	if(ini_get(inifile, "EDITOR", "options_videoapi") >> apiv)
+	if(ini_get(inifile, L"EDITOR", L"options_videoapi") >> apiv)
 		if(apiv == static_cast<int>(Api::DirectX))
 			api = Api::DirectX;
 		else if(apiv == static_cast<int>(Api::OpenGL))
@@ -454,9 +454,9 @@ void Editor::Draw()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void Editor::DrawStats()
 {
-	std::ostringstream o;
-	o << "fps: " << FPS();
-	std::string str = o.str();
+	std::wostringstream o;
+	o << L"fps: " << FPS();
+	std::wstring str = o.str();
 	fV2 sz = fV2(ChrW * str.size(), ChrH) + 4;
 	fV2 p(R9_GetWidth() - sz.x - 2, 2.0f);
 
@@ -544,8 +544,8 @@ PREDICATE_M(edi, tileReload, 0)
 
 	// load from 2 ini dirs
 	int loads = 0;
-	std::string tilepath;
-	if(ini_get(file_getfullpath(USER_INIFILE), "editor", "options_tiledir") >> tilepath)
+	std::wstring tilepath;
+	if(ini_get(file_getfullpath(USER_INIFILE), L"editor", L"options_tiledir") >> tilepath)
 		if(g_paint.TileLoad(tilepath)) loads++;
 	else 
 		elog::app() << "TileDir not specified in editor.ini" << std::endl;

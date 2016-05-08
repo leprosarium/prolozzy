@@ -15,7 +15,7 @@
 #include <ostream>
 #include <fstream>
 #include <deque>
-
+#include <ctime>
 
 // Windows Header Files:
 #define NOMINMAX

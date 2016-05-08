@@ -12,7 +12,7 @@ struct f9PakFileInfo;
 
 class f9FilePak : public f9File
 {	
-	virtual bool DoOpen(const std::string & name, int mode);
+	virtual bool DoOpen(const std::wstring & wname, int mode);
 	virtual bool DoClose();
 	virtual int64 DoRead(void* data, int64 size);
 	virtual bool DoSeek(int64 offset, int origin = F9_SEEK_SET);
@@ -24,7 +24,7 @@ public:
 
 protected:
 	f9PakFileInfo * m_fileinfo;		// info from pak
-	std::string m_arcname;			// just a pointer to zip archive name
+	std::wstring m_arcname;			// archive name
 	f9FileDisk m_arcfile;			// archive disk file, opened on Open
 
 	friend	class f9ArchivePak;

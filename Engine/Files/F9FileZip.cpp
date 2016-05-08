@@ -17,7 +17,7 @@ f9FileZip::f9FileZip() : m_offset(-1)
 // m_arcname = name of the zip archive
 // m_offset	= offset of the filelocalheader in the zip archive
 //////////////////////////////////////////////////////////////////////////////////////////////////
-bool f9FileZip::DoOpen( const std::string & name, int mode )
+bool f9FileZip::DoOpen( const std::wstring & name, int mode )
 {
 	if(!IsReadOnlyMode(mode)) return false; // readonly
 

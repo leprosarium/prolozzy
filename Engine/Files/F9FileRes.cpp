@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "F9FileRes.h"
 
-bool f9FileRes::DoOpen(const std::string & name, int mode)
+bool f9FileRes::DoOpen(const std::wstring & name, int mode)
 {
 	if(!IsReadOnlyMode(mode)) return false; // readonly
 
@@ -14,7 +14,7 @@ bool f9FileRes::DoOpen(const std::string & name, int mode)
 	m_pos  = 0;
 
 	// resource
-	HRSRC hrsrc = FindResourceEx(NULL, F9_FILERES_GROUP, name.c_str(),  MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL) ); 
+	HRSRC hrsrc = FindResourceExW(NULL, F9_FILERES_GROUP, name.c_str(),  MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL) ); 
 	if(!hrsrc) return false;
 	m_size = SizeofResource(NULL, hrsrc); if(m_size<=0) return false;
 	HGLOBAL hglobal = LoadResource(NULL,hrsrc); if(!hglobal) return false;

@@ -36,11 +36,11 @@ BOOL sys_senddata( HWND fromhwnd, HWND tohwnd, int cmd, int slot, int size, char
 // Ini Tools
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-std::istringstream ini_get(const std::string & file, const std::string & group, const std::string & key)
+std::wistringstream ini_get(const std::wstring & file, const std::wstring & group, const std::wstring & key)
 {
-	char sz[1024]; sz[0]=0;
-	std::istringstream o;
-	if(GetPrivateProfileString(group.c_str(), key.c_str(), "", sz, 1024, file.c_str()))
+	wchar_t sz[1024]; sz[0]=0;
+	std::wistringstream o;
+	if(GetPrivateProfileStringW(group.c_str(), key.c_str(), L"", sz, 1024, file.c_str()))
 		o.str(sz);
 	else
 		o.setstate(std::ios::failbit);
@@ -48,9 +48,9 @@ std::istringstream ini_get(const std::string & file, const std::string & group, 
 }
 
 template<>
-void ini_set<std::string>(const std::string & file, const std::string & group, const std::string & key, const std::string & value)
+void ini_set(const std::wstring & file, const std::wstring & group, const std::wstring & key, const std::wstring & value)
 {
-	WritePrivateProfileString(group.c_str(), key.c_str(), value.c_str(), file.c_str());	
+	WritePrivateProfileStringW(group.c_str(), key.c_str(), value.c_str(), file.c_str());	
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -58,43 +58,43 @@ void ini_set<std::string>(const std::string & file, const std::string & group, c
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-std::string	file_getfullpath(const std::string & file)
+std::wstring file_getfullpath(const std::wstring & file)
 {
-	static char path[MAX_PATH];
-	if(GetFullPathName(file.c_str(), MAX_PATH , path, nullptr) != 0) return path;
-	return std::string();
+	static wchar_t path[MAX_PATH];
+	if(GetFullPathNameW(file.c_str(), MAX_PATH , path, nullptr) != 0) return path;
+	return std::wstring();
 }
 
-std::string file_path2ext(const std::string	& path)
+std::wstring file_path2ext(const std::wstring & path)
 {
-	std::string::size_type p = path.rfind('.');
-	if(p == std::string::npos)
-		return std::string();
+	std::wstring::size_type p = path.rfind('.');
+	if(p == std::wstring::npos)
+		return std::wstring();
 	return path.substr(p + 1);
 }
 
-std::string file_path2name(const std::string & path)
+std::wstring file_path2name(const std::wstring & path)
 {
-	std::string nm = file_path2file(path);
-	std::string::size_type p = nm.rfind('.');
-	if(p == std::string::npos)
+	std::wstring nm = file_path2file(path);
+	std::wstring::size_type p = nm.rfind('.');
+	if(p == std::wstring::npos)
 		return nm;
 	return nm.substr(0, p);
 }
 
-std::string file_path2file(const std::string & path)
+std::wstring file_path2file(const std::wstring & path)
 {
-	std::string::size_type p = path.rfind('\\');
-	if(p == std::string::npos)
+	std::wstring::size_type p = path.rfind(L'\\');
+	if(p == std::wstring::npos)
 		return path;
 	return path.substr(p + 1);
 }
 
-void file_findfiles( const std::string & path, const std::string & mask, std::function<void(const std::string &, bool)> ffcallback, dword flags)
+void file_findfiles( const std::wstring & path, const std::wstring & mask, std::function<void(const std::wstring &, bool)> ffcallback, dword flags)
 {
-	std::string query = path + mask;
-	WIN32_FIND_DATA data;
-	HANDLE h = FindFirstFile(query.c_str(), &data);
+	std::wstring query = path + mask;
+	WIN32_FIND_DATAW data;
+	HANDLE h = FindFirstFileW(query.c_str(), &data);
 	if(h == INVALID_HANDLE_VALUE) return;
 	do
 	{	
@@ -103,21 +103,21 @@ void file_findfiles( const std::string & path, const std::string & mask, std::fu
 		{
 			if(data.cFileName[0] == '.' && (!data.cFileName[1] || data.cFileName[1] == '.' && !data.cFileName[2])) continue;
 
-			std::string dir = path + data.cFileName;
+			std::wstring dir = path + data.cFileName;
 			std::transform(dir.begin(), dir.end(), dir.begin(), ::tolower);
 			if(flags & FILE_FINDDIR)
 				ffcallback(dir, true);
 			if(flags & FILE_FINDREC)
-				file_findfiles(dir + "\\", mask, ffcallback, flags);
+				file_findfiles(dir + L"\\", mask, ffcallback, flags);
 		}
 		else
 		{
-			std::string file = path + data.cFileName;
+			std::wstring file = path + data.cFileName;
 			std::transform(file.begin(), file.end(), file.begin(), ::tolower);
 			ffcallback(file, false);
 		}
 
-	} while(FindNextFile(h, &data));
+	} while(FindNextFileW(h, &data));
 	FindClose(h);
 }
 
@@ -137,28 +137,26 @@ void file_delete(const std::string & path)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void encrypt_data( void* data, dword size, int key )
 {
-	if(data==NULL || size==0) return;
+	if(!data || !size) return;
 	for(dword i=0;i<size;i++)
 		*((byte*)data+i) ^= key;
 }
 
 void decrypt_data( void* data, dword size, int key )
 {
-	if(data==NULL || size==0) return;
 	encrypt_data( data, size, key ); // we use a simple xor method
 }
 
-void encrypt_data( void* data, dword size, const char* key )
+void encrypt_data( void* data, dword size, const std::string & key )
 {
-	if(data==NULL || size==0 || key==NULL) return;
-	int len = (int)strlen(key);
+	if(!data || !size || key.empty()) return;
+	int len = key.size();
 	for(dword i=0;i<size;i++)
 		*((byte*)data+i) ^= (byte)i + (byte)key[i%len];
 }
 
-void decrypt_data( void* data, dword size, const char* key )
+void decrypt_data( void* data, dword size, const std::string & key )
 {
-	if(data==NULL || size==0 || key==NULL) return;
 	encrypt_data( data, size, key ); // we use a simple xor method
 }
 

@@ -81,7 +81,7 @@ R9TEXTURE r9Render::TextureCreate(r9Img* img)
 
 
 
-R9TEXTURE r9Render::TextureLoad( const std::string & filename )
+R9TEXTURE r9Render::TextureLoad( const std::wstring & filename )
 {
 	r9Img img;
 	if(!R9_ImgLoadFile(filename, &img)) return nullptr;
@@ -182,24 +182,18 @@ void r9Render::EndScene()
 bool r9Render::SaveScreenShot( fRect* rect, bool full )
 {
 	r9Img img;
-	if(!TakeScreenShot(&img, rect, full)) return false;
+	if (!TakeScreenShot(&img, rect, full)) return false;
 
-	char file[64];
-	char date[16];
-	char time[16];
+	wchar_t datetime[16];
 	
-	SYSTEMTIME systime;
-	GetSystemTime( &systime );
-	GetDateFormat( NULL, 0, &systime, "yyMMdd", date, 16 );
-	GetTimeFormat( NULL, 0, &systime, "_HHmm_ss", time, 16 );
+	std::time_t now = std::time(nullptr);
+	std::wcsftime(datetime, sizeof(datetime), L"%y%m%d_%H%M%S", std::localtime(&now));
 
-	CreateDirectory("ScreenShots",NULL);
-	strcpy( file, "ScreenShots\\" );
-	strcat( file, date );
-	strcat( file, time );
-	strcat( file, ".png" ); // change this if you want (.tga)
+	std::wostringstream file;
+	file << L"ScreenShots\\" << datetime << L".png";
 	
-	R9_ImgSaveFile(file,&img);
+	CreateDirectoryW(L"ScreenShots", NULL);
+	R9_ImgSaveFile(file.str(), &img);
 	R9_ImgDestroy(&img);
 	
 	elog::rnd() << "ScreenShot saved!" << std::endl;
@@ -316,7 +310,7 @@ bool r9Render::MakeFont()
 	dword memsize = r9_fonttga_buffer[0];
 	byte * memfile = new byte[memsize];
 	if(decompress_data((byte*)(r9_fonttga_buffer+2),r9_fonttga_buffer[1],memfile,memsize))
-		if(R9TEXTURE tex = TextureLoad(F9_MakeFileName("font.tga",memfile,memsize)))
+		if(R9TEXTURE tex = TextureLoad(F9_MakeFileName(L"font.tga",memfile,memsize)))
 		{
 			m_font->SetTexture(tex);
 			delete [] memfile;
@@ -446,7 +440,7 @@ void R9_Done()
 	elog::rnd() << "Render done." << std::endl;
 }
 
-void R9_DrawText(const fV2 & pos, const std::string & text, dword color, float scale )
+void R9_DrawText(const fV2 & pos, const std::wstring & text, dword color, float scale )
 { 
 	assert(r9_render); 
 	if(!r9_render->m_font) return; 

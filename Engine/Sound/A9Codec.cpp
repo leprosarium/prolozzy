@@ -35,29 +35,29 @@ a9Codec::a9Codec()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // INTERFACE
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-int A9_CodecFind( const std::string & filename )
+int A9_CodecFind( const std::wstring & filename )
 {
-	std::string ext = file_path2ext(filename);
+	std::wstring ext = file_path2ext(filename);
 
-	struct tFileSuport { int codec; std::string extensions; };
+	struct tFileSuport { int codec; std::wstring extensions; };
 	static tFileSuport filesupport[] = 
 	{
 		#ifdef A9_ENABLE_WAV
-		{ A9_CODEC_WAV,		"wav" },
+		{ A9_CODEC_WAV,		L"wav" },
 		#endif
 		#ifdef A9_ENABLE_OGG
-		{ A9_CODEC_OGG,		"ogg" },
+		{ A9_CODEC_OGG,		L"ogg" },
 		#endif
 		#ifdef A9_ENABLE_DUMB
-		{ A9_CODEC_DUMB,	"mod" },
-		{ A9_CODEC_DUMB,	"it" },
-		{ A9_CODEC_DUMB,	"xm" },
-		{ A9_CODEC_DUMB,	"s3m" },
+		{ A9_CODEC_DUMB,	L"mod" },
+		{ A9_CODEC_DUMB,	L"it" },
+		{ A9_CODEC_DUMB,	L"xm" },
+		{ A9_CODEC_DUMB,	L"s3m" },
 		#endif
 		#ifdef A9_ENABLE_YM
-		{ A9_CODEC_YM,		"ym" },
+		{ A9_CODEC_YM,		L"ym" },
 		#endif
-		{ A9_CODEC_UNKNOWN, "" }
+		{ A9_CODEC_UNKNOWN, L"" }
 	};
 
 	for(int i = 0;filesupport[i].codec!=A9_CODEC_UNKNOWN;i++)
@@ -194,7 +194,7 @@ int	A9_CodecDecodeToWave( A9CODEC codec, byte* buffer )
 	return A9_OK;
 }
 
-int A9_CodecDecodeToWave( const std::string & filename, byte* &buffer, int& size )
+int A9_CodecDecodeToWave( const std::wstring & filename, byte* &buffer, int& size )
 {
 	// load and decode file
 	int codectype = A9_CodecFind(filename);
@@ -202,7 +202,7 @@ int A9_CodecDecodeToWave( const std::string & filename, byte* &buffer, int& size
 	if(!codec) return A9_FAIL;
 
 	// open codec
-	int ret = A9_CodecOpen(codec,filename);
+	int ret = A9_CodecOpen(codec, filename);
 	if(ret!=A9_OK) return ret;
 	
 	// alloc buffer

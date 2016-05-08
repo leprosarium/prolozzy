@@ -6,7 +6,7 @@
 #include "F9FilePakZ.h"
 #include "F9ArchivePak.h"
 
-bool f9FilePakZ::DoOpen(const std::string & name, int mode)
+bool f9FilePakZ::DoOpen(const std::wstring & name, int mode)
 {
 	if(!IsReadOnlyMode(mode)) return false; // readonly
 

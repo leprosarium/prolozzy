@@ -65,6 +65,10 @@ public:
   PlAtom(LPCWSTR text)
   { handle = PL_new_atom_wchars(wcslen(text), text);
   }
+  PlAtom(const std::wstring & text)
+  {
+	  handle = PL_new_atom_wchars(text.size(), text.c_str());
+  }
   PlAtom(const PlTerm &t);
 
   operator const char *(void)
@@ -110,6 +114,7 @@ public:
   PlTerm(const char *text);
   PlTerm(LPCWSTR text);
   PlTerm(const std::string &);
+  PlTerm(const std::wstring &);
 
   PlTerm(long val);
   PlTerm(double val);
@@ -129,6 +134,7 @@ public:
   operator PlAtom(void) const;
   operator void *(void) const;
   operator std::string() const;
+  operator std::wstring() const;
 
   int type()
   { return PL_term_type(ref);
@@ -145,6 +151,7 @@ public:
   bool operator =(const char *v);	/* atom (from char *) */
   bool operator =(LPCWSTR v);
   bool operator =(const std::string & v);
+  bool operator =(const std::wstring & v);
   bool operator =(long v);		/* integer */
   bool operator =(int v);		/* integer */
   bool operator =(int64_t v);		/* integer */
@@ -182,6 +189,7 @@ public:
   bool operator ==(const char *s);
   bool operator ==(LPCWSTR s);
   bool operator ==(const std::string & s);
+  bool operator ==(const std::wstring & s);
   bool operator ==(const PlAtom &a);
 };
 
@@ -224,6 +232,7 @@ class PlCompound : public PlTerm
 public:
 
   PlCompound(const char *text);
+  PlCompound(LPCWSTR text);
   PlCompound(const char *functor, const PlTermv &args);
   PlCompound(const PlFunctor &functor, const PlTermv &args);
   PlCompound(functor_t functor, const PlTermv &args);
@@ -377,6 +386,13 @@ PlTerm::PlTerm(const std::string & text)
 { if ( !(ref = PL_new_term_ref()) ||
        !PL_put_atom_chars(ref, text.c_str()) )
     throw PlResourceError();
+}
+
+__inline
+PlTerm::PlTerm(const std::wstring &text)
+{
+	if (!(ref = PL_new_atom_wchars(text.size(), text.c_str())))
+		throw PlResourceError();
 }
 
 
@@ -614,6 +630,12 @@ PlCall(const char *goal)
   return q.next_solution();
 }
 
+__inline bool
+PlCall(LPCWSTR goal)
+{
+	PlQuery q("call", PlTermv(PlCompound(goal)));
+	return q.next_solution();
+}
 
 
 		 /*******************************
@@ -720,6 +742,17 @@ __inline PlTerm::operator std::string() const
   throw PlTypeError("text", ref);
 }
 
+__inline PlTerm::operator std::wstring() const
+{
+	LPWSTR s;
+	size_t len;
+
+	if (PL_get_wchars(ref, &len, &s, CVT_ALL | CVT_WRITE | BUF_RING))
+		return std::wstring(s);
+
+	throw PlTypeError("text", ref);
+}
+
 
 					/* compounds */
 
@@ -812,6 +845,10 @@ __inline bool PlTerm::operator =(const std::string &v)		/* term = atom */
 	return (*this) = v.c_str();
 }
 
+__inline bool PlTerm::operator =(const std::wstring &v)		/* term = atom */
+{
+	return (*this) = v.c_str();
+}
 
 __inline bool PlTerm::operator =(long v)
 { int rc = PL_unify_integer(ref, v);
@@ -944,6 +981,18 @@ __inline bool PlTerm::operator ==(const std::string & s)
 	throw PlTypeError("text", ref);
 }
 
+__inline bool PlTerm::operator ==(const std::wstring & s)
+{
+	LPWSTR s0;
+	size_t len;
+
+	if (PL_get_wchars(ref, &len, &s0, CVT_ALL))
+		return s == s0;
+
+	throw PlTypeError("text", ref);
+}
+
+
 __inline bool PlTerm::operator ==(const PlAtom &a)
 { atom_t v;
 
@@ -968,6 +1017,18 @@ PlCompound::PlCompound(const char *text) : PlTerm()
 
   PL_put_term(ref, t);
 }
+
+__inline
+PlCompound::PlCompound(LPCWSTR text) : PlTerm()
+{
+	term_t t = PL_new_term_ref();
+
+	if (!PL_wchars_to_term(text, t))
+		throw PlException(t);
+
+	PL_put_term(ref, t);
+}
+
 
 __inline
 PlCompound::PlCompound(const char *functor, const PlTermv &args) : PlTerm()

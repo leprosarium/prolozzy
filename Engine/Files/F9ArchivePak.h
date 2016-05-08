@@ -32,7 +32,7 @@ struct f9PakFileInfo
 	dword	m_offset;			// start offset (in archive)
 	dword	m_sizec;			// compressed size (in archive)
 	dword	m_size;				// uncompressed size
-	std::string	m_name;			// file name
+	std::wstring m_name;			// file name
 };
 
 class f9ArchivePak : public f9Archive
@@ -42,13 +42,13 @@ public:
 	f9ArchivePak();
 	virtual ~f9ArchivePak();
 						
-	virtual bool Open(const std::string & name, int mode = F9_READ, const std::string & password = std::string());
+	virtual bool Open(const std::wstring & name, int mode = F9_READ, const std::wstring & password = std::wstring());
 	virtual	bool Close();
 						
-	virtual	f9File * FileOpen(const std::string & name, int mode = F9_READ);
+	virtual	f9File * FileOpen(const std::wstring & name, int mode = F9_READ);
 	virtual	int FileCount() const { return m_fat.size(); }
-	virtual	int	FileFind(const std::string & name ) const;
-	virtual	std::string	FileGetName(int idx) const;
+	virtual	int	FileFind(const std::wstring & name ) const;
+	virtual	std::wstring FileGetName(int idx) const;
 	virtual	dword FileGetSize(int idx) const;
 	inline	f9PakFileInfo *	FileGetInfo(int idx) { return idx >= 0 && idx < static_cast<int>(m_fat.size()) ? m_fat[idx] : 0; }
 
@@ -59,7 +59,7 @@ private:
 	f9PakHeader m_header;
 	typedef std::vector<f9PakFileInfo*> InfoList;
 	InfoList m_fat;		
-	typedef std::unordered_map<std::string, int>	Hash;
+	typedef std::unordered_map<std::wstring, int> Hash;
 	Hash index;
 };
 

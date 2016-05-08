@@ -20,8 +20,10 @@
 
 static ssize_t Log_write(void *handle, char *buffer, size_t size)
 { 
-	*reinterpret_cast<elog::channel *>(handle) << std::wstring(buffer, buffer + size) << std::flush;
-	return size;
+	LPWSTR wbuf = reinterpret_cast<LPWSTR>(buffer);
+	size_t wsize = size / sizeof(wchar_t);
+	*reinterpret_cast<elog::channel *>(handle) << std::wstring(wbuf, wbuf + wsize) << std::flush;
+	return wsize * sizeof(wchar_t);
 }
 
 cDizScript g_script;
@@ -30,6 +32,9 @@ bool cDizScript::Init()
 {
 	Soutput->functions->write = &Log_write;
 	Serror->functions->write = &Log_write;
+
+	Soutput->encoding = ENC_WCHAR;
+	Serror->encoding = ENC_WCHAR;
 
 	Soutput->handle = reinterpret_cast<void *>(&elog::scr());
 	Serror->handle = reinterpret_cast<void *>(&elog::app());
@@ -348,26 +353,26 @@ PREDICATE_M(core, debugData, 2)
 
 PREDICATE_M(core, ini, 4)
 {
-	static char tmp_fullpath[256];
-	if(!GetFullPathName(A1, 255, tmp_fullpath, NULL )) 
+	static wchar_t tmp_fullpath[256];
+	if(!GetFullPathNameW(A1, 255, tmp_fullpath, NULL )) 
 		return false;
 
 	PlTerm val = A4;	
 	if(val.type() == PL_VARIABLE)
 	{
-		std::string value;
+		std::wstring value;
 		if(ini_get(tmp_fullpath, A2, A3) >> value)
 			return A4 = value;
 		return false;
 	}
-	ini_set<std::string>(tmp_fullpath, A2, A3, val);
+	ini_set<std::wstring>(tmp_fullpath, A2, A3, val);
 	return true;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-std::string cDizScript::UpdateStack() const
+std::wstring cDizScript::UpdateStack() const
 {
 	PlFrame fr;
 	try
@@ -375,11 +380,11 @@ std::string cDizScript::UpdateStack() const
 		PlTermv av(1);
 		PlQuery q("update", "debug", av);
 		if(q.next_solution())
-			return static_cast<char *>(av[0]);
+			return static_cast<LPCWSTR>(av[0]);
 	}
 	catch(PlException const &)
 	{
-		return std::string("<exception>");
+		return std::wstring(L"<exception>");
 	}
-	return std::string("[]");
+	return std::wstring(L"[]");
 }

@@ -2,6 +2,7 @@
 // A9Codec_ym.h
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
+#include "E9String.h"
 #include "A9Codec_ym.h"
 
 // make sure the paths to the libs are ok
@@ -12,7 +13,7 @@
 #endif
 
 // use our file system
-void* ymfopen	( char* filename )							{ return files->OpenFile(filename); }
+void* ymfopen	( char* filename )							{ return files->OpenFile(MultiByteToWideString(filename)); }
 int	  ymfclose	( void* file )								{ files->FileClose((F9FILE)file); return 0; }
 int	  ymfseek	( void* file, int pos, int mode )			{ return static_cast<F9FILE>(file)->Seek(pos, mode); }
 int	  ymftell	( void* file )								{ return static_cast<int>(static_cast<F9FILE>(file)->Tell()); }
@@ -46,11 +47,11 @@ int a9Codec_ym::Done()
 	return A9_OK;
 }
 
-int	a9Codec_ym::Open( const std::string & name )
+int	a9Codec_ym::Open( const std::wstring & name )
 {
 	if(m_status!=A9_CODEC_CLOSED) return A9_FAIL;
 	m_ym = ymMusicCreate(); if(!m_ym) return A9_FAIL;
-	if(!ymMusicLoad(m_ym, name.c_str())) return A9_FAIL;
+	if(!ymMusicLoad(m_ym, WideStringToMultiByte(name.c_str()).c_str())) return A9_FAIL;
 	
 	ymMusicInfo_t yminfo;
 	ymMusicGetInfo(m_ym,&yminfo);

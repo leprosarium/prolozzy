@@ -175,7 +175,7 @@ void a9AudioDX::Update()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #define DSERR_DETAIL
 #ifdef DSERR_DETAIL
-#define CASE_DSERR(hr,detail) case hr: return #hr" "detail
+#define CASE_DSERR(hr,detail) case hr: return #hr " " detail
 #else
 #define CASE_DSERR(hr,detail) case hr: return #hr
 #endif
@@ -293,7 +293,7 @@ void a9AudioDX::BufferUnlock( A9BUFFER _buffer )
 	buffer->m_lockdata = NULL;
 }
 
-A9BUFFER a9AudioDX::BufferCreate( const std::string & filename, int flags )
+A9BUFFER a9AudioDX::BufferCreate( const std::wstring & filename, int flags )
 {
 	int ret;
 	a9BufferDX* buffer = NULL;
@@ -436,7 +436,7 @@ void a9AudioDX::BufferSetPosition( A9BUFFER _buffer, int pos )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // STREAMS
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-int a9AudioDX::StreamPrecache( const std::string & filename, a9StreamDX * stream )
+int a9AudioDX::StreamPrecache( const std::wstring & filename, a9StreamDX * stream )
 {
 	assert(stream);
 	
@@ -464,7 +464,7 @@ int a9AudioDX::StreamPrecache( const std::string & filename, a9StreamDX * stream
 	return A9_OK;
 }
 
-A9STREAM a9AudioDX::StreamCreate( const std::string & filename, int flags )
+A9STREAM a9AudioDX::StreamCreate( const std::wstring & filename, int flags )
 {
 	int ret;
 	a9Info info;
@@ -472,7 +472,7 @@ A9STREAM a9AudioDX::StreamCreate( const std::string & filename, int flags )
 	// create stream
 	a9StreamDX* stream = new a9StreamDX();
 
-	std::string fn = filename;
+	std::wstring fn = filename;
 
 	// precache (small music files)
 	#ifdef A9_STREAMPRECACHE

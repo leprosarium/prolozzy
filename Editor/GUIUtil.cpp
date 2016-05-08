@@ -136,7 +136,7 @@ iV2 Align(const iRect & r, const iV2 & sz, int align, int offset)
 }
 
 
-void GUIDrawText( const iRect & r, const std::string & text, dword color, int align, int offset )
+void GUIDrawText( const iRect & r, const std::wstring & text, dword color, int align, int offset )
 {
 	if(text.empty()) return;
 	if(color==0) return;

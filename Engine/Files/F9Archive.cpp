@@ -13,7 +13,7 @@ f9Archive::~f9Archive()
 	Close();
 }
 
-bool f9Archive::Open( const std::string & name, int mode, const std::string & password)
+bool f9Archive::Open( const std::wstring & name, int mode, const std::wstring & password)
 {
 	if( IsOpen() ) Close();
 

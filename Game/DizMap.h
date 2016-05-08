@@ -33,7 +33,7 @@ public:
 
 enum class DrawMode { Normal, Material, Density, None };
 
-typedef Indexed<Brush *, std::string> Brushes;
+typedef Indexed<Brush *, std::wstring> Brushes;
 
 class DizMap
 {

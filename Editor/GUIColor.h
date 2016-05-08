@@ -11,7 +11,7 @@ public:
 	virtual void OnUpdate();
 	virtual void OnDraw() {};
 	
-	void LoadImg(const std::string &);
+	void LoadImg(const std::wstring &);
 };
 
 #endif

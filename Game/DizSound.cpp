@@ -159,10 +159,10 @@ void cDizSound::Update(float dtime)
 // SAMPLES
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool isSupportedExt(const std::string & ext) 
+bool isSupportedExt(const std::wstring & ext) 
 {
-	static const std::string supported_ext[] = {"wav", "ogg", "ym", "mod", "it", "xm", "s3m"};
-	for(const std::string & e: supported_ext)
+	static const std::wstring supported_ext[] = {L"wav", L"ogg", L"ym", L"mod", L"it", L"xm", L"s3m"};
+	for(const std::wstring & e: supported_ext)
 		if(e == ext) return true;
 	return false;
 }
@@ -179,19 +179,19 @@ void Samples::Update()
 		if(Playing(i) != -1) _playingVoices++;
 }
 
-bool Samples::LoadFile(const std::string & filepath, size_t & total, size_t & fail, size_t & duplicates, int group)
+bool Samples::LoadFile(const std::wstring & filepath, size_t & total, size_t & fail, size_t & duplicates, int group)
 {
 	if(!isSupportedExt(file_path2ext(filepath))) return false; // ignore files with unsupported extensions
 
 	total++;
 
 	// check name format
-	std::istringstream fname(file_path2name(filepath));
-	std::string nm;
+	std::wistringstream fname(file_path2name(filepath));
+	std::wstring nm;
 	if(!(fname >> nm))
 	{ 
 		fail++; 
-		elog::app() << "! " << filepath.c_str() << " (bad name)" << std::endl; 
+		elog::app() << "! " << filepath << " (bad name)" << std::endl; 
 		return false; 
 	}
 	int instances = 1;
@@ -204,7 +204,7 @@ bool Samples::LoadFile(const std::string & filepath, size_t & total, size_t & fa
 	{
 		fail++;
 		duplicates++;
-		elog::sys() << "! " << filepath.c_str() << " (duplicate id)" << std::endl;
+		elog::sys() << "! " << filepath << " (duplicate id)" << std::endl;
 		return false;
 	}
 
@@ -213,7 +213,7 @@ bool Samples::LoadFile(const std::string & filepath, size_t & total, size_t & fa
 	if(!bufferproto)
 	{
 		fail++;
-		elog::sys() << "! " << filepath.c_str() << " (failed to load)" << std::endl;
+		elog::sys() << "! " << filepath << " (failed to load)" << std::endl;
 		return false;
 	}
 
@@ -221,19 +221,19 @@ bool Samples::LoadFile(const std::string & filepath, size_t & total, size_t & fa
 	push_back(tSoundProto(id, group, instances, bufferproto));
 
 	if(g_dizdebug.active()) // log for developers
-		elog::app() << "  " << filepath.c_str() << " [" << instances << "]" << std::endl;
+		elog::app() << "  " << filepath << " [" << instances << "]" << std::endl;
 
 	return true;
 }
 
-bool Samples::Load(const std::string & path, int group)
+bool Samples::Load(const std::wstring & path, int group)
 {
 	if(!A9_IsReady()) { elog::app() << "Sound disabled - no samples are loaded." << std::endl; return false; }
 	elog::app() << "Loading samples from \"" << path.c_str() << "\" (group=" << group << ")" << std::endl;
 	size_t total = 0;
 	size_t fail = 0;
 	size_t duplicates = 0;
-	files->FindFiles(path, [this, &total, &fail, &duplicates, group](const std::string & filepath) { LoadFile(filepath, total, fail, duplicates, group); } );
+	files->FindFiles(path, [this, &total, &fail, &duplicates, group](const std::wstring & filepath) { LoadFile(filepath, total, fail, duplicates, group); } );
 	elog::app() << "Samples report: total=" << total << ", failed=" << fail << " (duplicates=" << duplicates << ")" << std::endl << std::endl;
 	return true;
 }
@@ -337,7 +337,7 @@ Music::Music() :_stream(nullptr),
 }
 
 
-bool Music::LoadFile( const std::string & filepath, size_t & total, size_t & fail, size_t & duplicates, int group)
+bool Music::LoadFile( const std::wstring & filepath, size_t & total, size_t & fail, size_t & duplicates, int group)
 {
 	if(!isSupportedExt(file_path2ext(filepath))) return false; // ignore files with unsupported extensions
 
@@ -349,16 +349,16 @@ bool Music::LoadFile( const std::string & filepath, size_t & total, size_t & fai
 	{
 		fail++;
 		duplicates++;
-		elog::sys() << "! " << filepath.c_str() << " (duplicate id)" << std::endl;
+		elog::sys() << "! " << filepath << " (duplicate id)" << std::endl;
 		return false;
 	}
 
 	// load and decompress
-	A9STREAM stream = A9_StreamCreate(filepath.c_str());
+	A9STREAM stream = A9_StreamCreate(filepath);
 	if(!stream)
 	{
 		fail++;
-		elog::sys() << "! " << filepath.c_str() << " (failed to load)" << std::endl;
+		elog::sys() << "! " << filepath << " (failed to load)" << std::endl;
 		return false;
 	}
 
@@ -366,19 +366,19 @@ bool Music::LoadFile( const std::string & filepath, size_t & total, size_t & fai
 	push_back(tMusicProto(id, group, stream));
 
 	if(g_dizdebug.active()) // log for developers
-		elog::app() << "  " << filepath.c_str() << std::endl;
+		elog::app() << "  " << filepath << std::endl;
 
 	return true;
 }
 
-bool Music::Load(const std::string & path, int group)
+bool Music::Load(const std::wstring & path, int group)
 {
 	if(!A9_IsReady()) { elog::app() << "Sound disabled - no musics are loaded." << std::endl; return false; }
-	elog::app() << "Loading musics from \"" << path.c_str() << "\" (group=" << group << ")" << std::endl;
+	elog::app() << "Loading musics from \"" << path << "\" (group=" << group << ")" << std::endl;
 	size_t total = 0;
 	size_t fail	= 0;
 	size_t duplicates = 0;
-	files->FindFiles(path, [this, &total, &fail, &duplicates, group](const std::string & filepath) { LoadFile(filepath, total, fail, duplicates, group); } );
+	files->FindFiles(path, [this, &total, &fail, &duplicates, group](const std::wstring & filepath) { LoadFile(filepath, total, fail, duplicates, group); } );
 	elog::app() << "Music report: total=" << total << ", failed=" << fail << " (duplicates=" << duplicates << ")" << std::endl;
 	return true;
 }

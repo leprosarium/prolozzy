@@ -121,7 +121,7 @@ struct zipFileHeader
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class f9FileZip : public f9File
 {
-	virtual	bool DoOpen(const std::string & name, int mode);
+	virtual	bool DoOpen(const std::wstring & name, int mode);
 	virtual	bool DoClose();
 	virtual	int64 DoRead(void* data, int64 size);
 	virtual	bool DoSeek(int64 offset, int origin = F9_SEEK_SET);
@@ -134,7 +134,7 @@ protected:
 	void Reset();
 
 protected:
-	std::string m_arcname;				// just a pointer to zip archive name
+	std::wstring m_arcname;				//zip archive name
 	int m_offset; 						// offset of file in zip archive (-1 if not initialized); set by archive
 
 	f9FileDisk m_arcfile;				// archive disk file

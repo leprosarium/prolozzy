@@ -66,6 +66,7 @@ public:
 
 	static HINSTANCE Instance() { return instance; }
 	static HWND Wnd() { return wnd; }
+	static void ErrorMessage(LPCWSTR msg);	// error message box
 	static void ErrorMessage(LPCSTR msg);	// error message box
 };
 

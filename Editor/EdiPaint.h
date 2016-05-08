@@ -34,7 +34,7 @@ public:
 	int fx;
 	int	fy;
 	R9TEXTURE tex;				// texture
-	std::string name;			// tile name
+	std::wstring name;			// tile name
 						
 	Tile(): id(), frames(1), fx(1), fy(1), tex() {}
 	int GetFx(int frame) const { return frame % fx; }
@@ -89,7 +89,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////////////////////////
 class cEdiPaint
 {
-	bool TileLoadFile(const std::string & filepath, size_t & total, size_t & fail, size_t & duplicates);
+	bool TileLoadFile(const std::wstring & filepath, size_t & total, size_t & fail, size_t & duplicates);
 
 
 public:
@@ -105,7 +105,7 @@ public:
 		int				TileAdd			( int id );			// add a new empty tile; id must be unique
 		void			TileDel			( int idx );		// delete tile by index
 		int				TileFind		( int id )			{ Hash::iterator i = index.find(id); if(i == index.end()) return -1; return i->second; }
-		bool			TileLoad		( const std::string & path );	// load tiles from a path
+		bool			TileLoad		( const std::wstring & path );	// load tiles from a path
 		void			TileUnload		();								// unload load tiles (destroy)
 
 		// Draw scaled
@@ -122,7 +122,7 @@ public:
 		// tiles
 		std::vector<Tile *> m_tile;	// tiles list
 		Hash			index;			// hash for tiles (id,idx)
-		std::string 	m_tilepath;		// path to tiles (obtained from the tilefile at load)
+		std::wstring 	m_tilepath;		// path to tiles (obtained from the tilefile at load)
 
 		// Others
 		int				m_brushrect;						// draw brush rectangles, vor blind visibility debug

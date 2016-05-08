@@ -17,7 +17,7 @@ public:
 	dword color;
 	Blend shader;
 	int scale;
-	std::string id;	// id used to access from script
+	std::wstring id;	// id used to access from script
 	int material;	// material that brushes will write in material map if draw set correctly (brush only)
 	int draw;		// draw mode: 0=don't draw, 1=draw in view, 2=write material in material map (brush only), 3=both (brush only)
 	bool disable;	// don't draw, don't update

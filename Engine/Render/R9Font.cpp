@@ -39,7 +39,7 @@ bool r9Font::Create( int chrw, int chrh, int cols, int start, int count )
 	int row=0;
 	for(int i=start;i<start+count;i++)
 	{
-		byte ci			= (byte)i;
+		word ci			= static_cast<word>(i);
 		m_char[ci].x	= col*chrw;
 		m_char[ci].y	= row*chrh;
 		m_char[ci].w	= chrw;
@@ -57,7 +57,7 @@ T get(byte * & buf)
 	return t;
 }
 
-bool r9Font::Create( const std::string & filename )
+bool r9Font::Create( const std::wstring & filename )
 {
 	std::unique_ptr<f9File, std::function<void(F9FILE)>> file(files->OpenFile(filename), [](f9File * f) { files->FileClose(f);});
 	if(!file) return false;
@@ -89,7 +89,7 @@ bool r9Font::Create( const std::string & filename )
 
 	while( buffer-buffer0.get() < size)
 	{
-		byte ci			= get<byte>(buffer);
+		word ci			= get<byte>(buffer);
 		m_char[ci].x	= get<word>(buffer);
 		m_char[ci].y	= get<word>(buffer);
 		m_char[ci].w	= get<byte>(buffer);
@@ -100,26 +100,26 @@ bool r9Font::Create( const std::string & filename )
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // sizes
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-float r9Font::GetCharWidth( char c ) const
+float r9Font::GetCharWidth( wchar_t c ) const
 {
 	if(!IsValid(c)) return 0.0f;
-	return GetScaleW() * m_char[(byte)c].w;
+	return GetScaleW() * m_char[c].w;
 }
 
-float r9Font::GetTextWidth( const std::string & text ) const
+float r9Font::GetTextWidth( const std::wstring & text ) const
 {
 	if(text.empty()) return 0.0f;
 	return GetTextWidth(text, text.size());
 }
 
-float r9Font::GetTextWidth( const std::string & text, int size ) const
+float r9Font::GetTextWidth( const std::wstring & text, int size ) const
 {
 	if(text.empty()) return 0.0f;
 	return std::accumulate(text.begin(), text.begin() + size, GetItalic() + size * GetOfsX(),
-		[this](float w, char c) { return w + GetCharWidth(c); });
+		[this](float w, wchar_t c) { return w + GetCharWidth(c); });
 }
 
-fV2 r9Font::GetTextBox( const std::string & text) const
+fV2 r9Font::GetTextBox( const std::wstring & text) const
 {
 	fV2 sz;
 	if( text.empty()) return sz;
@@ -127,7 +127,7 @@ fV2 r9Font::GetTextBox( const std::string & text) const
 	float w = 0;
 	for(auto c: text)
 	{
-		if(c=='\n')
+		if(c==L'\n')
 		{
 			if(w > sz.x) sz.x = w;
 			w = 0;
@@ -144,16 +144,16 @@ fV2 r9Font::GetTextBox( const std::string & text) const
 // draw
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-void r9Font::Char( const fV2 & p, char c )
+void r9Font::Char( const fV2 & p, wchar_t c )
 {
 	assert(R9_IsReady());
 	if( !IsValid(c) ) return;
 	if( !m_tex ) return;
 	R9TEXTURE tex = (R9TEXTURE)m_tex;
 
-	if(c==32) return; // don't draw space !
+	if(c == L' ') return; // don't draw space !
 
-	byte ci = (byte)c;
+	word ci = c;
 
 	fRect dst(p, p + fV2(GetCharWidth(c), GetSize()));
 	
@@ -172,24 +172,24 @@ void r9Font::Char( const fV2 & p, char c )
 
 }
 
-void r9Font::Print(const fV2 & start, const std::string & text )
+void r9Font::Print(const fV2 & start, const std::wstring & text )
 {
 	fV2 p(start);
 	for(auto c: text)
-		if( c=='\n' )
+		if( c==L'\n' )
 		{
 			p.x = start.x;
 			p.y += GetSize() + GetOfsY();
 		}
 		else 
-		if( c=='\r')
+		if( c==L'\r')
 		{
 			p.x = start.x;
 		}
 		else
-		if( c=='\t')
+		if( c==L'\t')
 		{
-			p.x += (GetCharWidth(32) + GetOfsX()) * TAB_SIZE;
+			p.x += (GetCharWidth(L' ') + GetOfsX()) * TAB_SIZE;
 		}
 		else
 		if( IsValid(c) ) 

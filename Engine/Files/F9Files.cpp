@@ -37,7 +37,7 @@ void F9_Done()
 	elog::fil() << "Files done." << std::endl;
 }
 
-void Files::DoIndex(f9Archive * arc, const std::string & file) {
+void Files::DoIndex(f9Archive * arc, const std::wstring & file) {
 
 	if(!arc->Open(file, F9_READ))
 	{
@@ -49,18 +49,18 @@ void Files::DoIndex(f9Archive * arc, const std::string & file) {
 		Index[arc->FileGetName(idx)] = arc;
 }
 
-void Files::MakeIndex(const std::string & path)
+void Files::MakeIndex(const std::wstring & path)
 {
-	file_findfiles("", "*.pak", [this](const std::string & s, bool) { DoIndex<f9ArchivePak>(s); }, 0);
-	file_findfiles(path, "*.*", [this](const std::string & s, bool) { Index[s] = 0; }, FILE_FINDREC);
+	file_findfiles(L"", L"*.pak", [this](const std::wstring & s, bool) { DoIndex<f9ArchivePak>(s); }, 0);
+	file_findfiles(path, L"*.*", [this](const std::wstring & s, bool) { Index[s] = 0; }, FILE_FINDREC);
 
 	for(Map::value_type i: Index)
 		elog::fil() << "idx: " << i.first.c_str() << " " << i.second << std::endl;
 }
 
-f9File * Files::OpenFile(const std::string & name)
+f9File * Files::OpenFile(const std::wstring & name)
 {
-	if( name[0]=='#' )
+	if( name[0]==L'#' )
 		if(f9File * file = OpenFile<f9FileMem>(name))
 			return file;
 	
@@ -76,7 +76,7 @@ f9File * Files::OpenFile(const std::string & name)
 	return 0;
 }
 
-void Files::FindFiles(const std::string & path, std::function<void(const std::string &)> callback)
+void Files::FindFiles(const std::wstring & path, std::function<void(const std::wstring &)> callback)
 {
 	for(auto i = Index.lower_bound(path), e = Index.end(); i != e; ++i)
 		if(std::mismatch(path.begin(), path.end(), i->first.begin()).first == path.end()) 

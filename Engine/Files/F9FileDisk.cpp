@@ -4,10 +4,10 @@
 #include "stdafx.h"
 #include "F9FileDisk.h"
 
-bool f9FileDisk::DoOpen( const std::string & name, int mode )
+bool f9FileDisk::DoOpen( const std::wstring & name, int mode )
 {
-	char szmode[4][4] = {"rb","wb","r+b","w+b"};
-	m_file = fopen(name.c_str(), szmode[mode & 3]);
+	wchar_t szmode[4][4] = {L"rb",L"wb",L"r+b",L"w+b"};
+	m_file = _wfopen(name.c_str(), szmode[mode & 3]);
 	if(!m_file) return false;
 	return true;
 }

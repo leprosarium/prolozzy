@@ -158,9 +158,9 @@ public:
 	int	m_scrollofs;									// scroll pick offset (h or v)
 
 	// save map image
-	bool SaveMapImage(const std::string & filename);					// save huge map image, rendering in the target texture each 256x256 cel
-	bool Load(const std::string & filename);
-	bool LoadMap(const std::string & filename);
+	bool SaveMapImage(const std::wstring & filename);					// save huge map image, rendering in the target texture each 256x256 cel
+	bool Load(const std::wstring & filename);
+	bool LoadMap(const std::wstring & filename);
 };
 
 extern	cEdiMap		g_map;

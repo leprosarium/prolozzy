@@ -40,17 +40,17 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // LOADER
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-bool R9_ImgLoadFile(const std::string & name, r9Img* img )
+bool R9_ImgLoadFile(const std::wstring & name, r9Img* img )
 {
 	if(!img || img->isValid() ) return FALSE;
 	img->clear();
 
 	// type
 	int type = R9_IMG_UNKNOWN;
-	std::string ext = file_path2ext(name);
-	if( ext == "tga") type = R9_IMG_TGA; else
-	if( ext == "jpg") type = R9_IMG_JPG; else
-	if( ext == "png") type = R9_IMG_PNG; // else...
+	std::wstring ext = file_path2ext(name);
+	if( ext == L"tga") type = R9_IMG_TGA; else
+	if( ext == L"jpg") type = R9_IMG_JPG; else
+	if( ext == L"png") type = R9_IMG_PNG; // else...
 	if( type==R9_IMG_UNKNOWN ) return FALSE; // unsupported file format
 
 	// read
@@ -68,16 +68,16 @@ bool R9_ImgLoadFile(const std::string & name, r9Img* img )
 	return ret;
 }
 
-bool R9_ImgSaveFile( const std::string & name, r9Img* img )
+bool R9_ImgSaveFile( const std::wstring & name, r9Img* img )
 {
 	if(!img || !img->isValid()) return FALSE;
 
 	// type
 	int type = R9_IMG_UNKNOWN;
-	std::string ext = file_path2ext(name);
-	if(ext == "png") type = R9_IMG_PNG; else
-	if(ext == "jpg") type = R9_IMG_JPG; else
-	if(ext == "tga") type = R9_IMG_TGA; // else...
+	std::wstring ext = file_path2ext(name);
+	if(ext == L"png") type = R9_IMG_PNG; else
+	if(ext == L"jpg") type = R9_IMG_JPG; else
+	if(ext == L"tga") type = R9_IMG_TGA; // else...
 	if( type==R9_IMG_UNKNOWN ) return false; // unsupported file format
 
 	// write
@@ -95,17 +95,17 @@ bool R9_ImgSaveFile( const std::string & name, r9Img* img )
 	return ret;
 }
 
-bool R9_ImgLoadHeader( const std::string & name, r9Img* img )
+bool R9_ImgLoadHeader( const std::wstring & name, r9Img* img )
 {
 	if(!img || img->isValid() ) return false;
 	img->clear();
 
 	// type
 	int type = R9_IMG_UNKNOWN;
-	std::string ext = file_path2ext(name);
-	if(ext == "tga") type = R9_IMG_TGA; else
-	if(ext == "jpg") type = R9_IMG_JPG; else
-	if(ext == "png") type = R9_IMG_PNG; // else...
+	std::wstring ext = file_path2ext(name);
+	if(ext == L"tga") type = R9_IMG_TGA; else
+	if(ext == L"jpg") type = R9_IMG_JPG; else
+	if(ext == L"png") type = R9_IMG_PNG; // else...
 	if( type==R9_IMG_UNKNOWN ) return false; // unsupported file format
 
 	// read

@@ -11,7 +11,7 @@
 
 class f9FileMem : public f9File
 {
-	virtual bool DoOpen(const std::string & name, int mode);
+	virtual bool DoOpen(const std::wstring & name, int mode);
 	virtual	bool DoClose();
 	virtual int64 DoRead(void * data, int64 size);
 	virtual	int64 DoWrite(void * data, int64 size);
@@ -19,11 +19,8 @@ class f9FileMem : public f9File
 
 public:
 	f9FileMem() : m_addr(nullptr) {}
-
-
-
 protected:
-	byte * m_addr;		// data buffer address
+	byte * m_addr;
 };
 
 #endif

@@ -97,10 +97,10 @@ bool cDizGame::Init()
 	fps = GAME_FPS;
 
 	// load game resolution settings from inf
-	std::istringstream(g_cfg.Info("game_screen_bw")) >> screenSizeBorder.x;
-	std::istringstream(g_cfg.Info("game_screen_bh")) >> screenSizeBorder.y;
-	std::istringstream(g_cfg.Info("game_screen_w")) >> screenSize.x;
-	std::istringstream(g_cfg.Info("game_screen_h")) >> screenSize.y;
+	std::wistringstream(g_cfg.Info(L"game_screen_bw")) >> screenSizeBorder.x;
+	std::wistringstream(g_cfg.Info(L"game_screen_bh")) >> screenSizeBorder.y;
+	std::wistringstream(g_cfg.Info(L"game_screen_w")) >> screenSize.x;
+	std::wistringstream(g_cfg.Info(L"game_screen_h")) >> screenSize.y;
 	g_paint.Layout(); // refresh layout
 
 	return CheckVersion();
@@ -128,17 +128,17 @@ bool cDizGame::CheckVersion()
 {
 	// requested version must be in the folowing formats: 2.0, 2.01, 2.01b, etc
 	// the match is done on first 2 digits (2.0)
-	std::string reqv = g_cfg.Info("dizzyage_version");
-	std::string engv = GAME_VERSION;
-	std::stringstream msg;
+	std::wstring reqv = g_cfg.Info(L"dizzyage_version");
+	std::wstring engv = GAME_VERSION;
+	std::wstringstream msg;
 	if(reqv.size() >= 3) // enough digits
 	{
 		if(reqv[0]==engv[0] && reqv[1]==engv[1] && reqv[2]==engv[2]) return true; // match
-		msg << "This game was made with DizzyAGE v" << reqv; 
+		msg << L"This game was made with DizzyAGE v" << reqv; 
 	}
 	else
-		msg << "This game doesn't specify the version of DizzyAGE it was made for.";
-	msg  << "\nYou are running it with DizzyAGE v" << engv;
+		msg << L"This game doesn't specify the version of DizzyAGE it was made for.";
+	msg  << L"\nYou are running it with DizzyAGE v" << engv;
 	App::ErrorMessage(msg.str().c_str());
 	return false;
 }

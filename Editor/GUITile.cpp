@@ -189,9 +189,9 @@ void cGUITileMap::OnUpdate()
 
 	if(m_mousein)
 	{
-		std::stringstream o;
-		o << m.x << " " << m.y;
-		if(state == State::select)	o << std::endl << sels.x << " x " << sels.y;
+		std::wostringstream o;
+		o << m.x << L" " << m.y;
+		if(state == State::select)	o << std::endl << sels.x << L" x " << sels.y;
 		tooltip = o.str();
 	}
 }

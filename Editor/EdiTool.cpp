@@ -153,10 +153,10 @@ void cEdiToolPaint::Update( float dtime )
 		else
 		{
 			// tooltip
-			std::ostringstream o;
-			o << (mode == Mode::PickMenu ? "menu" : "pick");
+			std::wostringstream o;
+			o << (mode == Mode::PickMenu ? L"menu" : L"pick");
 			if(picked)
-				o << "#" <<picked;
+				o << L"#" <<picked;
 			g_gui->ToolTip = o.str();
 		}
 	}
@@ -330,16 +330,16 @@ void cEdiToolEdit::Update( float dtime )
 	axe = m;
 
 	// tooltip
-	std::ostringstream o;
+	std::wostringstream o;
 	if(mode != Mode::Move)
 	{
-		if(selop == SelOp::Sub) o << "sub";
-		if(selop == SelOp::Add) o << "add";
-		o << std::endl <<  m.x << " " << m.y;
-		if(mode == Mode::Select) o << std::endl << rect.Width() << " x " << rect.Height();
+		if(selop == SelOp::Sub) o << L"sub";
+		if(selop == SelOp::Add) o << L"add";
+		o << std::endl <<  m.x << L" " << m.y;
+		if(mode == Mode::Select) o << std::endl << rect.Width() << L" x " << rect.Height();
 	}
 	else
-		o << "mov " << moved.x << "," << moved.y << std::endl << m.x << "," << m.y;
+		o << L"mov " << moved.x << L"," << moved.y << std::endl << m.x << L"," << m.y;
 	if(inview)
 		g_gui->ToolTip = o.str();
 	else 

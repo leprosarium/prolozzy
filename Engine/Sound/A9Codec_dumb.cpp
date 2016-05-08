@@ -2,6 +2,7 @@
 // A9Codec_dumb.cpp
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
+#include "E9String.h"
 #include "A9Codec_dumb.h"
 
 // make sure the paths to the libs are ok
@@ -14,7 +15,7 @@
 #define DUMB_SEC 65536.0f
 
 // use our file system
-void*	dumb_open	(const char *filename)			{ return files->OpenFile(filename); }
+void*	dumb_open	(const char *filename)			{ return files->OpenFile(MultiByteToWideString(filename)); }
 int		dumb_skip	(void *f, long n)				{ return static_cast<F9FILE>(f)->Seek(n,1); }
 int		dumb_getc	(void *f)						{ int c=0; if(1!=static_cast<F9FILE>(f)->Read(&c,1)) return -1; else return c; }
 long	dumb_getnc	(char *ptr, long n, void *f)	{ return static_cast<long>(static_cast<F9FILE>(f)->Read(ptr,n)); }
@@ -52,12 +53,12 @@ int a9Codec_dumb::Done()
 	return A9_OK;
 }
 
-int	a9Codec_dumb::Open( const std::string & filename )
+int	a9Codec_dumb::Open( const std::wstring & filename )
 {
 	if(m_status!=A9_CODEC_CLOSED) return A9_FAIL;
 	// set user callbacks
 	// load
-	const char * name = filename.c_str();
+	const char * name = WideStringToMultiByte(filename.c_str()).c_str();
 	m_duh = load_duh(name);
 	if(!m_duh) 
 	{

@@ -23,9 +23,9 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	
 	// init debug
 	bool open = false;
-	ini_get(file_getfullpath(GetIniFile()), "ADVANCED", "log") >> open;
+	ini_get(file_getfullpath(GetIniFile()), L"ADVANCED", L"log") >> open;
 
-	elog::elog.init(MultiByteToWideString(GetLogFile()));
+	elog::elog.init(GetLogFile());
 	elog::elog.openChannels(open);
 
 	App::Run<DizApp>(hInstance, lpCmdLine);

@@ -75,18 +75,18 @@ inline	void		sys_releasesemaphore( HSEMAPHORE semaphore )					{ ReleaseSemaphore
 // Ini Tools
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-std::istringstream ini_get(const std::string & file, const std::string & group, const std::string & key);
+std::wistringstream ini_get(const std::wstring & file, const std::wstring & group, const std::wstring & key);
 
 template<class T>
-void ini_set(const std::string & file, const std::string & group, const std::string & key, const T & value)
+void ini_set(const std::wstring & file, const std::wstring & group, const std::wstring & key, const T & value)
 {
-	std::ostringstream o;
+	std::wostringstream o;
 	o << value;
 	ini_set(file, group, key, o.str());
 }
 
 template<>
-void ini_set<std::string>(const std::string & file, const std::string & group, const std::string & key, const std::string & value);
+void ini_set(const std::wstring & file, const std::wstring & group, const std::wstring & key, const std::wstring & value);
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -95,14 +95,14 @@ void ini_set<std::string>(const std::string & file, const std::string & group, c
 #define	FILE_FINDDIR		(1<<0)								// request directories list
 #define	FILE_FINDREC		(1<<1)								// request to go recursive on found directories
 
-void file_findfiles( const std::string & path, const std::string & mask, std::function<void(const std::string &, bool)> ffcallback, dword flags);
+void file_findfiles( const std::wstring & path, const std::wstring & mask, std::function<void(const std::wstring &, bool)> ffcallback, dword flags);
 
-std::string	file_getfullpath(const std::string & file);
-std::string	file_path2file(const std::string & path);
-std::string	file_path2name(const std::string & path);
-std::string	file_path2ext(const std::string & path);
+std::wstring	file_getfullpath(const std::wstring & file);
+std::wstring	file_path2file(const std::wstring & path);
+std::wstring	file_path2name(const std::wstring & path);
+std::wstring	file_path2ext(const std::wstring & path);
 
-void file_delete(const std::string & path);
+void file_delete(const std::wstring & path);
 
 
 
@@ -114,8 +114,8 @@ void file_delete(const std::string & path);
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void encrypt_data( void* data, dword size, int key );	// encrypt
 void decrypt_data( void* data, dword size, int key );	// decrypt
-void encrypt_data( void* data, dword size, const char* key );	// encrypt
-void decrypt_data( void* data, dword size, const char* key );	// decrypt
+void encrypt_data( void* data, dword size, const std::string & key );	// encrypt
+void decrypt_data( void* data, dword size, const std::string & key );	// decrypt
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

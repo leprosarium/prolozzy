@@ -71,7 +71,14 @@ bool r9Font::Create( const std::wstring & filename )
 
 	// HEADER (24 bytes)
 
-	if(get<dword>(buffer) != 0x30544e46u) return false; // "FNT0"
+	bool wide;
+	dword id = get<dword>(buffer);
+	if (id == 0x30544e46u) // "FNT0"
+		wide = false;
+	else if (id == 0x55544E46u) // "FNTU"
+		wide = true;
+	else
+		return false; 
 
 	m_chrw		= get<word>(buffer);
 	m_chrh		= get<word>(buffer);
@@ -89,7 +96,7 @@ bool r9Font::Create( const std::wstring & filename )
 
 	while( buffer-buffer0.get() < size)
 	{
-		word ci			= get<byte>(buffer);
+		word ci = wide ? get<word>(buffer) : get<byte>(buffer);
 		m_char[ci].x	= get<word>(buffer);
 		m_char[ci].y	= get<word>(buffer);
 		m_char[ci].w	= get<byte>(buffer);
